@@ -2,11 +2,10 @@ package gcd
 
 import (
 	//"code.google.com/p/go.net/websocket"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
-	//"net"
-	"encoding/json"
 	"net/http"
 	"os"
 	"os/exec"
@@ -15,21 +14,21 @@ import (
 
 type ChromeDebugger struct {
 	sync.RWMutex  // for locking pages (i.e. websocket clients)
-	Pages         map[int]*ChromePage
+	Pages         []*ChromePage
 	chromeProcess *os.Process
 	port          string
 }
 
 func NewChromeDebugger() *ChromeDebugger {
 	c := &ChromeDebugger{}
-	c.Pages = make(map[int]*ChromePage, 0)
+	c.Pages = make([]*ChromePage, 0)
 	return c
 }
 
 func (c *ChromeDebugger) StartProcess(exePath, userDir, port string) {
 	c.port = port
 	dir := fmt.Sprintf("--user-data-dir=%s", userDir)
-	debugPort := fmt.Sprintf("--remote-debugging-port=%d", port)
+	debugPort := fmt.Sprintf("--remote-debugging-port=%s", port)
 	cmd := exec.Command(exePath, dir, debugPort)
 	go func() {
 		err := cmd.Start()
@@ -46,7 +45,7 @@ func (c *ChromeDebugger) ExitProcess() error {
 	return c.chromeProcess.Kill()
 }
 
-func (c *ChromeDebugger) Connect() error {
+func (c *ChromeDebugger) GetPages() []*ChromePage {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/json", c.port))
 	if err != nil {
 		log.Fatalf("%v\n", err)
@@ -61,6 +60,9 @@ func (c *ChromeDebugger) Connect() error {
 	if err != nil {
 		log.Fatalf("error decoding inspectable pages: %v\n", err)
 	}
-	log.Printf("total inspectable pages: %d", len(inspectables))
-	return err
+	for _, v := range inspectables {
+		page := newChromePage(c.port, v)
+		c.Pages = append(c.Pages, page)
+	}
+	return c.Pages
 }
