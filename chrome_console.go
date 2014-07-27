@@ -13,7 +13,7 @@ type ChromeConsole struct {
 	Page *ChromePage
 }
 
-func NewChromeConsole(page *ChromePage) *ChromeConsole {
+func newChromeConsole(page *ChromePage) *ChromeConsole {
 	c := &ChromeConsole{Page: page}
 	return c
 }
@@ -24,7 +24,7 @@ func (c *ChromeConsole) Enable() error {
 }
 
 func (c *ChromeConsole) Disable() error {
-	req := &ConsoleRequest{Id: c.Page.getId(), Method: "Console.enable"}
+	req := &ConsoleRequest{Id: c.Page.getId(), Method: "Console.disable"}
 	return sendRequest(c.Page.sendCh, req)
 }
 
@@ -38,9 +38,6 @@ func sendRequest(sendCh chan<- []byte, req *ConsoleRequest) error {
 	if err != nil {
 		return err
 	}
-	//go func() {
 	sendCh <- data
-	//}()
-
 	return nil
 }

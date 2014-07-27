@@ -22,7 +22,7 @@ type InspectablePage struct {
 
 type ChromePage struct {
 	conn    *websocket.Conn
-	Console *ChromeConsole
+	console *ChromeConsole
 	Page    *InspectablePage
 	sendCh  chan []byte
 	recvCh  chan []byte
@@ -45,10 +45,16 @@ func newChromePage(port string, page *InspectablePage) *ChromePage {
 	sendCh := make(chan []byte)
 	recvCh := make(chan []byte)
 	doneCh := make(chan bool)
-	chromePage := &ChromePage{conn: conn, Console: nil, Page: page, sendCh: sendCh, recvCh: recvCh, doneCh: doneCh, sendId: 0}
-	chromePage.Console = NewChromeConsole(chromePage)
+	chromePage := &ChromePage{conn: conn, console: nil, Page: page, sendCh: sendCh, recvCh: recvCh, doneCh: doneCh, sendId: 0}
 	chromePage.listen()
 	return chromePage
+}
+
+func (c *ChromePage) Console() *ChromeConsole {
+	if c.console == nil {
+		c.console = newChromeConsole(c)
+	}
+	return c.console
 }
 
 func (c *ChromePage) getId() int64 {

@@ -37,7 +37,7 @@ func TestConsole(t *testing.T) {
 	}
 	time.Sleep(2 * time.Second)
 	fmt.Printf("page: %s\n", pages[0].Page.Url)
-	console := pages[0].Console
+	console := pages[0].Console()
 	fmt.Printf("Sending enable...")
 	console.Enable()
 	fmt.Printf("Sent enable...")
