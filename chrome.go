@@ -14,7 +14,7 @@ import (
 )
 
 type ChromeDebugger struct {
-	sync.RWMutex  // for locking pages
+	sync.RWMutex  // for locking pages (i.e. websocket clients)
 	Pages         map[int]*ChromePage
 	chromeProcess *os.Process
 	port          string

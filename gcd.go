@@ -6,12 +6,6 @@ import (
 	"net"
 )
 
-type Debugger interface {
-	Connect(addr string) error
-	SendCmd(json string) error
-	RecvCmd(json string) error
-}
-
 func wsConnection(addr, url string) *websocket.Conn {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
