@@ -14,14 +14,14 @@ import (
 
 type ChromeDebugger struct {
 	sync.RWMutex  // for locking pages (i.e. websocket clients)
-	Pages         []*ChromePage
+	Targets       []*ChromeTarget
 	chromeProcess *os.Process
 	port          string
 }
 
 func NewChromeDebugger() *ChromeDebugger {
 	c := &ChromeDebugger{}
-	c.Pages = make([]*ChromePage, 0)
+	c.Targets = make([]*ChromeTarget, 0)
 	return c
 }
 
@@ -45,7 +45,7 @@ func (c *ChromeDebugger) ExitProcess() error {
 	return c.chromeProcess.Kill()
 }
 
-func (c *ChromeDebugger) GetPages() []*ChromePage {
+func (c *ChromeDebugger) GetTargets() []*ChromeTarget {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/json", c.port))
 	if err != nil {
 		log.Fatalf("%v\n", err)
@@ -55,14 +55,15 @@ func (c *ChromeDebugger) GetPages() []*ChromePage {
 	if errRead != nil {
 		log.Fatalf("error reading body: %v\n", errRead)
 	}
-	inspectables := make([]*InspectablePage, 0)
-	err = json.Unmarshal(body, &inspectables)
+	targets := make([]*TargetInfo, 0)
+	err = json.Unmarshal(body, &targets)
 	if err != nil {
+		fmt.Printf("body: %s\n", string(body))
 		log.Fatalf("error decoding inspectable pages: %v\n", err)
 	}
-	for _, v := range inspectables {
-		page := newChromePage(c.port, v)
-		c.Pages = append(c.Pages, page)
+	for _, v := range targets {
+		target := newChromeTarget(c.port, v)
+		c.Targets = append(c.Targets, target)
 	}
-	return c.Pages
+	return c.Targets
 }

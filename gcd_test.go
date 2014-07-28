@@ -18,12 +18,12 @@ func TestGetPages(t *testing.T) {
 	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
 	defer debugger.ExitProcess()
 	time.Sleep(2 * time.Second)
-	pages := debugger.GetPages()
-	if len(pages) <= 0 {
-		t.Fatalf("invalid number of pages, got: %d\n", len(pages))
+	targets := debugger.GetTargets()
+	if len(targets) <= 0 {
+		t.Fatalf("invalid number of targets, got: %d\n", len(targets))
 	}
 	time.Sleep(2 * time.Second)
-	fmt.Printf("page: %s\n", pages[0].Page.Url)
+	fmt.Printf("page: %s\n", targets[0].Target.Url)
 }
 
 func TestConsole(t *testing.T) {
@@ -31,13 +31,13 @@ func TestConsole(t *testing.T) {
 	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
 	defer debugger.ExitProcess()
 	time.Sleep(1 * time.Second)
-	pages := debugger.GetPages()
-	if len(pages) <= 0 {
-		t.Fatalf("invalid number of pages, got: %d\n", len(pages))
+	targets := debugger.GetTargets()
+	if len(targets) <= 0 {
+		t.Fatalf("invalid number of targets, got: %d\n", len(targets))
 	}
 	time.Sleep(2 * time.Second)
-	fmt.Printf("page: %s\n", pages[0].Page.Url)
-	console := pages[0].Console()
+	fmt.Printf("page: %s\n", targets[0].Target.Url)
+	console := targets[0].Console()
 	fmt.Printf("Sending enable...")
 	console.Enable()
 	fmt.Printf("Sent enable...")

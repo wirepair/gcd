@@ -10,27 +10,27 @@ type ConsoleRequest struct {
 }
 
 type ChromeConsole struct {
-	Page *ChromePage
+	target *ChromeTarget
 }
 
-func newChromeConsole(page *ChromePage) *ChromeConsole {
-	c := &ChromeConsole{Page: page}
+func newChromeConsole(target *ChromeTarget) *ChromeConsole {
+	c := &ChromeConsole{target: target}
 	return c
 }
 
 func (c *ChromeConsole) Enable() error {
-	req := &ConsoleRequest{Id: c.Page.getId(), Method: "Console.enable"}
-	return sendRequest(c.Page.sendCh, req)
+	req := &ConsoleRequest{Id: c.target.getId(), Method: "Console.enable"}
+	return sendRequest(c.target.sendCh, req)
 }
 
 func (c *ChromeConsole) Disable() error {
-	req := &ConsoleRequest{Id: c.Page.getId(), Method: "Console.disable"}
-	return sendRequest(c.Page.sendCh, req)
+	req := &ConsoleRequest{Id: c.target.getId(), Method: "Console.disable"}
+	return sendRequest(c.target.sendCh, req)
 }
 
 func (c *ChromeConsole) ClearMessages() error {
-	req := &ConsoleRequest{Id: c.Page.getId(), Method: "Console.clearMessages"}
-	return sendRequest(c.Page.sendCh, req)
+	req := &ConsoleRequest{Id: c.target.getId(), Method: "Console.clearMessages"}
+	return sendRequest(c.target.sendCh, req)
 }
 
 func sendRequest(sendCh chan<- []byte, req *ConsoleRequest) error {

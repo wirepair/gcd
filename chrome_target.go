@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 )
 
-type InspectablePage struct {
+type TargetInfo struct {
 	Description          string `json:"description"`
 	DevtoolsFrontendUrl  string `json:"devtoolsFrontendUrl"`
 	FaviconUrl           string `json:"faviconUrl"`
@@ -20,49 +20,63 @@ type InspectablePage struct {
 	WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
 }
 
-type ChromePage struct {
+type ChromeTarget struct {
 	conn    *websocket.Conn
 	console *ChromeConsole
-	Page    *InspectablePage
+	input   *ChromeInput
+	network *ChromeNetwork
+	Target  *TargetInfo
 	sendCh  chan []byte
 	recvCh  chan []byte
 	doneCh  chan bool
 	sendId  int64
 	/*
-		Debugger    *ChromeDebugger
-		Dom         *ChromeDom
-		DomDebugger *ChromeDomDebugger
-		Input       *ChromeInput
-		Network     *ChromeNetwork
-		Page        *ChromePage
-		Runtime     *ChromeRuntime
-		Timeline    *ChromeTimeline
+		debugger    *ChromeDebugger
+		dom         *ChromeDom
+		domDebugger *ChromeDomDebugger
+		page        *ChromePage
+		runtime     *ChromeRuntime
+		timeline    *ChromeTimeline
 	*/
 }
 
-func newChromePage(port string, page *InspectablePage) *ChromePage {
-	conn := wsConnection(fmt.Sprintf("localhost:%s", port), page.WebSocketDebuggerUrl)
+func newChromeTarget(port string, target *TargetInfo) *ChromeTarget {
+	conn := wsConnection(fmt.Sprintf("localhost:%s", port), target.WebSocketDebuggerUrl)
 	sendCh := make(chan []byte)
 	recvCh := make(chan []byte)
 	doneCh := make(chan bool)
-	chromePage := &ChromePage{conn: conn, console: nil, Page: page, sendCh: sendCh, recvCh: recvCh, doneCh: doneCh, sendId: 0}
-	chromePage.listen()
-	return chromePage
+	chromeTarget := &ChromeTarget{conn: conn, console: nil, Target: target, sendCh: sendCh, recvCh: recvCh, doneCh: doneCh, sendId: 0}
+	chromeTarget.listen()
+	return chromeTarget
 }
 
-func (c *ChromePage) Console() *ChromeConsole {
+func (c *ChromeTarget) Console() *ChromeConsole {
 	if c.console == nil {
 		c.console = newChromeConsole(c)
 	}
 	return c.console
 }
 
-func (c *ChromePage) getId() int64 {
+func (c *ChromeTarget) Input() *ChromeInput {
+	if c.input == nil {
+		c.input = newChromeInput(c)
+	}
+	return c.input
+}
+
+func (c *ChromeTarget) Network() *ChromeNetwork {
+	if c.network == nil {
+		c.network = newChromeNetwork(c)
+	}
+	return c.network
+}
+
+func (c *ChromeTarget) getId() int64 {
 	fmt.Printf("sendId: %d\n", c.sendId)
 	return atomic.AddInt64(&c.sendId, 1)
 }
 
-func (c *ChromePage) listenWrite() {
+func (c *ChromeTarget) listenWrite() {
 	log.Println("Listening write to client")
 	for {
 		select {
@@ -79,13 +93,13 @@ func (c *ChromePage) listenWrite() {
 	}
 }
 
-func (c *ChromePage) listen() {
+func (c *ChromeTarget) listen() {
 	go c.listenRead()
 	go c.listenWrite()
 }
 
 // Listen read request via chanel
-func (c *ChromePage) listenRead() {
+func (c *ChromeTarget) listenRead() {
 	log.Println("Listening read from client")
 	for {
 		select {
@@ -113,7 +127,7 @@ func (c *ChromePage) listenRead() {
 	}
 }
 
-func (c *ChromePage) parseResponse(msg string) {
+func (c *ChromeTarget) parseResponse(msg string) {
 	log.Printf("parseResponse got msg: %s\n", msg)
 }
 
