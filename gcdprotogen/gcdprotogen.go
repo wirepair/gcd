@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
-	"strings"
+	//"os"
 	"io/ioutil"
 	"log"
+	"strings"
 )
 
 // Top level API protocol file
@@ -108,25 +108,26 @@ type Event struct {
 var file string
 
 type Output struct {
-	Major string // major api version
-	Minor string // minor api version
+	Major    string // major api version
+	Minor    string // minor api version
 	Filename string
-	Types []*GeneratedStruct
-	Events []*GeneratedStruct
+	Domain   string
+	Types    []*GeneratedStruct
+	Events   []*GeneratedStruct
 	Commands []*GeneratedStruct
 }
 type GeneratedStruct struct {
-	ApiName string // the name of the API call
-	Description string // the description/comments for the struct
-	StructStart string // the struct start line
-	Lines []string // the individual struct lines
-	StructEnd string // the end struct line
+	Name        string   // the name of the API call, Event or Type
+	Description string   // the description/comments for the struct
+	StructStart string   // the struct start line
+	Lines       []string // the individual struct lines
+	StructEnd   string   // the end struct line
 }
 
 const (
 	prefix       = "chrome_"
-	structStart = "type Chrome%s struct {"
-	structEnd = "}"
+	structStart  = "type Chrome%s struct {"
+	structEnd    = "}"
 	structMember = "\t%s %s `json:\"%s\"` %s"
 	//eventSuffix = "_events.go" // file used for saving event data structures
 	//typeSuffix = "_types.go" // file used for saving event data structures
@@ -160,25 +161,56 @@ func main() {
 	}
 
 	for _, v := range api.Domains {
-		out := &Output{Major: api.Version.Major, Minor: api.Version.Minor, Filename: prefix+strings.ToLower(v.Domain)+".go"}
+		output := NewOutput(api.Version.Major, api.Version.Minor, v.Domain)
 		fmt.Printf("%s\n", v.Domain)
 		if v.Types != nil {
-			err := createTypes()
+			err := createTypes(output, v.Types)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
 
-func NewGeneratedStruct(apiName string, description string) *GeneratedStruct {
-	s := &GeneratedStruct{ApiName: apiName, Description: "//"+description}
-	s.StructEnd = structEnd
+func NewOutput(major, minor, domain string) {
+	filename := prefix + strings.ToLower(domain) + ".go"
+	output := &Output{Major: api.Version.Major, Minor: api.Version.Minor, Domain: domain, Filename: filename}
+	output.Types = make([]*GeneratedStruct, 0)
+	output.Commands = make([]*GeneratedStruct, 0)
+	output.Events = make([]*GeneratedStruct, 0)
+	return output
 }
 
-func createTypes(outfile *os.File, domain string, types *Types) error {
+func NewGeneratedStruct(apiName string, description string) *GeneratedStruct {
+	s := &GeneratedStruct{ApiName: apiName, Description: "//" + description}
+	s.StructEnd = structEnd
+	return s
+}
 
+func createTypes(output *Output, types []*Type) error {
+	for _, v := range types {
+		t := NewGeneratedStruct(output.Domain, v.Description)
+		t.Name = v.Id // Type Name
+		t.Lines = make([]string)
+		if v.Type == "object" {
+			for _, l := range v.Properties {
+				optional := ""
+				if l.Optional == true {
+					optional = ",omitempty"
+				}
+				line := fmt.Sprintf(structMember, l.Name, l.Type, l.Name, l.Optional)
+			}
+		}
+
+		fmt.Printf("type: %v\n", v)
+	}
+	return nil
 }
 
 func createMethods(api *DebuggerApi) error {
-
+	return nil
 }
 
-func create 
+func jsonType(type string) {
+	
+}
