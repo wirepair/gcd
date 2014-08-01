@@ -20,6 +20,13 @@ type TargetInfo struct {
 	WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
 }
 
+type gcdMessage struct {
+	replyCh chan string // json response channel
+	id      int64       // id to map response channels to send chans
+	data    string      // the data to send out over the websocket channel
+	method  string      // the method type
+}
+
 type ChromeTarget struct {
 	conn    *websocket.Conn
 	console *ChromeConsole
@@ -76,6 +83,11 @@ func (c *ChromeTarget) getId() int64 {
 	return atomic.AddInt64(&c.sendId, 1)
 }
 
+func (c *ChromeTarget) listen() {
+	go c.listenRead()
+	go c.listenWrite()
+}
+
 func (c *ChromeTarget) listenWrite() {
 	log.Println("Listening write to client")
 	for {
@@ -84,7 +96,7 @@ func (c *ChromeTarget) listenWrite() {
 		case msg := <-c.sendCh:
 			log.Println("Send:", string(msg))
 			websocket.Message.Send(c.conn, string(msg))
-		// receive done request
+		// receive done from listenRead
 		case <-c.doneCh:
 			fmt.Println("listenWrite doneCh true...")
 			c.doneCh <- true // for listenRead method
@@ -93,22 +105,16 @@ func (c *ChromeTarget) listenWrite() {
 	}
 }
 
-func (c *ChromeTarget) listen() {
-	go c.listenRead()
-	go c.listenWrite()
-}
-
 // Listen read request via chanel
 func (c *ChromeTarget) listenRead() {
 	log.Println("Listening read from client")
 	for {
 		select {
-		// receive done request
+		// receive done from listenWrite
 		case <-c.doneCh:
 			fmt.Println("listenRead doneCh true")
 			c.doneCh <- true // for listenWrite method
 			return
-
 		// read data from websocket connection
 		default:
 			var msg string

@@ -9,6 +9,13 @@ type ConsoleRequest struct {
 	Method string `json:"method"`
 }
 
+type ConsoleMessage struct {
+	Column int    `json:"column",omitempty`
+	Level  string `json:"level"`
+	Line   int
+	NetworkRequestId
+}
+
 type ChromeConsole struct {
 	target *ChromeTarget
 }
