@@ -1,7 +1,7 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains the {{.Domain}} types.
 // API Version: {{.Major}}.{{.Minor}}
-package main
+package types
 
 {{range $element := .Types}} 
 {{ $element }} 

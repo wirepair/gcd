@@ -1,8 +1,8 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
-// {{.Major}}.{{.Minor}}
+// This file contains the {{.Domain}} events.
+// API Version: {{.Major}}.{{.Minor}}
+package events
 
-{{.Types}}
-
-{{.Commands}}
-
-{{.Events}}
+{{range $element := .Events}} 
+{{ $element }} 
+{{ end }}

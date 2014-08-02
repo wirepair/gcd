@@ -224,7 +224,7 @@ func jsonType(domain string, items *Item, ref, valType string) string {
 	case "integer":
 		return "int"
 	case "number":
-		return "int"
+		return "float"
 	case "boolean":
 		return "bool"
 	case "array":

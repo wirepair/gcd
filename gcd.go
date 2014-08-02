@@ -19,6 +19,10 @@ type ChromeDebugger struct {
 	port          string
 }
 
+// internal messaging structure.
+type DebuggerMessage struct {
+}
+
 func NewChromeDebugger() *ChromeDebugger {
 	c := &ChromeDebugger{}
 	c.Targets = make([]*ChromeTarget, 0)
