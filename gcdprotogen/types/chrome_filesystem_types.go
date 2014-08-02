@@ -1,7 +1,7 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains the FileSystem types.
 // API Version: 1.1
-package main
+package types
 
  
 // Represents a browser side file or directory.
@@ -17,7 +17,7 @@ type ChromeFileSystemEntry struct {
  
 // Represents metadata of a file or entry.
 type ChromeFileSystemMetadata struct {
-	ModificationTime int `json:"modificationTime"` // Modification time.
-	Size int `json:"size"` // File size. This field is always zero for directories.
+	ModificationTime float `json:"modificationTime"` // Modification time.
+	Size float `json:"size"` // File size. This field is always zero for directories.
 }
  

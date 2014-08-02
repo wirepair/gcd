@@ -1,7 +1,7 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains the Canvas types.
 // API Version: 1.1
-package main
+package types
 
  
 // Unique resource identifier.
@@ -65,6 +65,6 @@ type ChromeCanvasTraceLog struct {
 	Contexts []*ChromeCanvasCallArgument `json:"contexts"` 
 	StartOffset int `json:"startOffset"` 
 	Alive bool `json:"alive"` 
-	TotalAvailableCalls int `json:"totalAvailableCalls"` 
+	TotalAvailableCalls float `json:"totalAvailableCalls"` 
 }
  

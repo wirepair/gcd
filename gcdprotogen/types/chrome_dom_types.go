@@ -1,7 +1,7 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains the DOM types.
 // API Version: 1.1
-package main
+package types
 
  
 // Unique DOM node identifier.
@@ -67,12 +67,12 @@ type ChromeDOMRGBA struct {
 	R int `json:"r"` // The red component, in the [0-255] range.
 	G int `json:"g"` // The green component, in the [0-255] range.
 	B int `json:"b"` // The blue component, in the [0-255] range.
-	A int `json:"a,omitempty"` // The alpha component, in the [0-1] range (default: 1).
+	A float `json:"a,omitempty"` // The alpha component, in the [0-1] range (default: 1).
 }
  
  
 // An array of quad vertices, x immediately followed by y for each point, points clock-wise.
-type ChromeDOMQuad []int 
+type ChromeDOMQuad []float 
  
  
 // Box model.
@@ -97,10 +97,10 @@ type ChromeDOMShapeOutsideInfo struct {
  
 // Rectangle.
 type ChromeDOMRect struct {
-	X int `json:"x"` // X coordinate
-	Y int `json:"y"` // Y coordinate
-	Width int `json:"width"` // Rectangle width
-	Height int `json:"height"` // Rectangle height
+	X float `json:"x"` // X coordinate
+	Y float `json:"y"` // Y coordinate
+	Width float `json:"width"` // Rectangle width
+	Height float `json:"height"` // Rectangle height
 }
  
  

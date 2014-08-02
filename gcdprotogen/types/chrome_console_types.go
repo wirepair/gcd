@@ -1,11 +1,11 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains the Console types.
 // API Version: 1.1
-package main
+package types
 
  
 // Number of seconds since epoch.
-type ChromeConsoleTimestamp int 
+type ChromeConsoleTimestamp float 
  
  
 // Console message.

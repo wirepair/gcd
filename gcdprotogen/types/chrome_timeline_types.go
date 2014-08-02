@@ -1,7 +1,7 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains the Timeline types.
 // API Version: 1.1
-package main
+package types
 
  
 // Current values of counters.
@@ -9,9 +9,9 @@ type ChromeTimelineCounters struct {
 	Documents int `json:"documents,omitempty"` 
 	Nodes int `json:"nodes,omitempty"` 
 	JsEventListeners int `json:"jsEventListeners,omitempty"` 
-	JsHeapSizeUsed int `json:"jsHeapSizeUsed,omitempty"` // Currently used size of JS heap.
-	GpuMemoryUsedKB int `json:"gpuMemoryUsedKB,omitempty"` // Current GPU memory usage in kilobytes.
-	GpuMemoryLimitKB int `json:"gpuMemoryLimitKB,omitempty"` // Current GPU memory limit in kilobytes.
+	JsHeapSizeUsed float `json:"jsHeapSizeUsed,omitempty"` // Currently used size of JS heap.
+	GpuMemoryUsedKB float `json:"gpuMemoryUsedKB,omitempty"` // Current GPU memory usage in kilobytes.
+	GpuMemoryLimitKB float `json:"gpuMemoryLimitKB,omitempty"` // Current GPU memory limit in kilobytes.
 }
  
  
@@ -19,8 +19,8 @@ type ChromeTimelineCounters struct {
 type ChromeTimelineTimelineEvent struct {
 	Type string `json:"type"` // Event type.
 	Data object `json:"data"` // Event data.
-	StartTime int `json:"startTime"` // Start time.
-	EndTime int `json:"endTime,omitempty"` // End time.
+	StartTime float `json:"startTime"` // Start time.
+	EndTime float `json:"endTime,omitempty"` // End time.
 	Children []*ChromeTimelineTimelineEvent `json:"children,omitempty"` // Nested records.
 	Thread string `json:"thread,omitempty"` // If present, identifies the thread that produced the event.
 	StackTrace *ChromeConsoleStackTrace `json:"stackTrace,omitempty"` // Stack trace.

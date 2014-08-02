@@ -1,7 +1,7 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains the IndexedDB types.
 // API Version: 1.1
-package main
+package types
 
  
 // Database with an array of object stores.
@@ -34,9 +34,9 @@ type ChromeIndexedDBObjectStoreIndex struct {
 // Key.
 type ChromeIndexedDBKey struct {
 	Type string `json:"type"` // Key type.
-	Number int `json:"number,omitempty"` // Number value.
+	Number float `json:"number,omitempty"` // Number value.
 	String string `json:"string,omitempty"` // String value.
-	Date int `json:"date,omitempty"` // Date value.
+	Date float `json:"date,omitempty"` // Date value.
 	Array []*ChromeIndexedDBKey `json:"array,omitempty"` // Array value.
 }
  

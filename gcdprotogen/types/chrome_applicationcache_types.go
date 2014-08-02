@@ -1,7 +1,7 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains the ApplicationCache types.
 // API Version: 1.1
-package main
+package types
 
  
 // Detailed application cache resource information.
@@ -15,9 +15,9 @@ type ChromeApplicationCacheApplicationCacheResource struct {
 // Detailed application cache information.
 type ChromeApplicationCacheApplicationCache struct {
 	ManifestURL string `json:"manifestURL"` // Manifest URL.
-	Size int `json:"size"` // Application cache size.
-	CreationTime int `json:"creationTime"` // Application cache creation time.
-	UpdateTime int `json:"updateTime"` // Application cache update time.
+	Size float `json:"size"` // Application cache size.
+	CreationTime float `json:"creationTime"` // Application cache creation time.
+	UpdateTime float `json:"updateTime"` // Application cache update time.
 	Resources []*ChromeApplicationCacheApplicationCacheResource `json:"resources"` // Application cache resources.
 }
  
