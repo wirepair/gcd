@@ -10,10 +10,17 @@ type ConsoleRequest struct {
 }
 
 type ConsoleMessage struct {
-	Column int    `json:"column",omitempty`
+	Column int    `json:"column,omitempty"`
 	Level  string `json:"level"`
 	Line   int
 	NetworkRequestId
+}
+
+func (c *ChromeTarget) Console() *ChromeConsole {
+	if c.console == nil {
+		c.console = newChromeConsole(c)
+	}
+	return c.console
 }
 
 type ChromeConsole struct {

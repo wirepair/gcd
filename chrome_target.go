@@ -21,22 +21,23 @@ type TargetInfo struct {
 }
 
 type gcdMessage struct {
-	replyCh chan string // json response channel
-	id      int64       // id to map response channels to send chans
-	data    string      // the data to send out over the websocket channel
-	method  string      // the method type
+	ReplyCh chan string // json response channel
+	Id      int64       // id to map response channels to send chans
+	Data    []byte      // the data to send out over the websocket channel
+	Type    string      // event name type.
 }
 
 type ChromeTarget struct {
-	conn    *websocket.Conn
-	console *ChromeConsole
-	input   *ChromeInput
-	network *ChromeNetwork
-	Target  *TargetInfo
-	sendCh  chan []byte
-	recvCh  chan []byte
-	doneCh  chan bool
-	sendId  int64
+	sync.RWMutex
+	replyDispatcher map[int64]chan *gcdMessage
+	conn            *websocket.Conn
+	console         *ChromeConsole
+	input           *ChromeInput
+	network         *ChromeNetwork
+	Target          *TargetInfo
+	sendCh          chan *gcdMessage
+	doneCh          chan bool
+	sendId          int64
 	/*
 		debugger    *ChromeDebugger
 		dom         *ChromeDom
@@ -49,33 +50,12 @@ type ChromeTarget struct {
 
 func newChromeTarget(port string, target *TargetInfo) *ChromeTarget {
 	conn := wsConnection(fmt.Sprintf("localhost:%s", port), target.WebSocketDebuggerUrl)
-	sendCh := make(chan []byte)
-	recvCh := make(chan []byte)
+	replier := make(map[int64]chan *gcdMessage)
+	sendCh := make(chan *gcdMessage)
 	doneCh := make(chan bool)
-	chromeTarget := &ChromeTarget{conn: conn, console: nil, Target: target, sendCh: sendCh, recvCh: recvCh, doneCh: doneCh, sendId: 0}
+	chromeTarget := &ChromeTarget{conn: conn, console: nil, Target: target, sendCh: sendCh, replyDispatcher: replier, doneCh: doneCh, sendId: 0}
 	chromeTarget.listen()
 	return chromeTarget
-}
-
-func (c *ChromeTarget) Console() *ChromeConsole {
-	if c.console == nil {
-		c.console = newChromeConsole(c)
-	}
-	return c.console
-}
-
-func (c *ChromeTarget) Input() *ChromeInput {
-	if c.input == nil {
-		c.input = newChromeInput(c)
-	}
-	return c.input
-}
-
-func (c *ChromeTarget) Network() *ChromeNetwork {
-	if c.network == nil {
-		c.network = newChromeNetwork(c)
-	}
-	return c.network
 }
 
 func (c *ChromeTarget) getId() int64 {
@@ -89,7 +69,7 @@ func (c *ChromeTarget) listen() {
 }
 
 func (c *ChromeTarget) listenWrite() {
-	log.Println("Listening write to client")
+	log.Println("Listening write for client")
 	for {
 		select {
 		// send message to the client
@@ -98,7 +78,7 @@ func (c *ChromeTarget) listenWrite() {
 			websocket.Message.Send(c.conn, string(msg))
 		// receive done from listenRead
 		case <-c.doneCh:
-			fmt.Println("listenWrite doneCh true...")
+			fmt.Println("listenWrite doneCh true, returning...")
 			c.doneCh <- true // for listenRead method
 			return
 		}
@@ -112,8 +92,8 @@ func (c *ChromeTarget) listenRead() {
 		select {
 		// receive done from listenWrite
 		case <-c.doneCh:
-			fmt.Println("listenRead doneCh true")
-			c.doneCh <- true // for listenWrite method
+			fmt.Println("listenRead doneCh true, returning")
+			c.doneCh <- true
 			return
 		// read data from websocket connection
 		default:

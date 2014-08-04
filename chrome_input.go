@@ -41,6 +41,13 @@ type MouseEventData struct {
 	ClickCount int    `json:"clickCount"`
 }
 
+func (c *ChromeTarget) Input() *ChromeInput {
+	if c.input == nil {
+		c.input = newChromeInput(c)
+	}
+	return c.input
+}
+
 type ChromeInput struct {
 	target *ChromeTarget
 }

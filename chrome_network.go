@@ -9,6 +9,13 @@ type NetworkRequest struct {
 	Method string `json:"method"`
 }
 
+func (c *ChromeTarget) Network() *ChromeNetwork {
+	if c.network == nil {
+		c.network = newChromeNetwork(c)
+	}
+	return c.network
+}
+
 type ChromeNetwork struct {
 	target *ChromeTarget
 }

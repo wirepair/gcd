@@ -1,8 +1,32 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
-// {{.Major}}.{{.Minor}}
+// This file contains the {{.Domain}} types.
+// API Version: {{.Major}}.{{.Minor}}
+package gcd
 
-{{.Types}}
+// add this API domain to ChromeTarget
+func (c *ChromeTarget) {{.Domain}} *Chrome{{.Domain}} {
+	if c.{{.Domain | ToLower }} == nil {
+		c.{{.Domain | ToLower }} = newChrome{{.Domain}}
+	}
+	return c.{{.Domain | ToLower }}
+}
 
-{{.Commands}}
 
-{{.Events}}
+type Chrome{{.Domain}} struct {
+	target *ChromeTarget
+}
+
+// start synchronous messages
+{{range $element := .SyncMethods}} 
+// {{$element.Description}}
+// {{$element.ParameterDescriptions}}
+func (c *Chrome{{.Domain}}) {{$element.Command | Title}}({{$element.Parameters}}) {{$element.ReturnVals}} {
+	
+}
+
+{{ end }}
+
+{{range $element := .AsyncMethods}} 
+{{ $element }} 
+{{ end }}
+
