@@ -154,14 +154,26 @@ func getParameters(api *GeneratedApi, domain string, v ParamInterface, p *Proper
 	if api.TypesRequired == false && strings.Contains(json, "types.") {
 		api.TypesRequired = true
 	}
+	// This is probably way wrong.
+	if json == "object" {
+		json = "interface{}"
+	} else if json == "[]object" {
+		json = "[]interface{}"
+	}
 	v.AddParam(p.Name, json, p.Description)
 }
 
 func getReturnTypes(api *GeneratedApi, domain string, v ReturnInterface, r *CommandReturns) {
 	api.JsonRequired = true
 	json := jsonType(domain, r.Items, r.Ref, r.Type, true)
-	if r.Type == "array" {
-		fmt.Printf("r.Items: %#v\n", r.Items)
+	if api.TypesRequired == false && strings.Contains(json, "types.") {
+		api.TypesRequired = true
+	}
+	// This is probably way wrong.
+	if json == "object" {
+		json = "interface{}"
+	} else if json == "[]object" {
+		json = "[]interface{}"
 	}
 	fmt.Printf("jsonType: %s Ref: %s Type: %s\n", json, r.Ref, r.Type)
 	// having problems with int in map[string]interface{} json Unmarshalling...

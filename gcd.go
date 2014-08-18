@@ -12,20 +12,20 @@ import (
 	"sync"
 )
 
-type ChromeDebugger struct {
+type Gcd struct {
 	sync.RWMutex  // for locking pages (i.e. websocket clients)
 	Targets       []*ChromeTarget
 	chromeProcess *os.Process
 	port          string
 }
 
-func NewChromeDebugger() *ChromeDebugger {
-	c := &ChromeDebugger{}
+func NewChromeDebugger() *Gcd {
+	c := &Gcd{}
 	c.Targets = make([]*ChromeTarget, 0)
 	return c
 }
 
-func (c *ChromeDebugger) StartProcess(exePath, userDir, port string) {
+func (c *Gcd) StartProcess(exePath, userDir, port string) {
 	c.port = port
 	dir := fmt.Sprintf("--user-data-dir=%s", userDir)
 	debugPort := fmt.Sprintf("--remote-debugging-port=%s", port)
@@ -41,11 +41,11 @@ func (c *ChromeDebugger) StartProcess(exePath, userDir, port string) {
 	}()
 }
 
-func (c *ChromeDebugger) ExitProcess() error {
+func (c *Gcd) ExitProcess() error {
 	return c.chromeProcess.Kill()
 }
 
-func (c *ChromeDebugger) GetTargets() []*ChromeTarget {
+func (c *Gcd) GetTargets() []*ChromeTarget {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/json", c.port))
 	if err != nil {
 		log.Fatalf("%v\n", err)

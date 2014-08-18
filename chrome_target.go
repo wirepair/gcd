@@ -77,27 +77,39 @@ type gcdMessage struct {
 
 type ChromeTarget struct {
 	sync.RWMutex
-	replyDispatcher map[int64]chan *gcdMessage
-	eventDispatcher map[string]func(*ChromeTarget, []byte)
-	conn            *websocket.Conn
-	console         *ChromeConsole
-	input           *ChromeInput
-	network         *ChromeNetwork
-	domstorage      *ChromeDOMStorage
-	page            *ChromePage
-	memory          *ChromeMemory
-	Target          *TargetInfo
-	sendCh          chan *gcdMessage
-	doneCh          chan bool
-	sendId          int64
-	/*
-		debugger    *ChromeDebugger
-		dom         *ChromeDom
-		domDebugger *ChromeDomDebugger
-
-		runtime     *ChromeRuntime
-		timeline    *ChromeTimeline
-	*/
+	replyDispatcher   map[int64]chan *gcdMessage
+	eventDispatcher   map[string]func(*ChromeTarget, []byte)
+	conn              *websocket.Conn
+	applicationcache  *ChromeApplicationCache
+	canvas            *ChromeCanvas
+	console           *ChromeConsole
+	css               *ChromeCSS
+	database          *ChromeDatabase
+	debugger          *ChromeDebugger
+	deviceorientation *ChromeDeviceOrientation
+	dom               *ChromeDOM
+	domdebugger       *ChromeDOMDebugger
+	domstorage        *ChromeDOMStorage
+	filesystem        *ChromeFileSystem
+	geolocation       *ChromeGeolocation
+	heapprofiler      *ChromeHeapProfiler
+	indexeddb         *ChromeIndexedDB
+	input             *ChromeInput
+	inspector         *ChromeInspector
+	layertree         *ChromeLayerTree
+	memory            *ChromeMemory
+	network           *ChromeNetwork
+	page              *ChromePage
+	power             *ChromePower
+	profiler          *ChromeProfiler
+	runtime           *ChromeRuntime
+	timeline          *ChromeTimeline
+	tracing           *ChromeTracing
+	worker            *ChromeWorker
+	Target            *TargetInfo
+	sendCh            chan *gcdMessage
+	doneCh            chan bool
+	sendId            int64
 }
 
 func newChromeTarget(port string, target *TargetInfo) *ChromeTarget {

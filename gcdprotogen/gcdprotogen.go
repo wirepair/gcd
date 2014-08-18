@@ -78,14 +78,24 @@ var templates *template.Template
 var funcMap template.FuncMap
 
 func modifyReserved(input string) string {
-	if input == "type" {
+	switch input {
+	case "type":
 		return "theType"
+	case "range":
+		return "theRange"
+	case "interface":
+		return "theInterface"
+	case "for":
+		return "theFor"
 	}
 	return input
 }
 
 func nullType(input string) string {
 	if strings.Contains(input, "types.") {
+		return "nil"
+	}
+	if strings.Contains(input, "[]") {
 		return "nil"
 	}
 	fmt.Printf("INPUT: %s\n", input)
@@ -100,6 +110,8 @@ func nullType(input string) string {
 		return "[]"
 	case "bool":
 		return "false"
+	case "interface{}":
+		return "nil"
 	}
 	return ""
 }
@@ -143,26 +155,26 @@ func main() {
 	for _, v := range api.Domains {
 		output := NewOutput(api.Version.Major, api.Version.Minor, v.Domain)
 		fmt.Printf("%s\n", v.Domain)
-		/*
-			if v.Types != nil && len(v.Types) > 0 {
-				err := createTypes(output, v.Types)
-				if err != nil {
-					log.Fatal(err)
-				}
-				writeTypes(output)
-			}
 
-			if v.Events != nil && len(v.Events) > 0 {
-					err := createEvents(output, v.Events)
-				}
-		*/
+		if v.Types != nil && len(v.Types) > 0 {
+			err := createTypes(output, v.Types)
+			if err != nil {
+				log.Fatal(err)
+			}
+			writeTypes(output)
+		}
+
 		if v.Commands != nil && len(v.Commands) > 0 {
 			err := createCommands(output, v.Commands)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
-
+		/*
+			if v.Events != nil && len(v.Events) > 0 {
+					err := createEvents(output, v.Events)
+				}
+		*/
 	}
 }
 
@@ -184,4 +196,44 @@ func filterRef(currDomain, ref string) string {
 		return currDomain + ref
 	}
 	return strings.Replace(ref, ".", "", -1)
+}
+
+func jsonType(domain string, items *Item, ref, valType string, typeRequired bool) string {
+	ret := ""
+	if typeRequired {
+		ret += "types."
+	}
+	// if we are a reference type, use that.
+	if ref != "" {
+		return "*" + ret + "Chrome" + filterRef(domain, ref)
+	}
+
+	switch valType {
+	// No idea what any type means, see DOM.ShapeOutsideInfo (treat as string???)
+	case "any":
+		return "string"
+	case "integer":
+		return "int"
+	case "number":
+		return "float64"
+	case "boolean":
+		return "bool"
+	case "array":
+		// we are an array, see if *that* is a ref type.
+		fmt.Printf("type is array: %#v\n", items)
+		if items != nil && items.Ref != "" {
+			return "[]*" + ret + "Chrome" + filterRef(domain, items.Ref)
+		} else {
+			if items == nil {
+				return "[]" + jsonType(domain, items, "", "", typeRequired)
+			}
+			// we are an array of basic types, recursively call with the *item's* type.
+			return "[]" + jsonType(domain, items, "", items.Type, typeRequired)
+		}
+	default:
+		if items != nil && items.Ref != "" {
+			return "*" + ret + "Chrome" + filterRef(domain, items.Ref)
+		}
+	}
+	return valType
 }
