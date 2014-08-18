@@ -75,14 +75,24 @@ const (
 )
 
 var templates *template.Template
+var funcMap template.FuncMap
+
+func modifyReserved(input string) string {
+	if input == "type" {
+		return "theType"
+	}
+	return input
+}
 
 func init() {
-	var err error
 	flag.StringVar(&file, "file", "protocol.json", "open remote debugger protocol file.")
-	templates, err = template.ParseFiles("type_template.txt")
-	if err != nil {
-		log.Fatalf("error opening templates: %s\n", err)
+	funcMap := template.FuncMap{
+		"Title":    strings.Title,
+		"ToLower":  strings.ToLower,
+		"Reserved": modifyReserved,
 	}
+	// kinda dumb. but need to map functions first, but need a named template first and it must match the first template in ParseFiles.
+	templates = template.Must(template.New("type_template.txt").Funcs(funcMap).ParseFiles("type_template.txt", "code_template.txt"))
 }
 
 func main() {

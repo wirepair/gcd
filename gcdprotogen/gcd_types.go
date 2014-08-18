@@ -38,7 +38,7 @@ func createTypes(output *Output, types []*Type) error {
 		}
 		output.Types = append(output.Types, struc)
 		if !struc.IsObject {
-			struc.NonObjectLines = fmt.Sprintf(nonStruct, struc.Description, struc.Name, jsonType(output.Domain, t.Items, "", t.Type), struc.EnumVals)
+			struc.NonObjectLines = fmt.Sprintf(nonStruct, struc.Description, struc.Name, jsonType(output.Domain, t.Items, "", t.Type, false), struc.EnumVals)
 		}
 	}
 	return nil
@@ -58,7 +58,7 @@ func createObjectType(struc *GeneratedStruct, props []*Property) {
 			description = "// " + prop.Description
 		}
 		newStruc := hasNestedType(struc, prop)
-		realType := jsonType(struc.Out.Domain, prop.Items, prop.Ref, prop.Type)
+		realType := jsonType(struc.Out.Domain, prop.Items, prop.Ref, prop.Type, false)
 		if realType == "object" {
 			fmt.Printf("realType was object for %s in %s setting to interface{}", prop.Name, struc.Out.Domain, prop, newStruc)
 			realType = "interface{}"
@@ -90,14 +90,14 @@ func hasNestedType(struc *GeneratedStruct, prop *Property) *GeneratedStruct {
 	return newStruc
 }
 
-func createMethods(api *DebuggerApi) error {
-	return nil
-}
-
-func jsonType(domain string, items *Item, ref, valType string) string {
+func jsonType(domain string, items *Item, ref, valType string, typeRequired bool) string {
+	ret := ""
+	if typeRequired {
+		ret += "types."
+	}
 	// if we are a reference type, use that.
 	if ref != "" {
-		return "*Chrome" + filterRef(domain, ref)
+		return "*" + ret + "Chrome" + filterRef(domain, ref)
 	}
 
 	switch valType {
@@ -112,15 +112,19 @@ func jsonType(domain string, items *Item, ref, valType string) string {
 		return "bool"
 	case "array":
 		// we are an array, see if *that* is a ref type.
+		fmt.Printf("type is array: %#v\n", items)
 		if items != nil && items.Ref != "" {
-			return "[]*Chrome" + filterRef(domain, items.Ref)
+			return "[]*" + ret + "Chrome" + filterRef(domain, items.Ref)
 		} else {
+			if items == nil {
+				return "[]" + ret + jsonType(domain, items, "", "", typeRequired)
+			}
 			// we are an array of basic types, recursively call with the *item's* type.
-			return "[]" + jsonType(domain, items, "", items.Type)
+			return "[]" + ret + jsonType(domain, items, "", items.Type, typeRequired)
 		}
 	default:
 		if items != nil && items.Ref != "" {
-			return "*Chrome" + filterRef(domain, items.Ref)
+			return "*" + ret + "Chrome" + filterRef(domain, items.Ref)
 		}
 	}
 	return valType

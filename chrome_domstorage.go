@@ -23,51 +23,33 @@ func newChromeDOMStorage(target *ChromeTarget) *ChromeDOMStorage {
 }
 
 func (c *ChromeDOMStorage) Enable() (*ChromeResponse, error) {
-	return sendDOMStorageRequest(c.target.sendCh, c.target.getId(), "DOMStorage.enable")
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMStorage.enable"})
 }
 
 func (c *ChromeDOMStorage) Disable() (*ChromeResponse, error) {
-	return sendDOMStorageRequest(c.target.sendCh, c.target.getId(), "DOMStorage.disable")
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMStorage.enable"})
 }
 
 func (c *ChromeDOMStorage) GetDOMStorageItems(storageID *types.ChromeDOMStorageStorageId) (*types.ChromeDOMStorageItem, error) {
-	sendCh := c.target.sendCh
 	id := c.target.getId()
-	paramRequest := make(map[string]interface{}, 0)
+	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["storageId"] = storageID
 	req := &ParamRequest{Id: id, Method: "DOMStorage.getDOMStorageItems", Params: paramRequest}
-	data, err := json.Marshal(req)
+	recvCh, err := sendCustomReturn(c.target.sendCh, req)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Will send: %s\n", data)
-	recvCh := make(chan *gcdMessage)
-	sendMsg := &gcdMessage{ReplyCh: recvCh, Id: id, Data: []byte(data)}
-	sendCh <- sendMsg
 	resp := <-recvCh
+	fmt.Printf("%s\n", string(resp.Data))
 	response := &types.ChromeDOMStorageItem{}
-	fmt.Printf("GetDOMStorageItems: %s\n", string(resp.Data))
 	err = json.Unmarshal(resp.Data, response)
 	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
 		return nil, err
 	}
 	return response, nil
-}
-
-func sendDOMStorageRequest(sendCh chan<- *gcdMessage, id int64, method string) (*ChromeResponse, error) {
-	req := &ChromeRequest{Id: id, Method: method}
-	data, err := json.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
-	recvCh := make(chan *gcdMessage)
-	sendMsg := &gcdMessage{ReplyCh: recvCh, Id: id, Data: []byte(data)}
-	sendCh <- sendMsg
-	resp := <-recvCh
-	consoleResponse := &ChromeResponse{}
-	err = json.Unmarshal(resp.Data, consoleResponse)
-	if err != nil {
-		return nil, err
-	}
-	return consoleResponse, nil
 }

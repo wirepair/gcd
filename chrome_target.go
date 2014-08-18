@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strconv"
 	"sync"
 	"sync/atomic"
 )
@@ -23,13 +24,37 @@ type ChromeRequest struct {
 	Method string `json:"method"`
 }
 
+// default chrome error response to an invalid request.
+type ChromeErrorResponse struct {
+	Id    int64        `json:"id"`    // the request Id that this is a response of
+	Error *ChromeError `json:"error"` // the error object
+}
+
+// An error object returned from a request
+type ChromeError struct {
+	Code    int64  `json:"code"`    // the error code
+	Message string `json:"message"` // the error message
+}
+
+// A gcd type for reporting chrome request errors
+type ChromeRequestErr struct {
+	Resp *ChromeErrorResponse // a ref to the error response to be used to generate the user friendly error string
+}
+
+// user friendly error response
+func (cerr *ChromeRequestErr) Error() string {
+	return "request " + strconv.FormatInt(cerr.Resp.Id, 10) + " failed, code: " + strconv.FormatInt(cerr.Resp.Error.Code, 10) + " msg: " + cerr.Resp.Error.Message
+}
+
 // default request object that has parameters.
 type ParamRequest struct {
 	Id     int64       `json:"id"`
 	Method string      `json:"method"`
-	Params interface{} `json:"params"`
+	Params interface{} `json:"params,omitempty"`
 }
 
+// Defines the 'tab' or target for this chrome instance, can be multiple and background processes
+// are included (not just visual tabs)
 type TargetInfo struct {
 	Description          string `json:"description"`
 	DevtoolsFrontendUrl  string `json:"devtoolsFrontendUrl"`
@@ -41,6 +66,7 @@ type TargetInfo struct {
 	WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
 }
 
+// An internal message object used for components and ChromeTarget to communicate back and forth
 type gcdMessage struct {
 	ReplyCh chan *gcdMessage // json response channel
 	Id      int64            // id to map response channels to send chans
@@ -58,6 +84,8 @@ type ChromeTarget struct {
 	input           *ChromeInput
 	network         *ChromeNetwork
 	domstorage      *ChromeDOMStorage
+	page            *ChromePage
+	memory          *ChromeMemory
 	Target          *TargetInfo
 	sendCh          chan *gcdMessage
 	doneCh          chan bool
@@ -66,7 +94,7 @@ type ChromeTarget struct {
 		debugger    *ChromeDebugger
 		dom         *ChromeDom
 		domDebugger *ChromeDomDebugger
-		page        *ChromePage
+
 		runtime     *ChromeRuntime
 		timeline    *ChromeTimeline
 	*/
@@ -160,7 +188,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	f := &responseHeader{}
 	err := json.Unmarshal(msg, f)
 	if err != nil {
-		log.Fatalf("error reading response data: %v\n", err)
+		log.Fatalf("error reading response data from chrome target: %v\n", err)
 	}
 
 	c.Lock()
@@ -196,4 +224,34 @@ func wsConnection(addr, url string) *websocket.Conn {
 		log.Fatalf("WebSocket handshake error: %v\n", errWS)
 	}
 	return client
+}
+
+func sendCustomReturn(sendCh chan<- *gcdMessage, paramRequest *ParamRequest) (<-chan *gcdMessage, error) {
+	data, err := json.Marshal(paramRequest)
+	if err != nil {
+		return nil, err
+	}
+	log.Print(string(data))
+	recvCh := make(chan *gcdMessage)
+	sendMsg := &gcdMessage{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
+	sendCh <- sendMsg
+	return recvCh, nil
+}
+
+func sendDefaultRequest(sendCh chan<- *gcdMessage, paramRequest *ParamRequest) (*ChromeResponse, error) {
+	req := &ChromeRequest{Id: paramRequest.Id, Method: paramRequest.Method}
+	data, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+	recvCh := make(chan *gcdMessage)
+	sendMsg := &gcdMessage{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
+	sendCh <- sendMsg
+	resp := <-recvCh
+	chromeResponse := &ChromeResponse{}
+	err = json.Unmarshal(resp.Data, chromeResponse)
+	if err != nil {
+		return nil, err
+	}
+	return chromeResponse, nil
 }

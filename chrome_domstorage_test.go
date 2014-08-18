@@ -31,7 +31,10 @@ func TestDOMStorage(t *testing.T) {
 	time.Sleep(1 * time.Second)
 	fmt.Printf("Sending GetDOMStorageItems...")
 	i := &types.ChromeDOMStorageStorageId{SecurityOrigin: "www.google.com", IsLocalStorage: true}
-	itemResp, _ := storage.GetDOMStorageItems(i)
+	itemResp, err := storage.GetDOMStorageItems(i)
+	if err != nil {
+		t.Errorf("ERROR: %v\n", err)
+	}
 	fmt.Printf("Sent GetDOMStorageItems... itemResp: %v\n", itemResp)
 	time.Sleep(1 * time.Second)
 	fmt.Printf("Sending Disable...")

@@ -1,16 +1,19 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
-// This file contains the {{.Domain}} types.
+// This file contains the {{.Domain}} commands.
 // API Version: {{.Major}}.{{.Minor}}
+{{ $api := . }}
 package gcd
 
+
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
+	{{ if $api.TypesRequired }}"github.com/wirepair/gcd/gcdprotogen/types"{{ end }}
+	{{ if $api.JsonRequired }}"encoding/json"{{ end }}
 )
 
 // add this API domain to ChromeTarget
-func (c *ChromeTarget) {{.Domain}} *Chrome{{.Domain}} {
+func (c *ChromeTarget) {{.Domain}}() *Chrome{{.Domain}} {
 	if c.{{.Domain | ToLower }} == nil {
-		c.{{.Domain | ToLower }} = newChrome{{.Domain}}
+		c.{{.Domain | ToLower }} = newChrome{{.Domain}}(c)
 	}
 	return c.{{.Domain | ToLower }}
 }
@@ -20,17 +23,62 @@ type Chrome{{.Domain}} struct {
 	target *ChromeTarget
 }
 
-// start synchronous messages
-{{range $element := .SyncMethods}} 
+func newChrome{{.Domain}}(target *ChromeTarget) *Chrome{{.Domain}} {
+	c := &Chrome{{.Domain}}{target: target}
+	return c
+}
+
+// start non parameterized commands{{range $element := .NoParamReturnCalls}} 
 // {{$element.Description}}
-// {{$element.ParameterDescriptions}}
-func (c *Chrome{{.Domain}}) {{$element.Command | Title}}({{$element.Parameters}}) {{$element.ReturnVals}} {
-	
+func (c *Chrome{{$api.Domain}}) {{.Method | Title}}() (*ChromeResponse, error) {
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "{{$api.Domain}}.{{.Method}}"})
+}
+{{ end }}
+// end non parameterized commands
+
+// start parameterized commands with no special return types
+
+{{range $element := .ParamCalls}}// {{.Method}} - {{$element.Description}}{{range $paramDescription := .ParamDescriptions}}
+// {{$paramDescription}}{{ end }}
+func (c *Chrome{{$api.Domain}}) {{.Method | Title}}({{.ParamDefinition}}) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, {{.ParamLen}}){{range $param := $element.ParamNames}}
+	paramRequest["{{$param}}"] = {{$param | Reserved}}{{ end }}
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "{{$api.Domain}}.{{.Method}}", Params: paramRequest})
 }
 
 {{ end }}
+// end parameterized commands with no special return types
 
-{{range $element := .AsyncMethods}} 
-{{ $element }} 
+
+// start commands with no parameters but special return types
+
+{{range $element := .ReturnCalls}}// {{.Method}} - {{$element.Description}}
+// Returns - {{range $returnDescription := .ReturnDescriptions}}
+// {{$returnDescription}}{{ end }}
+func (c *Chrome{{$api.Domain}}) {{.Method | Title}}() ({{range $rets := .Returns}}{{$rets.Type}}, {{end}}error) {	{{range $rets := .Returns}}
+	var {{$rets.Name | Reserved}} {{$rets.Type}} {{end}}
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "{{$api.Domain}}.{{.Method}}"})
+	resp := <-recvCh
+
+	var chromeData interface{}
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return {{range $rets := .Returns}}{{$rets.Name | Reserved}}, {{end}}&ChromeRequestErr{Resp: cerr}
+		}
+		return {{range $rets := .Returns}}{{$rets.Name | Reserved}}, {{end}}err
+	}
+
+	m := chromeData.(map[string]interface{})
+	if r, ok := m["result"]; ok {
+		results := r.(map[string]interface{}){{range $rets := .Returns}}
+		{{$rets.Name | Reserved}} = results["{{$rets.Name | Reserved}}"].({{$rets.Type}}){{end}}
+	}
+	return {{range $rets := .Returns}}{{$rets.Name | Reserved}}, {{end}}nil
+}
+
 {{ end }}
+// end commands with no parameters but special return types
 

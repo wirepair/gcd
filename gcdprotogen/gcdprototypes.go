@@ -82,6 +82,7 @@ type CommandReturns struct {
 	Name        string `json:"name"`
 	Type        string `json:"type,omitempty"`
 	Ref         string `json:"$ref,omitempty"`
+	Items       *Item  `json:"items,omitempty"`
 	Description string `json:"description,omitempty"`
 }
 
