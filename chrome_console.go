@@ -4,18 +4,6 @@ import (
 	"encoding/json"
 )
 
-type ConsoleRequest struct {
-	Id     int64  `json:"id"`
-	Method string `json:"method"`
-}
-
-type ConsoleMessage struct {
-	Column int    `json:"column,omitempty"`
-	Level  string `json:"level"`
-	Line   int
-	NetworkRequestId
-}
-
 func (c *ChromeTarget) Console() *ChromeConsole {
 	if c.console == nil {
 		c.console = newChromeConsole(c)
@@ -32,26 +20,32 @@ func newChromeConsole(target *ChromeTarget) *ChromeConsole {
 	return c
 }
 
-func (c *ChromeConsole) Enable() error {
-	req := &ConsoleRequest{Id: c.target.getId(), Method: "Console.enable"}
-	return sendRequest(c.target.sendCh, req)
+func (c *ChromeConsole) Enable() (*ChromeResponse, error) {
+	return sendConsoleRequest(c.target.sendCh, c.target.getId(), "Console.enable")
 }
 
-func (c *ChromeConsole) Disable() error {
-	req := &ConsoleRequest{Id: c.target.getId(), Method: "Console.disable"}
-	return sendRequest(c.target.sendCh, req)
+func (c *ChromeConsole) Disable() (*ChromeResponse, error) {
+	return sendConsoleRequest(c.target.sendCh, c.target.getId(), "Console.disable")
 }
 
-func (c *ChromeConsole) ClearMessages() error {
-	req := &ConsoleRequest{Id: c.target.getId(), Method: "Console.clearMessages"}
-	return sendRequest(c.target.sendCh, req)
+func (c *ChromeConsole) ClearMessages() (*ChromeResponse, error) {
+	return sendConsoleRequest(c.target.sendCh, c.target.getId(), "Console.clearMessages")
 }
 
-func sendRequest(sendCh chan<- []byte, req *ConsoleRequest) error {
+func sendConsoleRequest(sendCh chan<- *gcdMessage, id int64, method string) (*ChromeResponse, error) {
+	req := &ChromeRequest{Id: id, Method: method}
 	data, err := json.Marshal(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	sendCh <- data
-	return nil
+	recvCh := make(chan *gcdMessage)
+	sendMsg := &gcdMessage{ReplyCh: recvCh, Id: id, Data: []byte(data)}
+	sendCh <- sendMsg
+	resp := <-recvCh
+	consoleResponse := &ChromeResponse{}
+	err = json.Unmarshal(resp.Data, consoleResponse)
+	if err != nil {
+		return nil, err
+	}
+	return consoleResponse, nil
 }

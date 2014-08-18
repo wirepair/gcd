@@ -34,9 +34,9 @@ type ChromeIndexedDBObjectStoreIndex struct {
 // Key.
 type ChromeIndexedDBKey struct {
 	Type string `json:"type"` // Key type.
-	Number float `json:"number,omitempty"` // Number value.
+	Number float64 `json:"number,omitempty"` // Number value.
 	String string `json:"string,omitempty"` // String value.
-	Date float `json:"date,omitempty"` // Date value.
+	Date float64 `json:"date,omitempty"` // Date value.
 	Array []*ChromeIndexedDBKey `json:"array,omitempty"` // Array value.
 }
  

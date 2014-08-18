@@ -24,14 +24,14 @@ type ChromeLayerTreeLayer struct {
 	LayerId *ChromeLayerTreeLayerId `json:"layerId"` // The unique id for this layer.
 	ParentLayerId *ChromeLayerTreeLayerId `json:"parentLayerId,omitempty"` // The id of parent (not present for root).
 	BackendNodeId *ChromeDOMBackendNodeId `json:"backendNodeId,omitempty"` // The backend id for the node associated with this layer.
-	OffsetX float `json:"offsetX"` // Offset from parent layer, X coordinate.
-	OffsetY float `json:"offsetY"` // Offset from parent layer, Y coordinate.
-	Width float `json:"width"` // Layer width.
-	Height float `json:"height"` // Layer height.
-	Transform []float `json:"transform,omitempty"` // Transformation matrix for layer, default is identity matrix
-	AnchorX float `json:"anchorX,omitempty"` // Transform anchor point X, absent if no transform specified
-	AnchorY float `json:"anchorY,omitempty"` // Transform anchor point Y, absent if no transform specified
-	AnchorZ float `json:"anchorZ,omitempty"` // Transform anchor point Z, absent if no transform specified
+	OffsetX float64 `json:"offsetX"` // Offset from parent layer, X coordinate.
+	OffsetY float64 `json:"offsetY"` // Offset from parent layer, Y coordinate.
+	Width float64 `json:"width"` // Layer width.
+	Height float64 `json:"height"` // Layer height.
+	Transform []float64 `json:"transform,omitempty"` // Transformation matrix for layer, default is identity matrix
+	AnchorX float64 `json:"anchorX,omitempty"` // Transform anchor point X, absent if no transform specified
+	AnchorY float64 `json:"anchorY,omitempty"` // Transform anchor point Y, absent if no transform specified
+	AnchorZ float64 `json:"anchorZ,omitempty"` // Transform anchor point Z, absent if no transform specified
 	PaintCount int `json:"paintCount"` // Indicates how many time this layer has painted.
 	Invisible bool `json:"invisible,omitempty"` // Set if layer is not visible.
 	ScrollRects []*ChromeLayerTreeScrollRect `json:"scrollRects,omitempty"` // Rectangles scrolling on main thread only.
@@ -39,5 +39,5 @@ type ChromeLayerTreeLayer struct {
  
  
 // Array of timings, one per paint step.
-type ChromeLayerTreePaintProfile []float 
+type ChromeLayerTreePaintProfile []float64 
  

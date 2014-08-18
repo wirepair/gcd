@@ -58,8 +58,8 @@ type ChromeCSSCSSStyleSheetHeader struct {
 	Disabled bool `json:"disabled"` // Denotes whether the stylesheet is disabled.
 	HasSourceURL bool `json:"hasSourceURL,omitempty"` // Whether the sourceURL field value comes from the sourceURL comment.
 	IsInline bool `json:"isInline"` // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
-	StartLine float `json:"startLine"` // Line offset of the stylesheet within the resource (zero based).
-	StartColumn float `json:"startColumn"` // Column offset of the stylesheet within the resource (zero based).
+	StartLine float64 `json:"startLine"` // Line offset of the stylesheet within the resource (zero based).
+	StartColumn float64 `json:"startColumn"` // Column offset of the stylesheet within the resource (zero based).
 }
  
  
@@ -136,16 +136,16 @@ type ChromeCSSMediaQuery []*ChromeCSSMediaQueryExpression
  
 // Media query expression data.
 type ChromeCSSMediaQueryExpression struct {
-	Value float `json:"value"` // Media query expression value.
+	Value float64 `json:"value"` // Media query expression value.
 	Unit string `json:"unit"` // Media query expression units.
 	Feature string `json:"feature"` // Media query expression feature.
-	ComputedLength float `json:"computedLength,omitempty"` // Computed length of media query expression (if applicable).
+	ComputedLength float64 `json:"computedLength,omitempty"` // Computed length of media query expression (if applicable).
 }
  
  
 // Information about amount of glyphs that were rendered with given font.
 type ChromeCSSPlatformFontUsage struct {
 	FamilyName string `json:"familyName"` // Font's family name reported by platform.
-	GlyphCount float `json:"glyphCount"` // Amount of glyphs that were rendered with this font.
+	GlyphCount float64 `json:"glyphCount"` // Amount of glyphs that were rendered with this font.
 }
  

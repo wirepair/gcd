@@ -1,7 +1,7 @@
 package gcd
 
 import (
-	"encoding/json"
+//"encoding/json"
 )
 
 type NetworkRequest struct {
@@ -25,6 +25,7 @@ func newChromeNetwork(target *ChromeTarget) *ChromeNetwork {
 	return c
 }
 
+/*
 func (c *ChromeNetwork) CanClearBrowserCache() error {
 	req := &KeyEvent{Id: c.target.getId(), Method: "Network.CanClearBrowserCache"}
 	data, err := json.Marshal(req)
@@ -44,3 +45,4 @@ func (c *ChromeConsole) CanClearBrowserCookies() error {
 	c.target.sendCh <- data
 	return nil
 }
+*/

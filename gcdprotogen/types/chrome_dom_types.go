@@ -67,12 +67,12 @@ type ChromeDOMRGBA struct {
 	R int `json:"r"` // The red component, in the [0-255] range.
 	G int `json:"g"` // The green component, in the [0-255] range.
 	B int `json:"b"` // The blue component, in the [0-255] range.
-	A float `json:"a,omitempty"` // The alpha component, in the [0-1] range (default: 1).
+	A float64 `json:"a,omitempty"` // The alpha component, in the [0-1] range (default: 1).
 }
  
  
 // An array of quad vertices, x immediately followed by y for each point, points clock-wise.
-type ChromeDOMQuad []float 
+type ChromeDOMQuad []float64 
  
  
 // Box model.
@@ -97,10 +97,10 @@ type ChromeDOMShapeOutsideInfo struct {
  
 // Rectangle.
 type ChromeDOMRect struct {
-	X float `json:"x"` // X coordinate
-	Y float `json:"y"` // Y coordinate
-	Width float `json:"width"` // Rectangle width
-	Height float `json:"height"` // Rectangle height
+	X float64 `json:"x"` // X coordinate
+	Y float64 `json:"y"` // Y coordinate
+	Width float64 `json:"width"` // Rectangle width
+	Height float64 `json:"height"` // Rectangle height
 }
  
  

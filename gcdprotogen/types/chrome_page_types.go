@@ -44,7 +44,7 @@ type ChromePageFrameResourceTree struct {
  
 // Search match for resource.
 type ChromePageSearchMatch struct {
-	LineNumber float `json:"lineNumber"` // Line number in resource content.
+	LineNumber float64 `json:"lineNumber"` // Line number in resource content.
 	LineContent string `json:"lineContent"` // Line with match content.
 }
  
@@ -55,7 +55,7 @@ type ChromePageCookie struct {
 	Value string `json:"value"` // Cookie value.
 	Domain string `json:"domain"` // Cookie domain.
 	Path string `json:"path"` // Cookie path.
-	Expires float `json:"expires"` // Cookie expires.
+	Expires float64 `json:"expires"` // Cookie expires.
 	Size int `json:"size"` // Cookie size.
 	HttpOnly bool `json:"httpOnly"` // True if cookie is http-only.
 	Secure bool `json:"secure"` // True if cookie is secure.
@@ -77,8 +77,8 @@ type ChromePageNavigationEntry struct {
  
 // Quota information
 type ChromePageQuota struct {
-	Temporary float `json:"temporary"` // Quota for temporary storage shared among all security origins
-	Persistent float `json:"persistent"` // Quota for persistent storage for the security origin.
+	Temporary float64 `json:"temporary"` // Quota for temporary storage shared among all security origins
+	Persistent float64 `json:"persistent"` // Quota for persistent storage for the security origin.
 }
  
  
@@ -93,32 +93,32 @@ type ChromePageUsage struct {
 // Usage information for a client and storage type
 type ChromePageUsageItem struct {
 	Id string `json:"id"` // Item id.
-	Value float `json:"value"` // Item usage value.
+	Value float64 `json:"value"` // Item usage value.
 }
  
  
 // Visible page viewport
 type ChromePageViewport struct {
-	ScrollX float `json:"scrollX"` // X scroll offset in CSS pixels.
-	ScrollY float `json:"scrollY"` // Y scroll offset in CSS pixels.
-	ContentsWidth float `json:"contentsWidth"` // Contents width in CSS pixels.
-	ContentsHeight float `json:"contentsHeight"` // Contents height in CSS pixels.
-	PageScaleFactor float `json:"pageScaleFactor"` // Page scale factor.
+	ScrollX float64 `json:"scrollX"` // X scroll offset in CSS pixels.
+	ScrollY float64 `json:"scrollY"` // Y scroll offset in CSS pixels.
+	ContentsWidth float64 `json:"contentsWidth"` // Contents width in CSS pixels.
+	ContentsHeight float64 `json:"contentsHeight"` // Contents height in CSS pixels.
+	PageScaleFactor float64 `json:"pageScaleFactor"` // Page scale factor.
 }
  
  
 // Screencast frame metadata
 type ChromePageScreencastFrameMetadata struct {
-	DeviceScaleFactor float `json:"deviceScaleFactor"` // Device scale factor.
+	DeviceScaleFactor float64 `json:"deviceScaleFactor"` // Device scale factor.
 	Viewport *ChromeDOMRect `json:"viewport"` // Viewport in CSS pixels.
-	OffsetTop float `json:"offsetTop,omitempty"` // Top offset in DIP.
-	OffsetBottom float `json:"offsetBottom,omitempty"` // Bottom offset in DIP.
-	PageScaleFactor float `json:"pageScaleFactor"` // Page scale factor.
-	PageScaleFactorMin float `json:"pageScaleFactorMin"` // Page scale factor min.
-	PageScaleFactorMax float `json:"pageScaleFactorMax"` // Page scale factor max.
-	DeviceWidth float `json:"deviceWidth"` // Device screen width in DIP.
-	DeviceHeight float `json:"deviceHeight"` // Device screen height in DIP.
-	ScrollOffsetX float `json:"scrollOffsetX"` // Position of horizontal scroll in CSS pixels.
-	ScrollOffsetY float `json:"scrollOffsetY"` // Position of vertical scroll in CSS pixels.
+	OffsetTop float64 `json:"offsetTop,omitempty"` // Top offset in DIP.
+	OffsetBottom float64 `json:"offsetBottom,omitempty"` // Bottom offset in DIP.
+	PageScaleFactor float64 `json:"pageScaleFactor"` // Page scale factor.
+	PageScaleFactorMin float64 `json:"pageScaleFactorMin"` // Page scale factor min.
+	PageScaleFactorMax float64 `json:"pageScaleFactorMax"` // Page scale factor max.
+	DeviceWidth float64 `json:"deviceWidth"` // Device screen width in DIP.
+	DeviceHeight float64 `json:"deviceHeight"` // Device screen height in DIP.
+	ScrollOffsetX float64 `json:"scrollOffsetX"` // Position of horizontal scroll in CSS pixels.
+	ScrollOffsetY float64 `json:"scrollOffsetY"` // Position of vertical scroll in CSS pixels.
 }
  

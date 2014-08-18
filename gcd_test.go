@@ -1,10 +1,22 @@
 package gcd
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/wirepair/gcd/gcdprotogen/types"
+	"log"
 	"testing"
 	"time"
 )
+
+type EventData struct {
+	Method string         `json:"method"`
+	Params *ConsoleParams `json:"params"`
+}
+
+type ConsoleParams struct {
+	Message *types.ChromeConsoleConsoleMessage `json:"message"`
+}
 
 func TestChromeDebugger(t *testing.T) {
 	debugger := NewChromeDebugger()
@@ -38,16 +50,32 @@ func TestConsole(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	fmt.Printf("page: %s\n", targets[0].Target.Url)
 	console := targets[0].Console()
+
+	targets[0].Subscribe("Console.messageAdded", func(target *ChromeTarget, v []byte) {
+		msg := &EventData{}
+		err := json.Unmarshal(v, msg)
+		if err != nil {
+			log.Fatalf("error unmarshalling event data: %v\n", err)
+		}
+		log.Printf("METHOD: %s\n", msg.Method)
+		eventData := msg.Params.Message
+		fmt.Printf("Got event: %v\n", eventData)
+		fmt.Printf("Timestamp: %f\n", *eventData.Timestamp)
+	})
+
 	fmt.Printf("Sending enable...")
-	console.Enable()
-	fmt.Printf("Sent enable...")
+	resp, err := console.Enable()
+	if err != nil {
+		fmt.Printf("ERROR: %v\n", err)
+	}
+	fmt.Printf("Sent enable... resp: %v\n", resp)
 	time.Sleep(1 * time.Second)
 	fmt.Printf("Sending ClearMessages...")
-	console.ClearMessages()
-	fmt.Printf("Sent ClearMessages...")
+	resp, _ = console.ClearMessages()
+	fmt.Printf("Sent ClearMessages... resp: %v\n", resp)
 	time.Sleep(1 * time.Second)
 	fmt.Printf("Sending Disable...")
-	console.Disable()
-	fmt.Printf("Sent Disable...")
+	resp, _ = console.Disable()
+	fmt.Printf("Sent Disable... resp: %v\n", resp)
 	time.Sleep(1 * time.Second)
 }

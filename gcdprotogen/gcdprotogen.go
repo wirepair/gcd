@@ -112,19 +112,24 @@ func main() {
 	for _, v := range api.Domains {
 		output := NewOutput(api.Version.Major, api.Version.Minor, v.Domain)
 		fmt.Printf("%s\n", v.Domain)
-		if v.Types != nil && len(v.Types) > 0 {
-			err := createTypes(output, v.Types)
+		/*
+			if v.Types != nil && len(v.Types) > 0 {
+				err := createTypes(output, v.Types)
+				if err != nil {
+					log.Fatal(err)
+				}
+				writeTypes(output)
+			}
+
+			if v.Events != nil && len(v.Events) > 0 {
+					err := createEvents(output, v.Events)
+				}
+		*/
+		if v.Commands != nil && len(v.Commands) > 0 {
+			err := createCommands(output, v.Commands)
 			if err != nil {
 				log.Fatal(err)
 			}
-			writeTypes(output)
-		}
-		if v.Events != nil && len(v.Events) > 0 {
-			err := createEvents(output, v.Events)
-		}
-
-		if v.Commands != nil && len(v.Commands) > 0 {
-			err := createCommands(output, v.Commands)
 		}
 
 	}

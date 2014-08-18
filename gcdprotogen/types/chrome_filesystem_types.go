@@ -17,7 +17,7 @@ type ChromeFileSystemEntry struct {
  
 // Represents metadata of a file or entry.
 type ChromeFileSystemMetadata struct {
-	ModificationTime float `json:"modificationTime"` // Modification time.
-	Size float `json:"size"` // File size. This field is always zero for directories.
+	ModificationTime float64 `json:"modificationTime"` // Modification time.
+	Size float64 `json:"size"` // File size. This field is always zero for directories.
 }
  

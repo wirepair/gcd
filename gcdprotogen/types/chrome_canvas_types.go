@@ -65,6 +65,6 @@ type ChromeCanvasTraceLog struct {
 	Contexts []*ChromeCanvasCallArgument `json:"contexts"` 
 	StartOffset int `json:"startOffset"` 
 	Alive bool `json:"alive"` 
-	TotalAvailableCalls float `json:"totalAvailableCalls"` 
+	TotalAvailableCalls float64 `json:"totalAvailableCalls"` 
 }
  

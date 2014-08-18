@@ -5,7 +5,7 @@ package types
 
  
 // Number of seconds since epoch.
-type ChromeConsoleTimestamp float 
+type ChromeConsoleTimestamp float64 
  
  
 // Console message.

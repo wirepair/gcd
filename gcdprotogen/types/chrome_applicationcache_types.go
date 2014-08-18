@@ -15,9 +15,9 @@ type ChromeApplicationCacheApplicationCacheResource struct {
 // Detailed application cache information.
 type ChromeApplicationCacheApplicationCache struct {
 	ManifestURL string `json:"manifestURL"` // Manifest URL.
-	Size float `json:"size"` // Application cache size.
-	CreationTime float `json:"creationTime"` // Application cache creation time.
-	UpdateTime float `json:"updateTime"` // Application cache update time.
+	Size float64 `json:"size"` // Application cache size.
+	CreationTime float64 `json:"creationTime"` // Application cache creation time.
+	UpdateTime float64 `json:"updateTime"` // Application cache update time.
 	Resources []*ChromeApplicationCacheApplicationCacheResource `json:"resources"` // Application cache resources.
 }
  

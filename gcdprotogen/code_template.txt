@@ -3,6 +3,10 @@
 // API Version: {{.Major}}.{{.Minor}}
 package gcd
 
+import (
+	"github.com/wirepair/gcd/gcdprotogen/types"
+)
+
 // add this API domain to ChromeTarget
 func (c *ChromeTarget) {{.Domain}} *Chrome{{.Domain}} {
 	if c.{{.Domain | ToLower }} == nil {

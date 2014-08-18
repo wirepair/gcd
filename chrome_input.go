@@ -1,7 +1,7 @@
 package gcd
 
 import (
-	"encoding/json"
+//"encoding/json"
 )
 
 type KeyEvent struct {
@@ -57,6 +57,7 @@ func newChromeInput(target *ChromeTarget) *ChromeInput {
 	return c
 }
 
+/*
 func (c *ChromeInput) SendKeyEvent(keyData *KeyEventData) error {
 	req := &KeyEvent{Id: c.target.getId(), Method: "Input.dispatchKeyEvent", Params: keyData}
 	data, err := json.Marshal(req)
@@ -76,5 +77,5 @@ func (c *ChromeConsole) SendMouseEvent(mouseData *MouseEventData) error {
 	c.target.sendCh <- data
 	return nil
 }
-
+*/
 // TODO: Add helpers like TypeKeys(data string), ClickMouse(x, y) etc.

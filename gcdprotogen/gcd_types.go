@@ -19,6 +19,12 @@ func writeTypes(output *Output) {
 	}
 }
 
+// Iterates over the Domain -> Types section of protocol.json
+// Creates a new GeneratedStruct per type. If the type is an object type (has properties)
+// calls createObjectType with the list of properties for the object.
+// if it's an enum, just converts to string and sets the possible values as code comments
+// If the struct is not an object, we need to print out special lines, such as:
+// type ChromeSomeSillyThing string
 func createTypes(output *Output, types []*Type) error {
 	for _, t := range types {
 		struc := NewGeneratedStruct(output, t.Id, t.Description)
@@ -32,15 +38,14 @@ func createTypes(output *Output, types []*Type) error {
 		}
 		output.Types = append(output.Types, struc)
 		if !struc.IsObject {
-			if t.Type == "array" {
-
-			}
 			struc.NonObjectLines = fmt.Sprintf(nonStruct, struc.Description, struc.Name, jsonType(output.Domain, t.Items, "", t.Type), struc.EnumVals)
 		}
 	}
 	return nil
 }
 
+// Iterates over the properties of the object type and attempts to identify
+// if any properties have nested object types
 func createObjectType(struc *GeneratedStruct, props []*Property) {
 	for _, prop := range props {
 		optional := ""
@@ -54,6 +59,10 @@ func createObjectType(struc *GeneratedStruct, props []*Property) {
 		}
 		newStruc := hasNestedType(struc, prop)
 		realType := jsonType(struc.Out.Domain, prop.Items, prop.Ref, prop.Type)
+		if realType == "object" {
+			fmt.Printf("realType was object for %s in %s setting to interface{}", prop.Name, struc.Out.Domain, prop, newStruc)
+			realType = "interface{}"
+		}
 		if newStruc != nil {
 			struc.Out.Types = append(struc.Out.Types, newStruc)
 			realType = "*Chrome" + filterRef("", newStruc.Name) // don't pass domain as we already have it from the parent type
@@ -98,7 +107,7 @@ func jsonType(domain string, items *Item, ref, valType string) string {
 	case "integer":
 		return "int"
 	case "number":
-		return "float"
+		return "float64"
 	case "boolean":
 		return "bool"
 	case "array":

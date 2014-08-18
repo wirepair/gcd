@@ -70,6 +70,6 @@ type ChromeDebuggerExceptionDetails struct {
  
 // Error data for setScriptSource command. compileError is a case type for uncompilable script source error.
 type ChromeDebuggerSetScriptSourceError struct {
-	CompileError object `json:"compileError,omitempty"` 
+	CompileError interface{} `json:"compileError,omitempty"` 
 }
  

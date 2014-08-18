@@ -7,7 +7,7 @@ package types
 // PowerEvent item
 type ChromePowerPowerEvent struct {
 	Type string `json:"type"` // Power Event Type.
-	Timestamp float `json:"timestamp"` // Power Event Time, in milliseconds.
-	Value float `json:"value"` // Power Event Value.
+	Timestamp float64 `json:"timestamp"` // Power Event Time, in milliseconds.
+	Value float64 `json:"value"` // Power Event Value.
 }
  
