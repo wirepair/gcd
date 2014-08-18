@@ -50,7 +50,7 @@ func (c *ChromeConsole) ClearMessages() (*ChromeResponse, error) {
 
 // setMonitoringXHREnabled - Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.
 // enabled - Monitoring enabled state.
-func (c *ChromeConsole) SetMonitoringXHREnabled(enabled bool) (*ChromeResponse, error) {
+func (c *ChromeConsole) SetMonitoringXHREnabled(enabled bool, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["enabled"] = enabled
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Console.setMonitoringXHREnabled", Params: paramRequest})
@@ -58,7 +58,7 @@ func (c *ChromeConsole) SetMonitoringXHREnabled(enabled bool) (*ChromeResponse, 
 
 // addInspectedNode - Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions).
 // nodeId - DOM node id to be accessible by means of $x command line API.
-func (c *ChromeConsole) AddInspectedNode(nodeId *types.ChromeDOMNodeId) (*ChromeResponse, error) {
+func (c *ChromeConsole) AddInspectedNode(nodeId *types.ChromeDOMNodeId, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Console.addInspectedNode", Params: paramRequest})
@@ -66,7 +66,7 @@ func (c *ChromeConsole) AddInspectedNode(nodeId *types.ChromeDOMNodeId) (*Chrome
 
 // addInspectedHeapObject - 
 // heapObjectId - 
-func (c *ChromeConsole) AddInspectedHeapObject(heapObjectId int) (*ChromeResponse, error) {
+func (c *ChromeConsole) AddInspectedHeapObject(heapObjectId int, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["heapObjectId"] = heapObjectId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Console.addInspectedHeapObject", Params: paramRequest})
@@ -80,4 +80,10 @@ func (c *ChromeConsole) AddInspectedHeapObject(heapObjectId int) (*ChromeRespons
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
 

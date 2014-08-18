@@ -52,56 +52,60 @@ func (c *ChromePower) End() (*ChromeResponse, error) {
 // canProfilePower - Tells whether power profiling is supported.
 // Returns - 
 // True if power profiling is supported.
-func (c *ChromePower) CanProfilePower() (bool, error) {	
-	var result bool 
+func (c *ChromePower) CanProfilePower() (bool, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Power.canProfilePower"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { 
+			Result bool 
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return result, &ChromeRequestErr{Resp: cerr}
+			return false, &ChromeRequestErr{Resp: cerr}
 		}
-		return result, err
+		return false, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		result = results["result"].(bool)
-	}
-	return result, nil
+	return chromeData.Result.Result, nil
 }
 
 // getAccuracyLevel - Describes the accuracy level of the data provider.
 // Returns - 
-func (c *ChromePower) GetAccuracyLevel() (string, error) {	
-	var result string 
+func (c *ChromePower) GetAccuracyLevel() (string, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Power.getAccuracyLevel"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { 
+			Result string 
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return result, &ChromeRequestErr{Resp: cerr}
+			return "", &ChromeRequestErr{Resp: cerr}
 		}
-		return result, err
+		return "", err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		result = results["result"].(string)
-	}
-	return result, nil
+	return chromeData.Result.Result, nil
 }
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
 

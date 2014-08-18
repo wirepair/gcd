@@ -30,11 +30,13 @@ type GeneratedNoParamReturnCommand struct {
 type GeneratedParamCommand struct {
 	Description       string // the description/comments for the command
 	Method            string // the name of the API call, Event or Type
-	ParamDefinition   string
-	ParamLen          int
-	ParamTypes        []string // The parameter types
-	ParamNames        []string
+	Params            []*Param
 	ParamDescriptions []string // the description/comments for parameters
+}
+
+type Param struct {
+	Name string // name of the parameter
+	Type string // name of the parameter type
 }
 
 // For commands which just return types
@@ -54,15 +56,14 @@ type Return struct {
 type GeneratedReturnParamCommand struct {
 	Description        string // the description/comments for the command
 	Method             string // the name of the API call, Event or Type
-	Params             []string
-	Returns            []string
+	Returns            []*Return
+	Params             []*Param
 	ParamDescriptions  []string // the description/comments for parameters
 	ReturnDescriptions []string // the description/comments for return types
 }
 
 type ParamInterface interface {
 	AddParam(paramName, paramType, paramDescription string)
-	FormalizeDefinition()
 }
 
 type ReturnInterface interface {
@@ -77,19 +78,20 @@ func (grc *GeneratedReturnCommand) AddReturn(returnName, returnType, returnDescr
 }
 
 func (gpc *GeneratedParamCommand) AddParam(paramName, paramType, description string) {
-	gpc.ParamNames = append(gpc.ParamNames, paramName)
-	gpc.ParamTypes = append(gpc.ParamTypes, paramType)
+	gpc.Params = append(gpc.Params, &Param{Name: paramName, Type: paramType})
 	gpc.ParamDescriptions = append(gpc.ParamDescriptions, paramName+" - "+description)
 }
 
-func (gpc *GeneratedParamCommand) FormalizeDefinition() {
-	gpc.ParamDefinition = ""
-	gpc.ParamLen = len(gpc.ParamNames)
-	for k, v := range gpc.ParamNames {
-		v = modifyReserved(v)
-		gpc.ParamDefinition += v + " " + gpc.ParamTypes[k] + ", "
+func (grc *GeneratedReturnParamCommand) AddReturn(returnName, returnType, returnDescription string) {
+	grc.Returns = append(grc.Returns, &Return{Name: returnName, Type: returnType})
+	if returnDescription != "" {
+		grc.ReturnDescriptions = append(grc.ReturnDescriptions, returnDescription)
 	}
-	gpc.ParamDefinition = gpc.ParamDefinition[:len(gpc.ParamDefinition)-2] // remove ,
+}
+
+func (gpc *GeneratedReturnParamCommand) AddParam(paramName, paramType, description string) {
+	gpc.Params = append(gpc.Params, &Param{Name: paramName, Type: paramType})
+	gpc.ParamDescriptions = append(gpc.ParamDescriptions, paramName+" - "+description)
 }
 
 func NewGeneratedApi(output *Output) *GeneratedApi {
@@ -123,7 +125,6 @@ func createCommands(output *Output, commands []*Command) error {
 			for _, p := range c.Parameters {
 				getParameters(api, output.Domain, cmd, p)
 			}
-			cmd.FormalizeDefinition()
 			api.ParamCalls = append(api.ParamCalls, cmd)
 		} else if len(c.Parameters) == 0 && len(c.Returns) != 0 {
 			cmd := &GeneratedReturnCommand{Description: c.Description, Method: c.Name}
@@ -132,19 +133,17 @@ func createCommands(output *Output, commands []*Command) error {
 				getReturnTypes(api, output.Domain, cmd, r)
 			}
 			api.ReturnCalls = append(api.ReturnCalls, cmd)
-		}
-		/*
-			if len(c.Parameters) != 0 {
-				param := make([]string, len(c.Parameters))
-				paramDescription := make([]string, len(c.Parameters))
-
+		} else if len(c.Parameters) != 0 && len(c.Returns) != 0 {
+			cmd := &GeneratedReturnParamCommand{Description: c.Description, Method: c.Name}
 			for _, p := range c.Parameters {
-				fmt.Println("Parameters: " + p.Name + " " + p.Type)
+				getParameters(api, output.Domain, cmd, p)
 			}
 			for _, r := range c.Returns {
-				fmt.Println("Returns: " + r.Name + " " + r.Type)
+				getReturnTypes(api, output.Domain, cmd, r)
 			}
-		*/
+			api.ParamReturnCalls = append(api.ParamReturnCalls, cmd)
+		}
+
 	}
 	writeCommands(api)
 	return nil

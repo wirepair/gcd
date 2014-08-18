@@ -54,7 +54,7 @@ func (c *ChromeTimeline) Stop() (*ChromeResponse, error) {
 // liveEvents - Coma separated event types to issue although bufferEvents is set.
 // includeCounters - Whether counters data should be included into timeline events.
 // includeGPUEvents - Whether events from GPU process should be collected.
-func (c *ChromeTimeline) Start(maxCallStackDepth int, bufferEvents bool, liveEvents string, includeCounters bool, includeGPUEvents bool) (*ChromeResponse, error) {
+func (c *ChromeTimeline) Start(maxCallStackDepth int, bufferEvents bool, liveEvents string, includeCounters bool, includeGPUEvents bool, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 5)
 	paramRequest["maxCallStackDepth"] = maxCallStackDepth
 	paramRequest["bufferEvents"] = bufferEvents
@@ -72,4 +72,10 @@ func (c *ChromeTimeline) Start(maxCallStackDepth int, bufferEvents bool, liveEve
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
 

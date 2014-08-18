@@ -40,9 +40,9 @@ func (c *Chrome{{$api.Domain}}) {{.Method | Title}}() (*ChromeResponse, error) {
 
 {{range $element := .ParamCalls}}// {{.Method}} - {{$element.Description}}{{range $paramDescription := .ParamDescriptions}}
 // {{$paramDescription}}{{ end }}
-func (c *Chrome{{$api.Domain}}) {{.Method | Title}}({{.ParamDefinition}}) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, {{.ParamLen}}){{range $param := $element.ParamNames}}
-	paramRequest["{{$param}}"] = {{$param | Reserved}}{{ end }}
+func (c *Chrome{{$api.Domain}}) {{.Method | Title}}({{range $param := $element.Params}}{{$param.Name | Reserved}} {{$param.Type}}, {{end}}) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, {{len (.Params) }}){{range $param := $element.Params}}
+	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "{{$api.Domain}}.{{.Method}}", Params: paramRequest})
 }
 
@@ -55,30 +55,63 @@ func (c *Chrome{{$api.Domain}}) {{.Method | Title}}({{.ParamDefinition}}) (*Chro
 {{range $element := .ReturnCalls}}// {{.Method}} - {{$element.Description}}
 // Returns - {{range $returnDescription := .ReturnDescriptions}}
 // {{$returnDescription}}{{ end }}
-func (c *Chrome{{$api.Domain}}) {{.Method | Title}}() ({{range $rets := .Returns}}{{$rets.Type}}, {{end}}error) {	{{range $rets := .Returns}}
-	var {{$rets.Name | Reserved}} {{$rets.Type}} {{end}}
+func (c *Chrome{{$api.Domain}}) {{.Method | Title}}() ({{range $rets := .Returns}}{{$rets.Type}}, {{end}}error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "{{$api.Domain}}.{{.Method}}"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { {{range $rets := .Returns}}
+			{{$rets.Name | Title | Reserved }} {{$rets.Type}} {{end}}
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return {{range $rets := .Returns}}{{$rets.Name | Reserved}}, {{end}}&ChromeRequestErr{Resp: cerr}
+			return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}&ChromeRequestErr{Resp: cerr}
 		}
-		return {{range $rets := .Returns}}{{$rets.Name | Reserved}}, {{end}}err
+		return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{}){{range $rets := .Returns}}
-		{{$rets.Name | Reserved}} = results["{{$rets.Name | Reserved}}"].({{$rets.Type}}){{end}}
-	}
-	return {{range $rets := .Returns}}{{$rets.Name | Reserved}}, {{end}}nil
+	return {{range $rets := .Returns}}chromeData.Result.{{$rets.Name | Title | Reserved}}, {{end}}nil
 }
 
 {{ end }}
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+{{range $element := .ParamReturnCalls}}// {{.Method}} - {{$element.Description}}
+// Returns - {{range $returnDescription := .ReturnDescriptions}}
+// {{$returnDescription}}{{ end }}
+func (c *Chrome{{$api.Domain}}) {{.Method | Title}}({{range $param := $element.Params}}{{$param.Name | Reserved}} {{$param.Type}}, {{end}}) ({{range $rets := .Returns}}{{$rets.Type}}, {{end}}error) {
+	paramRequest := make(map[string]interface{}, {{len (.Params) }}){{range $param := $element.Params}}
+	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "{{$api.Domain}}.{{.Method}}", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { {{range $rets := .Returns}}
+			{{$rets.Name | Title | Reserved }} {{$rets.Type}} {{end}}
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}&ChromeRequestErr{Resp: cerr}
+		}
+		return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}err
+	}
+
+	return {{range $rets := .Returns}}chromeData.Result.{{$rets.Name | Title | Reserved}}, {{end}}nil
+}
+
+{{ end }}
+// end commands with parameters and special return types
 

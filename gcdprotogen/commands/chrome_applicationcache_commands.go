@@ -6,7 +6,7 @@ package gcd
 
 
 import (
-	
+	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
 )
 
@@ -47,30 +47,91 @@ func (c *ChromeApplicationCache) Enable() (*ChromeResponse, error) {
 // getFramesWithManifests - Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache.
 // Returns - 
 // Array of frame identifiers with manifest urls for each frame containing a document associated with some application cache.
-func (c *ChromeApplicationCache) GetFramesWithManifests() ([]*types.ChromeApplicationCacheFrameWithManifest, error) {	
-	var frameIds []*types.ChromeApplicationCacheFrameWithManifest 
+func (c *ChromeApplicationCache) GetFramesWithManifests() ([]*types.ChromeApplicationCacheFrameWithManifest, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "ApplicationCache.getFramesWithManifests"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { 
+			FrameIds []*types.ChromeApplicationCacheFrameWithManifest 
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return frameIds, &ChromeRequestErr{Resp: cerr}
+			return nil, &ChromeRequestErr{Resp: cerr}
 		}
-		return frameIds, err
+		return nil, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		frameIds = results["frameIds"].([]*types.ChromeApplicationCacheFrameWithManifest)
-	}
-	return frameIds, nil
+	return chromeData.Result.FrameIds, nil
 }
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+// getManifestForFrame - Returns manifest URL for document in the given frame.
+// Returns - 
+// Manifest URL for document in the given frame.
+func (c *ChromeApplicationCache) GetManifestForFrame(frameId *types.ChromePageFrameId, ) (string, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["frameId"] = frameId
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "ApplicationCache.getManifestForFrame", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			ManifestURL string 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return "", &ChromeRequestErr{Resp: cerr}
+		}
+		return "", err
+	}
+
+	return chromeData.Result.ManifestURL, nil
+}
+
+// getApplicationCacheForFrame - Returns relevant application cache data for the document in given frame.
+// Returns - 
+// Relevant application cache data for the document in given frame.
+func (c *ChromeApplicationCache) GetApplicationCacheForFrame(frameId *types.ChromePageFrameId, ) (*types.ChromeApplicationCacheApplicationCache, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["frameId"] = frameId
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "ApplicationCache.getApplicationCacheForFrame", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			ApplicationCache *types.ChromeApplicationCacheApplicationCache 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, err
+	}
+
+	return chromeData.Result.ApplicationCache, nil
+}
+
+
+// end commands with parameters and special return types
 

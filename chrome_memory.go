@@ -6,7 +6,6 @@ package gcd
 
 import (
 	"encoding/json"
-	//"fmt"
 )
 
 // add this API domain to ChromeTarget
@@ -35,59 +34,31 @@ func newChromeMemory(target *ChromeTarget) *ChromeMemory {
 
 // start commands with no parameters but special return types
 
-// start commands with no parameters but special return types
-/*
+// getDOMCounters -
+// Returns -
 func (c *ChromeMemory) GetDOMCounters() (float64, float64, float64, error) {
-	var documents, nodes, jsEventListeners float64
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Memory.getDOMCounters"})
 	resp := <-recvCh
-	fmt.Printf("DATA: %s\n", string(resp.Data))
-	var x interface{}
-	err := json.Unmarshal(resp.Data, &x)
-	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return documents, nodes, jsEventListeners, &ChromeRequestErr{Resp: cerr}
+
+	var chromeData struct {
+		Result struct {
+			Documents        float64
+			Nodes            float64
+			JsEventListeners float64
 		}
-		fmt.Printf("Got an error but not chrome error: %s\n", err)
-		return documents, nodes, jsEventListeners, err
 	}
-	m := x.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		jsEventListeners = results["jsEventListeners"].(float64)
-		documents = results["documents"].(float64)
-		nodes = results["nodes"].(float64)
-	}
-	return documents, nodes, jsEventListeners, nil
-}
-*/
-func (c *ChromeMemory) GetDOMCounters() (float64, float64, float64, error) {
 
-	var documents float64
-	var nodes float64
-	var jsEventListeners float64
-	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Memory.getDOMCounters"})
-	resp := <-recvCh
-
-	var chromeData interface{}
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return documents, nodes, jsEventListeners, &ChromeRequestErr{Resp: cerr}
+			return 0, 0, 0, &ChromeRequestErr{Resp: cerr}
 		}
-		return documents, nodes, jsEventListeners, err
+		return 0, 0, 0, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		documents = results["documents"].(float64)
-		nodes = results["nodes"].(float64)
-		jsEventListeners = results["jsEventListeners"].(float64)
-	}
-	return documents, nodes, jsEventListeners, nil
+	return chromeData.Result.Documents, chromeData.Result.Nodes, chromeData.Result.JsEventListeners, nil
 }
+
+// end commands with no parameters but special return types

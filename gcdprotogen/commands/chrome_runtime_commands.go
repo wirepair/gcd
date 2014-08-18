@@ -50,7 +50,7 @@ func (c *ChromeRuntime) Disable() (*ChromeResponse, error) {
 
 // releaseObject - Releases remote object with given id.
 // objectId - Identifier of the object to release.
-func (c *ChromeRuntime) ReleaseObject(objectId *types.ChromeRuntimeRemoteObjectId) (*ChromeResponse, error) {
+func (c *ChromeRuntime) ReleaseObject(objectId *types.ChromeRuntimeRemoteObjectId, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.releaseObject", Params: paramRequest})
@@ -58,7 +58,7 @@ func (c *ChromeRuntime) ReleaseObject(objectId *types.ChromeRuntimeRemoteObjectI
 
 // releaseObjectGroup - Releases all remote objects that belong to a given group.
 // objectGroup - Symbolic object group name.
-func (c *ChromeRuntime) ReleaseObjectGroup(objectGroup string) (*ChromeResponse, error) {
+func (c *ChromeRuntime) ReleaseObjectGroup(objectGroup string, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectGroup"] = objectGroup
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.releaseObjectGroup", Params: paramRequest})
@@ -73,30 +73,140 @@ func (c *ChromeRuntime) ReleaseObjectGroup(objectGroup string) (*ChromeResponse,
 // isRunRequired - 
 // Returns - 
 // True if the Runtime is in paused on start state.
-func (c *ChromeRuntime) IsRunRequired() (bool, error) {	
-	var result bool 
+func (c *ChromeRuntime) IsRunRequired() (bool, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.isRunRequired"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { 
+			Result bool 
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return result, &ChromeRequestErr{Resp: cerr}
+			return false, &ChromeRequestErr{Resp: cerr}
 		}
-		return result, err
+		return false, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		result = results["result"].(bool)
-	}
-	return result, nil
+	return chromeData.Result.Result, nil
 }
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+// evaluate - Evaluates expression on global object.
+// Returns - 
+// Evaluation result.
+// True if the result was thrown during the evaluation.
+// Exception details.
+func (c *ChromeRuntime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, doNotPauseOnExceptionsAndMuteConsole bool, contextId *types.ChromeRuntimeExecutionContextId, returnByValue bool, generatePreview bool, ) (*types.ChromeRuntimeRemoteObject, bool, *types.ChromeDebuggerExceptionDetails, error) {
+	paramRequest := make(map[string]interface{}, 7)
+	paramRequest["expression"] = expression
+	paramRequest["objectGroup"] = objectGroup
+	paramRequest["includeCommandLineAPI"] = includeCommandLineAPI
+	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
+	paramRequest["contextId"] = contextId
+	paramRequest["returnByValue"] = returnByValue
+	paramRequest["generatePreview"] = generatePreview
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.evaluate", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			Result *types.ChromeRuntimeRemoteObject 
+			WasThrown bool 
+			ExceptionDetails *types.ChromeDebuggerExceptionDetails 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, false, nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, false, nil, err
+	}
+
+	return chromeData.Result.Result, chromeData.Result.WasThrown, chromeData.Result.ExceptionDetails, nil
+}
+
+// callFunctionOn - Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
+// Returns - 
+// Call result.
+// True if the result was thrown during the evaluation.
+func (c *ChromeRuntime) CallFunctionOn(objectId *types.ChromeRuntimeRemoteObjectId, functionDeclaration string, arguments []*types.ChromeRuntimeCallArgument, doNotPauseOnExceptionsAndMuteConsole bool, returnByValue bool, generatePreview bool, ) (*types.ChromeRuntimeRemoteObject, bool, error) {
+	paramRequest := make(map[string]interface{}, 6)
+	paramRequest["objectId"] = objectId
+	paramRequest["functionDeclaration"] = functionDeclaration
+	paramRequest["arguments"] = arguments
+	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
+	paramRequest["returnByValue"] = returnByValue
+	paramRequest["generatePreview"] = generatePreview
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.callFunctionOn", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			Result *types.ChromeRuntimeRemoteObject 
+			WasThrown bool 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, false, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, false, err
+	}
+
+	return chromeData.Result.Result, chromeData.Result.WasThrown, nil
+}
+
+// getProperties - Returns properties of a given object. Object group of the result is inherited from the target object.
+// Returns - 
+// Object properties.
+// Internal object properties (only of the element itself).
+func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectId, ownProperties bool, accessorPropertiesOnly bool, ) ([]*types.ChromeRuntimePropertyDescriptor, []*types.ChromeRuntimeInternalPropertyDescriptor, error) {
+	paramRequest := make(map[string]interface{}, 3)
+	paramRequest["objectId"] = objectId
+	paramRequest["ownProperties"] = ownProperties
+	paramRequest["accessorPropertiesOnly"] = accessorPropertiesOnly
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.getProperties", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			Result []*types.ChromeRuntimePropertyDescriptor 
+			InternalProperties []*types.ChromeRuntimeInternalPropertyDescriptor 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, nil, err
+	}
+
+	return chromeData.Result.Result, chromeData.Result.InternalProperties, nil
+}
+
+
+// end commands with parameters and special return types
 

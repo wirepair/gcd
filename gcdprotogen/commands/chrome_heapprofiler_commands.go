@@ -6,8 +6,8 @@ package gcd
 
 
 import (
-	
-	
+	"github.com/wirepair/gcd/gcdprotogen/types"
+	"encoding/json"
 )
 
 // add this API domain to ChromeTarget
@@ -50,7 +50,7 @@ func (c *ChromeHeapProfiler) CollectGarbage() (*ChromeResponse, error) {
 
 // startTrackingHeapObjects - 
 // trackAllocations - 
-func (c *ChromeHeapProfiler) StartTrackingHeapObjects(trackAllocations bool) (*ChromeResponse, error) {
+func (c *ChromeHeapProfiler) StartTrackingHeapObjects(trackAllocations bool, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["trackAllocations"] = trackAllocations
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "HeapProfiler.startTrackingHeapObjects", Params: paramRequest})
@@ -58,7 +58,7 @@ func (c *ChromeHeapProfiler) StartTrackingHeapObjects(trackAllocations bool) (*C
 
 // stopTrackingHeapObjects - 
 // reportProgress - If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
-func (c *ChromeHeapProfiler) StopTrackingHeapObjects(reportProgress bool) (*ChromeResponse, error) {
+func (c *ChromeHeapProfiler) StopTrackingHeapObjects(reportProgress bool, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["reportProgress"] = reportProgress
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "HeapProfiler.stopTrackingHeapObjects", Params: paramRequest})
@@ -66,7 +66,7 @@ func (c *ChromeHeapProfiler) StopTrackingHeapObjects(reportProgress bool) (*Chro
 
 // takeHeapSnapshot - 
 // reportProgress - If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
-func (c *ChromeHeapProfiler) TakeHeapSnapshot(reportProgress bool) (*ChromeResponse, error) {
+func (c *ChromeHeapProfiler) TakeHeapSnapshot(reportProgress bool, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["reportProgress"] = reportProgress
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "HeapProfiler.takeHeapSnapshot", Params: paramRequest})
@@ -80,4 +80,67 @@ func (c *ChromeHeapProfiler) TakeHeapSnapshot(reportProgress bool) (*ChromeRespo
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+// getObjectByHeapObjectId - 
+// Returns - 
+// Evaluation result.
+func (c *ChromeHeapProfiler) GetObjectByHeapObjectId(objectId *types.ChromeHeapProfilerHeapSnapshotObjectId, objectGroup string, ) (*types.ChromeRuntimeRemoteObject, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["objectId"] = objectId
+	paramRequest["objectGroup"] = objectGroup
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "HeapProfiler.getObjectByHeapObjectId", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			Result *types.ChromeRuntimeRemoteObject 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, err
+	}
+
+	return chromeData.Result.Result, nil
+}
+
+// getHeapObjectId - 
+// Returns - 
+// Id of the heap snapshot object corresponding to the passed remote object id.
+func (c *ChromeHeapProfiler) GetHeapObjectId(objectId *types.ChromeRuntimeRemoteObjectId, ) (*types.ChromeHeapProfilerHeapSnapshotObjectId, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["objectId"] = objectId
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "HeapProfiler.getHeapObjectId", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			HeapSnapshotObjectId *types.ChromeHeapProfilerHeapSnapshotObjectId 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, err
+	}
+
+	return chromeData.Result.HeapSnapshotObjectId, nil
+}
+
+
+// end commands with parameters and special return types
 

@@ -47,30 +47,65 @@ func (c *ChromeTracing) End() (*ChromeResponse, error) {
 // getCategories - Gets supported tracing categories.
 // Returns - 
 // A list of supported tracing categories.
-func (c *ChromeTracing) GetCategories() ([]types.string, error) {	
-	var categories []types.string 
+func (c *ChromeTracing) GetCategories() ([]types.string, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Tracing.getCategories"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { 
+			Categories []types.string 
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return categories, &ChromeRequestErr{Resp: cerr}
+			return nil, &ChromeRequestErr{Resp: cerr}
 		}
-		return categories, err
+		return nil, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		categories = results["categories"].([]types.string)
-	}
-	return categories, nil
+	return chromeData.Result.Categories, nil
 }
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+// start - Start trace events collection.
+// Returns - 
+// A system-unique identifier of the tracing session that allows associating of some of the trace events with the inspected page
+func (c *ChromeTracing) Start(categories string, options string, bufferUsageReportingInterval float64, ) (string, error) {
+	paramRequest := make(map[string]interface{}, 3)
+	paramRequest["categories"] = categories
+	paramRequest["options"] = options
+	paramRequest["bufferUsageReportingInterval"] = bufferUsageReportingInterval
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Tracing.start", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			SessionId string 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return "", &ChromeRequestErr{Resp: cerr}
+		}
+		return "", err
+	}
+
+	return chromeData.Result.SessionId, nil
+}
+
+
+// end commands with parameters and special return types
 

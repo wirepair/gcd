@@ -84,12 +84,33 @@ func modifyReserved(input string) string {
 	return input
 }
 
+func nullType(input string) string {
+	if strings.Contains(input, "types.") {
+		return "nil"
+	}
+	fmt.Printf("INPUT: %s\n", input)
+	switch input {
+	case "int":
+		return "0"
+	case "float64":
+		return "0"
+	case "string":
+		return "\"\""
+	case "array":
+		return "[]"
+	case "bool":
+		return "false"
+	}
+	return ""
+}
+
 func init() {
 	flag.StringVar(&file, "file", "protocol.json", "open remote debugger protocol file.")
 	funcMap := template.FuncMap{
 		"Title":    strings.Title,
 		"ToLower":  strings.ToLower,
 		"Reserved": modifyReserved,
+		"NullType": nullType,
 	}
 	// kinda dumb. but need to map functions first, but need a named template first and it must match the first template in ParseFiles.
 	templates = template.Must(template.New("type_template.txt").Funcs(funcMap).ParseFiles("type_template.txt", "code_template.txt"))

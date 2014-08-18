@@ -50,7 +50,7 @@ func (c *ChromeProfiler) Start() (*ChromeResponse, error) {
 
 // setSamplingInterval - Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
 // interval - New sampling interval in microseconds.
-func (c *ChromeProfiler) SetSamplingInterval(interval int) (*ChromeResponse, error) {
+func (c *ChromeProfiler) SetSamplingInterval(interval int, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["interval"] = interval
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.setSamplingInterval", Params: paramRequest})
@@ -65,30 +65,35 @@ func (c *ChromeProfiler) SetSamplingInterval(interval int) (*ChromeResponse, err
 // stop - 
 // Returns - 
 // Recorded profile.
-func (c *ChromeProfiler) Stop() (*types.ChromeProfilerCPUProfile, error) {	
-	var profile *types.ChromeProfilerCPUProfile 
+func (c *ChromeProfiler) Stop() (*types.ChromeProfilerCPUProfile, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.stop"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { 
+			Profile *types.ChromeProfilerCPUProfile 
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return profile, &ChromeRequestErr{Resp: cerr}
+			return nil, &ChromeRequestErr{Resp: cerr}
 		}
-		return profile, err
+		return nil, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		profile = results["profile"].(*types.ChromeProfilerCPUProfile)
-	}
-	return profile, nil
+	return chromeData.Result.Profile, nil
 }
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
 

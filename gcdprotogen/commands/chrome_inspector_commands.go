@@ -57,3 +57,9 @@ func (c *ChromeInspector) Reset() (*ChromeResponse, error) {
 
 // end commands with no parameters but special return types
 
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
+

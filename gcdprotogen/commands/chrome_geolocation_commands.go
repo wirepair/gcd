@@ -42,7 +42,7 @@ func (c *ChromeGeolocation) ClearGeolocationOverride() (*ChromeResponse, error) 
 // latitude - Mock latitude
 // longitude - Mock longitude
 // accuracy - Mock accuracy
-func (c *ChromeGeolocation) SetGeolocationOverride(latitude float64, longitude float64, accuracy float64) (*ChromeResponse, error) {
+func (c *ChromeGeolocation) SetGeolocationOverride(latitude float64, longitude float64, accuracy float64, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["latitude"] = latitude
 	paramRequest["longitude"] = longitude
@@ -58,4 +58,10 @@ func (c *ChromeGeolocation) SetGeolocationOverride(latitude float64, longitude f
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
 

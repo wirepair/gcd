@@ -42,7 +42,7 @@ func (c *ChromeDeviceOrientation) ClearDeviceOrientationOverride() (*ChromeRespo
 // alpha - Mock alpha
 // beta - Mock beta
 // gamma - Mock gamma
-func (c *ChromeDeviceOrientation) SetDeviceOrientationOverride(alpha float64, beta float64, gamma float64) (*ChromeResponse, error) {
+func (c *ChromeDeviceOrientation) SetDeviceOrientationOverride(alpha float64, beta float64, gamma float64, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["alpha"] = alpha
 	paramRequest["beta"] = beta
@@ -58,4 +58,10 @@ func (c *ChromeDeviceOrientation) SetDeviceOrientationOverride(alpha float64, be
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
 

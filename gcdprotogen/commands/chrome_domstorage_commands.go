@@ -7,7 +7,7 @@ package gcd
 
 import (
 	"github.com/wirepair/gcd/gcdprotogen/types"
-	
+	"encoding/json"
 )
 
 // add this API domain to ChromeTarget
@@ -47,7 +47,7 @@ func (c *ChromeDOMStorage) Disable() (*ChromeResponse, error) {
 // storageId - 
 // key - 
 // value - 
-func (c *ChromeDOMStorage) SetDOMStorageItem(storageId *types.ChromeDOMStorageStorageId, key string, value string) (*ChromeResponse, error) {
+func (c *ChromeDOMStorage) SetDOMStorageItem(storageId *types.ChromeDOMStorageStorageId, key string, value string, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["storageId"] = storageId
 	paramRequest["key"] = key
@@ -58,7 +58,7 @@ func (c *ChromeDOMStorage) SetDOMStorageItem(storageId *types.ChromeDOMStorageSt
 // removeDOMStorageItem - 
 // storageId - 
 // key - 
-func (c *ChromeDOMStorage) RemoveDOMStorageItem(storageId *types.ChromeDOMStorageStorageId, key string) (*ChromeResponse, error) {
+func (c *ChromeDOMStorage) RemoveDOMStorageItem(storageId *types.ChromeDOMStorageStorageId, key string, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["storageId"] = storageId
 	paramRequest["key"] = key
@@ -73,4 +73,37 @@ func (c *ChromeDOMStorage) RemoveDOMStorageItem(storageId *types.ChromeDOMStorag
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+// getDOMStorageItems - 
+// Returns - 
+func (c *ChromeDOMStorage) GetDOMStorageItems(storageId *types.ChromeDOMStorageStorageId, ) ([]*types.ChromeDOMStorageItem, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["storageId"] = storageId
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMStorage.getDOMStorageItems", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			Entries []*types.ChromeDOMStorageItem 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, err
+	}
+
+	return chromeData.Result.Entries, nil
+}
+
+
+// end commands with parameters and special return types
 

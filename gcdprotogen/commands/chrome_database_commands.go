@@ -6,8 +6,8 @@ package gcd
 
 
 import (
-	
-	
+	"github.com/wirepair/gcd/gcdprotogen/types"
+	"encoding/json"
 )
 
 // add this API domain to ChromeTarget
@@ -51,4 +51,67 @@ func (c *ChromeDatabase) Disable() (*ChromeResponse, error) {
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+// getDatabaseTableNames - 
+// Returns - 
+func (c *ChromeDatabase) GetDatabaseTableNames(databaseId *types.ChromeDatabaseDatabaseId, ) ([]types.string, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["databaseId"] = databaseId
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Database.getDatabaseTableNames", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			TableNames []types.string 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, err
+	}
+
+	return chromeData.Result.TableNames, nil
+}
+
+// executeSQL - 
+// Returns - 
+func (c *ChromeDatabase) ExecuteSQL(databaseId *types.ChromeDatabaseDatabaseId, query string, ) ([]types.string, []types.string, *types.ChromeDatabaseError, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["databaseId"] = databaseId
+	paramRequest["query"] = query
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Database.executeSQL", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct { 
+			ColumnNames []types.string 
+			Values []types.string 
+			SqlError *types.ChromeDatabaseError 
+		}
+	}
+		
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, nil, nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, nil, nil, err
+	}
+
+	return chromeData.Result.ColumnNames, chromeData.Result.Values, chromeData.Result.SqlError, nil
+}
+
+
+// end commands with parameters and special return types
 

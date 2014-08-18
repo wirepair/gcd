@@ -6,7 +6,6 @@ package gcd
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
@@ -268,170 +267,310 @@ func (c *ChromePage) SetShowViewportSizeOnResize(show bool, showGrid bool) (*Chr
 // Index of the current navigation history entry.
 // Array of navigation history entries.
 func (c *ChromePage) GetNavigationHistory() (float64, []*types.ChromePageNavigationEntry, error) {
-	var currentIndex float64
-	var entries []*types.ChromePageNavigationEntry
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.getNavigationHistory"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct {
+			CurrentIndex float64
+			Entries      []*types.ChromePageNavigationEntry
+		}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return currentIndex, entries, &ChromeRequestErr{Resp: cerr}
+			return 0, nil, &ChromeRequestErr{Resp: cerr}
 		}
-		return currentIndex, entries, err
+		return 0, nil, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		currentIndex = results["currentIndex"].(float64)
-		entries = results["entries"].([]*types.ChromePageNavigationEntry)
-	}
-	return currentIndex, entries, nil
+	return chromeData.Result.CurrentIndex, chromeData.Result.Entries, nil
 }
 
 // getCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
 // Returns -
 // Array of cookie objects.
 func (c *ChromePage) GetCookies() ([]*types.ChromePageCookie, error) {
-	var cookies []*types.ChromePageCookie
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.getCookies"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct {
+			Cookies []*types.ChromePageCookie
+		}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return cookies, &ChromeRequestErr{Resp: cerr}
+			return nil, &ChromeRequestErr{Resp: cerr}
 		}
-		return cookies, err
+		return nil, err
 	}
-	fmt.Printf("%#v\n", string(resp.Data))
-	/*
-		m := chromeData.(map[string]interface{})
-		if r, ok := m["result"]; ok {
-			results := r.(map[string]interface{})
-			c := results["cookies"].(map[string][]interface{})
-			for k, v := range c {
-				cookies = append(cookies, v.(*types.ChromePageCookies))
-			}
-			//cookies = results["cookies"]
-			//cookies = results["cookies"].([]*types.ChromePageCookie)
-		}*/
-	return cookies, nil
+
+	return chromeData.Result.Cookies, nil
 }
 
 // getResourceTree - Returns present frame / resource tree structure.
 // Returns -
 // Present frame / resource tree structure.
 func (c *ChromePage) GetResourceTree() (*types.ChromePageFrameResourceTree, error) {
-	var frameTree *types.ChromePageFrameResourceTree
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.getResourceTree"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct {
+			FrameTree *types.ChromePageFrameResourceTree
+		}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return frameTree, &ChromeRequestErr{Resp: cerr}
+			return nil, &ChromeRequestErr{Resp: cerr}
 		}
-		return frameTree, err
+		return nil, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		frameTree = results["frameTree"].(*types.ChromePageFrameResourceTree)
-	}
-	return frameTree, nil
+	return chromeData.Result.FrameTree, nil
 }
 
 // getScriptExecutionStatus - Determines if scripts can be executed in the page.
 // Returns -
 // Script execution status: "allowed" if scripts can be executed, "disabled" if script execution has been disabled through page settings, "forbidden" if script execution for the given page is not possible for other reasons.
 func (c *ChromePage) GetScriptExecutionStatus() (string, error) {
-	var result string
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.getScriptExecutionStatus"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct {
+			Result string
+		}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return result, &ChromeRequestErr{Resp: cerr}
+			return "", &ChromeRequestErr{Resp: cerr}
 		}
-		return result, err
+		return "", err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		result = results["result"].(string)
-	}
-	return result, nil
+	return chromeData.Result.Result, nil
 }
 
 // captureScreenshot - Capture page screenshot.
 // Returns -
 // Base64-encoded image data (PNG).
 func (c *ChromePage) CaptureScreenshot() (string, error) {
-	var data string
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.captureScreenshot"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct {
+			Data string
+		}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return data, &ChromeRequestErr{Resp: cerr}
+			return "", &ChromeRequestErr{Resp: cerr}
 		}
-		return data, err
+		return "", err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		data = results["data"].(string)
-	}
-	return data, nil
+	return chromeData.Result.Data, nil
 }
 
 // canScreencast - Tells whether screencast is supported.
 // Returns -
 // True if screencast is supported.
 func (c *ChromePage) CanScreencast() (bool, error) {
-	var result bool
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.canScreencast"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct {
+			Result bool
+		}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return result, &ChromeRequestErr{Resp: cerr}
+			return false, &ChromeRequestErr{Resp: cerr}
 		}
-		return result, err
+		return false, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		result = results["result"].(bool)
-	}
-	return result, nil
+	return chromeData.Result.Result, nil
 }
 
 // end commands with no parameters but special return types
+
+// start commands with parameters and special return types
+
+// addScriptToEvaluateOnLoad -
+// Returns -
+// Identifier of the added script.
+func (c *ChromePage) AddScriptToEvaluateOnLoad(scriptSource string) (*types.ChromePageScriptIdentifier, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["scriptSource"] = scriptSource
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.addScriptToEvaluateOnLoad", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Identifier *types.ChromePageScriptIdentifier
+		}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, err
+	}
+
+	return chromeData.Result.Identifier, nil
+}
+
+// navigate - Navigates current page to the given URL.
+// Returns -
+// Frame id that will be navigated.
+func (c *ChromePage) Navigate(url string) (*types.ChromePageFrameId, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["url"] = url
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.navigate", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			FrameId *types.ChromePageFrameId
+		}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, err
+	}
+
+	return chromeData.Result.FrameId, nil
+}
+
+// getResourceContent - Returns content of the given resource.
+// Returns -
+// Resource content.
+// True, if content was served as base64.
+func (c *ChromePage) GetResourceContent(frameId *types.ChromePageFrameId, url string) (string, bool, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["frameId"] = frameId
+	paramRequest["url"] = url
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.getResourceContent", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Content       string
+			Base64Encoded bool
+		}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return "", false, &ChromeRequestErr{Resp: cerr}
+		}
+		return "", false, err
+	}
+
+	return chromeData.Result.Content, chromeData.Result.Base64Encoded, nil
+}
+
+// searchInResource - Searches for given string in resource content.
+// Returns -
+// List of search matches.
+func (c *ChromePage) SearchInResource(frameId *types.ChromePageFrameId, url string, query string, caseSensitive bool, isRegex bool) ([]*types.ChromePageSearchMatch, error) {
+	paramRequest := make(map[string]interface{}, 5)
+	paramRequest["frameId"] = frameId
+	paramRequest["url"] = url
+	paramRequest["query"] = query
+	paramRequest["caseSensitive"] = caseSensitive
+	paramRequest["isRegex"] = isRegex
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.searchInResource", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Result []*types.ChromePageSearchMatch
+		}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, err
+	}
+
+	return chromeData.Result.Result, nil
+}
+
+// queryUsageAndQuota - Queries more detailed quota and usage data than Storage API provides.
+// Returns -
+// Quota for requested security origin.
+// Current usage for requested security origin.
+func (c *ChromePage) QueryUsageAndQuota(securityOrigin string) (*types.ChromePageQuota, *types.ChromePageUsage, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["securityOrigin"] = securityOrigin
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.queryUsageAndQuota", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Quota *types.ChromePageQuota
+			Usage *types.ChromePageUsage
+		}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		cerr := &ChromeErrorResponse{}
+		chromeError := json.Unmarshal(resp.Data, cerr)
+		if chromeError == nil {
+			return nil, nil, &ChromeRequestErr{Resp: cerr}
+		}
+		return nil, nil, err
+	}
+
+	return chromeData.Result.Quota, chromeData.Result.Usage, nil
+}
+
+// end commands with parameters and special return types

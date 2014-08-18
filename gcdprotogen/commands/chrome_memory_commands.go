@@ -41,34 +41,37 @@ func newChromeMemory(target *ChromeTarget) *ChromeMemory {
 
 // getDOMCounters - 
 // Returns - 
-func (c *ChromeMemory) GetDOMCounters() (float64, float64, float64, error) {	
-	var documents float64 
-	var nodes float64 
-	var jsEventListeners float64 
+func (c *ChromeMemory) GetDOMCounters() (float64, float64, float64, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Memory.getDOMCounters"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { 
+			Documents float64 
+			Nodes float64 
+			JsEventListeners float64 
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return documents, nodes, jsEventListeners, &ChromeRequestErr{Resp: cerr}
+			return 0, 0, 0, &ChromeRequestErr{Resp: cerr}
 		}
-		return documents, nodes, jsEventListeners, err
+		return 0, 0, 0, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		documents = results["documents"].(float64)
-		nodes = results["nodes"].(float64)
-		jsEventListeners = results["jsEventListeners"].(float64)
-	}
-	return documents, nodes, jsEventListeners, nil
+	return chromeData.Result.Documents, chromeData.Result.Nodes, chromeData.Result.JsEventListeners, nil
 }
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
 

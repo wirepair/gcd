@@ -46,7 +46,7 @@ func (c *ChromeWorker) Disable() (*ChromeResponse, error) {
 // sendMessageToWorker - 
 // workerId - 
 // message - 
-func (c *ChromeWorker) SendMessageToWorker(workerId int, message object) (*ChromeResponse, error) {
+func (c *ChromeWorker) SendMessageToWorker(workerId int, message object, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["workerId"] = workerId
 	paramRequest["message"] = message
@@ -55,7 +55,7 @@ func (c *ChromeWorker) SendMessageToWorker(workerId int, message object) (*Chrom
 
 // connectToWorker - 
 // workerId - 
-func (c *ChromeWorker) ConnectToWorker(workerId int) (*ChromeResponse, error) {
+func (c *ChromeWorker) ConnectToWorker(workerId int, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["workerId"] = workerId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Worker.connectToWorker", Params: paramRequest})
@@ -63,7 +63,7 @@ func (c *ChromeWorker) ConnectToWorker(workerId int) (*ChromeResponse, error) {
 
 // disconnectFromWorker - 
 // workerId - 
-func (c *ChromeWorker) DisconnectFromWorker(workerId int) (*ChromeResponse, error) {
+func (c *ChromeWorker) DisconnectFromWorker(workerId int, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["workerId"] = workerId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Worker.disconnectFromWorker", Params: paramRequest})
@@ -71,7 +71,7 @@ func (c *ChromeWorker) DisconnectFromWorker(workerId int) (*ChromeResponse, erro
 
 // setAutoconnectToWorkers - 
 // value - 
-func (c *ChromeWorker) SetAutoconnectToWorkers(value bool) (*ChromeResponse, error) {
+func (c *ChromeWorker) SetAutoconnectToWorkers(value bool, ) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["value"] = value
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Worker.setAutoconnectToWorkers", Params: paramRequest})
@@ -86,30 +86,35 @@ func (c *ChromeWorker) SetAutoconnectToWorkers(value bool) (*ChromeResponse, err
 // canInspectWorkers - Tells whether browser supports workers inspection.
 // Returns - 
 // True if browser has workers support.
-func (c *ChromeWorker) CanInspectWorkers() (bool, error) {	
-	var result bool 
+func (c *ChromeWorker) CanInspectWorkers() (bool, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Worker.canInspectWorkers"})
 	resp := <-recvCh
 
-	var chromeData interface{}
+	var chromeData struct {
+		Result struct { 
+			Result bool 
+		}
+	}
+		
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
 		chromeError := json.Unmarshal(resp.Data, cerr)
 		if chromeError == nil {
-			return result, &ChromeRequestErr{Resp: cerr}
+			return false, &ChromeRequestErr{Resp: cerr}
 		}
-		return result, err
+		return false, err
 	}
 
-	m := chromeData.(map[string]interface{})
-	if r, ok := m["result"]; ok {
-		results := r.(map[string]interface{})
-		result = results["result"].(bool)
-	}
-	return result, nil
+	return chromeData.Result.Result, nil
 }
 
 
 // end commands with no parameters but special return types
+
+
+// start commands with parameters and special return types
+
+
+// end commands with parameters and special return types
 
