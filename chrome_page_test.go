@@ -3,6 +3,7 @@ package gcd
 import (
 	//"encoding/json"
 	"fmt"
+	//"github.com/wirepair/gcd/gcdprotogen/types"
 	"sync"
 	"testing"
 	"time"
@@ -49,4 +50,52 @@ func TestPageNavigate(t *testing.T) {
 	}
 	fmt.Printf("ret: %#v\n", ret)
 	wg.Wait()
+}
+
+func TestPageDeadLock(t *testing.T) {
+	//var frameId *types.ChromePageFrameId
+	var wg sync.WaitGroup
+	wg.Add(1)
+	debugger := NewChromeDebugger()
+	// start process, specify a tmp profile path so we get a fresh profiled browser
+	// set port 9222 as the debug port
+	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	defer debugger.ExitProcess()     // exit when done
+	targets := debugger.GetTargets() // get the 'targets' or tabs/background processes
+	target := targets[0]             // take the first one
+	fmt.Printf("targetInfo: %v\n", target.Target)
+	page := target.Page() // get the Page API
+
+	//subscribe to page load
+	target.Subscribe("Page.loadEventFired", func(targ *ChromeTarget, v []byte) {
+		time.Sleep(2 * time.Second)
+
+	})
+	target.Subscribe("Page.frameStoppedLoading", func(targ *ChromeTarget, v []byte) {
+		fmt.Printf("FIRED frameStoppedLoading EVENT")
+		dom := target.DOM()
+		fmt.Printf("Calling GetDocument()\n")
+		nodeId, _ := dom.GetDocument()
+		fmt.Printf("got node: %#v\ncalling SetOuterHTML....\n", nodeId)
+
+		r, err := dom.SetOuterHTML(nodeId.NodeId, "<h1>Veracodeの皆さん<br>おはよございます！Hackathon 6!</h1>")
+		fmt.Printf("SetOuterHTML....\n")
+		if err != nil {
+			fmt.Printf("GOT ERR IN SETDOC: %s\n", err)
+		}
+		fmt.Printf("SetDoc Response: %v\n", r)
+		wg.Done() // page loaded, we can exit now
+	})
+
+	page.Enable()                                        // Enable so we can recv events
+	ret, err := page.Navigate("http://www.veracode.com") // navigate
+	if err != nil {
+		t.Fatalf("Error navigating: %s\n", err)
+	}
+
+	//frameId = ret
+	//page.AddScriptToEvaluateOnLoad("document.write('<h1>Veracodeの皆さん<br>おはよございます！Hackathon 6!</h1>')")
+	fmt.Printf("\n\nret: %s\n\n", ret)
+
+	wg.Wait() // wait for page load
 }
