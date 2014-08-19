@@ -1,7 +1,7 @@
 # Google Chrome Debugger (GCD)
 This is primarly an auto-generated client library for communicating with a Google Chrome Browser over their [remote client debugger protocol](https://developer.chrome.com/devtools/docs/debugger-protocol). Note that their documentation is partially incorrect and does not contain a lot of the API calls that are actually available.
 
-Because I'm lazy and there are hundereds of different custom types and API methods, this library has been primarly automatically generated using their [protocol.json](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/devtools/protocol.json&q=protocol.json&sq=package:chromium&type=cs). What this means is probably a lot of stuff doesn't work. 
+Because I'm lazy and there are hundereds of different custom types and API methods, this library has been automatically generated using their [protocol.json](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/devtools/protocol.json&q=protocol.json&sq=package:chromium&type=cs). What this means is probably a lot of stuff doesn't work. 
 
 The [gcdprotogen](https://github.com/wirepair/gcd/gcdprotogen) package was created to generate types and commands for gcd. Non-biolerplate code (and the majority of the logic) are in [gcd.go](https://github.com/wirepair/gcd/blob/master/gcd.go) and [chrome_target.go](https://github.com/wirepair/gcd/blob/master/chrome_target.go).
 
