@@ -6,7 +6,6 @@ package gcd
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
@@ -129,7 +128,7 @@ func (c *ChromeDOM) RemoveAttribute(nodeId *types.ChromeDOMNodeId, name string) 
 // outerHTML - Outer HTML markup to set.
 func (c *ChromeDOM) SetOuterHTML(nodeId *types.ChromeDOMNodeId, outerHTML string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["nodeId"] = *nodeId
+	paramRequest["nodeId"] = nodeId
 	paramRequest["outerHTML"] = outerHTML
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.setOuterHTML", Params: paramRequest})
 }
@@ -235,7 +234,6 @@ func (c *ChromeDOM) SetFileInputFiles(nodeId *types.ChromeDOMNodeId, files []str
 // Resulting node.
 func (c *ChromeDOM) GetDocument() (*types.ChromeDOMNode, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.getDocument"})
-	fmt.Printf("Waiting for resp...")
 	resp := <-recvCh
 
 	var chromeData struct {

@@ -107,9 +107,9 @@ type gcdMessage struct {
 // Events are handled by mapping the method name to a function which takes a target and byte output.
 // For now, callers will need to unmarshall the types themselves.
 type ChromeTarget struct {
-	replyLock         sync.RWMutex               // lock for dispatching/subscribing
-	replyDispatcher   map[int64]chan *gcdMessage // Replies to synch methods using a non-buffered channel
-	eventLock         sync.RWMutex
+	replyLock         sync.RWMutex                           // lock for dispatching responses
+	replyDispatcher   map[int64]chan *gcdMessage             // Replies to synch methods using a non-buffered channel
+	eventLock         sync.RWMutex                           // lock for dispatching events
 	eventDispatcher   map[string]func(*ChromeTarget, []byte) // calls the function when events match the subscribed method
 	conn              *websocket.Conn                        // the connection to the chrome debugger service for this tab/process
 	applicationcache  *ChromeApplicationCache                // application cache API
@@ -186,9 +186,9 @@ func (c *ChromeTarget) listenWrite() {
 			c.replyLock.Lock()
 			c.replyDispatcher[msg.Id] = msg.ReplyCh
 			c.replyLock.Unlock()
-			log.Println("Send:", string(msg.Data))
+			//log.Println("Send:", string(msg.Data))
 			websocket.Message.Send(c.conn, string(msg.Data))
-			log.Println("Done sending to WS")
+			//log.Println("Done sending to WS")
 		// receive done from listenRead
 		case <-c.doneCh:
 			c.doneCh <- true // for listenRead method
@@ -208,11 +208,11 @@ func (c *ChromeTarget) listenRead() {
 		// read data from websocket connection
 		default:
 			var msg string
-			fmt.Println("About to recv...")
+			//fmt.Println("About to recv...")
 			err := websocket.Message.Receive(c.conn, &msg)
-			fmt.Println("done recv...")
+			//fmt.Println("done recv...")
 			if err == io.EOF {
-				fmt.Println("EOF RECVD")
+				//fmt.Println("EOF RECVD")
 				c.doneCh <- true
 				return
 			} else if err != nil {
@@ -234,7 +234,7 @@ type responseHeader struct {
 // the id or method fields to dispatch either responses or events
 // to listeners.
 func (c *ChromeTarget) dispatchResponse(msg []byte) {
-	fmt.Printf("data: %s\n\n", string(msg))
+	//fmt.Printf("data: %s\n\n", string(msg))
 	f := &responseHeader{}
 	err := json.Unmarshal(msg, f)
 	if err != nil {
