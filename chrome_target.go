@@ -1,3 +1,27 @@
+/*
+The MIT License (MIT)
+
+Copyright (c) 2014 isaac dawson
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
 package gcd
 
 import (
@@ -75,26 +99,32 @@ type gcdMessage struct {
 	Target  *ChromeTarget    // reference to the ChromeTarget for events
 }
 
+// Our Chrome Target (Tab/Process). Messages are returned to callers via non-buffered channels. Helpfully,
+// the remote debugger service uses id's so we can correlate which request should match which response.
+// We use a map to store the id of the request which contains a reference to a gcdMessage that holds the
+// reply channel for the ChromeTarget to return the response to.
+// Events are handled by mapping the method name to a function which takes a target and byte output.
+// For now, callers will need to unmarshall the types themselves.
 type ChromeTarget struct {
-	sync.RWMutex
-	replyDispatcher   map[int64]chan *gcdMessage
-	eventDispatcher   map[string]func(*ChromeTarget, []byte)
-	conn              *websocket.Conn
-	applicationcache  *ChromeApplicationCache
-	canvas            *ChromeCanvas
-	console           *ChromeConsole
-	css               *ChromeCSS
-	database          *ChromeDatabase
-	debugger          *ChromeDebugger
-	deviceorientation *ChromeDeviceOrientation
-	dom               *ChromeDOM
-	domdebugger       *ChromeDOMDebugger
-	domstorage        *ChromeDOMStorage
-	filesystem        *ChromeFileSystem
-	geolocation       *ChromeGeolocation
-	heapprofiler      *ChromeHeapProfiler
-	indexeddb         *ChromeIndexedDB
-	input             *ChromeInput
+	sync.RWMutex                                             // lock for dispatching/subscribing
+	replyDispatcher   map[int64]chan *gcdMessage             // Replies to synch methods using a non-buffered channel
+	eventDispatcher   map[string]func(*ChromeTarget, []byte) // calls the function when events match the subscribed method
+	conn              *websocket.Conn                        // the connection to the chrome debugger service for this tab/process
+	applicationcache  *ChromeApplicationCache                // application cache API
+	canvas            *ChromeCanvas                          // canvas API
+	console           *ChromeConsole                         // console API
+	css               *ChromeCSS                             // CSS API
+	database          *ChromeDatabase                        // Database API
+	debugger          *ChromeDebugger                        // JS Debugger API
+	deviceorientation *ChromeDeviceOrientation               // Device Orientation API
+	dom               *ChromeDOM                             // DOM API
+	domdebugger       *ChromeDOMDebugger                     // DOM Debugger API
+	domstorage        *ChromeDOMStorage                      // DOM Storage API
+	filesystem        *ChromeFileSystem                      // Is anyone still reading this? FileSystem API
+	geolocation       *ChromeGeolocation                     // Geolocation API
+	heapprofiler      *ChromeHeapProfiler                    // HeapProfiler API
+	indexeddb         *ChromeIndexedDB                       // IndexedDB API
+	input             *ChromeInput                           // Why am i doing this, it's obvious what they are, I quit.
 	inspector         *ChromeInspector
 	layertree         *ChromeLayerTree
 	memory            *ChromeMemory
@@ -106,12 +136,13 @@ type ChromeTarget struct {
 	timeline          *ChromeTimeline
 	tracing           *ChromeTracing
 	worker            *ChromeWorker
-	Target            *TargetInfo
-	sendCh            chan *gcdMessage
-	doneCh            chan bool
-	sendId            int64
+	Target            *TargetInfo      // The target information see, TargetInfo
+	sendCh            chan *gcdMessage // The channel used for API components to send back to use
+	doneCh            chan bool        // we be donez.
+	sendId            int64            // An Id which is atomically incremented per request.
 }
 
+// Creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
 func newChromeTarget(port string, target *TargetInfo) *ChromeTarget {
 	conn := wsConnection(fmt.Sprintf("localhost:%s", port), target.WebSocketDebuggerUrl)
 	replier := make(map[int64]chan *gcdMessage)
@@ -123,25 +154,27 @@ func newChromeTarget(port string, target *TargetInfo) *ChromeTarget {
 	return chromeTarget
 }
 
+// Increments the Id so we can synchronize our request/responses internally
 func (c *ChromeTarget) getId() int64 {
-	fmt.Printf("sendId: %d\n", c.sendId)
 	return atomic.AddInt64(&c.sendId, 1)
 }
 
+/// Subscribes Events, you must know the method name, such as Page.loadFiredEvent, and bind a function
+// which takes a ChromeTarget (us) and the raw JSON byte data for that event.
 func (c *ChromeTarget) Subscribe(method string, callback func(*ChromeTarget, []byte)) {
 	c.Lock()
 	c.eventDispatcher[method] = callback
 	c.Unlock()
-	fmt.Printf("finished subscribing to %s\n", method)
 }
 
+// Listens for API components wanting to send, and recv'ing data from the Chrome Debugger Service
 func (c *ChromeTarget) listen() {
 	go c.listenRead()
 	go c.listenWrite()
 }
 
+// Listens for API components wishing to send requests to the Chrome Debugger Service
 func (c *ChromeTarget) listenWrite() {
-	log.Println("Listening write for client")
 	for {
 		select {
 		// send message to the browser debugger client
@@ -153,21 +186,18 @@ func (c *ChromeTarget) listenWrite() {
 			websocket.Message.Send(c.conn, string(msg.Data))
 		// receive done from listenRead
 		case <-c.doneCh:
-			fmt.Println("listenWrite doneCh true, returning...")
 			c.doneCh <- true // for listenRead method
 			return
 		}
 	}
 }
 
-// Listen read request via channel
+// Listens for responses coming in from the Chrome Debugger Service.
 func (c *ChromeTarget) listenRead() {
-	log.Println("Listening read from client")
 	for {
 		select {
 		// receive done from listenWrite
 		case <-c.doneCh:
-			fmt.Println("listenRead doneCh true, returning")
 			c.doneCh <- true
 			return
 		// read data from websocket connection
@@ -175,7 +205,6 @@ func (c *ChromeTarget) listenRead() {
 			var msg string
 			err := websocket.Message.Receive(c.conn, &msg)
 			if err == io.EOF {
-				fmt.Println("EOF, sending doneCh")
 				c.doneCh <- true
 				return
 			} else if err != nil {
@@ -213,15 +242,16 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	c.Unlock()
 
 	c.RLock()
-	fmt.Printf(string(msg))
 	if r, ok := c.eventDispatcher[f.Method]; ok {
 		r(c, msg)
 	} else {
 		fmt.Printf("no event recvr bound for: %s", f.Method)
+		fmt.Printf("data: %s\n", string(msg))
 	}
 	c.RUnlock()
 }
 
+// Connects to the tab/process for sending/recv'ing debug events
 func wsConnection(addr, url string) *websocket.Conn {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -238,6 +268,7 @@ func wsConnection(addr, url string) *websocket.Conn {
 	return client
 }
 
+// Takes in a ParamRequest and gives back a response channel so the caller can decode as necessary.
 func sendCustomReturn(sendCh chan<- *gcdMessage, paramRequest *ParamRequest) (<-chan *gcdMessage, error) {
 	data, err := json.Marshal(paramRequest)
 	if err != nil {
@@ -250,6 +281,8 @@ func sendCustomReturn(sendCh chan<- *gcdMessage, paramRequest *ParamRequest) (<-
 	return recvCh, nil
 }
 
+// Sends a generic request that gets back a generic response, or error. This returns a ChromeResponse
+// object.
 func sendDefaultRequest(sendCh chan<- *gcdMessage, paramRequest *ParamRequest) (*ChromeResponse, error) {
 	req := &ChromeRequest{Id: paramRequest.Id, Method: paramRequest.Method}
 	data, err := json.Marshal(req)

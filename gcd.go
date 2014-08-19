@@ -25,7 +25,6 @@ THE SOFTWARE.
 package gcd
 
 import (
-	//"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -36,6 +35,7 @@ import (
 	"sync"
 )
 
+// The Google Chrome Debugger
 type Gcd struct {
 	sync.RWMutex  // for locking pages (i.e. websocket clients)
 	Targets       []*ChromeTarget
@@ -43,12 +43,17 @@ type Gcd struct {
 	port          string
 }
 
+// Give it a friendly name.
 func NewChromeDebugger() *Gcd {
 	c := &Gcd{}
 	c.Targets = make([]*ChromeTarget, 0)
 	return c
 }
 
+// Starts the process
+// exePath - the path to the executable
+// userDir - the user directory to start from so we get a fresh profile
+// port - The port to listen on.
 func (c *Gcd) StartProcess(exePath, userDir, port string) {
 	c.port = port
 	dir := fmt.Sprintf("--user-data-dir=%s", userDir)
@@ -65,10 +70,13 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 	}()
 }
 
+// Kills the process
 func (c *Gcd) ExitProcess() error {
 	return c.chromeProcess.Kill()
 }
 
+// Gets the primary tabs/processes to work with. Each will have their own references
+// to the underlying API components (such as Page, Debugger, DOM etc).
 func (c *Gcd) GetTargets() []*ChromeTarget {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/json", c.port))
 	if err != nil {
