@@ -235,14 +235,15 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	c.Lock()
 	if r, ok := c.replyDispatcher[f.Id]; ok {
 		delete(c.replyDispatcher, f.Id)
-		r <- &gcdMessage{Id: f.Id, Data: msg}
 		c.Unlock()
+		r <- &gcdMessage{Id: f.Id, Data: msg}
 		return
 	}
 	c.Unlock()
 
 	c.RLock()
 	if r, ok := c.eventDispatcher[f.Method]; ok {
+		c.RUnlock()
 		r(c, msg)
 	} else {
 		fmt.Printf("no event recvr bound for: %s", f.Method)
