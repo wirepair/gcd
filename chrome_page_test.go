@@ -71,7 +71,7 @@ func TestPageDeadLock(t *testing.T) {
 		fmt.Printf("FIRED frameStoppedLoading EVENT")
 		dom := target.DOM()
 		nodeId, err := dom.GetNodeForLocation(0, 0)
-		_, err = dom.SetOuterHTML(nodeId, "<html><body><h1>Veracodeの皆さん<br>おはよございます！Hackathon 6!</h1></body></html>")
+		_, err = dom.SetOuterHTML(nodeId, "<html><body><h1>Veracodeの皆さん<br>おはようございます！Hackathon 6!</h1></body></html>")
 		fmt.Printf("SetOuterHTML....\n")
 		if err != nil {
 			fmt.Printf("GOT ERR IN SETDOC: %s\n", err)
