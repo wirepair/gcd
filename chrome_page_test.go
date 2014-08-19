@@ -68,23 +68,20 @@ func TestPageDeadLock(t *testing.T) {
 
 	//subscribe to page load
 	target.Subscribe("Page.loadEventFired", func(targ *ChromeTarget, v []byte) {
-		time.Sleep(2 * time.Second)
-
-	})
-	target.Subscribe("Page.frameStoppedLoading", func(targ *ChromeTarget, v []byte) {
 		fmt.Printf("FIRED frameStoppedLoading EVENT")
 		dom := target.DOM()
-		fmt.Printf("Calling GetDocument()\n")
-		nodeId, _ := dom.GetDocument()
-		fmt.Printf("got node: %#v\ncalling SetOuterHTML....\n", nodeId)
-
-		r, err := dom.SetOuterHTML(nodeId.NodeId, "<h1>Veracodeの皆さん<br>おはよございます！Hackathon 6!</h1>")
+		nodeId, err := dom.GetNodeForLocation(0, 0)
+		_, err = dom.SetOuterHTML(nodeId, "<html><body><h1>Veracodeの皆さん<br>おはよございます！Hackathon 6!</h1></body></html>")
 		fmt.Printf("SetOuterHTML....\n")
 		if err != nil {
 			fmt.Printf("GOT ERR IN SETDOC: %s\n", err)
 		}
-		fmt.Printf("SetDoc Response: %v\n", r)
+		time.Sleep(3 * time.Second)
 		wg.Done() // page loaded, we can exit now
+
+	})
+	target.Subscribe("Page.frameStoppedLoading", func(targ *ChromeTarget, v []byte) {
+
 	})
 
 	page.Enable()                                        // Enable so we can recv events
