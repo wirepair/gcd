@@ -4,9 +4,7 @@
 
 package gcd
 
-
 import (
-	
 	"encoding/json"
 )
 
@@ -18,7 +16,6 @@ func (c *ChromeTarget) Power() *ChromePower {
 	return c.power
 }
 
-
 type ChromePower struct {
 	target *ChromeTarget
 }
@@ -28,12 +25,12 @@ func newChromePower(target *ChromeTarget) *ChromePower {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Start power events collection.
 func (c *ChromePower) Start() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Power.start"})
 }
- 
+
 // Stop power events collection.
 func (c *ChromePower) End() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Power.end"})
@@ -43,25 +40,23 @@ func (c *ChromePower) End() (*ChromeResponse, error) {
 
 // start parameterized commands with no special return types
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
 // canProfilePower - Tells whether power profiling is supported.
-// Returns - 
+// Returns -
 // True if power profiling is supported.
 func (c *ChromePower) CanProfilePower() (bool, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Power.canProfilePower"})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result bool 
+		Result struct {
+			Result bool
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -76,17 +71,17 @@ func (c *ChromePower) CanProfilePower() (bool, error) {
 }
 
 // getAccuracyLevel - Describes the accuracy level of the data provider.
-// Returns - 
+// Returns -
 func (c *ChromePower) GetAccuracyLevel() (string, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Power.getAccuracyLevel"})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result string 
+		Result struct {
+			Result string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -100,12 +95,8 @@ func (c *ChromePower) GetAccuracyLevel() (string, error) {
 	return chromeData.Result.Result, nil
 }
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
-
 // end commands with parameters and special return types
-

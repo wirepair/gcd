@@ -4,11 +4,7 @@
 
 package gcd
 
-
-import (
-	
-	
-)
+import ()
 
 // add this API domain to ChromeTarget
 func (c *ChromeTarget) DeviceOrientation() *ChromeDeviceOrientation {
@@ -17,7 +13,6 @@ func (c *ChromeTarget) DeviceOrientation() *ChromeDeviceOrientation {
 	}
 	return c.deviceorientation
 }
-
 
 type ChromeDeviceOrientation struct {
 	target *ChromeTarget
@@ -28,7 +23,7 @@ func newChromeDeviceOrientation(target *ChromeTarget) *ChromeDeviceOrientation {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Clears the overridden Device Orientation.
 func (c *ChromeDeviceOrientation) ClearDeviceOrientationOverride() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DeviceOrientation.clearDeviceOrientationOverride"})
@@ -42,7 +37,7 @@ func (c *ChromeDeviceOrientation) ClearDeviceOrientationOverride() (*ChromeRespo
 // alpha - Mock alpha
 // beta - Mock beta
 // gamma - Mock gamma
-func (c *ChromeDeviceOrientation) SetDeviceOrientationOverride(alpha float64, beta float64, gamma float64, ) (*ChromeResponse, error) {
+func (c *ChromeDeviceOrientation) SetDeviceOrientationOverride(alpha float64, beta float64, gamma float64) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["alpha"] = alpha
 	paramRequest["beta"] = beta
@@ -50,18 +45,12 @@ func (c *ChromeDeviceOrientation) SetDeviceOrientationOverride(alpha float64, be
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DeviceOrientation.setDeviceOrientationOverride", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
-
 // end commands with parameters and special return types
-

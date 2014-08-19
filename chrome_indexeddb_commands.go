@@ -4,10 +4,9 @@
 
 package gcd
 
-
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
 // add this API domain to ChromeTarget
@@ -18,7 +17,6 @@ func (c *ChromeTarget) IndexedDB() *ChromeIndexedDB {
 	return c.indexeddb
 }
 
-
 type ChromeIndexedDB struct {
 	target *ChromeTarget
 }
@@ -28,12 +26,12 @@ func newChromeIndexedDB(target *ChromeTarget) *ChromeIndexedDB {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Enables events from backend.
 func (c *ChromeIndexedDB) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "IndexedDB.enable"})
 }
- 
+
 // Disables events from backend.
 func (c *ChromeIndexedDB) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "IndexedDB.disable"})
@@ -47,7 +45,7 @@ func (c *ChromeIndexedDB) Disable() (*ChromeResponse, error) {
 // securityOrigin - Security origin.
 // databaseName - Database name.
 // objectStoreName - Object store name.
-func (c *ChromeIndexedDB) ClearObjectStore(securityOrigin string, databaseName string, objectStoreName string, ) (*ChromeResponse, error) {
+func (c *ChromeIndexedDB) ClearObjectStore(securityOrigin string, databaseName string, objectStoreName string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["securityOrigin"] = securityOrigin
 	paramRequest["databaseName"] = databaseName
@@ -55,33 +53,29 @@ func (c *ChromeIndexedDB) ClearObjectStore(securityOrigin string, databaseName s
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "IndexedDB.clearObjectStore", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
 // requestDatabaseNames - Requests database names for given security origin.
-// Returns - 
+// Returns -
 // Database names for origin.
-func (c *ChromeIndexedDB) RequestDatabaseNames(securityOrigin string, ) ([]string, error) {
+func (c *ChromeIndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["securityOrigin"] = securityOrigin
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "IndexedDB.requestDatabaseNames", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			DatabaseNames []string 
+		Result struct {
+			DatabaseNames []string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -96,9 +90,9 @@ func (c *ChromeIndexedDB) RequestDatabaseNames(securityOrigin string, ) ([]strin
 }
 
 // requestDatabase - Requests database with given name in given frame.
-// Returns - 
+// Returns -
 // Database with an array of object stores.
-func (c *ChromeIndexedDB) RequestDatabase(securityOrigin string, databaseName string, ) (*types.ChromeIndexedDBDatabaseWithObjectStores, error) {
+func (c *ChromeIndexedDB) RequestDatabase(securityOrigin string, databaseName string) (*types.ChromeIndexedDBDatabaseWithObjectStores, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["securityOrigin"] = securityOrigin
 	paramRequest["databaseName"] = databaseName
@@ -106,11 +100,11 @@ func (c *ChromeIndexedDB) RequestDatabase(securityOrigin string, databaseName st
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			DatabaseWithObjectStores *types.ChromeIndexedDBDatabaseWithObjectStores 
+		Result struct {
+			DatabaseWithObjectStores *types.ChromeIndexedDBDatabaseWithObjectStores
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -125,10 +119,10 @@ func (c *ChromeIndexedDB) RequestDatabase(securityOrigin string, databaseName st
 }
 
 // requestData - Requests data from object store or index.
-// Returns - 
+// Returns -
 // Array of object store data entries.
 // If true, there are more entries to fetch in the given range.
-func (c *ChromeIndexedDB) RequestData(securityOrigin string, databaseName string, objectStoreName string, indexName string, skipCount int, pageSize int, keyRange *types.ChromeIndexedDBKeyRange, ) ([]*types.ChromeIndexedDBDataEntry, bool, error) {
+func (c *ChromeIndexedDB) RequestData(securityOrigin string, databaseName string, objectStoreName string, indexName string, skipCount int, pageSize int, keyRange *types.ChromeIndexedDBKeyRange) ([]*types.ChromeIndexedDBDataEntry, bool, error) {
 	paramRequest := make(map[string]interface{}, 7)
 	paramRequest["securityOrigin"] = securityOrigin
 	paramRequest["databaseName"] = databaseName
@@ -141,12 +135,12 @@ func (c *ChromeIndexedDB) RequestData(securityOrigin string, databaseName string
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ObjectStoreDataEntries []*types.ChromeIndexedDBDataEntry 
-			HasMore bool 
+		Result struct {
+			ObjectStoreDataEntries []*types.ChromeIndexedDBDataEntry
+			HasMore                bool
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -160,6 +154,4 @@ func (c *ChromeIndexedDB) RequestData(securityOrigin string, databaseName string
 	return chromeData.Result.ObjectStoreDataEntries, chromeData.Result.HasMore, nil
 }
 
-
 // end commands with parameters and special return types
-

@@ -4,10 +4,9 @@
 
 package gcd
 
-
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
 // add this API domain to ChromeTarget
@@ -18,7 +17,6 @@ func (c *ChromeTarget) FileSystem() *ChromeFileSystem {
 	return c.filesystem
 }
 
-
 type ChromeFileSystem struct {
 	target *ChromeTarget
 }
@@ -28,12 +26,12 @@ func newChromeFileSystem(target *ChromeTarget) *ChromeFileSystem {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Enables events from backend.
 func (c *ChromeFileSystem) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "FileSystem.enable"})
 }
- 
+
 // Disables events from backend.
 func (c *ChromeFileSystem) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "FileSystem.disable"})
@@ -43,23 +41,19 @@ func (c *ChromeFileSystem) Disable() (*ChromeResponse, error) {
 
 // start parameterized commands with no special return types
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
 // requestFileSystemRoot - Returns root directory of the FileSystem, if exists.
-// Returns - 
+// Returns -
 // 0, if no error. Otherwise, errorCode is set to FileError::ErrorCode value.
 // Contains root of the requested FileSystem if the command completed successfully.
-func (c *ChromeFileSystem) RequestFileSystemRoot(origin string, theType string, ) (float64, *types.ChromeFileSystemEntry, error) {
+func (c *ChromeFileSystem) RequestFileSystemRoot(origin string, theType string) (float64, *types.ChromeFileSystemEntry, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["origin"] = origin
 	paramRequest["type"] = theType
@@ -67,12 +61,12 @@ func (c *ChromeFileSystem) RequestFileSystemRoot(origin string, theType string, 
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ErrorCode float64 
-			Root *types.ChromeFileSystemEntry 
+		Result struct {
+			ErrorCode float64
+			Root      *types.ChromeFileSystemEntry
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -87,22 +81,22 @@ func (c *ChromeFileSystem) RequestFileSystemRoot(origin string, theType string, 
 }
 
 // requestDirectoryContent - Returns content of the directory.
-// Returns - 
+// Returns -
 // 0, if no error. Otherwise, errorCode is set to FileError::ErrorCode value.
 // Contains all entries on directory if the command completed successfully.
-func (c *ChromeFileSystem) RequestDirectoryContent(url string, ) (float64, []*types.ChromeFileSystemEntry, error) {
+func (c *ChromeFileSystem) RequestDirectoryContent(url string) (float64, []*types.ChromeFileSystemEntry, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "FileSystem.requestDirectoryContent", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ErrorCode float64 
-			Entries []*types.ChromeFileSystemEntry 
+		Result struct {
+			ErrorCode float64
+			Entries   []*types.ChromeFileSystemEntry
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -117,22 +111,22 @@ func (c *ChromeFileSystem) RequestDirectoryContent(url string, ) (float64, []*ty
 }
 
 // requestMetadata - Returns metadata of the entry.
-// Returns - 
+// Returns -
 // 0, if no error. Otherwise, errorCode is set to FileError::ErrorCode value.
 // Contains metadata of the entry if the command completed successfully.
-func (c *ChromeFileSystem) RequestMetadata(url string, ) (float64, *types.ChromeFileSystemMetadata, error) {
+func (c *ChromeFileSystem) RequestMetadata(url string) (float64, *types.ChromeFileSystemMetadata, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "FileSystem.requestMetadata", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ErrorCode float64 
-			Metadata *types.ChromeFileSystemMetadata 
+		Result struct {
+			ErrorCode float64
+			Metadata  *types.ChromeFileSystemMetadata
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -147,11 +141,11 @@ func (c *ChromeFileSystem) RequestMetadata(url string, ) (float64, *types.Chrome
 }
 
 // requestFileContent - Returns content of the file. Result should be sliced into [start, end).
-// Returns - 
+// Returns -
 // 0, if no error. Otherwise, errorCode is set to FileError::ErrorCode value.
 // Content of the file.
 // Charset of the content if it is served as text.
-func (c *ChromeFileSystem) RequestFileContent(url string, readAsText bool, start int, end int, charset string, ) (float64, string, string, error) {
+func (c *ChromeFileSystem) RequestFileContent(url string, readAsText bool, start int, end int, charset string) (float64, string, string, error) {
 	paramRequest := make(map[string]interface{}, 5)
 	paramRequest["url"] = url
 	paramRequest["readAsText"] = readAsText
@@ -162,13 +156,13 @@ func (c *ChromeFileSystem) RequestFileContent(url string, readAsText bool, start
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ErrorCode float64 
-			Content string 
-			Charset string 
+		Result struct {
+			ErrorCode float64
+			Content   string
+			Charset   string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -183,20 +177,20 @@ func (c *ChromeFileSystem) RequestFileContent(url string, readAsText bool, start
 }
 
 // deleteEntry - Deletes specified entry. If the entry is a directory, the agent deletes children recursively.
-// Returns - 
+// Returns -
 // 0, if no error. Otherwise errorCode is set to FileError::ErrorCode value.
-func (c *ChromeFileSystem) DeleteEntry(url string, ) (float64, error) {
+func (c *ChromeFileSystem) DeleteEntry(url string) (float64, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "FileSystem.deleteEntry", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ErrorCode float64 
+		Result struct {
+			ErrorCode float64
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -210,6 +204,4 @@ func (c *ChromeFileSystem) DeleteEntry(url string, ) (float64, error) {
 	return chromeData.Result.ErrorCode, nil
 }
 
-
 // end commands with parameters and special return types
-

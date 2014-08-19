@@ -4,11 +4,7 @@
 
 package gcd
 
-
-import (
-	
-	
-)
+import ()
 
 // add this API domain to ChromeTarget
 func (c *ChromeTarget) Timeline() *ChromeTimeline {
@@ -17,7 +13,6 @@ func (c *ChromeTarget) Timeline() *ChromeTimeline {
 	}
 	return c.timeline
 }
-
 
 type ChromeTimeline struct {
 	target *ChromeTarget
@@ -28,17 +23,17 @@ func newChromeTimeline(target *ChromeTarget) *ChromeTimeline {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Enables timeline. After this call, timeline can be started from within the page (for example upon console.timeline).
 func (c *ChromeTimeline) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Timeline.enable"})
 }
- 
+
 // Disables timeline.
 func (c *ChromeTimeline) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Timeline.disable"})
 }
- 
+
 // Stops capturing instrumentation events.
 func (c *ChromeTimeline) Stop() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Timeline.stop"})
@@ -54,7 +49,7 @@ func (c *ChromeTimeline) Stop() (*ChromeResponse, error) {
 // liveEvents - Coma separated event types to issue although bufferEvents is set.
 // includeCounters - Whether counters data should be included into timeline events.
 // includeGPUEvents - Whether events from GPU process should be collected.
-func (c *ChromeTimeline) Start(maxCallStackDepth int, bufferEvents bool, liveEvents string, includeCounters bool, includeGPUEvents bool, ) (*ChromeResponse, error) {
+func (c *ChromeTimeline) Start(maxCallStackDepth int, bufferEvents bool, liveEvents string, includeCounters bool, includeGPUEvents bool) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 5)
 	paramRequest["maxCallStackDepth"] = maxCallStackDepth
 	paramRequest["bufferEvents"] = bufferEvents
@@ -64,18 +59,12 @@ func (c *ChromeTimeline) Start(maxCallStackDepth int, bufferEvents bool, liveEve
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Timeline.start", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
-
 // end commands with parameters and special return types
-

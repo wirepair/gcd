@@ -4,10 +4,9 @@
 
 package gcd
 
-
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
 // add this API domain to ChromeTarget
@@ -18,7 +17,6 @@ func (c *ChromeTarget) CSS() *ChromeCSS {
 	return c.css
 }
 
-
 type ChromeCSS struct {
 	target *ChromeTarget
 }
@@ -28,12 +26,12 @@ func newChromeCSS(target *ChromeTarget) *ChromeCSS {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received.
 func (c *ChromeCSS) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.enable"})
 }
- 
+
 // Disables the CSS agent for the given page.
 func (c *ChromeCSS) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.disable"})
@@ -44,9 +42,9 @@ func (c *ChromeCSS) Disable() (*ChromeResponse, error) {
 // start parameterized commands with no special return types
 
 // setStyleSheetText - Sets the new stylesheet text.
-// styleSheetId - 
-// text - 
-func (c *ChromeCSS) SetStyleSheetText(styleSheetId *types.ChromeCSSStyleSheetId, text string, ) (*ChromeResponse, error) {
+// styleSheetId -
+// text -
+func (c *ChromeCSS) SetStyleSheetText(styleSheetId *types.ChromeCSSStyleSheetId, text string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["text"] = text
@@ -56,31 +54,29 @@ func (c *ChromeCSS) SetStyleSheetText(styleSheetId *types.ChromeCSSStyleSheetId,
 // forcePseudoState - Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser.
 // nodeId - The element id for which to force the pseudo state.
 // forcedPseudoClasses - Element pseudo classes to force when computing the element's style.
-func (c *ChromeCSS) ForcePseudoState(nodeId *types.ChromeDOMNodeId, forcedPseudoClasses []string, ) (*ChromeResponse, error) {
+func (c *ChromeCSS) ForcePseudoState(nodeId *types.ChromeDOMNodeId, forcedPseudoClasses []string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["forcedPseudoClasses"] = forcedPseudoClasses
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.forcePseudoState", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
 // getMediaQueries - Returns all media queries parsed by the rendering engine.
-// Returns - 
+// Returns -
 func (c *ChromeCSS) GetMediaQueries() ([]*types.ChromeCSSCSSMedia, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.getMediaQueries"})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Medias []*types.ChromeCSSCSSMedia 
+		Result struct {
+			Medias []*types.ChromeCSSCSSMedia
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -94,18 +90,16 @@ func (c *ChromeCSS) GetMediaQueries() ([]*types.ChromeCSSCSSMedia, error) {
 	return chromeData.Result.Medias, nil
 }
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
 // getMatchedStylesForNode - Returns requested styles for a DOM node identified by <code>nodeId</code>.
-// Returns - 
+// Returns -
 // CSS rules matching this node, from all applicable stylesheets.
 // Pseudo style matches for this node.
 // A chain of inherited styles (from the immediate node parent up to the DOM tree root).
-func (c *ChromeCSS) GetMatchedStylesForNode(nodeId *types.ChromeDOMNodeId, includePseudo bool, includeInherited bool, ) ([]*types.ChromeCSSRuleMatch, []*types.ChromeCSSPseudoIdMatches, []*types.ChromeCSSInheritedStyleEntry, error) {
+func (c *ChromeCSS) GetMatchedStylesForNode(nodeId *types.ChromeDOMNodeId, includePseudo bool, includeInherited bool) ([]*types.ChromeCSSRuleMatch, []*types.ChromeCSSPseudoIdMatches, []*types.ChromeCSSInheritedStyleEntry, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["includePseudo"] = includePseudo
@@ -114,13 +108,13 @@ func (c *ChromeCSS) GetMatchedStylesForNode(nodeId *types.ChromeDOMNodeId, inclu
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			MatchedCSSRules []*types.ChromeCSSRuleMatch 
-			PseudoElements []*types.ChromeCSSPseudoIdMatches 
-			Inherited []*types.ChromeCSSInheritedStyleEntry 
+		Result struct {
+			MatchedCSSRules []*types.ChromeCSSRuleMatch
+			PseudoElements  []*types.ChromeCSSPseudoIdMatches
+			Inherited       []*types.ChromeCSSInheritedStyleEntry
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -135,22 +129,22 @@ func (c *ChromeCSS) GetMatchedStylesForNode(nodeId *types.ChromeDOMNodeId, inclu
 }
 
 // getInlineStylesForNode - Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by <code>nodeId</code>.
-// Returns - 
+// Returns -
 // Inline style for the specified DOM node.
 // Attribute-defined element style (e.g. resulting from "width=20 height=100%").
-func (c *ChromeCSS) GetInlineStylesForNode(nodeId *types.ChromeDOMNodeId, ) (*types.ChromeCSSCSSStyle, *types.ChromeCSSCSSStyle, error) {
+func (c *ChromeCSS) GetInlineStylesForNode(nodeId *types.ChromeDOMNodeId) (*types.ChromeCSSCSSStyle, *types.ChromeCSSCSSStyle, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.getInlineStylesForNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			InlineStyle *types.ChromeCSSCSSStyle 
-			AttributesStyle *types.ChromeCSSCSSStyle 
+		Result struct {
+			InlineStyle     *types.ChromeCSSCSSStyle
+			AttributesStyle *types.ChromeCSSCSSStyle
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -165,20 +159,20 @@ func (c *ChromeCSS) GetInlineStylesForNode(nodeId *types.ChromeDOMNodeId, ) (*ty
 }
 
 // getComputedStyleForNode - Returns the computed style for a DOM node identified by <code>nodeId</code>.
-// Returns - 
+// Returns -
 // Computed style for the specified DOM node.
-func (c *ChromeCSS) GetComputedStyleForNode(nodeId *types.ChromeDOMNodeId, ) ([]*types.ChromeCSSCSSComputedStyleProperty, error) {
+func (c *ChromeCSS) GetComputedStyleForNode(nodeId *types.ChromeDOMNodeId) ([]*types.ChromeCSSCSSComputedStyleProperty, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.getComputedStyleForNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ComputedStyle []*types.ChromeCSSCSSComputedStyleProperty 
+		Result struct {
+			ComputedStyle []*types.ChromeCSSCSSComputedStyleProperty
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -193,22 +187,22 @@ func (c *ChromeCSS) GetComputedStyleForNode(nodeId *types.ChromeDOMNodeId, ) ([]
 }
 
 // getPlatformFontsForNode - Requests information about platform fonts which we used to render child TextNodes in the given node.
-// Returns - 
+// Returns -
 // Font family name which is determined by computed style.
 // Usage statistics for every employed platform font.
-func (c *ChromeCSS) GetPlatformFontsForNode(nodeId *types.ChromeDOMNodeId, ) (string, []*types.ChromeCSSPlatformFontUsage, error) {
+func (c *ChromeCSS) GetPlatformFontsForNode(nodeId *types.ChromeDOMNodeId) (string, []*types.ChromeCSSPlatformFontUsage, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.getPlatformFontsForNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			CssFamilyName string 
-			Fonts []*types.ChromeCSSPlatformFontUsage 
+		Result struct {
+			CssFamilyName string
+			Fonts         []*types.ChromeCSSPlatformFontUsage
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -223,20 +217,20 @@ func (c *ChromeCSS) GetPlatformFontsForNode(nodeId *types.ChromeDOMNodeId, ) (st
 }
 
 // getStyleSheetText - Returns the current textual content and the URL for a stylesheet.
-// Returns - 
+// Returns -
 // The stylesheet text.
-func (c *ChromeCSS) GetStyleSheetText(styleSheetId *types.ChromeCSSStyleSheetId, ) (string, error) {
+func (c *ChromeCSS) GetStyleSheetText(styleSheetId *types.ChromeCSSStyleSheetId) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["styleSheetId"] = styleSheetId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.getStyleSheetText", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Text string 
+		Result struct {
+			Text string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -251,9 +245,9 @@ func (c *ChromeCSS) GetStyleSheetText(styleSheetId *types.ChromeCSSStyleSheetId,
 }
 
 // setPropertyText - Either replaces a property identified by <code>styleSheetId</code> and <code>range</code> with <code>text</code> or inserts a new property <code>text</code> at the position identified by an empty <code>range</code>.
-// Returns - 
+// Returns -
 // The resulting style after the property text modification.
-func (c *ChromeCSS) SetPropertyText(styleSheetId *types.ChromeCSSStyleSheetId, theRange *types.ChromeCSSSourceRange, text string, ) (*types.ChromeCSSCSSStyle, error) {
+func (c *ChromeCSS) SetPropertyText(styleSheetId *types.ChromeCSSStyleSheetId, theRange *types.ChromeCSSSourceRange, text string) (*types.ChromeCSSCSSStyle, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
@@ -262,11 +256,11 @@ func (c *ChromeCSS) SetPropertyText(styleSheetId *types.ChromeCSSStyleSheetId, t
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Style *types.ChromeCSSCSSStyle 
+		Result struct {
+			Style *types.ChromeCSSCSSStyle
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -281,9 +275,9 @@ func (c *ChromeCSS) SetPropertyText(styleSheetId *types.ChromeCSSStyleSheetId, t
 }
 
 // setRuleSelector - Modifies the rule selector.
-// Returns - 
+// Returns -
 // The resulting rule after the selector modification.
-func (c *ChromeCSS) SetRuleSelector(styleSheetId *types.ChromeCSSStyleSheetId, theRange *types.ChromeCSSSourceRange, selector string, ) (*types.ChromeCSSCSSRule, error) {
+func (c *ChromeCSS) SetRuleSelector(styleSheetId *types.ChromeCSSStyleSheetId, theRange *types.ChromeCSSSourceRange, selector string) (*types.ChromeCSSCSSRule, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
@@ -292,11 +286,11 @@ func (c *ChromeCSS) SetRuleSelector(styleSheetId *types.ChromeCSSStyleSheetId, t
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Rule *types.ChromeCSSCSSRule 
+		Result struct {
+			Rule *types.ChromeCSSCSSRule
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -311,20 +305,20 @@ func (c *ChromeCSS) SetRuleSelector(styleSheetId *types.ChromeCSSStyleSheetId, t
 }
 
 // createStyleSheet - Creates a new special "via-inspector" stylesheet in the frame with given <code>frameId</code>.
-// Returns - 
+// Returns -
 // Identifier of the created "via-inspector" stylesheet.
-func (c *ChromeCSS) CreateStyleSheet(frameId *types.ChromePageFrameId, ) (*types.ChromeCSSStyleSheetId, error) {
+func (c *ChromeCSS) CreateStyleSheet(frameId *types.ChromePageFrameId) (*types.ChromeCSSStyleSheetId, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["frameId"] = frameId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.createStyleSheet", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			StyleSheetId *types.ChromeCSSStyleSheetId 
+		Result struct {
+			StyleSheetId *types.ChromeCSSStyleSheetId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -339,9 +333,9 @@ func (c *ChromeCSS) CreateStyleSheet(frameId *types.ChromePageFrameId, ) (*types
 }
 
 // addRule - Creates a new empty rule with the given <code>selector</code> in a stylesheet with given <code>styleSheetId</code>.
-// Returns - 
+// Returns -
 // The newly created rule.
-func (c *ChromeCSS) AddRule(styleSheetId *types.ChromeCSSStyleSheetId, selector string, ) (*types.ChromeCSSCSSRule, error) {
+func (c *ChromeCSS) AddRule(styleSheetId *types.ChromeCSSStyleSheetId, selector string) (*types.ChromeCSSCSSRule, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["selector"] = selector
@@ -349,11 +343,11 @@ func (c *ChromeCSS) AddRule(styleSheetId *types.ChromeCSSStyleSheetId, selector 
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Rule *types.ChromeCSSCSSRule 
+		Result struct {
+			Rule *types.ChromeCSSCSSRule
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -367,6 +361,4 @@ func (c *ChromeCSS) AddRule(styleSheetId *types.ChromeCSSStyleSheetId, selector 
 	return chromeData.Result.Rule, nil
 }
 
-
 // end commands with parameters and special return types
-

@@ -4,10 +4,8 @@
 
 package gcd
 
-
 import (
 	"github.com/wirepair/gcd/gcdprotogen/types"
-	
 )
 
 // add this API domain to ChromeTarget
@@ -17,7 +15,6 @@ func (c *ChromeTarget) DOMDebugger() *ChromeDOMDebugger {
 	}
 	return c.domdebugger
 }
-
 
 type ChromeDOMDebugger struct {
 	target *ChromeTarget
@@ -36,7 +33,7 @@ func newChromeDOMDebugger(target *ChromeTarget) *ChromeDOMDebugger {
 // setDOMBreakpoint - Sets breakpoint on particular operation with DOM.
 // nodeId - Identifier of the node to set breakpoint on.
 // type - Type of the operation to stop upon.
-func (c *ChromeDOMDebugger) SetDOMBreakpoint(nodeId *types.ChromeDOMNodeId, theType *types.ChromeDOMDebuggerDOMBreakpointType, ) (*ChromeResponse, error) {
+func (c *ChromeDOMDebugger) SetDOMBreakpoint(nodeId *types.ChromeDOMNodeId, theType *types.ChromeDOMDebuggerDOMBreakpointType) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["type"] = theType
@@ -46,7 +43,7 @@ func (c *ChromeDOMDebugger) SetDOMBreakpoint(nodeId *types.ChromeDOMNodeId, theT
 // removeDOMBreakpoint - Removes DOM breakpoint that was set using <code>setDOMBreakpoint</code>.
 // nodeId - Identifier of the node to remove breakpoint from.
 // type - Type of the breakpoint to remove.
-func (c *ChromeDOMDebugger) RemoveDOMBreakpoint(nodeId *types.ChromeDOMNodeId, theType *types.ChromeDOMDebuggerDOMBreakpointType, ) (*ChromeResponse, error) {
+func (c *ChromeDOMDebugger) RemoveDOMBreakpoint(nodeId *types.ChromeDOMNodeId, theType *types.ChromeDOMDebuggerDOMBreakpointType) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["type"] = theType
@@ -56,7 +53,7 @@ func (c *ChromeDOMDebugger) RemoveDOMBreakpoint(nodeId *types.ChromeDOMNodeId, t
 // setEventListenerBreakpoint - Sets breakpoint on particular DOM event.
 // eventName - DOM Event name to stop on (any DOM event will do).
 // targetName - EventTarget interface name to stop on. If equal to <code>"*"</code> or not provided, will stop on any EventTarget.
-func (c *ChromeDOMDebugger) SetEventListenerBreakpoint(eventName string, targetName string, ) (*ChromeResponse, error) {
+func (c *ChromeDOMDebugger) SetEventListenerBreakpoint(eventName string, targetName string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["eventName"] = eventName
 	paramRequest["targetName"] = targetName
@@ -66,7 +63,7 @@ func (c *ChromeDOMDebugger) SetEventListenerBreakpoint(eventName string, targetN
 // removeEventListenerBreakpoint - Removes breakpoint on particular DOM event.
 // eventName - Event name.
 // targetName - EventTarget interface name.
-func (c *ChromeDOMDebugger) RemoveEventListenerBreakpoint(eventName string, targetName string, ) (*ChromeResponse, error) {
+func (c *ChromeDOMDebugger) RemoveEventListenerBreakpoint(eventName string, targetName string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["eventName"] = eventName
 	paramRequest["targetName"] = targetName
@@ -75,7 +72,7 @@ func (c *ChromeDOMDebugger) RemoveEventListenerBreakpoint(eventName string, targ
 
 // setInstrumentationBreakpoint - Sets breakpoint on particular native event.
 // eventName - Instrumentation name to stop on.
-func (c *ChromeDOMDebugger) SetInstrumentationBreakpoint(eventName string, ) (*ChromeResponse, error) {
+func (c *ChromeDOMDebugger) SetInstrumentationBreakpoint(eventName string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["eventName"] = eventName
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMDebugger.setInstrumentationBreakpoint", Params: paramRequest})
@@ -83,7 +80,7 @@ func (c *ChromeDOMDebugger) SetInstrumentationBreakpoint(eventName string, ) (*C
 
 // removeInstrumentationBreakpoint - Removes breakpoint on particular native event.
 // eventName - Instrumentation name to stop on.
-func (c *ChromeDOMDebugger) RemoveInstrumentationBreakpoint(eventName string, ) (*ChromeResponse, error) {
+func (c *ChromeDOMDebugger) RemoveInstrumentationBreakpoint(eventName string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["eventName"] = eventName
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMDebugger.removeInstrumentationBreakpoint", Params: paramRequest})
@@ -91,7 +88,7 @@ func (c *ChromeDOMDebugger) RemoveInstrumentationBreakpoint(eventName string, ) 
 
 // setXHRBreakpoint - Sets breakpoint on XMLHttpRequest.
 // url - Resource URL substring. All XHRs having this substring in the URL will get stopped upon.
-func (c *ChromeDOMDebugger) SetXHRBreakpoint(url string, ) (*ChromeResponse, error) {
+func (c *ChromeDOMDebugger) SetXHRBreakpoint(url string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMDebugger.setXHRBreakpoint", Params: paramRequest})
@@ -99,24 +96,18 @@ func (c *ChromeDOMDebugger) SetXHRBreakpoint(url string, ) (*ChromeResponse, err
 
 // removeXHRBreakpoint - Removes breakpoint from XMLHttpRequest.
 // url - Resource URL substring.
-func (c *ChromeDOMDebugger) RemoveXHRBreakpoint(url string, ) (*ChromeResponse, error) {
+func (c *ChromeDOMDebugger) RemoveXHRBreakpoint(url string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMDebugger.removeXHRBreakpoint", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
-
 // end commands with parameters and special return types
-

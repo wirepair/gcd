@@ -4,9 +4,7 @@
 
 package gcd
 
-
 import (
-	
 	"encoding/json"
 )
 
@@ -18,7 +16,6 @@ func (c *ChromeTarget) Tracing() *ChromeTracing {
 	return c.tracing
 }
 
-
 type ChromeTracing struct {
 	target *ChromeTarget
 }
@@ -28,7 +25,7 @@ func newChromeTracing(target *ChromeTarget) *ChromeTracing {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Stop trace events collection.
 func (c *ChromeTracing) End() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Tracing.end"})
@@ -38,25 +35,23 @@ func (c *ChromeTracing) End() (*ChromeResponse, error) {
 
 // start parameterized commands with no special return types
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
 // getCategories - Gets supported tracing categories.
-// Returns - 
+// Returns -
 // A list of supported tracing categories.
 func (c *ChromeTracing) GetCategories() ([]string, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Tracing.getCategories"})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Categories []string 
+		Result struct {
+			Categories []string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -70,16 +65,14 @@ func (c *ChromeTracing) GetCategories() ([]string, error) {
 	return chromeData.Result.Categories, nil
 }
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
 // start - Start trace events collection.
-// Returns - 
+// Returns -
 // A system-unique identifier of the tracing session that allows associating of some of the trace events with the inspected page
-func (c *ChromeTracing) Start(categories string, options string, bufferUsageReportingInterval float64, ) (string, error) {
+func (c *ChromeTracing) Start(categories string, options string, bufferUsageReportingInterval float64) (string, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["categories"] = categories
 	paramRequest["options"] = options
@@ -88,11 +81,11 @@ func (c *ChromeTracing) Start(categories string, options string, bufferUsageRepo
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			SessionId string 
+		Result struct {
+			SessionId string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -106,6 +99,4 @@ func (c *ChromeTracing) Start(categories string, options string, bufferUsageRepo
 	return chromeData.Result.SessionId, nil
 }
 
-
 // end commands with parameters and special return types
-

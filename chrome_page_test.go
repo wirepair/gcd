@@ -3,7 +3,7 @@ package gcd
 import (
 	//"encoding/json"
 	"fmt"
-	//"log"
+	"sync"
 	"testing"
 	"time"
 )
@@ -28,4 +28,25 @@ func TestPageFPS(t *testing.T) {
 	}
 	cookies, newErr := page.GetCookies()
 	fmt.Printf("%v %v\n", cookies, newErr)
+}
+
+func TestPageNavigate(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	debugger := NewChromeDebugger()
+	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	defer debugger.ExitProcess()
+	targets := debugger.GetTargets()
+	target := targets[0]
+	target.Subscribe("Page.loadEventFired", func(targ *ChromeTarget, v []byte) {
+		wg.Done()
+	})
+	page := target.Page()
+	page.Enable()
+	ret, err := page.Navigate("http://www.veracode.com")
+	if err != nil {
+		t.Fatalf("Error navigating: %s\n", err)
+	}
+	fmt.Printf("ret: %#v\n", ret)
+	wg.Wait()
 }

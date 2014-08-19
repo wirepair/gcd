@@ -4,10 +4,9 @@
 
 package gcd
 
-
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
 // add this API domain to ChromeTarget
@@ -18,7 +17,6 @@ func (c *ChromeTarget) Profiler() *ChromeProfiler {
 	return c.profiler
 }
 
-
 type ChromeProfiler struct {
 	target *ChromeTarget
 }
@@ -28,18 +26,18 @@ func newChromeProfiler(target *ChromeTarget) *ChromeProfiler {
 	return c
 }
 
-// start non parameterized commands 
-// 
+// start non parameterized commands
+//
 func (c *ChromeProfiler) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.enable"})
 }
- 
-// 
+
+//
 func (c *ChromeProfiler) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.disable"})
 }
- 
-// 
+
+//
 func (c *ChromeProfiler) Start() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.start"})
 }
@@ -50,31 +48,29 @@ func (c *ChromeProfiler) Start() (*ChromeResponse, error) {
 
 // setSamplingInterval - Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
 // interval - New sampling interval in microseconds.
-func (c *ChromeProfiler) SetSamplingInterval(interval int, ) (*ChromeResponse, error) {
+func (c *ChromeProfiler) SetSamplingInterval(interval int) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["interval"] = interval
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.setSamplingInterval", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-// stop - 
-// Returns - 
+// stop -
+// Returns -
 // Recorded profile.
 func (c *ChromeProfiler) Stop() (*types.ChromeProfilerCPUProfile, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.stop"})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Profile *types.ChromeProfilerCPUProfile 
+		Result struct {
+			Profile *types.ChromeProfilerCPUProfile
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -88,12 +84,8 @@ func (c *ChromeProfiler) Stop() (*types.ChromeProfilerCPUProfile, error) {
 	return chromeData.Result.Profile, nil
 }
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
-
 // end commands with parameters and special return types
-

@@ -4,10 +4,9 @@
 
 package gcd
 
-
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
 // add this API domain to ChromeTarget
@@ -18,7 +17,6 @@ func (c *ChromeTarget) Debugger() *ChromeDebugger {
 	return c.debugger
 }
 
-
 type ChromeDebugger struct {
 	target *ChromeTarget
 }
@@ -28,37 +26,37 @@ func newChromeDebugger(target *ChromeTarget) *ChromeDebugger {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
 func (c *ChromeDebugger) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.enable"})
 }
- 
+
 // Disables debugger for given page.
 func (c *ChromeDebugger) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.disable"})
 }
- 
+
 // Steps over the statement.
 func (c *ChromeDebugger) StepOver() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.stepOver"})
 }
- 
+
 // Steps into the function call.
 func (c *ChromeDebugger) StepInto() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.stepInto"})
 }
- 
+
 // Steps out of the function call.
 func (c *ChromeDebugger) StepOut() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.stepOut"})
 }
- 
+
 // Stops on the next JavaScript statement.
 func (c *ChromeDebugger) Pause() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.pause"})
 }
- 
+
 // Resumes JavaScript execution.
 func (c *ChromeDebugger) Resume() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.resume"})
@@ -70,7 +68,7 @@ func (c *ChromeDebugger) Resume() (*ChromeResponse, error) {
 
 // setBreakpointsActive - Activates / deactivates all breakpoints on the page.
 // active - New value for breakpoints active state.
-func (c *ChromeDebugger) SetBreakpointsActive(active bool, ) (*ChromeResponse, error) {
+func (c *ChromeDebugger) SetBreakpointsActive(active bool) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["active"] = active
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.setBreakpointsActive", Params: paramRequest})
@@ -79,7 +77,7 @@ func (c *ChromeDebugger) SetBreakpointsActive(active bool, ) (*ChromeResponse, e
 // setSkipAllPauses - Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
 // skipped - New value for skip pauses state.
 // untilReload - Whether page reload should set skipped to false.
-func (c *ChromeDebugger) SetSkipAllPauses(skipped bool, untilReload bool, ) (*ChromeResponse, error) {
+func (c *ChromeDebugger) SetSkipAllPauses(skipped bool, untilReload bool) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["skipped"] = skipped
 	paramRequest["untilReload"] = untilReload
@@ -87,8 +85,8 @@ func (c *ChromeDebugger) SetSkipAllPauses(skipped bool, untilReload bool, ) (*Ch
 }
 
 // removeBreakpoint - Removes JavaScript breakpoint.
-// breakpointId - 
-func (c *ChromeDebugger) RemoveBreakpoint(breakpointId *types.ChromeDebuggerBreakpointId, ) (*ChromeResponse, error) {
+// breakpointId -
+func (c *ChromeDebugger) RemoveBreakpoint(breakpointId *types.ChromeDebuggerBreakpointId) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["breakpointId"] = breakpointId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.removeBreakpoint", Params: paramRequest})
@@ -97,7 +95,7 @@ func (c *ChromeDebugger) RemoveBreakpoint(breakpointId *types.ChromeDebuggerBrea
 // continueToLocation - Continues execution until specific location is reached.
 // location - Location to continue to.
 // interstatementLocation - Allows breakpoints at the intemediate positions inside statements.
-func (c *ChromeDebugger) ContinueToLocation(location *types.ChromeDebuggerLocation, interstatementLocation bool, ) (*ChromeResponse, error) {
+func (c *ChromeDebugger) ContinueToLocation(location *types.ChromeDebuggerLocation, interstatementLocation bool) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["location"] = location
 	paramRequest["interstatementLocation"] = interstatementLocation
@@ -106,7 +104,7 @@ func (c *ChromeDebugger) ContinueToLocation(location *types.ChromeDebuggerLocati
 
 // setPauseOnExceptions - Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is <code>none</code>.
 // state - Pause on exceptions mode.
-func (c *ChromeDebugger) SetPauseOnExceptions(state string, ) (*ChromeResponse, error) {
+func (c *ChromeDebugger) SetPauseOnExceptions(state string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["state"] = state
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.setPauseOnExceptions", Params: paramRequest})
@@ -114,7 +112,7 @@ func (c *ChromeDebugger) SetPauseOnExceptions(state string, ) (*ChromeResponse, 
 
 // setOverlayMessage - Sets overlay message.
 // message - Overlay message to display when paused in debugger.
-func (c *ChromeDebugger) SetOverlayMessage(message string, ) (*ChromeResponse, error) {
+func (c *ChromeDebugger) SetOverlayMessage(message string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["message"] = message
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.setOverlayMessage", Params: paramRequest})
@@ -126,7 +124,7 @@ func (c *ChromeDebugger) SetOverlayMessage(message string, ) (*ChromeResponse, e
 // newValue - New variable value.
 // callFrameId - Id of callframe that holds variable.
 // functionObjectId - Object id of closure (function) that holds variable.
-func (c *ChromeDebugger) SetVariableValue(scopeNumber int, variableName string, newValue *types.ChromeRuntimeCallArgument, callFrameId *types.ChromeDebuggerCallFrameId, functionObjectId *types.ChromeRuntimeRemoteObjectId, ) (*ChromeResponse, error) {
+func (c *ChromeDebugger) SetVariableValue(scopeNumber int, variableName string, newValue *types.ChromeRuntimeCallArgument, callFrameId *types.ChromeDebuggerCallFrameId, functionObjectId *types.ChromeRuntimeRemoteObjectId) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 5)
 	paramRequest["scopeNumber"] = scopeNumber
 	paramRequest["variableName"] = variableName
@@ -138,7 +136,7 @@ func (c *ChromeDebugger) SetVariableValue(scopeNumber int, variableName string, 
 
 // skipStackFrames - Makes backend skip steps in the sources with names matching given pattern. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
 // script - Regular expression defining the scripts to ignore while stepping.
-func (c *ChromeDebugger) SkipStackFrames(script string, ) (*ChromeResponse, error) {
+func (c *ChromeDebugger) SkipStackFrames(script string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["script"] = script
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.skipStackFrames", Params: paramRequest})
@@ -146,31 +144,29 @@ func (c *ChromeDebugger) SkipStackFrames(script string, ) (*ChromeResponse, erro
 
 // setAsyncCallStackDepth - Enables or disables async call stacks tracking.
 // maxDepth - Maximum depth of async call stacks. Setting to <code>0</code> will effectively disable collecting async call stacks (default).
-func (c *ChromeDebugger) SetAsyncCallStackDepth(maxDepth int, ) (*ChromeResponse, error) {
+func (c *ChromeDebugger) SetAsyncCallStackDepth(maxDepth int) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["maxDepth"] = maxDepth
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.setAsyncCallStackDepth", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
 // canSetScriptSource - Always returns true.
-// Returns - 
+// Returns -
 // True if <code>setScriptSource</code> is supported.
 func (c *ChromeDebugger) CanSetScriptSource() (bool, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.canSetScriptSource"})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result bool 
+		Result struct {
+			Result bool
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -185,7 +181,7 @@ func (c *ChromeDebugger) CanSetScriptSource() (bool, error) {
 }
 
 // getBacktrace - Returns call stack including variables changed since VM was paused. VM must be paused.
-// Returns - 
+// Returns -
 // Call stack the virtual machine stopped on.
 // Async stack trace, if any.
 func (c *ChromeDebugger) GetBacktrace() ([]*types.ChromeDebuggerCallFrame, *types.ChromeDebuggerStackTrace, error) {
@@ -193,12 +189,12 @@ func (c *ChromeDebugger) GetBacktrace() ([]*types.ChromeDebuggerCallFrame, *type
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			CallFrames []*types.ChromeDebuggerCallFrame 
-			AsyncStackTrace *types.ChromeDebuggerStackTrace 
+		Result struct {
+			CallFrames      []*types.ChromeDebuggerCallFrame
+			AsyncStackTrace *types.ChromeDebuggerStackTrace
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -212,17 +208,15 @@ func (c *ChromeDebugger) GetBacktrace() ([]*types.ChromeDebuggerCallFrame, *type
 	return chromeData.Result.CallFrames, chromeData.Result.AsyncStackTrace, nil
 }
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
 // setBreakpointByUrl - Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in <code>locations</code> property. Further matching script parsing will result in subsequent <code>breakpointResolved</code> events issued. This logical breakpoint will survive page reloads.
-// Returns - 
+// Returns -
 // Id of the created breakpoint for further reference.
 // List of the locations this breakpoint resolved into upon addition.
-func (c *ChromeDebugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex string, columnNumber int, condition string, isAntibreakpoint bool, ) (*types.ChromeDebuggerBreakpointId, []*types.ChromeDebuggerLocation, error) {
+func (c *ChromeDebugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex string, columnNumber int, condition string, isAntibreakpoint bool) (*types.ChromeDebuggerBreakpointId, []*types.ChromeDebuggerLocation, error) {
 	paramRequest := make(map[string]interface{}, 6)
 	paramRequest["lineNumber"] = lineNumber
 	paramRequest["url"] = url
@@ -234,12 +228,12 @@ func (c *ChromeDebugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			BreakpointId *types.ChromeDebuggerBreakpointId 
-			Locations []*types.ChromeDebuggerLocation 
+		Result struct {
+			BreakpointId *types.ChromeDebuggerBreakpointId
+			Locations    []*types.ChromeDebuggerLocation
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -254,10 +248,10 @@ func (c *ChromeDebugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex
 }
 
 // setBreakpoint - Sets JavaScript breakpoint at a given location.
-// Returns - 
+// Returns -
 // Id of the created breakpoint for further reference.
 // Location this breakpoint resolved into.
-func (c *ChromeDebugger) SetBreakpoint(location *types.ChromeDebuggerLocation, condition string, ) (*types.ChromeDebuggerBreakpointId, *types.ChromeDebuggerLocation, error) {
+func (c *ChromeDebugger) SetBreakpoint(location *types.ChromeDebuggerLocation, condition string) (*types.ChromeDebuggerBreakpointId, *types.ChromeDebuggerLocation, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["location"] = location
 	paramRequest["condition"] = condition
@@ -265,12 +259,12 @@ func (c *ChromeDebugger) SetBreakpoint(location *types.ChromeDebuggerLocation, c
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			BreakpointId *types.ChromeDebuggerBreakpointId 
-			ActualLocation *types.ChromeDebuggerLocation 
+		Result struct {
+			BreakpointId   *types.ChromeDebuggerBreakpointId
+			ActualLocation *types.ChromeDebuggerLocation
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -285,9 +279,9 @@ func (c *ChromeDebugger) SetBreakpoint(location *types.ChromeDebuggerLocation, c
 }
 
 // searchInContent - Searches for given string in script content.
-// Returns - 
+// Returns -
 // List of search matches.
-func (c *ChromeDebugger) SearchInContent(scriptId *types.ChromeDebuggerScriptId, query string, caseSensitive bool, isRegex bool, ) ([]*types.ChromePageSearchMatch, error) {
+func (c *ChromeDebugger) SearchInContent(scriptId *types.ChromeDebuggerScriptId, query string, caseSensitive bool, isRegex bool) ([]*types.ChromePageSearchMatch, error) {
 	paramRequest := make(map[string]interface{}, 4)
 	paramRequest["scriptId"] = scriptId
 	paramRequest["query"] = query
@@ -297,11 +291,11 @@ func (c *ChromeDebugger) SearchInContent(scriptId *types.ChromeDebuggerScriptId,
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result []*types.ChromePageSearchMatch 
+		Result struct {
+			Result []*types.ChromePageSearchMatch
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -316,11 +310,11 @@ func (c *ChromeDebugger) SearchInContent(scriptId *types.ChromeDebuggerScriptId,
 }
 
 // setScriptSource - Edits JavaScript source live.
-// Returns - 
+// Returns -
 // New stack trace in case editing has happened while VM was stopped.
 // VM-specific description of the changes applied.
 // Async stack trace, if any.
-func (c *ChromeDebugger) SetScriptSource(scriptId *types.ChromeDebuggerScriptId, scriptSource string, preview bool, ) ([]*types.ChromeDebuggerCallFrame, interface{}, *types.ChromeDebuggerStackTrace, error) {
+func (c *ChromeDebugger) SetScriptSource(scriptId *types.ChromeDebuggerScriptId, scriptSource string, preview bool) ([]*types.ChromeDebuggerCallFrame, interface{}, *types.ChromeDebuggerStackTrace, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["scriptId"] = scriptId
 	paramRequest["scriptSource"] = scriptSource
@@ -329,13 +323,13 @@ func (c *ChromeDebugger) SetScriptSource(scriptId *types.ChromeDebuggerScriptId,
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			CallFrames []*types.ChromeDebuggerCallFrame 
-			Result interface{} 
-			AsyncStackTrace *types.ChromeDebuggerStackTrace 
+		Result struct {
+			CallFrames      []*types.ChromeDebuggerCallFrame
+			Result          interface{}
+			AsyncStackTrace *types.ChromeDebuggerStackTrace
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -350,24 +344,24 @@ func (c *ChromeDebugger) SetScriptSource(scriptId *types.ChromeDebuggerScriptId,
 }
 
 // restartFrame - Restarts particular call frame from the beginning.
-// Returns - 
+// Returns -
 // New stack trace.
 // VM-specific description.
 // Async stack trace, if any.
-func (c *ChromeDebugger) RestartFrame(callFrameId *types.ChromeDebuggerCallFrameId, ) ([]*types.ChromeDebuggerCallFrame, interface{}, *types.ChromeDebuggerStackTrace, error) {
+func (c *ChromeDebugger) RestartFrame(callFrameId *types.ChromeDebuggerCallFrameId) ([]*types.ChromeDebuggerCallFrame, interface{}, *types.ChromeDebuggerStackTrace, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["callFrameId"] = callFrameId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.restartFrame", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			CallFrames []*types.ChromeDebuggerCallFrame 
-			Result interface{} 
-			AsyncStackTrace *types.ChromeDebuggerStackTrace 
+		Result struct {
+			CallFrames      []*types.ChromeDebuggerCallFrame
+			Result          interface{}
+			AsyncStackTrace *types.ChromeDebuggerStackTrace
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -382,20 +376,20 @@ func (c *ChromeDebugger) RestartFrame(callFrameId *types.ChromeDebuggerCallFrame
 }
 
 // getScriptSource - Returns source for the script with given id.
-// Returns - 
+// Returns -
 // Script source.
-func (c *ChromeDebugger) GetScriptSource(scriptId *types.ChromeDebuggerScriptId, ) (string, error) {
+func (c *ChromeDebugger) GetScriptSource(scriptId *types.ChromeDebuggerScriptId) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["scriptId"] = scriptId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.getScriptSource", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ScriptSource string 
+		Result struct {
+			ScriptSource string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -410,20 +404,20 @@ func (c *ChromeDebugger) GetScriptSource(scriptId *types.ChromeDebuggerScriptId,
 }
 
 // getFunctionDetails - Returns detailed informtation on given function.
-// Returns - 
+// Returns -
 // Information about the function.
-func (c *ChromeDebugger) GetFunctionDetails(functionId *types.ChromeRuntimeRemoteObjectId, ) (*types.ChromeDebuggerFunctionDetails, error) {
+func (c *ChromeDebugger) GetFunctionDetails(functionId *types.ChromeRuntimeRemoteObjectId) (*types.ChromeDebuggerFunctionDetails, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["functionId"] = functionId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.getFunctionDetails", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Details *types.ChromeDebuggerFunctionDetails 
+		Result struct {
+			Details *types.ChromeDebuggerFunctionDetails
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -438,11 +432,11 @@ func (c *ChromeDebugger) GetFunctionDetails(functionId *types.ChromeRuntimeRemot
 }
 
 // evaluateOnCallFrame - Evaluates expression on a given call frame.
-// Returns - 
+// Returns -
 // Object wrapper for the evaluation result.
 // True if the result was thrown during the evaluation.
 // Exception details.
-func (c *ChromeDebugger) EvaluateOnCallFrame(callFrameId *types.ChromeDebuggerCallFrameId, expression string, objectGroup string, includeCommandLineAPI bool, doNotPauseOnExceptionsAndMuteConsole bool, returnByValue bool, generatePreview bool, ) (*types.ChromeRuntimeRemoteObject, bool, *types.ChromeDebuggerExceptionDetails, error) {
+func (c *ChromeDebugger) EvaluateOnCallFrame(callFrameId *types.ChromeDebuggerCallFrameId, expression string, objectGroup string, includeCommandLineAPI bool, doNotPauseOnExceptionsAndMuteConsole bool, returnByValue bool, generatePreview bool) (*types.ChromeRuntimeRemoteObject, bool, *types.ChromeDebuggerExceptionDetails, error) {
 	paramRequest := make(map[string]interface{}, 7)
 	paramRequest["callFrameId"] = callFrameId
 	paramRequest["expression"] = expression
@@ -455,13 +449,13 @@ func (c *ChromeDebugger) EvaluateOnCallFrame(callFrameId *types.ChromeDebuggerCa
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result *types.ChromeRuntimeRemoteObject 
-			WasThrown bool 
-			ExceptionDetails *types.ChromeDebuggerExceptionDetails 
+		Result struct {
+			Result           *types.ChromeRuntimeRemoteObject
+			WasThrown        bool
+			ExceptionDetails *types.ChromeDebuggerExceptionDetails
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -476,10 +470,10 @@ func (c *ChromeDebugger) EvaluateOnCallFrame(callFrameId *types.ChromeDebuggerCa
 }
 
 // compileScript - Compiles expression.
-// Returns - 
+// Returns -
 // Id of the script.
 // Exception details.
-func (c *ChromeDebugger) CompileScript(expression string, sourceURL string, executionContextId *types.ChromeRuntimeExecutionContextId, ) (*types.ChromeDebuggerScriptId, *types.ChromeDebuggerExceptionDetails, error) {
+func (c *ChromeDebugger) CompileScript(expression string, sourceURL string, executionContextId *types.ChromeRuntimeExecutionContextId) (*types.ChromeDebuggerScriptId, *types.ChromeDebuggerExceptionDetails, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["expression"] = expression
 	paramRequest["sourceURL"] = sourceURL
@@ -488,12 +482,12 @@ func (c *ChromeDebugger) CompileScript(expression string, sourceURL string, exec
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ScriptId *types.ChromeDebuggerScriptId 
-			ExceptionDetails *types.ChromeDebuggerExceptionDetails 
+		Result struct {
+			ScriptId         *types.ChromeDebuggerScriptId
+			ExceptionDetails *types.ChromeDebuggerExceptionDetails
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -508,10 +502,10 @@ func (c *ChromeDebugger) CompileScript(expression string, sourceURL string, exec
 }
 
 // runScript - Runs script with given id in a given context.
-// Returns - 
+// Returns -
 // Run result.
 // Exception details.
-func (c *ChromeDebugger) RunScript(scriptId *types.ChromeDebuggerScriptId, executionContextId *types.ChromeRuntimeExecutionContextId, objectGroup string, doNotPauseOnExceptionsAndMuteConsole bool, ) (*types.ChromeRuntimeRemoteObject, *types.ChromeDebuggerExceptionDetails, error) {
+func (c *ChromeDebugger) RunScript(scriptId *types.ChromeDebuggerScriptId, executionContextId *types.ChromeRuntimeExecutionContextId, objectGroup string, doNotPauseOnExceptionsAndMuteConsole bool) (*types.ChromeRuntimeRemoteObject, *types.ChromeDebuggerExceptionDetails, error) {
 	paramRequest := make(map[string]interface{}, 4)
 	paramRequest["scriptId"] = scriptId
 	paramRequest["executionContextId"] = executionContextId
@@ -521,12 +515,12 @@ func (c *ChromeDebugger) RunScript(scriptId *types.ChromeDebuggerScriptId, execu
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result *types.ChromeRuntimeRemoteObject 
-			ExceptionDetails *types.ChromeDebuggerExceptionDetails 
+		Result struct {
+			Result           *types.ChromeRuntimeRemoteObject
+			ExceptionDetails *types.ChromeDebuggerExceptionDetails
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -541,20 +535,20 @@ func (c *ChromeDebugger) RunScript(scriptId *types.ChromeDebuggerScriptId, execu
 }
 
 // getStepInPositions - Lists all positions where step-in is possible for a current statement in a specified call frame
-// Returns - 
+// Returns -
 // experimental
-func (c *ChromeDebugger) GetStepInPositions(callFrameId *types.ChromeDebuggerCallFrameId, ) ([]*types.ChromeDebuggerLocation, error) {
+func (c *ChromeDebugger) GetStepInPositions(callFrameId *types.ChromeDebuggerCallFrameId) ([]*types.ChromeDebuggerLocation, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["callFrameId"] = callFrameId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.getStepInPositions", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			StepInPositions []*types.ChromeDebuggerLocation 
+		Result struct {
+			StepInPositions []*types.ChromeDebuggerLocation
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -568,6 +562,4 @@ func (c *ChromeDebugger) GetStepInPositions(callFrameId *types.ChromeDebuggerCal
 	return chromeData.Result.StepInPositions, nil
 }
 
-
 // end commands with parameters and special return types
-

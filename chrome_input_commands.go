@@ -4,10 +4,8 @@
 
 package gcd
 
-
 import (
 	"github.com/wirepair/gcd/gcdprotogen/types"
-	
 )
 
 // add this API domain to ChromeTarget
@@ -17,7 +15,6 @@ func (c *ChromeTarget) Input() *ChromeInput {
 	}
 	return c.input
 }
-
 
 type ChromeInput struct {
 	target *ChromeTarget
@@ -45,7 +42,7 @@ func newChromeInput(target *ChromeTarget) *ChromeInput {
 // autoRepeat - Whether the event was generated from auto repeat (default: false).
 // isKeypad - Whether the event was generated from the keypad (default: false).
 // isSystemKey - Whether the event was a system key event (default: false).
-func (c *ChromeInput) DispatchKeyEvent(theType string, modifiers int, timestamp float64, text string, unmodifiedText string, keyIdentifier string, windowsVirtualKeyCode int, nativeVirtualKeyCode int, autoRepeat bool, isKeypad bool, isSystemKey bool, ) (*ChromeResponse, error) {
+func (c *ChromeInput) DispatchKeyEvent(theType string, modifiers int, timestamp float64, text string, unmodifiedText string, keyIdentifier string, windowsVirtualKeyCode int, nativeVirtualKeyCode int, autoRepeat bool, isKeypad bool, isSystemKey bool) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 11)
 	paramRequest["type"] = theType
 	paramRequest["modifiers"] = modifiers
@@ -70,7 +67,7 @@ func (c *ChromeInput) DispatchKeyEvent(theType string, modifiers int, timestamp 
 // button - Mouse button (default: "none").
 // clickCount - Number of times the mouse button was clicked (default: 0).
 // deviceSpace - If true, x and y are given in dip wrt current viewport.
-func (c *ChromeInput) DispatchMouseEvent(theType string, x int, y int, modifiers int, timestamp float64, button string, clickCount int, deviceSpace bool, ) (*ChromeResponse, error) {
+func (c *ChromeInput) DispatchMouseEvent(theType string, x int, y int, modifiers int, timestamp float64, button string, clickCount int, deviceSpace bool) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 8)
 	paramRequest["type"] = theType
 	paramRequest["x"] = x
@@ -88,7 +85,7 @@ func (c *ChromeInput) DispatchMouseEvent(theType string, x int, y int, modifiers
 // touchPoints - Touch points.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // timestamp - Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time).
-func (c *ChromeInput) DispatchTouchEvent(theType string, touchPoints []*types.ChromeInputTouchPoint, modifiers int, timestamp float64, ) (*ChromeResponse, error) {
+func (c *ChromeInput) DispatchTouchEvent(theType string, touchPoints []*types.ChromeInputTouchPoint, modifiers int, timestamp float64) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 4)
 	paramRequest["type"] = theType
 	paramRequest["touchPoints"] = touchPoints
@@ -105,7 +102,7 @@ func (c *ChromeInput) DispatchTouchEvent(theType string, touchPoints []*types.Ch
 // deltaX - Delta X where apllies.
 // deltaY - Delta Y where apllies.
 // pinchScale - Pinch scale.
-func (c *ChromeInput) DispatchGestureEvent(theType string, x int, y int, timestamp float64, deltaX int, deltaY int, pinchScale float64, ) (*ChromeResponse, error) {
+func (c *ChromeInput) DispatchGestureEvent(theType string, x int, y int, timestamp float64, deltaX int, deltaY int, pinchScale float64) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 7)
 	paramRequest["type"] = theType
 	paramRequest["x"] = x
@@ -127,7 +124,7 @@ func (c *ChromeInput) DispatchGestureEvent(theType string, x int, y int, timesta
 // timestamp - Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time).
 // button - Mouse button (default: "none").
 // clickCount - Number of times the mouse button was clicked (default: 0).
-func (c *ChromeInput) EmulateTouchFromMouseEvent(theType string, x int, y int, deltaX float64, deltaY float64, modifiers int, timestamp float64, button string, clickCount int, ) (*ChromeResponse, error) {
+func (c *ChromeInput) EmulateTouchFromMouseEvent(theType string, x int, y int, deltaX float64, deltaY float64, modifiers int, timestamp float64, button string, clickCount int) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 9)
 	paramRequest["type"] = theType
 	paramRequest["x"] = x
@@ -141,18 +138,12 @@ func (c *ChromeInput) EmulateTouchFromMouseEvent(theType string, x int, y int, d
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Input.emulateTouchFromMouseEvent", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
-
 // end commands with parameters and special return types
-

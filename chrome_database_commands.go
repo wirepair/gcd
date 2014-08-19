@@ -4,10 +4,9 @@
 
 package gcd
 
-
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
 // add this API domain to ChromeTarget
@@ -18,7 +17,6 @@ func (c *ChromeTarget) Database() *ChromeDatabase {
 	return c.database
 }
 
-
 type ChromeDatabase struct {
 	target *ChromeTarget
 }
@@ -28,12 +26,12 @@ func newChromeDatabase(target *ChromeTarget) *ChromeDatabase {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Enables database tracking, database events will now be delivered to the client.
 func (c *ChromeDatabase) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Database.enable"})
 }
- 
+
 // Disables database tracking, prevents database events from being sent to the client.
 func (c *ChromeDatabase) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Database.disable"})
@@ -43,32 +41,28 @@ func (c *ChromeDatabase) Disable() (*ChromeResponse, error) {
 
 // start parameterized commands with no special return types
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
-// getDatabaseTableNames - 
-// Returns - 
-func (c *ChromeDatabase) GetDatabaseTableNames(databaseId *types.ChromeDatabaseDatabaseId, ) ([]string, error) {
+// getDatabaseTableNames -
+// Returns -
+func (c *ChromeDatabase) GetDatabaseTableNames(databaseId *types.ChromeDatabaseDatabaseId) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["databaseId"] = databaseId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Database.getDatabaseTableNames", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			TableNames []string 
+		Result struct {
+			TableNames []string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -82,9 +76,9 @@ func (c *ChromeDatabase) GetDatabaseTableNames(databaseId *types.ChromeDatabaseD
 	return chromeData.Result.TableNames, nil
 }
 
-// executeSQL - 
-// Returns - 
-func (c *ChromeDatabase) ExecuteSQL(databaseId *types.ChromeDatabaseDatabaseId, query string, ) ([]string, []string, *types.ChromeDatabaseError, error) {
+// executeSQL -
+// Returns -
+func (c *ChromeDatabase) ExecuteSQL(databaseId *types.ChromeDatabaseDatabaseId, query string) ([]string, []string, *types.ChromeDatabaseError, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["databaseId"] = databaseId
 	paramRequest["query"] = query
@@ -92,13 +86,13 @@ func (c *ChromeDatabase) ExecuteSQL(databaseId *types.ChromeDatabaseDatabaseId, 
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			ColumnNames []string 
-			Values []string 
-			SqlError *types.ChromeDatabaseError 
+		Result struct {
+			ColumnNames []string
+			Values      []string
+			SqlError    *types.ChromeDatabaseError
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -112,6 +106,4 @@ func (c *ChromeDatabase) ExecuteSQL(databaseId *types.ChromeDatabaseDatabaseId, 
 	return chromeData.Result.ColumnNames, chromeData.Result.Values, chromeData.Result.SqlError, nil
 }
 
-
 // end commands with parameters and special return types
-

@@ -4,11 +4,7 @@
 
 package gcd
 
-
-import (
-	
-	
-)
+import ()
 
 // add this API domain to ChromeTarget
 func (c *ChromeTarget) Geolocation() *ChromeGeolocation {
@@ -17,7 +13,6 @@ func (c *ChromeTarget) Geolocation() *ChromeGeolocation {
 	}
 	return c.geolocation
 }
-
 
 type ChromeGeolocation struct {
 	target *ChromeTarget
@@ -28,7 +23,7 @@ func newChromeGeolocation(target *ChromeTarget) *ChromeGeolocation {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Clears the overriden Geolocation Position and Error.
 func (c *ChromeGeolocation) ClearGeolocationOverride() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Geolocation.clearGeolocationOverride"})
@@ -42,7 +37,7 @@ func (c *ChromeGeolocation) ClearGeolocationOverride() (*ChromeResponse, error) 
 // latitude - Mock latitude
 // longitude - Mock longitude
 // accuracy - Mock accuracy
-func (c *ChromeGeolocation) SetGeolocationOverride(latitude float64, longitude float64, accuracy float64, ) (*ChromeResponse, error) {
+func (c *ChromeGeolocation) SetGeolocationOverride(latitude float64, longitude float64, accuracy float64) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["latitude"] = latitude
 	paramRequest["longitude"] = longitude
@@ -50,18 +45,12 @@ func (c *ChromeGeolocation) SetGeolocationOverride(latitude float64, longitude f
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Geolocation.setGeolocationOverride", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
-
 // end commands with parameters and special return types
-

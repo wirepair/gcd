@@ -4,10 +4,9 @@
 
 package gcd
 
-
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
 // add this API domain to ChromeTarget
@@ -18,7 +17,6 @@ func (c *ChromeTarget) Runtime() *ChromeRuntime {
 	return c.runtime
 }
 
-
 type ChromeRuntime struct {
 	target *ChromeTarget
 }
@@ -28,17 +26,17 @@ func newChromeRuntime(target *ChromeTarget) *ChromeRuntime {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Tells inspected instance(worker or page) that it can run in case it was started paused.
 func (c *ChromeRuntime) Run() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.run"})
 }
- 
+
 // Enables reporting of execution contexts creation by means of <code>executionContextCreated</code> event. When the reporting gets enabled the event will be sent immediately for each existing execution context.
 func (c *ChromeRuntime) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.enable"})
 }
- 
+
 // Disables reporting of execution contexts creation.
 func (c *ChromeRuntime) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.disable"})
@@ -50,7 +48,7 @@ func (c *ChromeRuntime) Disable() (*ChromeResponse, error) {
 
 // releaseObject - Releases remote object with given id.
 // objectId - Identifier of the object to release.
-func (c *ChromeRuntime) ReleaseObject(objectId *types.ChromeRuntimeRemoteObjectId, ) (*ChromeResponse, error) {
+func (c *ChromeRuntime) ReleaseObject(objectId *types.ChromeRuntimeRemoteObjectId) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.releaseObject", Params: paramRequest})
@@ -58,31 +56,29 @@ func (c *ChromeRuntime) ReleaseObject(objectId *types.ChromeRuntimeRemoteObjectI
 
 // releaseObjectGroup - Releases all remote objects that belong to a given group.
 // objectGroup - Symbolic object group name.
-func (c *ChromeRuntime) ReleaseObjectGroup(objectGroup string, ) (*ChromeResponse, error) {
+func (c *ChromeRuntime) ReleaseObjectGroup(objectGroup string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectGroup"] = objectGroup
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.releaseObjectGroup", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
-// isRunRequired - 
-// Returns - 
+// isRunRequired -
+// Returns -
 // True if the Runtime is in paused on start state.
 func (c *ChromeRuntime) IsRunRequired() (bool, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.isRunRequired"})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result bool 
+		Result struct {
+			Result bool
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -96,18 +92,16 @@ func (c *ChromeRuntime) IsRunRequired() (bool, error) {
 	return chromeData.Result.Result, nil
 }
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
 // evaluate - Evaluates expression on global object.
-// Returns - 
+// Returns -
 // Evaluation result.
 // True if the result was thrown during the evaluation.
 // Exception details.
-func (c *ChromeRuntime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, doNotPauseOnExceptionsAndMuteConsole bool, contextId *types.ChromeRuntimeExecutionContextId, returnByValue bool, generatePreview bool, ) (*types.ChromeRuntimeRemoteObject, bool, *types.ChromeDebuggerExceptionDetails, error) {
+func (c *ChromeRuntime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, doNotPauseOnExceptionsAndMuteConsole bool, contextId *types.ChromeRuntimeExecutionContextId, returnByValue bool, generatePreview bool) (*types.ChromeRuntimeRemoteObject, bool, *types.ChromeDebuggerExceptionDetails, error) {
 	paramRequest := make(map[string]interface{}, 7)
 	paramRequest["expression"] = expression
 	paramRequest["objectGroup"] = objectGroup
@@ -120,13 +114,13 @@ func (c *ChromeRuntime) Evaluate(expression string, objectGroup string, includeC
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result *types.ChromeRuntimeRemoteObject 
-			WasThrown bool 
-			ExceptionDetails *types.ChromeDebuggerExceptionDetails 
+		Result struct {
+			Result           *types.ChromeRuntimeRemoteObject
+			WasThrown        bool
+			ExceptionDetails *types.ChromeDebuggerExceptionDetails
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -141,10 +135,10 @@ func (c *ChromeRuntime) Evaluate(expression string, objectGroup string, includeC
 }
 
 // callFunctionOn - Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
-// Returns - 
+// Returns -
 // Call result.
 // True if the result was thrown during the evaluation.
-func (c *ChromeRuntime) CallFunctionOn(objectId *types.ChromeRuntimeRemoteObjectId, functionDeclaration string, arguments []*types.ChromeRuntimeCallArgument, doNotPauseOnExceptionsAndMuteConsole bool, returnByValue bool, generatePreview bool, ) (*types.ChromeRuntimeRemoteObject, bool, error) {
+func (c *ChromeRuntime) CallFunctionOn(objectId *types.ChromeRuntimeRemoteObjectId, functionDeclaration string, arguments []*types.ChromeRuntimeCallArgument, doNotPauseOnExceptionsAndMuteConsole bool, returnByValue bool, generatePreview bool) (*types.ChromeRuntimeRemoteObject, bool, error) {
 	paramRequest := make(map[string]interface{}, 6)
 	paramRequest["objectId"] = objectId
 	paramRequest["functionDeclaration"] = functionDeclaration
@@ -156,12 +150,12 @@ func (c *ChromeRuntime) CallFunctionOn(objectId *types.ChromeRuntimeRemoteObject
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result *types.ChromeRuntimeRemoteObject 
-			WasThrown bool 
+		Result struct {
+			Result    *types.ChromeRuntimeRemoteObject
+			WasThrown bool
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -176,10 +170,10 @@ func (c *ChromeRuntime) CallFunctionOn(objectId *types.ChromeRuntimeRemoteObject
 }
 
 // getProperties - Returns properties of a given object. Object group of the result is inherited from the target object.
-// Returns - 
+// Returns -
 // Object properties.
 // Internal object properties (only of the element itself).
-func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectId, ownProperties bool, accessorPropertiesOnly bool, ) ([]*types.ChromeRuntimePropertyDescriptor, []*types.ChromeRuntimeInternalPropertyDescriptor, error) {
+func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectId, ownProperties bool, accessorPropertiesOnly bool) ([]*types.ChromeRuntimePropertyDescriptor, []*types.ChromeRuntimeInternalPropertyDescriptor, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["objectId"] = objectId
 	paramRequest["ownProperties"] = ownProperties
@@ -188,12 +182,12 @@ func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectI
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Result []*types.ChromeRuntimePropertyDescriptor 
-			InternalProperties []*types.ChromeRuntimeInternalPropertyDescriptor 
+		Result struct {
+			Result             []*types.ChromeRuntimePropertyDescriptor
+			InternalProperties []*types.ChromeRuntimeInternalPropertyDescriptor
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -207,6 +201,4 @@ func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectI
 	return chromeData.Result.Result, chromeData.Result.InternalProperties, nil
 }
 
-
 // end commands with parameters and special return types
-

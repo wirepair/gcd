@@ -4,10 +4,9 @@
 
 package gcd
 
-
 import (
-	"github.com/wirepair/gcd/gcdprotogen/types"
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
 // add this API domain to ChromeTarget
@@ -18,7 +17,6 @@ func (c *ChromeTarget) DOM() *ChromeDOM {
 	return c.dom
 }
 
-
 type ChromeDOM struct {
 	target *ChromeTarget
 }
@@ -28,32 +26,32 @@ func newChromeDOM(target *ChromeTarget) *ChromeDOM {
 	return c
 }
 
-// start non parameterized commands 
+// start non parameterized commands
 // Enables DOM agent for the given page.
 func (c *ChromeDOM) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.enable"})
 }
- 
+
 // Disables DOM agent for the given page.
 func (c *ChromeDOM) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.disable"})
 }
- 
+
 // Hides DOM node highlight.
 func (c *ChromeDOM) HideHighlight() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.hideHighlight"})
 }
- 
+
 // Undoes the last performed action.
 func (c *ChromeDOM) Undo() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.undo"})
 }
- 
+
 // Re-does the last undone action.
 func (c *ChromeDOM) Redo() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.redo"})
 }
- 
+
 // Marks last undoable state.
 func (c *ChromeDOM) MarkUndoableState() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.markUndoableState"})
@@ -66,7 +64,7 @@ func (c *ChromeDOM) MarkUndoableState() (*ChromeResponse, error) {
 // requestChildNodes - Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events where not only immediate children are retrieved, but all children down to the specified depth.
 // nodeId - Id of the node to get children for.
 // depth - The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
-func (c *ChromeDOM) RequestChildNodes(nodeId *types.ChromeDOMNodeId, depth int, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) RequestChildNodes(nodeId *types.ChromeDOMNodeId, depth int) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["depth"] = depth
@@ -76,7 +74,7 @@ func (c *ChromeDOM) RequestChildNodes(nodeId *types.ChromeDOMNodeId, depth int, 
 // setNodeValue - Sets node value for a node with given id.
 // nodeId - Id of the node to set value for.
 // value - New node's value.
-func (c *ChromeDOM) SetNodeValue(nodeId *types.ChromeDOMNodeId, value string, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) SetNodeValue(nodeId *types.ChromeDOMNodeId, value string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["value"] = value
@@ -85,7 +83,7 @@ func (c *ChromeDOM) SetNodeValue(nodeId *types.ChromeDOMNodeId, value string, ) 
 
 // removeNode - Removes node with given id.
 // nodeId - Id of the node to remove.
-func (c *ChromeDOM) RemoveNode(nodeId *types.ChromeDOMNodeId, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) RemoveNode(nodeId *types.ChromeDOMNodeId) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.removeNode", Params: paramRequest})
@@ -95,7 +93,7 @@ func (c *ChromeDOM) RemoveNode(nodeId *types.ChromeDOMNodeId, ) (*ChromeResponse
 // nodeId - Id of the element to set attribute for.
 // name - Attribute name.
 // value - Attribute value.
-func (c *ChromeDOM) SetAttributeValue(nodeId *types.ChromeDOMNodeId, name string, value string, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) SetAttributeValue(nodeId *types.ChromeDOMNodeId, name string, value string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["name"] = name
@@ -107,7 +105,7 @@ func (c *ChromeDOM) SetAttributeValue(nodeId *types.ChromeDOMNodeId, name string
 // nodeId - Id of the element to set attributes for.
 // text - Text with a number of attributes. Will parse this text using HTML parser.
 // name - Attribute name to replace with new attributes derived from text in case text parsed successfully.
-func (c *ChromeDOM) SetAttributesAsText(nodeId *types.ChromeDOMNodeId, text string, name string, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) SetAttributesAsText(nodeId *types.ChromeDOMNodeId, text string, name string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["text"] = text
@@ -118,7 +116,7 @@ func (c *ChromeDOM) SetAttributesAsText(nodeId *types.ChromeDOMNodeId, text stri
 // removeAttribute - Removes attribute with given name from an element with given id.
 // nodeId - Id of the element to remove attribute from.
 // name - Name of the attribute to remove.
-func (c *ChromeDOM) RemoveAttribute(nodeId *types.ChromeDOMNodeId, name string, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) RemoveAttribute(nodeId *types.ChromeDOMNodeId, name string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["name"] = name
@@ -128,7 +126,7 @@ func (c *ChromeDOM) RemoveAttribute(nodeId *types.ChromeDOMNodeId, name string, 
 // setOuterHTML - Sets node HTML markup, returns new node id.
 // nodeId - Id of the node to set markup for.
 // outerHTML - Outer HTML markup to set.
-func (c *ChromeDOM) SetOuterHTML(nodeId *types.ChromeDOMNodeId, outerHTML string, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) SetOuterHTML(nodeId *types.ChromeDOMNodeId, outerHTML string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["outerHTML"] = outerHTML
@@ -137,7 +135,7 @@ func (c *ChromeDOM) SetOuterHTML(nodeId *types.ChromeDOMNodeId, outerHTML string
 
 // discardSearchResults - Discards search results from the session with the given id. <code>getSearchResults</code> should no longer be called for that search.
 // searchId - Unique search session identifier.
-func (c *ChromeDOM) DiscardSearchResults(searchId string, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) DiscardSearchResults(searchId string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["searchId"] = searchId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.discardSearchResults", Params: paramRequest})
@@ -147,7 +145,7 @@ func (c *ChromeDOM) DiscardSearchResults(searchId string, ) (*ChromeResponse, er
 // enabled - True to enable inspection mode, false to disable it.
 // inspectUAShadowDOM - True to enable inspection mode for user agent shadow DOM.
 // highlightConfig - A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>.
-func (c *ChromeDOM) SetInspectModeEnabled(enabled bool, inspectUAShadowDOM bool, highlightConfig *types.ChromeDOMHighlightConfig, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) SetInspectModeEnabled(enabled bool, inspectUAShadowDOM bool, highlightConfig *types.ChromeDOMHighlightConfig) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["enabled"] = enabled
 	paramRequest["inspectUAShadowDOM"] = inspectUAShadowDOM
@@ -162,7 +160,7 @@ func (c *ChromeDOM) SetInspectModeEnabled(enabled bool, inspectUAShadowDOM bool,
 // height - Rectangle height
 // color - The highlight fill color (default: transparent).
 // outlineColor - The highlight outline color (default: transparent).
-func (c *ChromeDOM) HighlightRect(x int, y int, width int, height int, color *types.ChromeDOMRGBA, outlineColor *types.ChromeDOMRGBA, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) HighlightRect(x int, y int, width int, height int, color *types.ChromeDOMRGBA, outlineColor *types.ChromeDOMRGBA) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 6)
 	paramRequest["x"] = x
 	paramRequest["y"] = y
@@ -177,7 +175,7 @@ func (c *ChromeDOM) HighlightRect(x int, y int, width int, height int, color *ty
 // quad - Quad to highlight
 // color - The highlight fill color (default: transparent).
 // outlineColor - The highlight outline color (default: transparent).
-func (c *ChromeDOM) HighlightQuad(quad *types.ChromeDOMQuad, color *types.ChromeDOMRGBA, outlineColor *types.ChromeDOMRGBA, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) HighlightQuad(quad *types.ChromeDOMQuad, color *types.ChromeDOMRGBA, outlineColor *types.ChromeDOMRGBA) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["quad"] = quad
 	paramRequest["color"] = color
@@ -189,7 +187,7 @@ func (c *ChromeDOM) HighlightQuad(quad *types.ChromeDOMQuad, color *types.Chrome
 // highlightConfig - A descriptor for the highlight appearance.
 // nodeId - Identifier of the node to highlight.
 // objectId - JavaScript object id of the node to be highlighted.
-func (c *ChromeDOM) HighlightNode(highlightConfig *types.ChromeDOMHighlightConfig, nodeId *types.ChromeDOMNodeId, objectId *types.ChromeRuntimeRemoteObjectId, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) HighlightNode(highlightConfig *types.ChromeDOMHighlightConfig, nodeId *types.ChromeDOMNodeId, objectId *types.ChromeRuntimeRemoteObjectId) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["highlightConfig"] = highlightConfig
 	paramRequest["nodeId"] = nodeId
@@ -201,7 +199,7 @@ func (c *ChromeDOM) HighlightNode(highlightConfig *types.ChromeDOMHighlightConfi
 // frameId - Identifier of the frame to highlight.
 // contentColor - The content box highlight fill color (default: transparent).
 // contentOutlineColor - The content box highlight outline color (default: transparent).
-func (c *ChromeDOM) HighlightFrame(frameId *types.ChromePageFrameId, contentColor *types.ChromeDOMRGBA, contentOutlineColor *types.ChromeDOMRGBA, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) HighlightFrame(frameId *types.ChromePageFrameId, contentColor *types.ChromeDOMRGBA, contentOutlineColor *types.ChromeDOMRGBA) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["frameId"] = frameId
 	paramRequest["contentColor"] = contentColor
@@ -211,7 +209,7 @@ func (c *ChromeDOM) HighlightFrame(frameId *types.ChromePageFrameId, contentColo
 
 // focus - Focuses the given element.
 // nodeId - Id of the node to focus.
-func (c *ChromeDOM) Focus(nodeId *types.ChromeDOMNodeId, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) Focus(nodeId *types.ChromeDOMNodeId) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.focus", Params: paramRequest})
@@ -220,32 +218,30 @@ func (c *ChromeDOM) Focus(nodeId *types.ChromeDOMNodeId, ) (*ChromeResponse, err
 // setFileInputFiles - Sets files for the given file input element.
 // nodeId - Id of the file input node to set files for.
 // files - Array of file paths to set.
-func (c *ChromeDOM) SetFileInputFiles(nodeId *types.ChromeDOMNodeId, files []string, ) (*ChromeResponse, error) {
+func (c *ChromeDOM) SetFileInputFiles(nodeId *types.ChromeDOMNodeId, files []string) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["files"] = files
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.setFileInputFiles", Params: paramRequest})
 }
 
-
 // end parameterized commands with no special return types
-
 
 // start commands with no parameters but special return types
 
 // getDocument - Returns the root DOM node to the caller.
-// Returns - 
+// Returns -
 // Resulting node.
 func (c *ChromeDOM) GetDocument() (*types.ChromeDOMNode, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.getDocument"})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Root *types.ChromeDOMNode 
+		Result struct {
+			Root *types.ChromeDOMNode
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -259,16 +255,14 @@ func (c *ChromeDOM) GetDocument() (*types.ChromeDOMNode, error) {
 	return chromeData.Result.Root, nil
 }
 
-
 // end commands with no parameters but special return types
-
 
 // start commands with parameters and special return types
 
 // querySelector - Executes <code>querySelector</code> on a given node.
-// Returns - 
+// Returns -
 // Query selector result.
-func (c *ChromeDOM) QuerySelector(nodeId *types.ChromeDOMNodeId, selector string, ) (*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) QuerySelector(nodeId *types.ChromeDOMNodeId, selector string) (*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["selector"] = selector
@@ -276,11 +270,11 @@ func (c *ChromeDOM) QuerySelector(nodeId *types.ChromeDOMNodeId, selector string
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeId *types.ChromeDOMNodeId 
+		Result struct {
+			NodeId *types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -295,9 +289,9 @@ func (c *ChromeDOM) QuerySelector(nodeId *types.ChromeDOMNodeId, selector string
 }
 
 // querySelectorAll - Executes <code>querySelectorAll</code> on a given node.
-// Returns - 
+// Returns -
 // Query selector result.
-func (c *ChromeDOM) QuerySelectorAll(nodeId *types.ChromeDOMNodeId, selector string, ) ([]*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) QuerySelectorAll(nodeId *types.ChromeDOMNodeId, selector string) ([]*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["selector"] = selector
@@ -305,11 +299,11 @@ func (c *ChromeDOM) QuerySelectorAll(nodeId *types.ChromeDOMNodeId, selector str
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeIds []*types.ChromeDOMNodeId 
+		Result struct {
+			NodeIds []*types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -324,9 +318,9 @@ func (c *ChromeDOM) QuerySelectorAll(nodeId *types.ChromeDOMNodeId, selector str
 }
 
 // setNodeName - Sets node name for a node with given id.
-// Returns - 
+// Returns -
 // New node's id.
-func (c *ChromeDOM) SetNodeName(nodeId *types.ChromeDOMNodeId, name string, ) (*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) SetNodeName(nodeId *types.ChromeDOMNodeId, name string) (*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["name"] = name
@@ -334,11 +328,11 @@ func (c *ChromeDOM) SetNodeName(nodeId *types.ChromeDOMNodeId, name string, ) (*
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeId *types.ChromeDOMNodeId 
+		Result struct {
+			NodeId *types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -353,9 +347,9 @@ func (c *ChromeDOM) SetNodeName(nodeId *types.ChromeDOMNodeId, name string, ) (*
 }
 
 // getEventListenersForNode - Returns event listeners relevant to the node.
-// Returns - 
+// Returns -
 // Array of relevant listeners.
-func (c *ChromeDOM) GetEventListenersForNode(nodeId *types.ChromeDOMNodeId, objectGroup string, ) ([]*types.ChromeDOMEventListener, error) {
+func (c *ChromeDOM) GetEventListenersForNode(nodeId *types.ChromeDOMNodeId, objectGroup string) ([]*types.ChromeDOMEventListener, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["objectGroup"] = objectGroup
@@ -363,11 +357,11 @@ func (c *ChromeDOM) GetEventListenersForNode(nodeId *types.ChromeDOMNodeId, obje
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Listeners []*types.ChromeDOMEventListener 
+		Result struct {
+			Listeners []*types.ChromeDOMEventListener
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -382,20 +376,20 @@ func (c *ChromeDOM) GetEventListenersForNode(nodeId *types.ChromeDOMNodeId, obje
 }
 
 // getOuterHTML - Returns node's HTML markup.
-// Returns - 
+// Returns -
 // Outer HTML markup.
-func (c *ChromeDOM) GetOuterHTML(nodeId *types.ChromeDOMNodeId, ) (string, error) {
+func (c *ChromeDOM) GetOuterHTML(nodeId *types.ChromeDOMNodeId) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.getOuterHTML", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			OuterHTML string 
+		Result struct {
+			OuterHTML string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -410,22 +404,22 @@ func (c *ChromeDOM) GetOuterHTML(nodeId *types.ChromeDOMNodeId, ) (string, error
 }
 
 // performSearch - Searches for a given string in the DOM tree. Use <code>getSearchResults</code> to access search results or <code>cancelSearch</code> to end this search session.
-// Returns - 
+// Returns -
 // Unique search session identifier.
 // Number of search results.
-func (c *ChromeDOM) PerformSearch(query string, ) (string, float64, error) {
+func (c *ChromeDOM) PerformSearch(query string) (string, float64, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["query"] = query
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.performSearch", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			SearchId string 
-			ResultCount float64 
+		Result struct {
+			SearchId    string
+			ResultCount float64
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -440,9 +434,9 @@ func (c *ChromeDOM) PerformSearch(query string, ) (string, float64, error) {
 }
 
 // getSearchResults - Returns search results from given <code>fromIndex</code> to given <code>toIndex</code> from the sarch with the given identifier.
-// Returns - 
+// Returns -
 // Ids of the search result nodes.
-func (c *ChromeDOM) GetSearchResults(searchId string, fromIndex int, toIndex int, ) ([]*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) GetSearchResults(searchId string, fromIndex int, toIndex int) ([]*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["searchId"] = searchId
 	paramRequest["fromIndex"] = fromIndex
@@ -451,11 +445,11 @@ func (c *ChromeDOM) GetSearchResults(searchId string, fromIndex int, toIndex int
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeIds []*types.ChromeDOMNodeId 
+		Result struct {
+			NodeIds []*types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -470,20 +464,20 @@ func (c *ChromeDOM) GetSearchResults(searchId string, fromIndex int, toIndex int
 }
 
 // requestNode - Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of <code>setChildNodes</code> notifications.
-// Returns - 
+// Returns -
 // Node id for given object.
-func (c *ChromeDOM) RequestNode(objectId *types.ChromeRuntimeRemoteObjectId, ) (*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) RequestNode(objectId *types.ChromeRuntimeRemoteObjectId) (*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.requestNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeId *types.ChromeDOMNodeId 
+		Result struct {
+			NodeId *types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -498,20 +492,20 @@ func (c *ChromeDOM) RequestNode(objectId *types.ChromeRuntimeRemoteObjectId, ) (
 }
 
 // pushNodeByPathToFrontend - Requests that the node is sent to the caller given its path. // FIXME, use XPath
-// Returns - 
+// Returns -
 // Id of the node for given path.
-func (c *ChromeDOM) PushNodeByPathToFrontend(path string, ) (*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) PushNodeByPathToFrontend(path string) (*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["path"] = path
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.pushNodeByPathToFrontend", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeId *types.ChromeDOMNodeId 
+		Result struct {
+			NodeId *types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -526,20 +520,20 @@ func (c *ChromeDOM) PushNodeByPathToFrontend(path string, ) (*types.ChromeDOMNod
 }
 
 // pushNodesByBackendIdsToFrontend - Requests that a batch of nodes is sent to the caller given their backend node ids.
-// Returns - 
+// Returns -
 // The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds.
-func (c *ChromeDOM) PushNodesByBackendIdsToFrontend(backendNodeIds []*types.ChromeDOMBackendNodeId, ) ([]*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) PushNodesByBackendIdsToFrontend(backendNodeIds []*types.ChromeDOMBackendNodeId) ([]*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["backendNodeIds"] = backendNodeIds
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.pushNodesByBackendIdsToFrontend", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeIds []*types.ChromeDOMNodeId 
+		Result struct {
+			NodeIds []*types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -554,9 +548,9 @@ func (c *ChromeDOM) PushNodesByBackendIdsToFrontend(backendNodeIds []*types.Chro
 }
 
 // resolveNode - Resolves JavaScript node object for given node id.
-// Returns - 
+// Returns -
 // JavaScript object wrapper for given node.
-func (c *ChromeDOM) ResolveNode(nodeId *types.ChromeDOMNodeId, objectGroup string, ) (*types.ChromeRuntimeRemoteObject, error) {
+func (c *ChromeDOM) ResolveNode(nodeId *types.ChromeDOMNodeId, objectGroup string) (*types.ChromeRuntimeRemoteObject, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["objectGroup"] = objectGroup
@@ -564,11 +558,11 @@ func (c *ChromeDOM) ResolveNode(nodeId *types.ChromeDOMNodeId, objectGroup strin
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Object *types.ChromeRuntimeRemoteObject 
+		Result struct {
+			Object *types.ChromeRuntimeRemoteObject
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -583,20 +577,20 @@ func (c *ChromeDOM) ResolveNode(nodeId *types.ChromeDOMNodeId, objectGroup strin
 }
 
 // getAttributes - Returns attributes for the specified node.
-// Returns - 
+// Returns -
 // An interleaved array of node attribute names and values.
-func (c *ChromeDOM) GetAttributes(nodeId *types.ChromeDOMNodeId, ) ([]string, error) {
+func (c *ChromeDOM) GetAttributes(nodeId *types.ChromeDOMNodeId) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.getAttributes", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Attributes []string 
+		Result struct {
+			Attributes []string
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -611,9 +605,9 @@ func (c *ChromeDOM) GetAttributes(nodeId *types.ChromeDOMNodeId, ) ([]string, er
 }
 
 // copyTo - Creates a deep copy of the specified node and places it into the target container before the given anchor.
-// Returns - 
+// Returns -
 // Id of the node clone.
-func (c *ChromeDOM) CopyTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.ChromeDOMNodeId, insertBeforeNodeId *types.ChromeDOMNodeId, ) (*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) CopyTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.ChromeDOMNodeId, insertBeforeNodeId *types.ChromeDOMNodeId) (*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["targetNodeId"] = targetNodeId
@@ -622,11 +616,11 @@ func (c *ChromeDOM) CopyTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.Ch
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeId *types.ChromeDOMNodeId 
+		Result struct {
+			NodeId *types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -641,9 +635,9 @@ func (c *ChromeDOM) CopyTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.Ch
 }
 
 // moveTo - Moves node into the new container, places it before the given anchor.
-// Returns - 
+// Returns -
 // New id of the moved node.
-func (c *ChromeDOM) MoveTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.ChromeDOMNodeId, insertBeforeNodeId *types.ChromeDOMNodeId, ) (*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) MoveTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.ChromeDOMNodeId, insertBeforeNodeId *types.ChromeDOMNodeId) (*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["targetNodeId"] = targetNodeId
@@ -652,11 +646,11 @@ func (c *ChromeDOM) MoveTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.Ch
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeId *types.ChromeDOMNodeId 
+		Result struct {
+			NodeId *types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -671,20 +665,20 @@ func (c *ChromeDOM) MoveTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.Ch
 }
 
 // getBoxModel - Returns boxes for the currently selected nodes.
-// Returns - 
+// Returns -
 // Box model for the node.
-func (c *ChromeDOM) GetBoxModel(nodeId *types.ChromeDOMNodeId, ) (*types.ChromeDOMBoxModel, error) {
+func (c *ChromeDOM) GetBoxModel(nodeId *types.ChromeDOMNodeId) (*types.ChromeDOMBoxModel, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.getBoxModel", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			Model *types.ChromeDOMBoxModel 
+		Result struct {
+			Model *types.ChromeDOMBoxModel
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -699,9 +693,9 @@ func (c *ChromeDOM) GetBoxModel(nodeId *types.ChromeDOMNodeId, ) (*types.ChromeD
 }
 
 // getNodeForLocation - Returns node id at given location.
-// Returns - 
+// Returns -
 // Id of the node at given coordinates.
-func (c *ChromeDOM) GetNodeForLocation(x int, y int, ) (*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) GetNodeForLocation(x int, y int) (*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["x"] = x
 	paramRequest["y"] = y
@@ -709,11 +703,11 @@ func (c *ChromeDOM) GetNodeForLocation(x int, y int, ) (*types.ChromeDOMNodeId, 
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeId *types.ChromeDOMNodeId 
+		Result struct {
+			NodeId *types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -728,20 +722,20 @@ func (c *ChromeDOM) GetNodeForLocation(x int, y int, ) (*types.ChromeDOMNodeId, 
 }
 
 // getRelayoutBoundary - Returns the id of the nearest ancestor that is a relayout boundary.
-// Returns - 
+// Returns -
 // Relayout boundary node id for the given node.
-func (c *ChromeDOM) GetRelayoutBoundary(nodeId *types.ChromeDOMNodeId, ) (*types.ChromeDOMNodeId, error) {
+func (c *ChromeDOM) GetRelayoutBoundary(nodeId *types.ChromeDOMNodeId) (*types.ChromeDOMNodeId, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.getRelayoutBoundary", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
-		Result struct { 
-			NodeId *types.ChromeDOMNodeId 
+		Result struct {
+			NodeId *types.ChromeDOMNodeId
 		}
 	}
-		
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
 		cerr := &ChromeErrorResponse{}
@@ -755,6 +749,4 @@ func (c *ChromeDOM) GetRelayoutBoundary(nodeId *types.ChromeDOMNodeId, ) (*types
 	return chromeData.Result.NodeId, nil
 }
 
-
 // end commands with parameters and special return types
-
