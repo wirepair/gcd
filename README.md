@@ -95,6 +95,27 @@ func main() {
 	log.Printf("NodeID: %d Node Name: %s, URL: %s\n", *r.NodeId, r.NodeName, r.DocumentURL)
 }
 ```
+
+Create a new tab and start working with it
+```Go
+package main
+
+import (
+	"github.com/wirepair/gcd"
+	"time"
+)
+
+func main() {
+	debugger := gcd.NewChromeDebugger()
+	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	defer debugger.ExitProcess()
+	target := debugger.NewTab()
+	page := target.Page()
+	page.Navigate("https://github.com/wirepair/gcd")
+	time.Sleep(5 * time.Second)
+}
+```
+
 TODO:
 Moar Examples.
 

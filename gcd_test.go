@@ -18,16 +18,22 @@ type ConsoleParams struct {
 	Message *types.ChromeConsoleConsoleMessage `json:"message"`
 }
 
+const (
+	path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+	dir  = "C:\\tmp\\"
+	port = "9222"
+)
+
 func TestChromeDebugger(t *testing.T) {
 	debugger := NewChromeDebugger()
-	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	debugger.StartProcess(path, dir, port)
 	time.Sleep(2 * time.Second)
 	debugger.ExitProcess()
 }
 
 func TestGetPages(t *testing.T) {
 	debugger := NewChromeDebugger()
-	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	debugger.StartProcess(path, dir, port)
 	defer debugger.ExitProcess()
 	time.Sleep(2 * time.Second)
 	targets := debugger.GetTargets()
@@ -40,7 +46,7 @@ func TestGetPages(t *testing.T) {
 
 func TestConsole(t *testing.T) {
 	debugger := NewChromeDebugger()
-	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	debugger.StartProcess(path, dir, port)
 	defer debugger.ExitProcess()
 	time.Sleep(1 * time.Second)
 	targets := debugger.GetTargets()
@@ -78,4 +84,12 @@ func TestConsole(t *testing.T) {
 	resp, _ = console.Disable()
 	fmt.Printf("Sent Disable... resp: %v\n", resp)
 	time.Sleep(1 * time.Second)
+}
+
+func TestNewTab(t *testing.T) {
+	debugger := NewChromeDebugger()
+	debugger.StartProcess(path, dir, port)
+	defer debugger.ExitProcess()
+	debugger.NewTab()
+	time.Sleep(2 * time.Second)
 }

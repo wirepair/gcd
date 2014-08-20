@@ -270,7 +270,7 @@ func wsConnection(addr, url string) *websocket.Conn {
 	}
 	config, errConfig := websocket.NewConfig(url, "http://localhost")
 	if errConfig != nil {
-		log.Fatalf("error building config: %v\n", err)
+		log.Fatalf("error building config: addr: %s url: %s %v\n", addr, url, err)
 	}
 	client, errWS := websocket.NewClient(config, conn)
 	if errWS != nil {

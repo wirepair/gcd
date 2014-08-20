@@ -99,3 +99,23 @@ func (c *Gcd) GetTargets() []*ChromeTarget {
 	}
 	return c.Targets
 }
+
+// Create a new empty tab, returns the chrome target.
+func (c *Gcd) NewTab() *ChromeTarget {
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/json/new", c.port))
+	if err != nil {
+		log.Fatalf("%v\n", err)
+	}
+	defer resp.Body.Close()
+	body, errRead := ioutil.ReadAll(resp.Body)
+	if errRead != nil {
+		log.Fatalf("error reading body: %v\n", errRead)
+	}
+	tabTarget := &TargetInfo{}
+	err = json.Unmarshal(body, &tabTarget)
+	if err != nil {
+		fmt.Printf("body: %s\n", string(body))
+		log.Fatalf("error decoding inspectable page: %v\n", err)
+	}
+	return newChromeTarget(c.port, tabTarget)
+}
