@@ -119,3 +119,16 @@ func (c *Gcd) NewTab() *ChromeTarget {
 	}
 	return newChromeTarget(c.port, tabTarget)
 }
+
+func (c *Gcd) CloseTab(target *ChromeTarget) {
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/json/close/%s", c.port, target.Target.Id))
+	if err != nil {
+		log.Fatalf("%v\n", err)
+	}
+	defer resp.Body.Close()
+	body, errRead := ioutil.ReadAll(resp.Body)
+	if errRead != nil {
+		log.Fatalf("error reading body: %v\n", errRead)
+	}
+	log.Printf("closed target: %s\n", string(body))
+}

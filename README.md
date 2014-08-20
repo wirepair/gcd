@@ -96,7 +96,7 @@ func main() {
 }
 ```
 
-Create a new tab and start working with it
+Create a new tab and start working with it then close it.
 ```Go
 package main
 
@@ -113,6 +113,7 @@ func main() {
 	page := target.Page()
 	page.Navigate("https://github.com/wirepair/gcd")
 	time.Sleep(5 * time.Second)
+	debugger.CloseTab(target)
 }
 ```
 

@@ -93,3 +93,13 @@ func TestNewTab(t *testing.T) {
 	debugger.NewTab()
 	time.Sleep(2 * time.Second)
 }
+
+func TestCloseTab(t *testing.T) {
+	debugger := NewChromeDebugger()
+	debugger.StartProcess(path, dir, port)
+	defer debugger.ExitProcess()
+	target := debugger.NewTab()
+	time.Sleep(1 * time.Second)
+	debugger.CloseTab(target)
+	time.Sleep(2 * time.Second)
+}
