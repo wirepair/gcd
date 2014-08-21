@@ -224,7 +224,7 @@ func (c *ChromeTarget) listenRead() {
 				log.Printf("error in websocket read: %v\n", err)
 				c.doneCh <- true
 			} else {
-				c.dispatchResponse([]byte(msg))
+				go c.dispatchResponse([]byte(msg))
 			}
 		}
 	}
@@ -255,16 +255,16 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	}
 	c.replyLock.Unlock()
 
-	fmt.Println("Dispatching to ", f.Method)
+	c.eventLock.RLock()
 	if r, ok := c.eventDispatcher[f.Method]; ok {
-
+		c.eventLock.RUnlock()
 		go r(c, msg)
 
 	} else if c.debugEvents == true {
 		fmt.Printf("\n\nno event recvr bound for: %s\n", f.Method)
 		fmt.Printf("data: %s\n\n", string(msg))
 	}
-
+	c.eventLock.RUnlock()
 }
 
 // Connects to the tab/process for sending/recv'ing debug events
