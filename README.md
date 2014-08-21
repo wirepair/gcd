@@ -157,12 +157,12 @@ func main() {
 	defer debugger.ExitProcess()
 	targets := make([]*gcd.ChromeTarget, numTabs)
 	for i := 0; i < numTabs; i++ {
+		wg.Add(1)
 		targets[i] = debugger.NewTab()
 		page := targets[i].Page()
 		page.Enable()
 		targets[i].Subscribe("Page.loadEventFired", PageLoaded)
 		page.Navigate(urls[i])
-		wg.Add(1)
 	}
 	wg.Wait()
 	for i := 0; i < numTabs; i++ {
