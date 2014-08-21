@@ -142,6 +142,7 @@ type ChromeTarget struct {
 	sendCh            chan *gcdMessage // The channel used for API components to send back to use
 	doneCh            chan bool        // we be donez.
 	sendId            int64            // An Id which is atomically incremented per request.
+	debugEvents       bool             // flag for spitting out event data as a string which we have not subscribed to.
 }
 
 // Creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
@@ -169,6 +170,10 @@ func (c *ChromeTarget) Subscribe(method string, callback func(*ChromeTarget, []b
 	c.eventLock.Lock()
 	c.eventDispatcher[method] = callback
 	c.eventLock.Unlock()
+}
+
+func (c *ChromeTarget) DebugEvents(debug bool) {
+	c.debugEvents = debug
 }
 
 // Listens for API components wanting to send, and recv'ing data from the Chrome Debugger Service
@@ -255,7 +260,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 		c.eventLock.RUnlock()
 		go r(c, msg)
 
-	} else {
+	} else if c.debugEvents == true {
 		fmt.Printf("\n\nno event recvr bound for: %s\n", f.Method)
 		fmt.Printf("data: %s\n\n", string(msg))
 	}
