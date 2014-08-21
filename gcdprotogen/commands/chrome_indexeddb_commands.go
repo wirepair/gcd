@@ -28,7 +28,7 @@ func newChromeIndexedDB(target *ChromeTarget) *ChromeIndexedDB {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Enables events from backend.
 func (c *ChromeIndexedDB) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "IndexedDB.enable"})
@@ -39,9 +39,6 @@ func (c *ChromeIndexedDB) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "IndexedDB.disable"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // clearObjectStore - Clears all entries from an object store.
 // securityOrigin - Security origin.
@@ -56,16 +53,8 @@ func (c *ChromeIndexedDB) ClearObjectStore(securityOrigin string, databaseName s
 }
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
-
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
 
 // requestDatabaseNames - Requests database names for given security origin.
 // Returns - 
@@ -160,6 +149,4 @@ func (c *ChromeIndexedDB) RequestData(securityOrigin string, databaseName string
 	return chromeData.Result.ObjectStoreDataEntries, chromeData.Result.HasMore, nil
 }
 
-
-// end commands with parameters and special return types
 

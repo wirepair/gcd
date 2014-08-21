@@ -28,7 +28,7 @@ func newChromeDatabase(target *ChromeTarget) *ChromeDatabase {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Enables database tracking, database events will now be delivered to the client.
 func (c *ChromeDatabase) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Database.enable"})
@@ -39,21 +39,10 @@ func (c *ChromeDatabase) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Database.disable"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
-
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
 
 // getDatabaseTableNames - 
 // Returns - 
@@ -112,6 +101,4 @@ func (c *ChromeDatabase) ExecuteSQL(databaseId *types.ChromeDatabaseDatabaseId, 
 	return chromeData.Result.ColumnNames, chromeData.Result.Values, chromeData.Result.SqlError, nil
 }
 
-
-// end commands with parameters and special return types
 

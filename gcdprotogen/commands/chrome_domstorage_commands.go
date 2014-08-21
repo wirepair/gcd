@@ -28,7 +28,7 @@ func newChromeDOMStorage(target *ChromeTarget) *ChromeDOMStorage {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Enables storage tracking, storage events will now be delivered to the client.
 func (c *ChromeDOMStorage) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMStorage.enable"})
@@ -39,9 +39,6 @@ func (c *ChromeDOMStorage) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMStorage.disable"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // setDOMStorageItem - 
 // storageId - 
@@ -66,16 +63,8 @@ func (c *ChromeDOMStorage) RemoveDOMStorageItem(storageId *types.ChromeDOMStorag
 }
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
-
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
 
 // getDOMStorageItems - 
 // Returns - 
@@ -104,6 +93,4 @@ func (c *ChromeDOMStorage) GetDOMStorageItems(storageId *types.ChromeDOMStorageS
 	return chromeData.Result.Entries, nil
 }
 
-
-// end commands with parameters and special return types
 

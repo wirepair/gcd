@@ -28,7 +28,7 @@ func newChromeNetwork(target *ChromeTarget) *ChromeNetwork {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Enables network tracking, network events will now be delivered to the client.
 func (c *ChromeNetwork) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.enable"})
@@ -49,9 +49,6 @@ func (c *ChromeNetwork) ClearBrowserCookies() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.clearBrowserCookies"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // setUserAgentOverride - Allows overriding user agent with the given string.
 // userAgent - User agent to use.
@@ -100,10 +97,6 @@ func (c *ChromeNetwork) SetCacheDisabled(cacheDisabled bool, ) (*ChromeResponse,
 }
 
 
-// end parameterized commands with no special return types
-
-
-// start commands with no parameters but special return types
 
 // canClearBrowserCache - Tells whether clearing browser cache is supported.
 // Returns - 
@@ -158,10 +151,6 @@ func (c *ChromeNetwork) CanClearBrowserCookies() (bool, error) {
 }
 
 
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
 
 // getResponseBody - Returns content served for the given request.
 // Returns - 
@@ -227,6 +216,4 @@ func (c *ChromeNetwork) LoadResourceForFrontend(frameId *types.ChromePageFrameId
 	return chromeData.Result.StatusCode, chromeData.Result.ResponseHeaders, chromeData.Result.Content, nil
 }
 
-
-// end commands with parameters and special return types
 

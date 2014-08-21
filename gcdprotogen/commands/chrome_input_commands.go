@@ -28,10 +28,7 @@ func newChromeInput(target *ChromeTarget) *ChromeInput {
 	return c
 }
 
-// start non parameterized commands
-// end non parameterized commands
 
-// start parameterized commands with no special return types
 
 // dispatchKeyEvent - Dispatches a key event to the page.
 // type - Type of the key event.
@@ -142,17 +139,7 @@ func (c *ChromeInput) EmulateTouchFromMouseEvent(theType string, x int, y int, d
 }
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
 
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
-
-
-// end commands with parameters and special return types
 

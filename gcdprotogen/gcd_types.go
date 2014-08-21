@@ -29,8 +29,12 @@ func createTypes(output *Output, types []*Type) error {
 	for _, t := range types {
 		struc := NewGeneratedStruct(output, t.Id, t.Description)
 		if t.Type == "object" {
-			struc.IsObject = true
-			createObjectType(struc, t.Properties)
+			if len(t.Properties) == 0 {
+				fmt.Printf("ID is object with no properties!: %s\n", t.Id)
+			} else {
+				struc.IsObject = true
+				createObjectType(struc, t.Properties)
+			}
 		} else {
 			if t.Enum != nil && len(t.Enum) > 0 {
 				struc.EnumVals = "// possible values: " + strings.Join(t.Enum, ", ")
@@ -38,7 +42,11 @@ func createTypes(output *Output, types []*Type) error {
 		}
 		output.Types = append(output.Types, struc)
 		if !struc.IsObject {
-			struc.NonObjectLines = fmt.Sprintf(nonStruct, struc.Description, struc.Name, jsonType(output.Domain, t.Items, "", t.Type, false), struc.EnumVals)
+			realType := jsonType(output.Domain, t.Items, "", t.Type, false)
+			if realType == "object" {
+				realType = "map[string]interface{}"
+			}
+			struc.NonObjectLines = fmt.Sprintf(nonStruct, struc.Description, struc.Name, realType, struc.EnumVals)
 		}
 	}
 	return nil
@@ -60,8 +68,8 @@ func createObjectType(struc *GeneratedStruct, props []*Property) {
 		newStruc := hasNestedType(struc, prop)
 		realType := jsonType(struc.Out.Domain, prop.Items, prop.Ref, prop.Type, false)
 		if realType == "object" {
-			fmt.Printf("realType was object for %s in %s setting to interface{}", prop.Name, struc.Out.Domain, prop, newStruc)
-			realType = "interface{}"
+			fmt.Printf("realType was object for %s in %s setting to map[string]interface{}", prop.Name, struc.Out.Domain, prop, newStruc)
+			realType = "map[string]interface{}"
 		}
 		if newStruc != nil {
 			struc.Out.Types = append(struc.Out.Types, newStruc)

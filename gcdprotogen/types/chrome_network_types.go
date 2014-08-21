@@ -17,8 +17,7 @@ type ChromeNetworkTimestamp float64
  
  
 // Request / response headers as keys / values of JSON object.
-type ChromeNetworkHeaders struct {
-}
+type ChromeNetworkHeaders map[string]interface{} 
  
  
 // Timing information for the request.

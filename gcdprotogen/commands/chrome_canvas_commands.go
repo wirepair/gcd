@@ -28,7 +28,7 @@ func newChromeCanvas(target *ChromeTarget) *ChromeCanvas {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Enables Canvas inspection.
 func (c *ChromeCanvas) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Canvas.enable"})
@@ -39,9 +39,6 @@ func (c *ChromeCanvas) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Canvas.disable"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // dropTraceLog - 
 // traceLogId - 
@@ -60,10 +57,6 @@ func (c *ChromeCanvas) StopCapturing(traceLogId *types.ChromeCanvasTraceLogId, )
 }
 
 
-// end parameterized commands with no special return types
-
-
-// start commands with no parameters but special return types
 
 // hasUninstrumentedCanvases - Checks if there is any uninstrumented canvas in the inspected page.
 // Returns - 
@@ -91,10 +84,6 @@ func (c *ChromeCanvas) HasUninstrumentedCanvases() (bool, error) {
 }
 
 
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
 
 // captureFrame - Starts (or continues) a canvas frame capturing which will be stopped automatically after the next frame is prepared.
 // Returns - 
@@ -272,6 +261,4 @@ func (c *ChromeCanvas) EvaluateTraceLogCallArgument(traceLogId *types.ChromeCanv
 	return chromeData.Result.Result, chromeData.Result.ResourceState, nil
 }
 
-
-// end commands with parameters and special return types
 

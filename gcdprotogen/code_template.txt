@@ -28,15 +28,12 @@ func newChrome{{.Domain}}(target *ChromeTarget) *Chrome{{.Domain}} {
 	return c
 }
 
-// start non parameterized commands{{range $element := .NoParamReturnCalls}} 
+{{range $element := .NoParamReturnCalls}} 
 // {{$element.Description}}
 func (c *Chrome{{$api.Domain}}) {{.Method | Title}}() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "{{$api.Domain}}.{{.Method}}"})
 }
 {{ end }}
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 {{range $element := .ParamCalls}}// {{.Method}} - {{$element.Description}}{{range $paramDescription := .ParamDescriptions}}
 // {{$paramDescription}}{{ end }}
@@ -47,10 +44,6 @@ func (c *Chrome{{$api.Domain}}) {{.Method | Title}}({{range $param := $element.P
 }
 
 {{ end }}
-// end parameterized commands with no special return types
-
-
-// start commands with no parameters but special return types
 
 {{range $element := .ReturnCalls}}// {{.Method}} - {{$element.Description}}
 // Returns - {{range $returnDescription := .ReturnDescriptions}}
@@ -79,10 +72,6 @@ func (c *Chrome{{$api.Domain}}) {{.Method | Title}}() ({{range $rets := .Returns
 }
 
 {{ end }}
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
 
 {{range $element := .ParamReturnCalls}}// {{.Method}} - {{$element.Description}}
 // Returns - {{range $returnDescription := .ReturnDescriptions}}
@@ -113,5 +102,3 @@ func (c *Chrome{{$api.Domain}}) {{.Method | Title}}({{range $param := $element.P
 }
 
 {{ end }}
-// end commands with parameters and special return types
-

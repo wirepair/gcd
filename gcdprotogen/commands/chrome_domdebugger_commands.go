@@ -28,10 +28,7 @@ func newChromeDOMDebugger(target *ChromeTarget) *ChromeDOMDebugger {
 	return c
 }
 
-// start non parameterized commands
-// end non parameterized commands
 
-// start parameterized commands with no special return types
 
 // setDOMBreakpoint - Sets breakpoint on particular operation with DOM.
 // nodeId - Identifier of the node to set breakpoint on.
@@ -106,17 +103,7 @@ func (c *ChromeDOMDebugger) RemoveXHRBreakpoint(url string, ) (*ChromeResponse, 
 }
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
 
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
-
-
-// end commands with parameters and special return types
 

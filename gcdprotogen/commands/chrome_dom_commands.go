@@ -28,7 +28,7 @@ func newChromeDOM(target *ChromeTarget) *ChromeDOM {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Enables DOM agent for the given page.
 func (c *ChromeDOM) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.enable"})
@@ -59,9 +59,6 @@ func (c *ChromeDOM) MarkUndoableState() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.markUndoableState"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // requestChildNodes - Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events where not only immediate children are retrieved, but all children down to the specified depth.
 // nodeId - Id of the node to get children for.
@@ -228,10 +225,6 @@ func (c *ChromeDOM) SetFileInputFiles(nodeId *types.ChromeDOMNodeId, files []str
 }
 
 
-// end parameterized commands with no special return types
-
-
-// start commands with no parameters but special return types
 
 // getDocument - Returns the root DOM node to the caller.
 // Returns - 
@@ -260,10 +253,6 @@ func (c *ChromeDOM) GetDocument() (*types.ChromeDOMNode, error) {
 }
 
 
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
 
 // querySelector - Executes <code>querySelector</code> on a given node.
 // Returns - 
@@ -755,6 +744,4 @@ func (c *ChromeDOM) GetRelayoutBoundary(nodeId *types.ChromeDOMNodeId, ) (*types
 	return chromeData.Result.NodeId, nil
 }
 
-
-// end commands with parameters and special return types
 

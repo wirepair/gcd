@@ -28,7 +28,7 @@ func newChromeProfiler(target *ChromeTarget) *ChromeProfiler {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // 
 func (c *ChromeProfiler) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.enable"})
@@ -44,9 +44,6 @@ func (c *ChromeProfiler) Start() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Profiler.start"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // setSamplingInterval - Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
 // interval - New sampling interval in microseconds.
@@ -57,10 +54,6 @@ func (c *ChromeProfiler) SetSamplingInterval(interval int, ) (*ChromeResponse, e
 }
 
 
-// end parameterized commands with no special return types
-
-
-// start commands with no parameters but special return types
 
 // stop - 
 // Returns - 
@@ -89,11 +82,5 @@ func (c *ChromeProfiler) Stop() (*types.ChromeProfilerCPUProfile, error) {
 }
 
 
-// end commands with no parameters but special return types
 
-
-// start commands with parameters and special return types
-
-
-// end commands with parameters and special return types
 

@@ -28,15 +28,12 @@ func newChromeDeviceOrientation(target *ChromeTarget) *ChromeDeviceOrientation {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Clears the overridden Device Orientation.
 func (c *ChromeDeviceOrientation) ClearDeviceOrientationOverride() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DeviceOrientation.clearDeviceOrientationOverride"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // setDeviceOrientationOverride - Overrides the Device Orientation.
 // alpha - Mock alpha
@@ -51,17 +48,7 @@ func (c *ChromeDeviceOrientation) SetDeviceOrientationOverride(alpha float64, be
 }
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
 
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
-
-
-// end commands with parameters and special return types
 

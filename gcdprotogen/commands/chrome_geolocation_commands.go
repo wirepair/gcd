@@ -28,15 +28,12 @@ func newChromeGeolocation(target *ChromeTarget) *ChromeGeolocation {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Clears the overriden Geolocation Position and Error.
 func (c *ChromeGeolocation) ClearGeolocationOverride() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Geolocation.clearGeolocationOverride"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // setGeolocationOverride - Overrides the Geolocation Position or Error.
 // latitude - Mock latitude
@@ -51,17 +48,7 @@ func (c *ChromeGeolocation) SetGeolocationOverride(latitude float64, longitude f
 }
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
 
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
-
-
-// end commands with parameters and special return types
 

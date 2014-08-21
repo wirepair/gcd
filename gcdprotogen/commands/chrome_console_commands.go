@@ -28,7 +28,7 @@ func newChromeConsole(target *ChromeTarget) *ChromeConsole {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Enables console domain, sends the messages collected so far to the client by means of the <code>messageAdded</code> notification.
 func (c *ChromeConsole) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Console.enable"})
@@ -44,9 +44,6 @@ func (c *ChromeConsole) ClearMessages() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Console.clearMessages"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // setMonitoringXHREnabled - Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.
 // enabled - Monitoring enabled state.
@@ -73,17 +70,7 @@ func (c *ChromeConsole) AddInspectedHeapObject(heapObjectId int, ) (*ChromeRespo
 }
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
 
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
-
-
-// end commands with parameters and special return types
 

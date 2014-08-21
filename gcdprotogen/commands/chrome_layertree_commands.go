@@ -28,7 +28,7 @@ func newChromeLayerTree(target *ChromeTarget) *ChromeLayerTree {
 	return c
 }
 
-// start non parameterized commands 
+ 
 // Enables compositing tree inspection.
 func (c *ChromeLayerTree) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "LayerTree.enable"})
@@ -39,9 +39,6 @@ func (c *ChromeLayerTree) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "LayerTree.disable"})
 }
 
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // releaseSnapshot - Releases layer snapshot captured by the back-end.
 // snapshotId - The id of the layer snapshot.
@@ -52,16 +49,8 @@ func (c *ChromeLayerTree) ReleaseSnapshot(snapshotId *types.ChromeLayerTreeSnaps
 }
 
 
-// end parameterized commands with no special return types
 
 
-// start commands with no parameters but special return types
-
-
-// end commands with no parameters but special return types
-
-
-// start commands with parameters and special return types
 
 // compositingReasons - Provides the reasons why the given layer was composited.
 // Returns - 
@@ -236,6 +225,4 @@ func (c *ChromeLayerTree) SnapshotCommandLog(snapshotId *types.ChromeLayerTreeSn
 	return chromeData.Result.CommandLog, nil
 }
 
-
-// end commands with parameters and special return types
 

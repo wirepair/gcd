@@ -18,7 +18,7 @@ type ChromeTimelineCounters struct {
 // Timeline record contains information about the recorded activity.
 type ChromeTimelineTimelineEvent struct {
 	Type string `json:"type"` // Event type.
-	Data interface{} `json:"data"` // Event data.
+	Data map[string]interface{} `json:"data"` // Event data.
 	StartTime float64 `json:"startTime"` // Start time.
 	EndTime float64 `json:"endTime,omitempty"` // End time.
 	Children []*ChromeTimelineTimelineEvent `json:"children,omitempty"` // Nested records.

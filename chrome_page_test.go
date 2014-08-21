@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+	path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.path"
 	dir  = "C:\\tmp\\"
 	port = "9222"
 )
