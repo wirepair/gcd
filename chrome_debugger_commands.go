@@ -26,7 +26,6 @@ func newChromeDebugger(target *ChromeTarget) *ChromeDebugger {
 	return c
 }
 
-// start non parameterized commands
 // Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
 func (c *ChromeDebugger) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.enable"})
@@ -61,10 +60,6 @@ func (c *ChromeDebugger) Pause() (*ChromeResponse, error) {
 func (c *ChromeDebugger) Resume() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.resume"})
 }
-
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // setBreakpointsActive - Activates / deactivates all breakpoints on the page.
 // active - New value for breakpoints active state.
@@ -150,10 +145,6 @@ func (c *ChromeDebugger) SetAsyncCallStackDepth(maxDepth int) (*ChromeResponse, 
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Debugger.setAsyncCallStackDepth", Params: paramRequest})
 }
 
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
-
 // canSetScriptSource - Always returns true.
 // Returns -
 // True if <code>setScriptSource</code> is supported.
@@ -207,10 +198,6 @@ func (c *ChromeDebugger) GetBacktrace() ([]*types.ChromeDebuggerCallFrame, *type
 
 	return chromeData.Result.CallFrames, chromeData.Result.AsyncStackTrace, nil
 }
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
 
 // setBreakpointByUrl - Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in <code>locations</code> property. Further matching script parsing will result in subsequent <code>breakpointResolved</code> events issued. This logical breakpoint will survive page reloads.
 // Returns -
@@ -561,5 +548,3 @@ func (c *ChromeDebugger) GetStepInPositions(callFrameId *types.ChromeDebuggerCal
 
 	return chromeData.Result.StepInPositions, nil
 }
-
-// end commands with parameters and special return types

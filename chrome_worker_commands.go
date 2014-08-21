@@ -25,7 +25,6 @@ func newChromeWorker(target *ChromeTarget) *ChromeWorker {
 	return c
 }
 
-// start non parameterized commands
 //
 func (c *ChromeWorker) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Worker.enable"})
@@ -35,10 +34,6 @@ func (c *ChromeWorker) Enable() (*ChromeResponse, error) {
 func (c *ChromeWorker) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Worker.disable"})
 }
-
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // sendMessageToWorker -
 // workerId -
@@ -74,10 +69,6 @@ func (c *ChromeWorker) SetAutoconnectToWorkers(value bool) (*ChromeResponse, err
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Worker.setAutoconnectToWorkers", Params: paramRequest})
 }
 
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
-
 // canInspectWorkers - Tells whether browser supports workers inspection.
 // Returns -
 // True if browser has workers support.
@@ -103,9 +94,3 @@ func (c *ChromeWorker) CanInspectWorkers() (bool, error) {
 
 	return chromeData.Result.Result, nil
 }
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
-
-// end commands with parameters and special return types

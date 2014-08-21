@@ -25,15 +25,6 @@ func newChromeMemory(target *ChromeTarget) *ChromeMemory {
 	return c
 }
 
-// start non parameterized commands
-// end non parameterized commands
-
-// start parameterized commands with no special return types
-
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
-
 // getDOMCounters -
 // Returns -
 func (c *ChromeMemory) GetDOMCounters() (float64, float64, float64, error) {
@@ -60,9 +51,3 @@ func (c *ChromeMemory) GetDOMCounters() (float64, float64, float64, error) {
 
 	return chromeData.Result.Documents, chromeData.Result.Nodes, chromeData.Result.JsEventListeners, nil
 }
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
-
-// end commands with parameters and special return types

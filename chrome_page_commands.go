@@ -26,7 +26,6 @@ func newChromePage(target *ChromeTarget) *ChromePage {
 	return c
 }
 
-// start non parameterized commands
 // Enables page domain notifications.
 func (c *ChromePage) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.enable"})
@@ -61,10 +60,6 @@ func (c *ChromePage) ClearDeviceOrientationOverride() (*ChromeResponse, error) {
 func (c *ChromePage) StopScreencast() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.stopScreencast"})
 }
-
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // removeScriptToEvaluateOnLoad -
 // identifier -
@@ -258,10 +253,6 @@ func (c *ChromePage) SetShowViewportSizeOnResize(show bool, showGrid bool) (*Chr
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setShowViewportSizeOnResize", Params: paramRequest})
 }
 
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
-
 // getNavigationHistory - Returns navigation history for the current page.
 // Returns -
 // Index of the current navigation history entry.
@@ -420,10 +411,6 @@ func (c *ChromePage) CanScreencast() (bool, error) {
 	return chromeData.Result.Result, nil
 }
 
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
-
 // addScriptToEvaluateOnLoad -
 // Returns -
 // Identifier of the added script.
@@ -572,5 +559,3 @@ func (c *ChromePage) QueryUsageAndQuota(securityOrigin string) (*types.ChromePag
 
 	return chromeData.Result.Quota, chromeData.Result.Usage, nil
 }
-
-// end commands with parameters and special return types

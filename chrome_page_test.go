@@ -9,11 +9,13 @@ import (
 	"time"
 )
 
+/* see gcd_test for consts.
 const (
 	path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.path"
 	dir  = "C:\\tmp\\"
 	port = "9222"
 )
+*/
 
 func TestPageFPS(t *testing.T) {
 	debugger := NewChromeDebugger()

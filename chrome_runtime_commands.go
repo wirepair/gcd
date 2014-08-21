@@ -26,7 +26,6 @@ func newChromeRuntime(target *ChromeTarget) *ChromeRuntime {
 	return c
 }
 
-// start non parameterized commands
 // Tells inspected instance(worker or page) that it can run in case it was started paused.
 func (c *ChromeRuntime) Run() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.run"})
@@ -41,10 +40,6 @@ func (c *ChromeRuntime) Enable() (*ChromeResponse, error) {
 func (c *ChromeRuntime) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.disable"})
 }
-
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // releaseObject - Releases remote object with given id.
 // objectId - Identifier of the object to release.
@@ -61,10 +56,6 @@ func (c *ChromeRuntime) ReleaseObjectGroup(objectGroup string) (*ChromeResponse,
 	paramRequest["objectGroup"] = objectGroup
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.releaseObjectGroup", Params: paramRequest})
 }
-
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
 
 // isRunRequired -
 // Returns -
@@ -91,10 +82,6 @@ func (c *ChromeRuntime) IsRunRequired() (bool, error) {
 
 	return chromeData.Result.Result, nil
 }
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
 
 // evaluate - Evaluates expression on global object.
 // Returns -
@@ -200,5 +187,3 @@ func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectI
 
 	return chromeData.Result.Result, chromeData.Result.InternalProperties, nil
 }
-
-// end commands with parameters and special return types

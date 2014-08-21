@@ -25,7 +25,6 @@ func newChromePower(target *ChromeTarget) *ChromePower {
 	return c
 }
 
-// start non parameterized commands
 // Start power events collection.
 func (c *ChromePower) Start() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Power.start"})
@@ -35,14 +34,6 @@ func (c *ChromePower) Start() (*ChromeResponse, error) {
 func (c *ChromePower) End() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Power.end"})
 }
-
-// end non parameterized commands
-
-// start parameterized commands with no special return types
-
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
 
 // canProfilePower - Tells whether power profiling is supported.
 // Returns -
@@ -94,9 +85,3 @@ func (c *ChromePower) GetAccuracyLevel() (string, error) {
 
 	return chromeData.Result.Result, nil
 }
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
-
-// end commands with parameters and special return types

@@ -25,11 +25,6 @@ func newChromeInput(target *ChromeTarget) *ChromeInput {
 	return c
 }
 
-// start non parameterized commands
-// end non parameterized commands
-
-// start parameterized commands with no special return types
-
 // dispatchKeyEvent - Dispatches a key event to the page.
 // type - Type of the key event.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
@@ -137,13 +132,3 @@ func (c *ChromeInput) EmulateTouchFromMouseEvent(theType string, x int, y int, d
 	paramRequest["clickCount"] = clickCount
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Input.emulateTouchFromMouseEvent", Params: paramRequest})
 }
-
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
-
-// end commands with parameters and special return types

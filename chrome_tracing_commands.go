@@ -25,19 +25,10 @@ func newChromeTracing(target *ChromeTarget) *ChromeTracing {
 	return c
 }
 
-// start non parameterized commands
 // Stop trace events collection.
 func (c *ChromeTracing) End() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Tracing.end"})
 }
-
-// end non parameterized commands
-
-// start parameterized commands with no special return types
-
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
 
 // getCategories - Gets supported tracing categories.
 // Returns -
@@ -64,10 +55,6 @@ func (c *ChromeTracing) GetCategories() ([]string, error) {
 
 	return chromeData.Result.Categories, nil
 }
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
 
 // start - Start trace events collection.
 // Returns -
@@ -98,5 +85,3 @@ func (c *ChromeTracing) Start(categories string, options string, bufferUsageRepo
 
 	return chromeData.Result.SessionId, nil
 }
-
-// end commands with parameters and special return types

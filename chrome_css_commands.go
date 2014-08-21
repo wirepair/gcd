@@ -26,7 +26,6 @@ func newChromeCSS(target *ChromeTarget) *ChromeCSS {
 	return c
 }
 
-// start non parameterized commands
 // Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received.
 func (c *ChromeCSS) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.enable"})
@@ -36,10 +35,6 @@ func (c *ChromeCSS) Enable() (*ChromeResponse, error) {
 func (c *ChromeCSS) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.disable"})
 }
-
-// end non parameterized commands
-
-// start parameterized commands with no special return types
 
 // setStyleSheetText - Sets the new stylesheet text.
 // styleSheetId -
@@ -60,10 +55,6 @@ func (c *ChromeCSS) ForcePseudoState(nodeId *types.ChromeDOMNodeId, forcedPseudo
 	paramRequest["forcedPseudoClasses"] = forcedPseudoClasses
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.forcePseudoState", Params: paramRequest})
 }
-
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
 
 // getMediaQueries - Returns all media queries parsed by the rendering engine.
 // Returns -
@@ -89,10 +80,6 @@ func (c *ChromeCSS) GetMediaQueries() ([]*types.ChromeCSSCSSMedia, error) {
 
 	return chromeData.Result.Medias, nil
 }
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
 
 // getMatchedStylesForNode - Returns requested styles for a DOM node identified by <code>nodeId</code>.
 // Returns -
@@ -360,5 +347,3 @@ func (c *ChromeCSS) AddRule(styleSheetId *types.ChromeCSSStyleSheetId, selector 
 
 	return chromeData.Result.Rule, nil
 }
-
-// end commands with parameters and special return types

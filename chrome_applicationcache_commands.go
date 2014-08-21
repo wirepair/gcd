@@ -26,19 +26,10 @@ func newChromeApplicationCache(target *ChromeTarget) *ChromeApplicationCache {
 	return c
 }
 
-// start non parameterized commands
 // Enables application cache domain notifications.
 func (c *ChromeApplicationCache) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "ApplicationCache.enable"})
 }
-
-// end non parameterized commands
-
-// start parameterized commands with no special return types
-
-// end parameterized commands with no special return types
-
-// start commands with no parameters but special return types
 
 // getFramesWithManifests - Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache.
 // Returns -
@@ -65,10 +56,6 @@ func (c *ChromeApplicationCache) GetFramesWithManifests() ([]*types.ChromeApplic
 
 	return chromeData.Result.FrameIds, nil
 }
-
-// end commands with no parameters but special return types
-
-// start commands with parameters and special return types
 
 // getManifestForFrame - Returns manifest URL for document in the given frame.
 // Returns -
@@ -125,5 +112,3 @@ func (c *ChromeApplicationCache) GetApplicationCacheForFrame(frameId *types.Chro
 
 	return chromeData.Result.ApplicationCache, nil
 }
-
-// end commands with parameters and special return types
