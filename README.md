@@ -5,11 +5,21 @@ Because I'm lazy and there are hundereds of different custom types and API metho
 
 The [gcdprotogen](https://github.com/wirepair/gcd/gcdprotogen) package was created to generate types and commands for gcd. Non-biolerplate code (and the majority of the logic) are in [gcd.go](https://github.com/wirepair/gcd/blob/master/gcd.go) and [chrome_target.go](https://github.com/wirepair/gcd/blob/master/chrome_target.go).
 
+NOTE: This is alpha code at best so use caution.
+
 ## The API
 The API consists of three types, synchronous requests, asynchronous requests and events. Synchronous requests are handled by using non-buffered channels and methods can be called and will return once the value is available. Asynchronous requests have not been heavily tested. Events are handled by subscribing the response method type and calling the API's "Enable()" such as:
 ```Go
-	console := targets[0].Console()
-	targets[0].Subscribe("Console.messageAdded", func(target *ChromeTarget, v []byte) {
+    target := debugger.NewTab()
+	console := target.Console()
+	target.Subscribe("Console.messageAdded", func(target *ChromeTarget, v []byte) {
+		type EventData struct {
+			Method string         `json:"method"`
+			Params *ConsoleParams `json:"params"`
+		}
+		type ConsoleParams struct {
+			Message *types.ChromeConsoleConsoleMessage `json:"message"`
+		}
 		msg := &EventData{}
 		err := json.Unmarshal(v, msg)
 		if err != nil {
@@ -24,14 +34,16 @@ The API consists of three types, synchronous requests, asynchronous requests and
 	// recv events
 	console.Disable()
 ```
-In the future there are plans to make event handling easier, but for now you'll need to know the event type and unmarshall it yourself. If you are unsure of what events will come in, i've helpfully left in debugging messages saying unable to dispatch event and give the full dump :>. This is alpha code at best so use caution.
+In the future there are plans to make event handling easier, but for now you'll need to know the event type and unmarshall it yourself. If you are unsure of what events will come in, call target.DebugEvents(true) and review the raw json in the console. 
 
 
 ## Usage
 If you need to create complex types, you'll need to import the "github.com/wirepair/gcd/gcdprotogen/types" library. It contains all of the types the chrome remote debugger protocol uses. If you are just accessing them from return values it should not be necessary to import.
 
 For a full list of api methods & godocs: [Documentation](https://godoc.org/github.com/wirepair/gcd)
+
 For a full list of type data: [Types Documentation](https://godoc.org/github.com/wirepair/gcd/gcdprotogen/types)
+
 
 Loading a page using the Page API.
 ```Go
@@ -116,9 +128,87 @@ func main() {
 	debugger.CloseTab(target)
 }
 ```
+Create 5 tabs, navigate to URLs, wait for them to load, take screen shot
+```Go
+package main
 
-TODO:
-Moar Examples.
+import (
+	"encoding/base64"
+	"fmt"
+	"github.com/wirepair/gcd"
+	"net/url"
+	"os"
+	"sync"
+	"time"
+)
+
+const (
+	numTabs = 5
+)
+
+var debugger *gcd.Gcd
+var wg sync.WaitGroup
+
+func main() {
+
+	urls := []string{"http://www.google.com", "http://www.veracode.com", "http://www.microsoft.com", "http://bbc.co.uk", "http://www.reddit.com/r/golang"}
+	debugger = gcd.NewChromeDebugger()
+	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	defer debugger.ExitProcess()
+	targets := make([]*gcd.ChromeTarget, numTabs)
+	for i := 0; i < numTabs; i++ {
+		targets[i] = debugger.NewTab()
+		page := targets[i].Page()
+		page.Enable()
+		targets[i].Subscribe("Page.loadEventFired", PageLoaded)
+		page.Navigate(urls[i])
+		wg.Add(1)
+	}
+	wg.Wait()
+	for i := 0; i < numTabs; i++ {
+		TakeScreenShot(targets[i])
+	}
+}
+
+func PageLoaded(target *gcd.ChromeTarget, event []byte) {
+	wg.Done()
+}
+
+func TakeScreenShot(target *gcd.ChromeTarget) {
+	dom := target.DOM()
+	page := target.Page()
+	doc, err := dom.GetDocument()
+	if err != nil {
+		fmt.Errorf("error getting doc: %s\n", err)
+		return
+	}
+	debugger.ActivateTab(target)
+	time.Sleep(1 * time.Second) // give it a sec to paint
+	u, urlErr := url.Parse(doc.DocumentURL)
+	if urlErr != nil {
+		fmt.Errorf("error parsing url: %s\n", urlErr)
+		return
+	}
+	fmt.Printf("Taking screen shot of: %s\n", u.Host)
+	img, errCap := page.CaptureScreenshot()
+	if errCap != nil {
+		fmt.Errorf("error getting doc: %s\n", errCap)
+		return
+	}
+	imgBytes, errDecode := base64.StdEncoding.DecodeString(img)
+	if errDecode != nil {
+		fmt.Errorf("error decoding image: %s\n", errDecode)
+		return
+	}
+	f, errFile := os.Create(u.Host + ".png")
+	defer f.Close()
+	if errFile != nil {
+		fmt.Errorf("error creating image file: %s\n", errFile)
+		return
+	}
+	f.Write(imgBytes)
+}
+```
 
 ## Licensing
 The MIT License (MIT)
