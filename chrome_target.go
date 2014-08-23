@@ -25,7 +25,6 @@ THE SOFTWARE.
 package gcd
 
 import (
-	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -34,6 +33,8 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+
+	"code.google.com/p/go.net/websocket"
 )
 
 // default response object, contains the id and a result if applicable.
