@@ -25,7 +25,6 @@ THE SOFTWARE.
 package gcd
 
 import (
-	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -34,6 +33,8 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+
+	"code.google.com/p/go.net/websocket"
 )
 
 // default response object, contains the id and a result if applicable.
@@ -259,12 +260,15 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	if r, ok := c.eventDispatcher[f.Method]; ok {
 		c.eventLock.RUnlock()
 		go r(c, msg)
+		return
 
-	} else if c.debugEvents == true {
+	}
+	c.eventLock.RUnlock()
+
+	if c.debugEvents == true {
 		fmt.Printf("\n\nno event recvr bound for: %s\n", f.Method)
 		fmt.Printf("data: %s\n\n", string(msg))
 	}
-	c.eventLock.RUnlock()
 }
 
 // Connects to the tab/process for sending/recv'ing debug events
