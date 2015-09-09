@@ -26,7 +26,6 @@ package gcd
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -299,10 +298,6 @@ func sendCustomReturn(sendCh chan<- *gcdMessage, paramRequest *ParamRequest) (<-
 	data, err := json.Marshal(paramRequest)
 	if err != nil {
 		return nil, err
-	}
-
-	if c.debugEvents == true {
-		log.Print(string(data))
 	}
 
 	recvCh := make(chan *gcdMessage)
