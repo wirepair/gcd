@@ -65,6 +65,14 @@ func (c *ChromeHeapProfiler) TakeHeapSnapshot(reportProgress bool) (*ChromeRespo
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "HeapProfiler.takeHeapSnapshot", Params: paramRequest})
 }
 
+// addInspectedHeapObject - Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions).
+// heapObjectId - Heap snapshot object id to be accessible by means of $x command line API.
+func (c *ChromeHeapProfiler) AddInspectedHeapObject(heapObjectId *types.ChromeHeapProfilerHeapSnapshotObjectId) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["heapObjectId"] = heapObjectId
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "HeapProfiler.addInspectedHeapObject", Params: paramRequest})
+}
+
 // getObjectByHeapObjectId -
 // Returns -
 // Evaluation result.
@@ -81,13 +89,15 @@ func (c *ChromeHeapProfiler) GetObjectByHeapObjectId(objectId *types.ChromeHeapP
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -109,13 +119,15 @@ func (c *ChromeHeapProfiler) GetHeapObjectId(objectId *types.ChromeRuntimeRemote
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 

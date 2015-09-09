@@ -136,16 +136,14 @@ func (c *ChromeDOM) DiscardSearchResults(searchId string) (*ChromeResponse, erro
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.discardSearchResults", Params: paramRequest})
 }
 
-// setInspectModeEnabled - Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection.
-// enabled - True to enable inspection mode, false to disable it.
-// inspectUAShadowDOM - True to enable inspection mode for user agent shadow DOM.
+// setInspectMode - Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection.
+// mode - Set an inspection mode.
 // highlightConfig - A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>.
-func (c *ChromeDOM) SetInspectModeEnabled(enabled bool, inspectUAShadowDOM bool, highlightConfig *types.ChromeDOMHighlightConfig) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["enabled"] = enabled
-	paramRequest["inspectUAShadowDOM"] = inspectUAShadowDOM
+func (c *ChromeDOM) SetInspectMode(mode *types.ChromeDOMInspectMode, highlightConfig *types.ChromeDOMHighlightConfig) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["mode"] = mode
 	paramRequest["highlightConfig"] = highlightConfig
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.setInspectModeEnabled", Params: paramRequest})
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.setInspectMode", Params: paramRequest})
 }
 
 // highlightRect - Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
@@ -181,11 +179,13 @@ func (c *ChromeDOM) HighlightQuad(quad *types.ChromeDOMQuad, color *types.Chrome
 // highlightNode - Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified.
 // highlightConfig - A descriptor for the highlight appearance.
 // nodeId - Identifier of the node to highlight.
+// backendNodeId - Identifier of the backend node to highlight.
 // objectId - JavaScript object id of the node to be highlighted.
-func (c *ChromeDOM) HighlightNode(highlightConfig *types.ChromeDOMHighlightConfig, nodeId *types.ChromeDOMNodeId, objectId *types.ChromeRuntimeRemoteObjectId) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
+func (c *ChromeDOM) HighlightNode(highlightConfig *types.ChromeDOMHighlightConfig, nodeId *types.ChromeDOMNodeId, backendNodeId *types.ChromeDOMBackendNodeId, objectId *types.ChromeRuntimeRemoteObjectId) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 4)
 	paramRequest["highlightConfig"] = highlightConfig
 	paramRequest["nodeId"] = nodeId
+	paramRequest["backendNodeId"] = backendNodeId
 	paramRequest["objectId"] = objectId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.highlightNode", Params: paramRequest})
 }
@@ -200,6 +200,14 @@ func (c *ChromeDOM) HighlightFrame(frameId *types.ChromePageFrameId, contentColo
 	paramRequest["contentColor"] = contentColor
 	paramRequest["contentOutlineColor"] = contentOutlineColor
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.highlightFrame", Params: paramRequest})
+}
+
+// setInspectedNode - Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions).
+// nodeId - DOM node id to be accessible by means of $x command line API.
+func (c *ChromeDOM) SetInspectedNode(nodeId *types.ChromeDOMNodeId) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["nodeId"] = nodeId
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.setInspectedNode", Params: paramRequest})
 }
 
 // focus - Focuses the given element.
@@ -233,13 +241,15 @@ func (c *ChromeDOM) GetDocument() (*types.ChromeDOMNode, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -262,13 +272,15 @@ func (c *ChromeDOM) QuerySelector(nodeId *types.ChromeDOMNodeId, selector string
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -291,13 +303,15 @@ func (c *ChromeDOM) QuerySelectorAll(nodeId *types.ChromeDOMNodeId, selector str
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -320,46 +334,19 @@ func (c *ChromeDOM) SetNodeName(nodeId *types.ChromeDOMNodeId, name string) (*ty
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
 	return chromeData.Result.NodeId, nil
-}
-
-// getEventListenersForNode - Returns event listeners relevant to the node.
-// Returns -
-// Array of relevant listeners.
-func (c *ChromeDOM) GetEventListenersForNode(nodeId *types.ChromeDOMNodeId, objectGroup string) ([]*types.ChromeDOMEventListener, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["nodeId"] = nodeId
-	paramRequest["objectGroup"] = objectGroup
-	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.getEventListenersForNode", Params: paramRequest})
-	resp := <-recvCh
-
-	var chromeData struct {
-		Result struct {
-			Listeners []*types.ChromeDOMEventListener
-		}
-	}
-
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
-		return nil, err
-	}
-
-	return chromeData.Result.Listeners, nil
 }
 
 // getOuterHTML - Returns node's HTML markup.
@@ -377,13 +364,15 @@ func (c *ChromeDOM) GetOuterHTML(nodeId *types.ChromeDOMNodeId) (string, error) 
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", &ChromeRequestErr{Resp: cerr}
-		}
 		return "", err
 	}
 
@@ -394,9 +383,10 @@ func (c *ChromeDOM) GetOuterHTML(nodeId *types.ChromeDOMNodeId) (string, error) 
 // Returns -
 // Unique search session identifier.
 // Number of search results.
-func (c *ChromeDOM) PerformSearch(query string) (string, float64, error) {
-	paramRequest := make(map[string]interface{}, 1)
+func (c *ChromeDOM) PerformSearch(query string, includeUserAgentShadowDOM bool) (string, float64, error) {
+	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["query"] = query
+	paramRequest["includeUserAgentShadowDOM"] = includeUserAgentShadowDOM
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.performSearch", Params: paramRequest})
 	resp := <-recvCh
 
@@ -407,13 +397,15 @@ func (c *ChromeDOM) PerformSearch(query string) (string, float64, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", 0, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", 0, &ChromeRequestErr{Resp: cerr}
-		}
 		return "", 0, err
 	}
 
@@ -437,13 +429,15 @@ func (c *ChromeDOM) GetSearchResults(searchId string, fromIndex int, toIndex int
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -465,13 +459,15 @@ func (c *ChromeDOM) RequestNode(objectId *types.ChromeRuntimeRemoteObjectId) (*t
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -493,13 +489,15 @@ func (c *ChromeDOM) PushNodeByPathToFrontend(path string) (*types.ChromeDOMNodeI
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -521,13 +519,15 @@ func (c *ChromeDOM) PushNodesByBackendIdsToFrontend(backendNodeIds []*types.Chro
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -550,13 +550,15 @@ func (c *ChromeDOM) ResolveNode(nodeId *types.ChromeDOMNodeId, objectGroup strin
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -578,13 +580,15 @@ func (c *ChromeDOM) GetAttributes(nodeId *types.ChromeDOMNodeId) ([]string, erro
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -608,13 +612,15 @@ func (c *ChromeDOM) CopyTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.Ch
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -638,13 +644,15 @@ func (c *ChromeDOM) MoveTo(nodeId *types.ChromeDOMNodeId, targetNodeId *types.Ch
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -666,13 +674,15 @@ func (c *ChromeDOM) GetBoxModel(nodeId *types.ChromeDOMNodeId) (*types.ChromeDOM
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -695,13 +705,15 @@ func (c *ChromeDOM) GetNodeForLocation(x int, y int) (*types.ChromeDOMNodeId, er
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -723,15 +735,47 @@ func (c *ChromeDOM) GetRelayoutBoundary(nodeId *types.ChromeDOMNodeId) (*types.C
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
 	return chromeData.Result.NodeId, nil
+}
+
+// getHighlightObjectForTest - For testing.
+// Returns -
+// Highlight data for the node.
+func (c *ChromeDOM) GetHighlightObjectForTest(nodeId *types.ChromeDOMNodeId) (interface{}, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["nodeId"] = nodeId
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOM.getHighlightObjectForTest", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Highlight interface{}
+		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Highlight, nil
 }

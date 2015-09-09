@@ -32,8 +32,3 @@ func (c *ChromeInspector) Enable() (*ChromeResponse, error) {
 func (c *ChromeInspector) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Inspector.disable"})
 }
-
-// Resets all domains.
-func (c *ChromeInspector) Reset() (*ChromeResponse, error) {
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Inspector.reset"})
-}

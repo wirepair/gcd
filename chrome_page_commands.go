@@ -41,11 +41,6 @@ func (c *ChromePage) ClearDeviceMetricsOverride() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.clearDeviceMetricsOverride"})
 }
 
-// Requests that scroll offsets and page scale factor are reset to initial values.
-func (c *ChromePage) ResetScrollAndPageScaleFactor() (*ChromeResponse, error) {
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.resetScrollAndPageScaleFactor"})
-}
-
 // Clears the overriden Geolocation Position and Error.
 func (c *ChromePage) ClearGeolocationOverride() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.clearGeolocationOverride"})
@@ -72,12 +67,10 @@ func (c *ChromePage) RemoveScriptToEvaluateOnLoad(identifier *types.ChromePageSc
 // reload - Reloads given page optionally ignoring the cache.
 // ignoreCache - If true, browser cache is ignored (as if the user pressed Shift+refresh).
 // scriptToEvaluateOnLoad - If set, the script will be injected into all frames of the inspected page after reload.
-// scriptPreprocessor - Script body that should evaluate to function that will preprocess all the scripts before their compilation.
-func (c *ChromePage) Reload(ignoreCache bool, scriptToEvaluateOnLoad string, scriptPreprocessor string) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
+func (c *ChromePage) Reload(ignoreCache bool, scriptToEvaluateOnLoad string) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["ignoreCache"] = ignoreCache
 	paramRequest["scriptToEvaluateOnLoad"] = scriptToEvaluateOnLoad
-	paramRequest["scriptPreprocessor"] = scriptPreprocessor
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.reload", Params: paramRequest})
 }
 
@@ -118,8 +111,12 @@ func (c *ChromePage) SetDocumentContent(frameId *types.ChromePageFrameId, html s
 // scale - Scale to apply to resulting view image. Ignored in |fitWindow| mode.
 // offsetX - X offset to shift resulting view image by. Ignored in |fitWindow| mode.
 // offsetY - Y offset to shift resulting view image by. Ignored in |fitWindow| mode.
-func (c *ChromePage) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, fitWindow bool, scale float64, offsetX float64, offsetY float64) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 8)
+// screenWidth - Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+// screenHeight - Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+// positionX - Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+// positionY - Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+func (c *ChromePage) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, fitWindow bool, scale float64, offsetX float64, offsetY float64, screenWidth int, screenHeight int, positionX int, positionY int) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 12)
 	paramRequest["width"] = width
 	paramRequest["height"] = height
 	paramRequest["deviceScaleFactor"] = deviceScaleFactor
@@ -128,58 +125,14 @@ func (c *ChromePage) SetDeviceMetricsOverride(width int, height int, deviceScale
 	paramRequest["scale"] = scale
 	paramRequest["offsetX"] = offsetX
 	paramRequest["offsetY"] = offsetY
+	paramRequest["screenWidth"] = screenWidth
+	paramRequest["screenHeight"] = screenHeight
+	paramRequest["positionX"] = positionX
+	paramRequest["positionY"] = positionY
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setDeviceMetricsOverride", Params: paramRequest})
 }
 
-// setShowPaintRects - Requests that backend shows paint rectangles
-// result - True for showing paint rectangles
-func (c *ChromePage) SetShowPaintRects(result bool) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["result"] = result
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setShowPaintRects", Params: paramRequest})
-}
-
-// setShowDebugBorders - Requests that backend shows debug borders on layers
-// show - True for showing debug borders
-func (c *ChromePage) SetShowDebugBorders(show bool) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["show"] = show
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setShowDebugBorders", Params: paramRequest})
-}
-
-// setShowFPSCounter - Requests that backend shows the FPS counter
-// show - True for showing the FPS counter
-func (c *ChromePage) SetShowFPSCounter(show bool) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["show"] = show
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setShowFPSCounter", Params: paramRequest})
-}
-
-// setContinuousPaintingEnabled - Requests that backend enables continuous painting
-// enabled - True for enabling cointinuous painting
-func (c *ChromePage) SetContinuousPaintingEnabled(enabled bool) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["enabled"] = enabled
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setContinuousPaintingEnabled", Params: paramRequest})
-}
-
-// setShowScrollBottleneckRects - Requests that backend shows scroll bottleneck rects
-// show - True for showing scroll bottleneck rects
-func (c *ChromePage) SetShowScrollBottleneckRects(show bool) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["show"] = show
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setShowScrollBottleneckRects", Params: paramRequest})
-}
-
-// setScriptExecutionDisabled - Switches script execution in the page.
-// value - Whether script execution should be disabled in the page.
-func (c *ChromePage) SetScriptExecutionDisabled(value bool) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["value"] = value
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setScriptExecutionDisabled", Params: paramRequest})
-}
-
-// setGeolocationOverride - Overrides the Geolocation Position or Error.
+// setGeolocationOverride - Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.
 // latitude - Mock latitude
 // longitude - Mock longitude
 // accuracy - Mock accuracy
@@ -205,18 +158,12 @@ func (c *ChromePage) SetDeviceOrientationOverride(alpha float64, beta float64, g
 
 // setTouchEmulationEnabled - Toggles mouse event-based touch event emulation.
 // enabled - Whether the touch event emulation should be enabled.
-func (c *ChromePage) SetTouchEmulationEnabled(enabled bool) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
+// configuration - Touch/gesture events configuration. Default: current platform.
+func (c *ChromePage) SetTouchEmulationEnabled(enabled bool, configuration string) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["enabled"] = enabled
+	paramRequest["configuration"] = configuration
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setTouchEmulationEnabled", Params: paramRequest})
-}
-
-// setEmulatedMedia - Emulates the given media for CSS media queries.
-// media - Media type to emulate. Empty string disables the override.
-func (c *ChromePage) SetEmulatedMedia(media string) (*ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["media"] = media
-	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setEmulatedMedia", Params: paramRequest})
 }
 
 // startScreencast - Starts sending each frame using the <code>screencastFrame</code> event.
@@ -231,6 +178,14 @@ func (c *ChromePage) StartScreencast(format string, quality int, maxWidth int, m
 	paramRequest["maxWidth"] = maxWidth
 	paramRequest["maxHeight"] = maxHeight
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.startScreencast", Params: paramRequest})
+}
+
+// screencastFrameAck - Acknowledges that a screencast frame has been received by the frontend.
+// frameNumber - Frame number.
+func (c *ChromePage) ScreencastFrameAck(frameNumber int) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["frameNumber"] = frameNumber
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.screencastFrameAck", Params: paramRequest})
 }
 
 // handleJavaScriptDialog - Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
@@ -253,6 +208,22 @@ func (c *ChromePage) SetShowViewportSizeOnResize(show bool, showGrid bool) (*Chr
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setShowViewportSizeOnResize", Params: paramRequest})
 }
 
+// setColorPickerEnabled - Shows / hides color picker
+// enabled - Shows / hides color picker
+func (c *ChromePage) SetColorPickerEnabled(enabled bool) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["enabled"] = enabled
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setColorPickerEnabled", Params: paramRequest})
+}
+
+// setOverlayMessage - Sets overlay message.
+// message - Overlay message to display when paused in debugger.
+func (c *ChromePage) SetOverlayMessage(message string) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["message"] = message
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.setOverlayMessage", Params: paramRequest})
+}
+
 // getNavigationHistory - Returns navigation history for the current page.
 // Returns -
 // Index of the current navigation history entry.
@@ -268,13 +239,15 @@ func (c *ChromePage) GetNavigationHistory() (float64, []*types.ChromePageNavigat
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return 0, nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return 0, nil, err
 	}
 
@@ -284,23 +257,25 @@ func (c *ChromePage) GetNavigationHistory() (float64, []*types.ChromePageNavigat
 // getCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
 // Returns -
 // Array of cookie objects.
-func (c *ChromePage) GetCookies() ([]*types.ChromePageCookie, error) {
+func (c *ChromePage) GetCookies() ([]*types.ChromeNetworkCookie, error) {
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.getCookies"})
 	resp := <-recvCh
 
 	var chromeData struct {
 		Result struct {
-			Cookies []*types.ChromePageCookie
+			Cookies []*types.ChromeNetworkCookie
 		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
 	}
 
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -320,43 +295,19 @@ func (c *ChromePage) GetResourceTree() (*types.ChromePageFrameResourceTree, erro
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
 	return chromeData.Result.FrameTree, nil
-}
-
-// getScriptExecutionStatus - Determines if scripts can be executed in the page.
-// Returns -
-// Script execution status: "allowed" if scripts can be executed, "disabled" if script execution has been disabled through page settings, "forbidden" if script execution for the given page is not possible for other reasons.
-func (c *ChromePage) GetScriptExecutionStatus() (string, error) {
-	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.getScriptExecutionStatus"})
-	resp := <-recvCh
-
-	var chromeData struct {
-		Result struct {
-			Result string
-		}
-	}
-
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", &ChromeRequestErr{Resp: cerr}
-		}
-		return "", err
-	}
-
-	return chromeData.Result.Result, nil
 }
 
 // captureScreenshot - Capture page screenshot.
@@ -372,13 +323,15 @@ func (c *ChromePage) CaptureScreenshot() (string, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", &ChromeRequestErr{Resp: cerr}
-		}
 		return "", err
 	}
 
@@ -398,13 +351,15 @@ func (c *ChromePage) CanScreencast() (bool, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return false, &ChromeRequestErr{Resp: cerr}
-		}
 		return false, err
 	}
 
@@ -426,13 +381,15 @@ func (c *ChromePage) AddScriptToEvaluateOnLoad(scriptSource string) (*types.Chro
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -454,13 +411,15 @@ func (c *ChromePage) Navigate(url string) (*types.ChromePageFrameId, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -485,13 +444,15 @@ func (c *ChromePage) GetResourceContent(frameId *types.ChromePageFrameId, url st
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", false, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", false, &ChromeRequestErr{Resp: cerr}
-		}
 		return "", false, err
 	}
 
@@ -501,7 +462,7 @@ func (c *ChromePage) GetResourceContent(frameId *types.ChromePageFrameId, url st
 // searchInResource - Searches for given string in resource content.
 // Returns -
 // List of search matches.
-func (c *ChromePage) SearchInResource(frameId *types.ChromePageFrameId, url string, query string, caseSensitive bool, isRegex bool) ([]*types.ChromePageSearchMatch, error) {
+func (c *ChromePage) SearchInResource(frameId *types.ChromePageFrameId, url string, query string, caseSensitive bool, isRegex bool) ([]*types.ChromeDebuggerSearchMatch, error) {
 	paramRequest := make(map[string]interface{}, 5)
 	paramRequest["frameId"] = frameId
 	paramRequest["url"] = url
@@ -513,49 +474,21 @@ func (c *ChromePage) SearchInResource(frameId *types.ChromePageFrameId, url stri
 
 	var chromeData struct {
 		Result struct {
-			Result []*types.ChromePageSearchMatch
+			Result []*types.ChromeDebuggerSearchMatch
 		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
 	}
 
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
 	return chromeData.Result.Result, nil
-}
-
-// queryUsageAndQuota - Queries more detailed quota and usage data than Storage API provides.
-// Returns -
-// Quota for requested security origin.
-// Current usage for requested security origin.
-func (c *ChromePage) QueryUsageAndQuota(securityOrigin string) (*types.ChromePageQuota, *types.ChromePageUsage, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["securityOrigin"] = securityOrigin
-	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Page.queryUsageAndQuota", Params: paramRequest})
-	resp := <-recvCh
-
-	var chromeData struct {
-		Result struct {
-			Quota *types.ChromePageQuota
-			Usage *types.ChromePageUsage
-		}
-	}
-
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, nil, &ChromeRequestErr{Resp: cerr}
-		}
-		return nil, nil, err
-	}
-
-	return chromeData.Result.Quota, chromeData.Result.Usage, nil
 }

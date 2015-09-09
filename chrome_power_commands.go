@@ -48,13 +48,15 @@ func (c *ChromePower) CanProfilePower() (bool, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return false, &ChromeRequestErr{Resp: cerr}
-		}
 		return false, err
 	}
 
@@ -73,13 +75,15 @@ func (c *ChromePower) GetAccuracyLevel() (string, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", &ChromeRequestErr{Resp: cerr}
-		}
 		return "", err
 	}
 

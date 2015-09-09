@@ -59,13 +59,15 @@ func (c *ChromeLayerTree) CompositingReasons(layerId *types.ChromeLayerTreeLayer
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -87,13 +89,15 @@ func (c *ChromeLayerTree) MakeSnapshot(layerId *types.ChromeLayerTreeLayerId) (*
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -103,9 +107,9 @@ func (c *ChromeLayerTree) MakeSnapshot(layerId *types.ChromeLayerTreeLayerId) (*
 // loadSnapshot - Returns the snapshot identifier.
 // Returns -
 // The id of the snapshot.
-func (c *ChromeLayerTree) LoadSnapshot(data string) (*types.ChromeLayerTreeSnapshotId, error) {
+func (c *ChromeLayerTree) LoadSnapshot(tiles []*types.ChromeLayerTreePictureTile) (*types.ChromeLayerTreeSnapshotId, error) {
 	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["data"] = data
+	paramRequest["tiles"] = tiles
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "LayerTree.loadSnapshot", Params: paramRequest})
 	resp := <-recvCh
 
@@ -115,13 +119,15 @@ func (c *ChromeLayerTree) LoadSnapshot(data string) (*types.ChromeLayerTreeSnaps
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -131,11 +137,12 @@ func (c *ChromeLayerTree) LoadSnapshot(data string) (*types.ChromeLayerTreeSnaps
 // profileSnapshot -
 // Returns -
 // The array of paint profiles, one per run.
-func (c *ChromeLayerTree) ProfileSnapshot(snapshotId *types.ChromeLayerTreeSnapshotId, minRepeatCount int, minDuration float64) ([]*types.ChromeLayerTreePaintProfile, error) {
-	paramRequest := make(map[string]interface{}, 3)
+func (c *ChromeLayerTree) ProfileSnapshot(snapshotId *types.ChromeLayerTreeSnapshotId, minRepeatCount int, minDuration float64, clipRect *types.ChromeDOMRect) ([]*types.ChromeLayerTreePaintProfile, error) {
+	paramRequest := make(map[string]interface{}, 4)
 	paramRequest["snapshotId"] = snapshotId
 	paramRequest["minRepeatCount"] = minRepeatCount
 	paramRequest["minDuration"] = minDuration
+	paramRequest["clipRect"] = clipRect
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "LayerTree.profileSnapshot", Params: paramRequest})
 	resp := <-recvCh
 
@@ -145,13 +152,15 @@ func (c *ChromeLayerTree) ProfileSnapshot(snapshotId *types.ChromeLayerTreeSnaps
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -176,13 +185,15 @@ func (c *ChromeLayerTree) ReplaySnapshot(snapshotId *types.ChromeLayerTreeSnapsh
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", &ChromeRequestErr{Resp: cerr}
-		}
 		return "", err
 	}
 
@@ -204,13 +215,15 @@ func (c *ChromeLayerTree) SnapshotCommandLog(snapshotId *types.ChromeLayerTreeSn
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 

@@ -54,13 +54,15 @@ func (c *ChromeFileSystem) RequestFileSystemRoot(origin string, theType string) 
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return 0, nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return 0, nil, err
 	}
 
@@ -84,13 +86,15 @@ func (c *ChromeFileSystem) RequestDirectoryContent(url string) (float64, []*type
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return 0, nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return 0, nil, err
 	}
 
@@ -114,13 +118,15 @@ func (c *ChromeFileSystem) RequestMetadata(url string) (float64, *types.ChromeFi
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return 0, nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return 0, nil, err
 	}
 
@@ -150,13 +156,15 @@ func (c *ChromeFileSystem) RequestFileContent(url string, readAsText bool, start
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, "", "", &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return 0, "", "", &ChromeRequestErr{Resp: cerr}
-		}
 		return 0, "", "", err
 	}
 
@@ -178,13 +186,15 @@ func (c *ChromeFileSystem) DeleteEntry(url string) (float64, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return 0, &ChromeRequestErr{Resp: cerr}
-		}
 		return 0, err
 	}
 

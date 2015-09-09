@@ -39,13 +39,15 @@ func (c *ChromeMemory) GetDOMCounters() (float64, float64, float64, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, 0, 0, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return 0, 0, 0, &ChromeRequestErr{Resp: cerr}
-		}
 		return 0, 0, 0, err
 	}
 

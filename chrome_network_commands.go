@@ -62,12 +62,46 @@ func (c *ChromeNetwork) SetExtraHTTPHeaders(headers *types.ChromeNetworkHeaders)
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.setExtraHTTPHeaders", Params: paramRequest})
 }
 
+// addBlockedURL - Blocks specific URL from loading.
+// url - URL to block.
+func (c *ChromeNetwork) AddBlockedURL(url string) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["url"] = url
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.addBlockedURL", Params: paramRequest})
+}
+
+// removeBlockedURL - Cancels blocking of a specific URL from loading.
+// url - URL to stop blocking.
+func (c *ChromeNetwork) RemoveBlockedURL(url string) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["url"] = url
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.removeBlockedURL", Params: paramRequest})
+}
+
 // replayXHR - This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password.
 // requestId - Identifier of XHR to replay.
 func (c *ChromeNetwork) ReplayXHR(requestId *types.ChromeNetworkRequestId) (*ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["requestId"] = requestId
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.replayXHR", Params: paramRequest})
+}
+
+// setMonitoringXHREnabled - Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.
+// enabled - Monitoring enabled state.
+func (c *ChromeNetwork) SetMonitoringXHREnabled(enabled bool) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["enabled"] = enabled
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.setMonitoringXHREnabled", Params: paramRequest})
+}
+
+// deleteCookie - Deletes browser cookie with given name, domain and path.
+// cookieName - Name of the cookie to remove.
+// url - URL to match cooke domain and path.
+func (c *ChromeNetwork) DeleteCookie(cookieName string, url string) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["cookieName"] = cookieName
+	paramRequest["url"] = url
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.deleteCookie", Params: paramRequest})
 }
 
 // emulateNetworkConditions - Activates emulation of network conditions.
@@ -92,6 +126,24 @@ func (c *ChromeNetwork) SetCacheDisabled(cacheDisabled bool) (*ChromeResponse, e
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.setCacheDisabled", Params: paramRequest})
 }
 
+// setDataSizeLimitsForTest - For testing.
+// maxTotalSize - Maximum total buffer size.
+// maxResourceSize - Maximum per-resource size.
+func (c *ChromeNetwork) SetDataSizeLimitsForTest(maxTotalSize int, maxResourceSize int) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["maxTotalSize"] = maxTotalSize
+	paramRequest["maxResourceSize"] = maxResourceSize
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.setDataSizeLimitsForTest", Params: paramRequest})
+}
+
+// showCertificateViewer - Displays native dialog with the certificate details.
+// certificateId - Certificate id.
+func (c *ChromeNetwork) ShowCertificateViewer(certificateId *types.ChromeNetworkCertificateId) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["certificateId"] = certificateId
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.showCertificateViewer", Params: paramRequest})
+}
+
 // canClearBrowserCache - Tells whether clearing browser cache is supported.
 // Returns -
 // True if browser cache can be cleared.
@@ -105,13 +157,15 @@ func (c *ChromeNetwork) CanClearBrowserCache() (bool, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return false, &ChromeRequestErr{Resp: cerr}
-		}
 		return false, err
 	}
 
@@ -131,13 +185,71 @@ func (c *ChromeNetwork) CanClearBrowserCookies() (bool, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return false, &ChromeRequestErr{Resp: cerr}
+		return false, err
+	}
+
+	return chromeData.Result.Result, nil
+}
+
+// getCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
+// Returns -
+// Array of cookie objects.
+func (c *ChromeNetwork) GetCookies() ([]*types.ChromeNetworkCookie, error) {
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.getCookies"})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Cookies []*types.ChromeNetworkCookie
 		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Cookies, nil
+}
+
+// canEmulateNetworkConditions - Tells whether emulation of network conditions is supported.
+// Returns -
+// True if emulation of network conditions is supported.
+func (c *ChromeNetwork) CanEmulateNetworkConditions() (bool, error) {
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.canEmulateNetworkConditions"})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Result bool
+		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &ChromeRequestErr{Resp: cerr}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
 		return false, err
 	}
 
@@ -161,49 +273,47 @@ func (c *ChromeNetwork) GetResponseBody(requestId *types.ChromeNetworkRequestId)
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", false, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", false, &ChromeRequestErr{Resp: cerr}
-		}
 		return "", false, err
 	}
 
 	return chromeData.Result.Body, chromeData.Result.Base64Encoded, nil
 }
 
-// loadResourceForFrontend - Loads a resource in the context of a frame on the inspected page without cross origin checks.
+// getCertificateDetails - Returns details for the given certificate.
 // Returns -
-// HTTP status code.
-// Response headers.
-// Resource content.
-func (c *ChromeNetwork) LoadResourceForFrontend(frameId *types.ChromePageFrameId, url string, requestHeaders *types.ChromeNetworkHeaders) (float64, *types.ChromeNetworkHeaders, string, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["frameId"] = frameId
-	paramRequest["url"] = url
-	paramRequest["requestHeaders"] = requestHeaders
-	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.loadResourceForFrontend", Params: paramRequest})
+// Certificate details.
+func (c *ChromeNetwork) GetCertificateDetails(certificateId *types.ChromeNetworkCertificateId) (*types.ChromeNetworkCertificateDetails, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["certificateId"] = certificateId
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Network.getCertificateDetails", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
 		Result struct {
-			StatusCode      float64
-			ResponseHeaders *types.ChromeNetworkHeaders
-			Content         string
+			Result *types.ChromeNetworkCertificateDetails
 		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
 	}
 
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return 0, nil, "", &ChromeRequestErr{Resp: cerr}
-		}
-		return 0, nil, "", err
+		return nil, err
 	}
 
-	return chromeData.Result.StatusCode, chromeData.Result.ResponseHeaders, chromeData.Result.Content, nil
+	return chromeData.Result.Result, nil
 }

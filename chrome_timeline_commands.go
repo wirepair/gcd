@@ -23,22 +23,22 @@ func newChromeTimeline(target *ChromeTarget) *ChromeTimeline {
 	return c
 }
 
-// Enables timeline. After this call, timeline can be started from within the page (for example upon console.timeline).
+// Deprecated.
 func (c *ChromeTimeline) Enable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Timeline.enable"})
 }
 
-// Disables timeline.
+// Deprecated.
 func (c *ChromeTimeline) Disable() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Timeline.disable"})
 }
 
-// Stops capturing instrumentation events.
+// Deprecated.
 func (c *ChromeTimeline) Stop() (*ChromeResponse, error) {
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Timeline.stop"})
 }
 
-// start - Starts capturing instrumentation events.
+// start - Deprecated.
 // maxCallStackDepth - Samples JavaScript stack traces up to <code>maxCallStackDepth</code>, defaults to 5.
 // bufferEvents - Whether instrumentation events should be buffered and returned upon <code>stop</code> call.
 // liveEvents - Coma separated event types to issue although bufferEvents is set.

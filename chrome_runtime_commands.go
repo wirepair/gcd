@@ -57,6 +57,14 @@ func (c *ChromeRuntime) ReleaseObjectGroup(objectGroup string) (*ChromeResponse,
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.releaseObjectGroup", Params: paramRequest})
 }
 
+// setCustomObjectFormatterEnabled -
+// enabled -
+func (c *ChromeRuntime) SetCustomObjectFormatterEnabled(enabled bool) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["enabled"] = enabled
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.setCustomObjectFormatterEnabled", Params: paramRequest})
+}
+
 // isRunRequired -
 // Returns -
 // True if the Runtime is in paused on start state.
@@ -70,13 +78,15 @@ func (c *ChromeRuntime) IsRunRequired() (bool, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return false, &ChromeRequestErr{Resp: cerr}
-		}
 		return false, err
 	}
 
@@ -108,13 +118,15 @@ func (c *ChromeRuntime) Evaluate(expression string, objectGroup string, includeC
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, false, nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, false, nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, false, nil, err
 	}
 
@@ -143,13 +155,15 @@ func (c *ChromeRuntime) CallFunctionOn(objectId *types.ChromeRuntimeRemoteObject
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, false, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, false, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, false, err
 	}
 
@@ -160,11 +174,13 @@ func (c *ChromeRuntime) CallFunctionOn(objectId *types.ChromeRuntimeRemoteObject
 // Returns -
 // Object properties.
 // Internal object properties (only of the element itself).
-func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectId, ownProperties bool, accessorPropertiesOnly bool) ([]*types.ChromeRuntimePropertyDescriptor, []*types.ChromeRuntimeInternalPropertyDescriptor, error) {
-	paramRequest := make(map[string]interface{}, 3)
+// Exception details.
+func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectId, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool) ([]*types.ChromeRuntimePropertyDescriptor, []*types.ChromeRuntimeInternalPropertyDescriptor, *types.ChromeDebuggerExceptionDetails, error) {
+	paramRequest := make(map[string]interface{}, 4)
 	paramRequest["objectId"] = objectId
 	paramRequest["ownProperties"] = ownProperties
 	paramRequest["accessorPropertiesOnly"] = accessorPropertiesOnly
+	paramRequest["generatePreview"] = generatePreview
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "Runtime.getProperties", Params: paramRequest})
 	resp := <-recvCh
 
@@ -172,18 +188,21 @@ func (c *ChromeRuntime) GetProperties(objectId *types.ChromeRuntimeRemoteObjectI
 		Result struct {
 			Result             []*types.ChromeRuntimePropertyDescriptor
 			InternalProperties []*types.ChromeRuntimeInternalPropertyDescriptor
+			ExceptionDetails   *types.ChromeDebuggerExceptionDetails
 		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, nil, nil, &ChromeRequestErr{Resp: cerr}
 	}
 
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, nil, &ChromeRequestErr{Resp: cerr}
-		}
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	return chromeData.Result.Result, chromeData.Result.InternalProperties, nil
+	return chromeData.Result.Result, chromeData.Result.InternalProperties, chromeData.Result.ExceptionDetails, nil
 }

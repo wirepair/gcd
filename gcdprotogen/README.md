@@ -5,13 +5,14 @@ Basically it reads in the protocol.json file, does some gnarly processing and sp
 
 Code templates are a bit cleaner but a lot is left to be desired, mainly there is a lot of repeat structs i could replace and I could make the template a bit cleaner but guess what? I did this in like 2 days so gimmie a break.
 
+Updated September 2015 with latest protocol.json
 ## Usage
 No. Stahp.
 
 ## Licensing
 The MIT License (MIT)
 
-Copyright (c) 2014 isaac dawson
+Copyright (c) 2015 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

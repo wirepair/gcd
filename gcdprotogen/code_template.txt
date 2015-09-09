@@ -57,14 +57,16 @@ func (c *Chrome{{$api.Domain}}) {{.Method | Title}}() ({{range $rets := .Returns
 			{{$rets.Name | Title | Reserved }} {{$rets.Type}} {{end}}
 		}
 	}
-		
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}&ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}&ChromeRequestErr{Resp: cerr}
-		}
 		return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}err
 	}
 
@@ -87,14 +89,16 @@ func (c *Chrome{{$api.Domain}}) {{.Method | Title}}({{range $param := $element.P
 			{{$rets.Name | Title | Reserved }} {{$rets.Type}} {{end}}
 		}
 	}
-		
+	
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}&ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}&ChromeRequestErr{Resp: cerr}
-		}
 		return {{range $rets := .Returns}}{{$rets.Type | NullType}}, {{end}}err
 	}
 

@@ -56,6 +56,18 @@ func (c *ChromeCSS) ForcePseudoState(nodeId *types.ChromeDOMNodeId, forcedPseudo
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.forcePseudoState", Params: paramRequest})
 }
 
+// setEffectivePropertyValueForNode - Find a rule with the given active property for the given node and set the new value for this property
+// nodeId - The element id for which to set property.
+// propertyName -
+// value -
+func (c *ChromeCSS) SetEffectivePropertyValueForNode(nodeId *types.ChromeDOMNodeId, propertyName string, value string) (*ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 3)
+	paramRequest["nodeId"] = nodeId
+	paramRequest["propertyName"] = propertyName
+	paramRequest["value"] = value
+	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.setEffectivePropertyValueForNode", Params: paramRequest})
+}
+
 // getMediaQueries - Returns all media queries parsed by the rendering engine.
 // Returns -
 func (c *ChromeCSS) GetMediaQueries() ([]*types.ChromeCSSCSSMedia, error) {
@@ -68,13 +80,15 @@ func (c *ChromeCSS) GetMediaQueries() ([]*types.ChromeCSSCSSMedia, error) {
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -86,11 +100,11 @@ func (c *ChromeCSS) GetMediaQueries() ([]*types.ChromeCSSCSSMedia, error) {
 // CSS rules matching this node, from all applicable stylesheets.
 // Pseudo style matches for this node.
 // A chain of inherited styles (from the immediate node parent up to the DOM tree root).
-func (c *ChromeCSS) GetMatchedStylesForNode(nodeId *types.ChromeDOMNodeId, includePseudo bool, includeInherited bool) ([]*types.ChromeCSSRuleMatch, []*types.ChromeCSSPseudoIdMatches, []*types.ChromeCSSInheritedStyleEntry, error) {
+func (c *ChromeCSS) GetMatchedStylesForNode(nodeId *types.ChromeDOMNodeId, excludePseudo bool, excludeInherited bool) ([]*types.ChromeCSSRuleMatch, []*types.ChromeCSSPseudoIdMatches, []*types.ChromeCSSInheritedStyleEntry, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["nodeId"] = nodeId
-	paramRequest["includePseudo"] = includePseudo
-	paramRequest["includeInherited"] = includeInherited
+	paramRequest["excludePseudo"] = excludePseudo
+	paramRequest["excludeInherited"] = excludeInherited
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.getMatchedStylesForNode", Params: paramRequest})
 	resp := <-recvCh
 
@@ -102,13 +116,15 @@ func (c *ChromeCSS) GetMatchedStylesForNode(nodeId *types.ChromeDOMNodeId, inclu
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, nil, nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, nil, nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, nil, nil, err
 	}
 
@@ -132,13 +148,15 @@ func (c *ChromeCSS) GetInlineStylesForNode(nodeId *types.ChromeDOMNodeId) (*type
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, nil, err
 	}
 
@@ -160,13 +178,15 @@ func (c *ChromeCSS) GetComputedStyleForNode(nodeId *types.ChromeDOMNodeId) ([]*t
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
@@ -175,9 +195,8 @@ func (c *ChromeCSS) GetComputedStyleForNode(nodeId *types.ChromeDOMNodeId) ([]*t
 
 // getPlatformFontsForNode - Requests information about platform fonts which we used to render child TextNodes in the given node.
 // Returns -
-// Font family name which is determined by computed style.
 // Usage statistics for every employed platform font.
-func (c *ChromeCSS) GetPlatformFontsForNode(nodeId *types.ChromeDOMNodeId) (string, []*types.ChromeCSSPlatformFontUsage, error) {
+func (c *ChromeCSS) GetPlatformFontsForNode(nodeId *types.ChromeDOMNodeId) ([]*types.ChromeCSSPlatformFontUsage, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.getPlatformFontsForNode", Params: paramRequest})
@@ -185,22 +204,23 @@ func (c *ChromeCSS) GetPlatformFontsForNode(nodeId *types.ChromeDOMNodeId) (stri
 
 	var chromeData struct {
 		Result struct {
-			CssFamilyName string
-			Fonts         []*types.ChromeCSSPlatformFontUsage
+			Fonts []*types.ChromeCSSPlatformFontUsage
 		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
 	}
 
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", nil, &ChromeRequestErr{Resp: cerr}
-		}
-		return "", nil, err
+		return nil, err
 	}
 
-	return chromeData.Result.CssFamilyName, chromeData.Result.Fonts, nil
+	return chromeData.Result.Fonts, nil
 }
 
 // getStyleSheetText - Returns the current textual content and the URL for a stylesheet.
@@ -218,47 +238,19 @@ func (c *ChromeCSS) GetStyleSheetText(styleSheetId *types.ChromeCSSStyleSheetId)
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return "", &ChromeRequestErr{Resp: cerr}
-		}
 		return "", err
 	}
 
 	return chromeData.Result.Text, nil
-}
-
-// setPropertyText - Either replaces a property identified by <code>styleSheetId</code> and <code>range</code> with <code>text</code> or inserts a new property <code>text</code> at the position identified by an empty <code>range</code>.
-// Returns -
-// The resulting style after the property text modification.
-func (c *ChromeCSS) SetPropertyText(styleSheetId *types.ChromeCSSStyleSheetId, theRange *types.ChromeCSSSourceRange, text string) (*types.ChromeCSSCSSStyle, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["styleSheetId"] = styleSheetId
-	paramRequest["range"] = theRange
-	paramRequest["text"] = text
-	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.setPropertyText", Params: paramRequest})
-	resp := <-recvCh
-
-	var chromeData struct {
-		Result struct {
-			Style *types.ChromeCSSCSSStyle
-		}
-	}
-
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
-		return nil, err
-	}
-
-	return chromeData.Result.Style, nil
 }
 
 // setRuleSelector - Modifies the rule selector.
@@ -278,17 +270,83 @@ func (c *ChromeCSS) SetRuleSelector(styleSheetId *types.ChromeCSSStyleSheetId, t
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
 	return chromeData.Result.Rule, nil
+}
+
+// setStyleText - Modifies the style text.
+// Returns -
+// The resulting style after the selector modification.
+func (c *ChromeCSS) SetStyleText(styleSheetId *types.ChromeCSSStyleSheetId, theRange *types.ChromeCSSSourceRange, text string) (*types.ChromeCSSCSSStyle, error) {
+	paramRequest := make(map[string]interface{}, 3)
+	paramRequest["styleSheetId"] = styleSheetId
+	paramRequest["range"] = theRange
+	paramRequest["text"] = text
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.setStyleText", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Style *types.ChromeCSSCSSStyle
+		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Style, nil
+}
+
+// setMediaText - Modifies the rule selector.
+// Returns -
+// The resulting CSS media rule after modification.
+func (c *ChromeCSS) SetMediaText(styleSheetId *types.ChromeCSSStyleSheetId, theRange *types.ChromeCSSSourceRange, text string) (*types.ChromeCSSCSSMedia, error) {
+	paramRequest := make(map[string]interface{}, 3)
+	paramRequest["styleSheetId"] = styleSheetId
+	paramRequest["range"] = theRange
+	paramRequest["text"] = text
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.setMediaText", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Media *types.ChromeCSSCSSMedia
+		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Media, nil
 }
 
 // createStyleSheet - Creates a new special "via-inspector" stylesheet in the frame with given <code>frameId</code>.
@@ -306,26 +364,29 @@ func (c *ChromeCSS) CreateStyleSheet(frameId *types.ChromePageFrameId) (*types.C
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 
 	return chromeData.Result.StyleSheetId, nil
 }
 
-// addRule - Creates a new empty rule with the given <code>selector</code> in a stylesheet with given <code>styleSheetId</code>.
+// addRule - Inserts a new rule with the given <code>ruleText</code> in a stylesheet with given <code>styleSheetId</code>, at the position specified by <code>location</code>.
 // Returns -
 // The newly created rule.
-func (c *ChromeCSS) AddRule(styleSheetId *types.ChromeCSSStyleSheetId, selector string) (*types.ChromeCSSCSSRule, error) {
-	paramRequest := make(map[string]interface{}, 2)
+func (c *ChromeCSS) AddRule(styleSheetId *types.ChromeCSSStyleSheetId, ruleText string, location *types.ChromeCSSSourceRange) (*types.ChromeCSSCSSRule, error) {
+	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["styleSheetId"] = styleSheetId
-	paramRequest["selector"] = selector
+	paramRequest["ruleText"] = ruleText
+	paramRequest["location"] = location
 	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "CSS.addRule", Params: paramRequest})
 	resp := <-recvCh
 
@@ -335,13 +396,15 @@ func (c *ChromeCSS) AddRule(styleSheetId *types.ChromeCSSStyleSheetId, selector 
 		}
 	}
 
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
 	err := json.Unmarshal(resp.Data, &chromeData)
 	if err != nil {
-		cerr := &ChromeErrorResponse{}
-		chromeError := json.Unmarshal(resp.Data, cerr)
-		if chromeError == nil {
-			return nil, &ChromeRequestErr{Resp: cerr}
-		}
 		return nil, err
 	}
 

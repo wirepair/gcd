@@ -3,7 +3,5 @@
 // API Version: 1.1
 package types
 
- 
 // Heap snapshot object id.
-type ChromeHeapProfilerHeapSnapshotObjectId string 
- 
+type ChromeHeapProfilerHeapSnapshotObjectId string

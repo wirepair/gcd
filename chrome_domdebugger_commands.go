@@ -5,6 +5,7 @@
 package gcd
 
 import (
+	"encoding/json"
 	"github.com/wirepair/gcd/gcdprotogen/types"
 )
 
@@ -95,4 +96,34 @@ func (c *ChromeDOMDebugger) RemoveXHRBreakpoint(url string) (*ChromeResponse, er
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
 	return sendDefaultRequest(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMDebugger.removeXHRBreakpoint", Params: paramRequest})
+}
+
+// getEventListeners - Returns event listeners of the given object.
+// Returns -
+// Array of relevant listeners.
+func (c *ChromeDOMDebugger) GetEventListeners(objectId *types.ChromeRuntimeRemoteObjectId) ([]*types.ChromeDOMDebuggerEventListener, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["objectId"] = objectId
+	recvCh, _ := sendCustomReturn(c.target.sendCh, &ParamRequest{Id: c.target.getId(), Method: "DOMDebugger.getEventListeners", Params: paramRequest})
+	resp := <-recvCh
+
+	var chromeData struct {
+		Result struct {
+			Listeners []*types.ChromeDOMDebuggerEventListener
+		}
+	}
+
+	// test if error first
+	cerr := &ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &ChromeRequestErr{Resp: cerr}
+	}
+
+	err := json.Unmarshal(resp.Data, &chromeData)
+	if err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Listeners, nil
 }
