@@ -172,6 +172,7 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 
 // Closes the tab
 func (c *Gcd) CloseTab(target *ChromeTarget) error {
+	target.shutdown() // close WS connection first
 	resp, err := http.Get(fmt.Sprintf("%s/close/%s", c.apiEndpoint, target.Target.Id))
 	if err != nil {
 		log.Fatalf("%v\n", err)

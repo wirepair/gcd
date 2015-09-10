@@ -148,11 +148,12 @@ type ChromeTarget struct {
 	security          *ChromeSecurity
 	serviceworker     *ChromeServiceWorker
 
-	Target      *TargetInfo      // The target information see, TargetInfo
-	sendCh      chan *gcdMessage // The channel used for API components to send back to use
-	doneCh      chan bool        // we be donez.
-	sendId      int64            // An Id which is atomically incremented per request.
-	debugEvents bool             // flag for spitting out event data as a string which we have not subscribed to.
+	Target       *TargetInfo      // The target information see, TargetInfo
+	sendCh       chan *gcdMessage // The channel used for API components to send back to use
+	doneCh       chan bool        // we be donez.
+	sendId       int64            // An Id which is atomically incremented per request.
+	debugEvents  bool             // flag for spitting out event data as a string which we have not subscribed to.
+	shuttingdown bool
 }
 
 // Creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
@@ -169,6 +170,11 @@ func newChromeTarget(addr string, target *TargetInfo) *ChromeTarget {
 	return chromeTarget
 }
 
+func (c *ChromeTarget) shutdown() {
+	c.shuttingdown = true
+	c.conn.Close()
+}
+
 // Increments the Id so we can synchronize our request/responses internally
 func (c *ChromeTarget) getId() int64 {
 	return atomic.AddInt64(&c.sendId, 1)
@@ -182,6 +188,14 @@ func (c *ChromeTarget) Subscribe(method string, callback func(*ChromeTarget, []b
 	c.eventLock.Unlock()
 }
 
+// Unsubscribes the handler for no longer recieving events.
+func (c *ChromeTarget) Unsubscribe(method string) {
+	c.eventLock.Lock()
+	delete(c.eventDispatcher, method)
+	c.eventLock.Unlock()
+}
+
+// Whether to print out raw JSON event data.
 func (c *ChromeTarget) DebugEvents(debug bool) {
 	c.debugEvents = debug
 }
@@ -228,7 +242,9 @@ func (c *ChromeTarget) listenRead() {
 				c.doneCh <- true
 				return
 			} else if err != nil {
-				log.Printf("error in websocket read: %v\n", err)
+				if c.shuttingdown == false {
+					log.Printf("error in websocket read: %v\n", err)
+				}
 				c.doneCh <- true
 			} else {
 				go c.dispatchResponse([]byte(msg))
