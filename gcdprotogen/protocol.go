@@ -38,14 +38,15 @@ type ProtoType struct {
 
 // A property & Parameter type used by both commands & types
 type ProtoProperty struct {
-	Name        string     `json:"name"`
-	Type        string     `json:"type,omitempty"`
-	Description string     `json:"description,omitempty"`
-	Ref         string     `json:"$ref,omitempty"`
-	Optional    bool       `json:"optional,omitempty"`
-	Hidden      bool       `json:"hidden,omitempty"`
-	Enum        []string   `json:"enum,omitempty"`
-	Items       *ProtoItem `json:"items,omitempty"`
+	Name        string           `json:"name"`
+	Type        string           `json:"type,omitempty"`
+	Description string           `json:"description,omitempty"`
+	Ref         string           `json:"$ref,omitempty"`
+	Optional    bool             `json:"optional,omitempty"`
+	Hidden      bool             `json:"hidden,omitempty"`
+	Enum        []string         `json:"enum,omitempty"`
+	Items       *ProtoItem       `json:"items,omitempty"`
+	Properties  []*ProtoProperty `json:"properties,omitempty"`
 }
 
 // An item used by types, properties and events.

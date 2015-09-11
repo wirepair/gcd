@@ -42,12 +42,16 @@ func main() {
 	minor := protocolApi.Version.Minor
 
 	for _, proto := range protocolApi.Domains {
+		if proto.Domain != "Network" {
+			continue
+		}
 		domain := NewDomain(major, minor, proto.Domain)
 		fmt.Printf("Creating api for domain: %s\n", proto.Domain)
 		if proto.Types != nil && len(proto.Types) > 0 {
 			domain.PopulateTypes(proto.Types)
 		}
 		domains = append(domains, domain)
+		domain.writeTypes()
 	}
 
 }

@@ -1,8 +1,29 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
-// This file contains the {{.Domain}} types.
+// This file contains {{.Domain}} functionality.
 // API Version: {{.Major}}.{{.Minor}}
-package types
+{{ $api := . }}
 
-{{range $element := .Types}} 
-{{ $element }} 
+package gcd
+
+
+{{range $element := $api.Types}} 
+{{ if $element.Properties }}
+// {{$element.Description}} 
+{{ if $element.EnumVals }} enum = {{ $element.EnumVals }} {{ end }} {{ range $prop := $element.Properties }} {{ if $prop.EnumVals }}// property enum vals: {{ $prop.Name }} = {{ $prop.EnumVals }} {{end}} {{end}}
+type Chrome{{$api.Domain}}{{$element.Name | Title}} struct {
+	{{range $prop := $element.Properties}}
+	{{$prop.Name | Title}} {{$prop.GoType}} `json:"{{$prop.Name}}{{if $prop.Optional}},omitempty{{end}}"` // {{$prop.Description}}
+	{{end}}
+}
+{{end}}
 {{ end }}
+
+
+type Chrome{{.Domain}} struct {
+	target *ChromeTarget
+}
+
+func newChrome{{.Domain}}(target *ChromeTarget) *Chrome{{.Domain}} {
+	c := &Chrome{{.Domain}}{target: target}
+	return c
+}
