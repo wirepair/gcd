@@ -36,6 +36,31 @@ type ProtoType struct {
 	MaxItems    int64            `json:"maxItems,omitempty"`
 }
 
+func (p *ProtoType) IsNonPropertiesObject() bool {
+	return (p.Type == "object" && len(p.Properties) == 0)
+}
+
+func (p *ProtoType) GetUnderlyingType() string {
+	return p.Type
+}
+
+func (p *ProtoType) GetArrayType() string {
+	if p.Type != "array" || p.Items == nil {
+		return ""
+	}
+	if p.Items.Type != "" {
+		return p.Items.Type
+	}
+	if p.Items.Ref != "" {
+		return p.Items.Ref
+	}
+	return ""
+}
+
+func (p *ProtoType) IsArray() bool {
+	return p.Type == "array"
+}
+
 // A property & Parameter type used by both commands & types
 type ProtoProperty struct {
 	Name        string           `json:"name"`
@@ -47,6 +72,31 @@ type ProtoProperty struct {
 	Enum        []string         `json:"enum,omitempty"`
 	Items       *ProtoItem       `json:"items,omitempty"`
 	Properties  []*ProtoProperty `json:"properties,omitempty"`
+}
+
+func (p *ProtoProperty) IsNonPropertiesObject() bool {
+	return (p.Type == "object" && len(p.Properties) == 0)
+}
+
+func (p *ProtoProperty) GetUnderlyingType() string {
+	return p.Type
+}
+
+func (p *ProtoProperty) GetArrayType() string {
+	if p.Type != "array" || p.Items == nil {
+		return ""
+	}
+	if p.Items.Type != "" {
+		return p.Items.Type
+	}
+	if p.Items.Ref != "" {
+		return p.Items.Ref
+	}
+	return ""
+}
+
+func (p *ProtoProperty) IsArray() bool {
+	return p.Type == "array"
 }
 
 // An item used by types, properties and events.
@@ -73,9 +123,36 @@ type ProtoCommand struct {
 
 // Parameters to the API Command call
 type ProtoCommandParameters struct {
-	Name string `json:"name"`
-	Type string `json:"type,omitempty"`
-	Ref  string `json:"$ref,omitempty"`
+	Name        string `json:"name"`
+	Type        string `json:"type,omitempty"`
+	Ref         string `json:"$ref,omitempty"`
+	Description string `json:"description,omitempty"`
+	Optional    bool   `json:"optional,omitempty"`
+}
+
+func (p *ProtoCommandParameters) IsNonPropertiesObject() bool {
+	return (p.Type == "object" && len(p.Properties) == 0)
+}
+
+func (p *ProtoCommandParameters) GetUnderlyingType() string {
+	return p.Type
+}
+
+func (p *ProtoCommandParameters) GetArrayType() string {
+	if p.Type != "array" || p.Items == nil {
+		return ""
+	}
+	if p.Items.Type != "" {
+		return p.Items.Type
+	}
+	if p.Items.Ref != "" {
+		return p.Items.Ref
+	}
+	return ""
+}
+
+func (p *ProtoCommandParameters) IsArray() bool {
+	return p.Type == "array"
 }
 
 // The return parameters for an API call

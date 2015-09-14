@@ -4,7 +4,15 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
+
+type SharedProperties interface {
+	GetUnderlyingType() string
+	GetArrayType() string
+	IsArray() bool
+	IsNonPropertiesObject() bool
+}
 
 type Domain struct {
 	Major    string // major api version
@@ -12,123 +20,145 @@ type Domain struct {
 	Filename string
 	Domain   string
 	Hidden   bool
+	SubTypes []*Type
 	Types    []*Type
 	Events   []*Event
 	Commands []*Command
 	// basicTypes holds a map of type.RefName and type.Underlying type so we can replace $ref
 	// with the underlying type (provided it's not another object or array)
 
-	// However array types that simply point to another type are also added here.
-	basicTypes map[string]string
+	//typeMap map[string]*BaseType
 }
 
 func NewDomain(major, minor, domain string) *Domain {
 	d := &Domain{Major: major, Minor: minor, Domain: domain}
 	d.Types = make([]*Type, 0)
+	d.SubTypes = make([]*Type, 0)
 	d.Events = make([]*Event, 0)
 	d.Commands = make([]*Command, 0)
-	d.basicTypes = make(map[string]string)
+	//d.typeMap = make(map[string]*BaseType)
 	return d
 }
 
-// Do two passes over types, first is to set all the types and sub types
-// Second is to resolve references. Store base types (int/string) in a map
-// so we don't have to have single typed values like type ChromeSomething int everywhere.
-func (d *Domain) PopulateTypes(types []*ProtoType) error {
+// Extract each type and call handleType, add the result to our Types slice.
+func (d *Domain) PopulateTypes(types []*ProtoType) {
 	// do first pass to get all underlying type information
 	for _, protoType := range types {
 		fmt.Printf("Populating type: %s\n", protoType.Id)
-		newType := NewType(d.Domain, protoType)
-		newType.SetGoType()
-
-		// we don't want to create single typed values if we can avoid it.
-		if newType.UnderlyingType != "object" && newType.UnderlyingType != "array" {
-			d.basicTypes[newType.RefName] = newType.GoType
-		}
-		// see if this new type has sub objects or arrays we need to build
-		d.processProperties(newType, protoType.Properties, protoType.Items)
-		d.Types = append(d.Types, newType)
-
-		//d.Types = append(d.Types, newType)
-
-	}
-	// second pass, over our converted ProtoType -> Type fill out arrays and objects
-	for _, t := range d.Types {
-		for _, props := range t.Properties {
-			props.ResolveRefs(d.basicTypes)
-		}
-		/*
-			if t.UnderlyingType != "object" && t.UnderlyingType != "array" {
-				//fmt.Printf("Type: %s RefName: %s UnderlyingType: %s\n", t.Name, t.RefName, t.UnderlyingType)
-				continue
-			}
-
-			if t.UnderlyingType == "object" {
-				t.createObjectType(d.basicTypes)
-			}*/
-		//d.writeTypes()
-		//os.Exit(1)
-		//if t.UnderlyingType == "array" {
-		//	t.createArrayType(d.basicTypes)
-		//}
-
-	}
-	return nil
-}
-
-// process the new types properties, we may have sub-objects and arrays we need to create
-func (d *Domain) processProperties(newType *Type, protoProps []*ProtoProperty, protoItems *ProtoItem) {
-	// add the objects properties to a new TypeProperties container.
-	if newType.UnderlyingType == "object" {
-		d.processObjectProperties(newType, protoProps)
-	}
-	// If a top level type is an array it doesn't have properties, just Items (which may have properties)
-	if newType.UnderlyingType == "array" {
-		d.processArrayProperties(newType, protoItems)
-	}
-}
-
-// We have an object type that has properties, this could be nested
-// Create a new TypeProperties to add to this newType.
-func (d *Domain) processObjectProperties(newType *Type, protoProps []*ProtoProperty) {
-	for _, protoProp := range protoProps {
-		newProps := NewTypeProperties(newType, protoProp)
-		newProps.SetGoType()
-		// HANDLE ARRAYS HERE???
-
-		newType.Properties = append(newType.Properties, newProps)
-		// this object has a sub object with it's own properties
-		// create a new sub type
-		if protoProp.Properties != nil && len(protoProp.Properties) > 0 {
-			subType := NewSubType(d.Domain, newProps, protoProp)
-			d.Types = append(d.Types, subType)
-			d.processObjectProperties(subType, protoProp.Properties)
-			newProps.Ref = subType.Name // update the reference to this new subtype
+		newType := NewType(protoType)
+		// igore empty property types as we turn those into Refs
+		if len(protoType.Properties) > 0 {
+			d.handleType(newType, protoType.Properties)
+			d.Types = append(d.Types, newType)
 		}
 
 	}
+}
+
+func (d *Domain) PopulateCommand(commands []*ProtoCommand) {
+	for _, protoCommand := range commands {
+		newCmd := NewCommand(protoCommand)
+		if newCmd.HasParams {
+			d.handleParameters(newCmd, protoCommand.Parameters)
+		}
+		if newCmd.HasReturn {
+			d.handleReturns(newCmd, protoCommand.Returns)
+		}
+	}
+}
+
+func (d *Domain) handleParameters(newCmd *Command, protoParameters []*ProtoCommandParameters) {
+	for _, protoParam := range protoParameters
+}
+
+func (d *Domain) handleReturns(newCmd *Command, protoReturn []*ProtoCommandReturns) {
 
 }
 
-// arrays can be one of three things
-// An item with a single ref
-// An item with a single type (integer/string)
-// An item with an embedded object
-func (d *Domain) processArrayProperties(newType *Type, protoItems *ProtoItem) {
-	if protoItems.Ref != "" {
-		d.basicTypes[d.Domain+"."+newType.Name] = "[]*Chrome" + d.Domain + protoItems.Ref
-		return
+// Takes in a new type, checks if it is a base type, or an object or an array.
+func (d *Domain) handleType(newType *Type, typeProperties []*ProtoProperty) {
+	// loop over properties of this new type
+	for _, protoProp := range typeProperties {
+
+		// base type, add it and fix up description
+		if isBaseType(protoProp) {
+			d.createBaseType(newType, protoProp)
+			continue
+		}
+
+		// It's a reference, see if it points to a base type or not
+		if newProp := d.resolveReference(newType, protoProp); newProp != nil {
+			newType.Properties = append(newType.Properties, newProp)
+			continue
+		}
+
+		// is this a subType?
+		if isSubType(protoProp) {
+			d.createSubType(newType, protoProp)
+		}
+	}
+}
+
+// Creates a base type based property (string, int etc) Also fixes up the description
+// to include Enum values if available. Adds the property to newType.
+func (d *Domain) createBaseType(newType *Type, protoProp *ProtoProperty) {
+	newProp := NewTypeProperties(newType, protoProp)
+	newProp.GoType = getGoType(newProp)
+	if len(newProp.EnumVals) > 0 {
+		newProp.Description = newProp.Description + "Enum values: " + newProp.EnumVals
+	}
+	newType.Properties = append(newType.Properties, newProp)
+	return
+}
+
+// Creates a new SubType *Type object. This is for nested structs that are better
+// defined outside of the original Type. It will call handleType to iterate over
+// the nested properties to create it in much of the same way as a normal type
+// except we prefix it with the Sub keyword.
+func (d *Domain) createSubType(newType *Type, protoProp *ProtoProperty) {
+	// create the property
+	newProp := NewTypeProperties(newType, protoProp)
+	// create the new sub type
+	subType := NewSubType(newProp)
+	// recursive to add props to this type
+	d.handleType(subType, protoProp.Properties)
+	d.SubTypes = append(d.SubTypes, subType)
+	// update ref from property to new sub type
+	refName := d.Domain + "Sub" + strings.Title(protoProp.Name)
+	newProp.GoType = refName
+	newProp.IsRef = true
+	newType.Properties = append(newType.Properties, newProp)
+}
+
+// Since we don't want useless single underlying type struct definitions everywhere we resolve
+// any references to single underlying type objects.
+func (d *Domain) resolveReference(newType *Type, protoProp *ProtoProperty) *TypeProperties {
+	if protoProp.Ref == "" {
+		return nil
+	}
+	refName := ""
+	// Local reference, add . between domain/ref type so we can look it up in our globalRefs
+	if !strings.Contains(protoProp.Ref, ".") {
+		refName = d.Domain + "." + protoProp.Ref
+	} else {
+		refName = protoProp.Ref
 	}
 
-	if protoItems.Type != "" {
-		d.basicTypes[d.Domain+"."+newType.Name] = "[]" + d.Domain + getGoType(protoItems.Type)
-		return
+	newProp := NewTypeProperties(newType, protoProp)
+	ref := globalRefs[refName]
+	// base type
+	if ref.IsBaseType {
+		newProp.GoType = ref.BaseType
+	} else {
+		newProp.GoType = ref.ExternalGoName
+		newProp.IsRef = true
+	}
+	// add enum possible values to description
+	if ref.EnumDescription != "" {
+		newProp.Description = newProp.Description + ref.EnumDescription
 	}
 
-	if protoItems.Properties != nil && len(protoItems.Properties) > 0 {
-
-	}
-
+	return newProp
 }
 
 func (d *Domain) writeTypes() {
@@ -138,8 +168,4 @@ func (d *Domain) writeTypes() {
 	if err != nil {
 		log.Fatalf("Error writing to template: %s\n", err)
 	}
-}
-
-func recurseSubTypes(parent *TypeProperties, items []*ProtoItem) {
-
 }

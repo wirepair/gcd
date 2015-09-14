@@ -11,6 +11,17 @@ import (
 	"text/template"
 )
 
+type GlobalReference struct {
+	LocalRefName    string
+	ExternalGoName  string
+	IsBaseType      bool
+	BaseType        string
+	EnumDescription string
+}
+
+// Stores a list of all references and if they are base types
+var globalRefs map[string]*GlobalReference
+
 const (
 	prefix = "chrome_"
 )
@@ -32,6 +43,7 @@ func init() {
 
 func main() {
 	var domains []*Domain
+	globalRefs = make(map[string]*GlobalReference)
 
 	flag.Parse()
 	protocolData := openFile()
@@ -41,19 +53,32 @@ func main() {
 	major := protocolApi.Version.Major
 	minor := protocolApi.Version.Minor
 
+	// iterate over the protocol once to resolve references
 	for _, proto := range protocolApi.Domains {
-		if proto.Domain != "Network" {
+		PopulateReferences(proto.Domain, proto.Types)
+	}
+
+	for _, protoDomain := range protocolApi.Domains {
+		if protoDomain.Domain != "Debugger" {
 			continue
 		}
-		domain := NewDomain(major, minor, proto.Domain)
-		fmt.Printf("Creating api for domain: %s\n", proto.Domain)
-		if proto.Types != nil && len(proto.Types) > 0 {
-			domain.PopulateTypes(proto.Types)
+		domain := NewDomain(major, minor, protoDomain.Domain)
+		fmt.Printf("Creating api for domain: %s\n", protoDomain.Domain)
+		// Do types first
+		if protoDomain.Types != nil && len(protoDomain.Types) > 0 {
+			domain.PopulateTypes(protoDomain.Types)
+		}
+		// Then Commands
+		if protoDomain.Commands != nil && len(protoDomain.Commands) > 0 {
+			domain.PopulateCommands(protoDomain.Commands)
 		}
 		domains = append(domains, domain)
 		domain.writeTypes()
 	}
 
+	//for k, v := range globalRefs {
+	//	fmt.Printf("ref: %s value: %#v\n", k, v)
+	//}
 }
 
 func openFile() []byte {

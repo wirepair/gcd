@@ -5,25 +5,31 @@
 
 package gcd
 
-
-{{range $element := $api.Types}} 
-{{ if $element.Properties }}
-// {{$element.Description}} 
-{{ if $element.EnumVals }} enum = {{ $element.EnumVals }} {{ end }} {{ range $prop := $element.Properties }} {{ if $prop.EnumVals }}// property enum vals: {{ $prop.Name }} = {{ $prop.EnumVals }} {{end}} {{end}}
-type Chrome{{$api.Domain}}{{$element.Name | Title}} struct {
+{{range $element := $api.SubTypes}} 
+// {{$element.Description}}
+type {{$api.Domain}}{{$element.Name | Title}} struct {
 	{{range $prop := $element.Properties}}
-	{{$prop.Name | Title}} {{$prop.GoType}} `json:"{{$prop.Name}}{{if $prop.Optional}},omitempty{{end}}"` // {{$prop.Description}}
+	{{$prop.Name | Title}} {{if $prop.IsRef}}*{{end}}{{$prop.GoType}} `json:"{{$prop.Name}}{{if $prop.Optional}},omitempty{{end}}" // {{$prop.Description}}
 	{{end}}
 }
 {{end}}
-{{ end }}
+
+{{range $element := $api.Types}} 
+// {{$element.Description}} 
+{{ if $element.EnumVals }} enum = {{ $element.EnumVals }} {{ end }} {{ range $prop := $element.Properties }} {{end}}
+type {{$api.Domain}}{{$element.Name | Title}} struct {
+	{{range $prop := $element.Properties}}
+	{{$prop.Name | Title}} {{if $prop.IsRef}}*{{end}}{{$prop.GoType}} `json:"{{$prop.Name}}{{if $prop.Optional}},omitempty{{end}}"` // {{$prop.Description}}
+	{{end}}
+}
+{{end}}
 
 
-type Chrome{{.Domain}} struct {
+type {{.Domain}} struct {
 	target *ChromeTarget
 }
 
-func newChrome{{.Domain}}(target *ChromeTarget) *Chrome{{.Domain}} {
-	c := &Chrome{{.Domain}}{target: target}
+func new{{.Domain}}(target *ChromeTarget) *{{.Domain}} {
+	c := &{{.Domain}}{target: target}
 	return c
 }

@@ -1,8 +1,7 @@
 package main
 
-type TypeProperties struct {
-	ParentType     *Type // the type ref this property belongs to
-	protoProperty  *ProtoProperty
+type Parameter struct {
+	protoParam     *ProtoCommandParameters
 	Name           string // property name
 	Description    string // property description
 	UnderlyingType string
@@ -12,19 +11,20 @@ type TypeProperties struct {
 	IsRef          bool   // is a reference to another type
 }
 
-func NewTypeProperties(parentType *Type, props *ProtoProperty) *TypeProperties {
-	tp := &TypeProperties{}
-	tp.ParentType = parentType
-	tp.protoProperty = props
-	tp.Name = props.Name
-	tp.Description = props.Description
-	tp.Optional = props.Optional
-	tp.UnderlyingType = props.Type
-	return tp
+func NewParameter(protoParam *ProtoCommandParameters) *Parameter {
+	p := &Parameter{}
+	p.protoParam = protoParam
+	p.Name = protoParam.Name
+	p.Description = protoParam.Description
+	p.UnderlyingType = protoParam.Type
+	if protoParam.Ref != "" {
+		p.IsRef = true
+	}
+	return p
 }
 
-func (p *TypeProperties) IsNonPropertiesObject() bool {
-	return (p.UnderlyingType == "object" && len(p.protoProperty.Properties) == 0)
+func (p *Parameter) IsNonPropertiesObject() bool {
+	return (p.UnderlyingType == "object" && len(p.protoParam.Properties) == 0)
 }
 
 func (p *TypeProperties) GetUnderlyingType() string {
