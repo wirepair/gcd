@@ -5,7 +5,6 @@ Because I'm lazy and there are hundereds of different custom types and API metho
 
 The [gcdprotogen](https://github.com/wirepair/gcd/gcdprotogen) package was created to generate types and commands for gcd. Non-biolerplate code (and the majority of the logic) are in [gcd.go](https://github.com/wirepair/gcd/blob/master/gcd.go) and [chrome_target.go](https://github.com/wirepair/gcd/blob/master/chrome_target.go).
 
-NOTE: This is alpha code at best so use caution.
 
 ## The API
 The API consists of three types, synchronous requests, asynchronous requests and events. Synchronous requests are handled by using non-buffered channels and methods can be called and will return once the value is available. Asynchronous requests have not been heavily tested. Events are handled by subscribing the response method type and calling the API's "Enable()" such as:
@@ -18,7 +17,7 @@ The API consists of three types, synchronous requests, asynchronous requests and
 			Params *ConsoleParams `json:"params"`
 		}
 		type ConsoleParams struct {
-			Message *types.ChromeConsoleConsoleMessage `json:"message"`
+			Message *gcdapi.ConsoleConsoleMessage `json:"message"`
 		}
 		msg := &EventData{}
 		err := json.Unmarshal(v, msg)
@@ -34,16 +33,9 @@ The API consists of three types, synchronous requests, asynchronous requests and
 	// recv events
 	console.Disable()
 ```
-In the future there are plans to make event handling easier, but for now you'll need to know the event type and unmarshall it yourself. If you are unsure of what events will come in, call target.DebugEvents(true) and review the raw json in the console. 
-
 
 ## Usage
-If you need to create complex types, you'll need to import the "github.com/wirepair/gcd/gcdprotogen/types" library. It contains all of the types the chrome remote debugger protocol uses. If you are just accessing them from return values it should not be necessary to import.
-
-For a full list of api methods & godocs: [Documentation](https://godoc.org/github.com/wirepair/gcd)
-
-For a full list of type data: [Types Documentation](https://godoc.org/github.com/wirepair/gcd/gcdprotogen/types)
-
+For a full list of api methods, types, event types & godocs: [Documentation](https://godoc.org/github.com/wirepair/gcd/gcdapi)
 
 Loading a page using the Page API.
 ```Go

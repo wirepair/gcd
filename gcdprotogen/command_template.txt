@@ -1,8 +1,0 @@
-// AUTO-GENERATED Chrome Remote Debugger Protocol API Client
-// This file contains the {{.Domain}} Commands.
-// API Version: {{.Major}}.{{.Minor}}
-package commands
-
-{{range $element := .Commands}} 
-{{ $element }} 
-{{ end }}

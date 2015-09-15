@@ -26,57 +26,16 @@ package gcd
 
 import (
 	"encoding/json"
+	"github.com/wirepair/gcd/gcdapi"
+	"github.com/wirepair/gcd/gcdmessage"
 	"io"
 	"log"
 	"net"
-	"strconv"
 	"sync"
 	"sync/atomic"
 
 	"golang.org/x/net/websocket"
 )
-
-// default response object, contains the id and a result if applicable.
-type ChromeResponse struct {
-	Id     int64       `json:"id"`
-	Result interface{} `json:"result"`
-}
-
-// default no-arg request
-type ChromeRequest struct {
-	Id     int64       `json:"id"`
-	Method string      `json:"method"`
-	Params interface{} `json:"params,omitempty"`
-}
-
-// default chrome error response to an invalid request.
-type ChromeErrorResponse struct {
-	Id    int64        `json:"id"`    // the request Id that this is a response of
-	Error *ChromeError `json:"error"` // the error object
-}
-
-// An error object returned from a request
-type ChromeError struct {
-	Code    int64  `json:"code"`    // the error code
-	Message string `json:"message"` // the error message
-}
-
-// A gcd type for reporting chrome request errors
-type ChromeRequestErr struct {
-	Resp *ChromeErrorResponse // a ref to the error response to be used to generate the user friendly error string
-}
-
-// user friendly error response
-func (cerr *ChromeRequestErr) Error() string {
-	return "request " + strconv.FormatInt(cerr.Resp.Id, 10) + " failed, code: " + strconv.FormatInt(cerr.Resp.Error.Code, 10) + " msg: " + cerr.Resp.Error.Message
-}
-
-// default request object that has parameters.
-type ParamRequest struct {
-	Id     int64       `json:"id"`
-	Method string      `json:"method"`
-	Params interface{} `json:"params,omitempty"`
-}
 
 // Defines the 'tab' or target for this chrome instance, can be multiple and background processes
 // are included (not just visual tabs)
@@ -91,93 +50,117 @@ type TargetInfo struct {
 	WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
 }
 
-// An internal message object used for components and ChromeTarget to communicate back and forth
-type gcdMessage struct {
-	ReplyCh chan *gcdMessage // json response channel
-	Id      int64            // id to map response channels to send chans
-	Data    []byte           // the data for the websocket to send/recv
-	Method  string           // event name type.
-	Target  *ChromeTarget    // reference to the ChromeTarget for events
-}
-
 // Our Chrome Target (Tab/Process). Messages are returned to callers via non-buffered channels. Helpfully,
 // the remote debugger service uses id's so we can correlate which request should match which response.
-// We use a map to store the id of the request which contains a reference to a gcdMessage that holds the
+// We use a map to store the id of the request which contains a reference to a gcdmessage.Message that holds the
 // reply channel for the ChromeTarget to return the response to.
 // Events are handled by mapping the method name to a function which takes a target and byte output.
 // For now, callers will need to unmarshall the types themselves.
 type ChromeTarget struct {
 	replyLock       sync.RWMutex                           // lock for dispatching responses
-	replyDispatcher map[int64]chan *gcdMessage             // Replies to synch methods using a non-buffered channel
+	replyDispatcher map[int64]chan *gcdmessage.Message     // Replies to synch methods using a non-buffered channel
 	eventLock       sync.RWMutex                           // lock for dispatching events
 	eventDispatcher map[string]func(*ChromeTarget, []byte) // calls the function when events match the subscribed method
 	conn            *websocket.Conn                        // the connection to the chrome debugger service for this tab/process
 
 	// Chrome Debugger Domains
-	applicationcache  *ChromeApplicationCache  // application cache API
-	console           *ChromeConsole           // console API
-	css               *ChromeCSS               // CSS API
-	database          *ChromeDatabase          // Database API
-	debugger          *ChromeDebugger          // JS Debugger API
-	deviceorientation *ChromeDeviceOrientation // Device Orientation API
-	dom               *ChromeDOM               // DOM API
-	domdebugger       *ChromeDOMDebugger       // DOM Debugger API
-	domstorage        *ChromeDOMStorage        // DOM Storage API
-	filesystem        *ChromeFileSystem        // Is anyone still reading this? FileSystem API
-	heapprofiler      *ChromeHeapProfiler      // HeapProfiler API
-	indexeddb         *ChromeIndexedDB         // IndexedDB API
-	input             *ChromeInput             // Why am i doing this, it's obvious what they are, I quit.
-	inspector         *ChromeInspector
-	layertree         *ChromeLayerTree
-	memory            *ChromeMemory
-	network           *ChromeNetwork
-	page              *ChromePage
-	power             *ChromePower
-	profiler          *ChromeProfiler
-	runtime           *ChromeRuntime
-	timeline          *ChromeTimeline
-	tracing           *ChromeTracing
-	worker            *ChromeWorker
-	accessibility     *ChromeAccessibility
-	animation         *ChromeAnimation
-	cachestorage      *ChromeCacheStorage
-	emulation         *ChromeEmulation
-	io                *ChromeIO
-	rendering         *ChromeRendering
-	screenorientation *ChromeScreenOrientation
-	security          *ChromeSecurity
-	serviceworker     *ChromeServiceWorker
+	ApplicationCache  *gcdapi.ApplicationCache  // application cache API
+	Console           *gcdapi.Console           // console API
+	CSS               *gcdapi.CSS               // CSS API
+	Database          *gcdapi.Database          // Database API
+	Debugger          *gcdapi.Debugger          // JS Debugger API
+	DeviceOrientation *gcdapi.DeviceOrientation // Device Orientation API
+	DOM               *gcdapi.DOM               // DOM API
+	DOMDebugger       *gcdapi.DOMDebugger       // DOM Debugger API
+	DOMStorage        *gcdapi.DOMStorage        // DOM Storage API
+	FileSystem        *gcdapi.FileSystem        // Is anyone still reading this? FileSystem API
+	HeapProfiler      *gcdapi.HeapProfiler      // HeapProfiler API
+	IndexedDB         *gcdapi.IndexedDB         // IndexedDB API
+	Input             *gcdapi.Input             // Why am i doing this, it's obvious what they are, I quit.
+	Inspector         *gcdapi.Inspector
+	LayerTree         *gcdapi.LayerTree
+	Memory            *gcdapi.Memory
+	Network           *gcdapi.Network
+	Page              *gcdapi.Page
+	Power             *gcdapi.Power
+	Profiler          *gcdapi.Profiler
+	Runtime           *gcdapi.Runtime
+	Timeline          *gcdapi.Timeline
+	Tracing           *gcdapi.Tracing
+	Worker            *gcdapi.Worker
+	Accessibility     *gcdapi.Accessibility
+	Animation         *gcdapi.Animation
+	CacheStorage      *gcdapi.CacheStorage
+	Emulation         *gcdapi.Emulation
+	IO                *gcdapi.IO
+	Rendering         *gcdapi.Rendering
+	ScreenOrientation *gcdapi.ScreenOrientation
+	Security          *gcdapi.Security
+	ServiceWorker     *gcdapi.ServiceWorker
 
-	Target       *TargetInfo      // The target information see, TargetInfo
-	sendCh       chan *gcdMessage // The channel used for API components to send back to use
-	doneCh       chan bool        // we be donez.
-	sendId       int64            // An Id which is atomically incremented per request.
-	debugEvents  bool             // flag for spitting out event data as a string which we have not subscribed to.
+	Target       *TargetInfo              // The target information see, TargetInfo
+	sendCh       chan *gcdmessage.Message // The channel used for API components to send back to use
+	doneCh       chan bool                // we be donez.
+	sendId       int64                    // An Id which is atomically incremented per request.
+	debugEvents  bool                     // flag for spitting out event data as a string which we have not subscribed to.
 	shuttingdown bool
 }
 
 // Creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
 func newChromeTarget(addr string, target *TargetInfo) *ChromeTarget {
 	conn := wsConnection(addr, target.WebSocketDebuggerUrl)
-	replier := make(map[int64]chan *gcdMessage)
+	replier := make(map[int64]chan *gcdmessage.Message)
 	var replyLock sync.RWMutex
 	var eventLock sync.RWMutex
 	eventer := make(map[string]func(*ChromeTarget, []byte))
-	sendCh := make(chan *gcdMessage)
+	sendCh := make(chan *gcdmessage.Message)
 	doneCh := make(chan bool)
 	chromeTarget := &ChromeTarget{conn: conn, eventLock: eventLock, replyLock: replyLock, Target: target, sendCh: sendCh, replyDispatcher: replier, eventDispatcher: eventer, doneCh: doneCh, sendId: 0}
+	chromeTarget.Init()
 	chromeTarget.listen()
 	return chromeTarget
+}
+
+// Initialize all api objects
+func (c *ChromeTarget) Init() {
+	c.ApplicationCache = gcdapi.NewApplicationCache(c)
+	c.Console = gcdapi.NewConsole(c)
+	c.CSS = gcdapi.NewCSS(c)
+	c.Database = gcdapi.NewDatabase(c)
+	c.Debugger = gcdapi.NewDebugger(c)
+	c.DeviceOrientation = gcdapi.NewDeviceOrientation(c)
+	c.DOM = gcdapi.NewDOM(c)
+	c.DOMDebugger = gcdapi.NewDOMDebugger(c)
+	c.DOMStorage = gcdapi.NewDOMStorage(c)
+	c.FileSystem = gcdapi.NewFileSystem(c)
+	c.HeapProfiler = gcdapi.NewHeapProfiler(c)
+	c.IndexedDB = gcdapi.NewIndexedDB(c)
+	c.Input = gcdapi.NewInput(c)
+	c.Inspector = gcdapi.NewInspector(c)
+	c.LayerTree = gcdapi.NewLayerTree(c)
+	c.Memory = gcdapi.NewMemory(c)
+	c.Network = gcdapi.NewNetwork(c)
+	c.Page = gcdapi.NewPage(c)
+	c.Power = gcdapi.NewPower(c)
+	c.Profiler = gcdapi.NewProfiler(c)
+	c.Runtime = gcdapi.NewRuntime(c)
+	c.Timeline = gcdapi.NewTimeline(c)
+	c.Tracing = gcdapi.NewTracing(c)
+	c.Worker = gcdapi.NewWorker(c)
+	c.Accessibility = gcdapi.NewAccessibility(c)
+	c.Animation = gcdapi.NewAnimation(c)
+	c.CacheStorage = gcdapi.NewCacheStorage(c)
+	c.Emulation = gcdapi.NewEmulation(c)
+	c.IO = gcdapi.NewIO(c)
+	c.Rendering = gcdapi.NewRendering(c)
+	c.ScreenOrientation = gcdapi.NewScreenOrientation(c)
+	c.Security = gcdapi.NewSecurity(c)
+	c.ServiceWorker = gcdapi.NewServiceWorker(c)
 }
 
 func (c *ChromeTarget) shutdown() {
 	c.shuttingdown = true
 	c.conn.Close()
-}
-
-// Increments the Id so we can synchronize our request/responses internally
-func (c *ChromeTarget) getId() int64 {
-	return atomic.AddInt64(&c.sendId, 1)
 }
 
 /// Subscribes Events, you must know the method name, such as Page.loadFiredEvent, and bind a function
@@ -272,7 +255,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	if r, ok := c.replyDispatcher[f.Id]; ok {
 		delete(c.replyDispatcher, f.Id)
 		c.replyLock.Unlock()
-		r <- &gcdMessage{Id: f.Id, Data: msg}
+		r <- &gcdmessage.Message{Id: f.Id, Data: msg}
 		return
 	}
 	c.replyLock.Unlock()
@@ -309,35 +292,14 @@ func wsConnection(addr, url string) *websocket.Conn {
 	return client
 }
 
-// Takes in a ParamRequest and gives back a response channel so the caller can decode as necessary.
-func sendCustomReturn(sendCh chan<- *gcdMessage, paramRequest *ParamRequest) (<-chan *gcdMessage, error) {
-	data, err := json.Marshal(paramRequest)
-	if err != nil {
-		return nil, err
-	}
+// gcdmessage.ChromeTargeter interface methods
 
-	recvCh := make(chan *gcdMessage)
-	sendMsg := &gcdMessage{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
-	sendCh <- sendMsg
-	return recvCh, nil
+// Increments the Id so we can synchronize our request/responses internally
+func (c *ChromeTarget) GetId() int64 {
+	return atomic.AddInt64(&c.sendId, 1)
 }
 
-// Sends a generic request that gets back a generic response, or error. This returns a ChromeResponse
-// object.
-func sendDefaultRequest(sendCh chan<- *gcdMessage, paramRequest *ParamRequest) (*ChromeResponse, error) {
-	req := &ChromeRequest{Id: paramRequest.Id, Method: paramRequest.Method, Params: paramRequest.Params}
-	data, err := json.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
-	recvCh := make(chan *gcdMessage)
-	sendMsg := &gcdMessage{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
-	sendCh <- sendMsg
-	resp := <-recvCh
-	chromeResponse := &ChromeResponse{}
-	err = json.Unmarshal(resp.Data, chromeResponse)
-	if err != nil {
-		return nil, err
-	}
-	return chromeResponse, nil
+// The channel used for API components to send back to use
+func (c *ChromeTarget) GetSendCh() chan *gcdmessage.Message {
+	return c.sendCh
 }

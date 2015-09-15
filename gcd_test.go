@@ -3,26 +3,22 @@ package gcd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wirepair/gcd/gcdprotogen/types"
+	"github.com/wirepair/gcd/gcdapi"
 	"log"
 	"testing"
 	"time"
 )
-
-type EventData struct {
-	Method string         `json:"method"`
-	Params *ConsoleParams `json:"params"`
-}
-
-type ConsoleParams struct {
-	Message *types.ChromeConsoleConsoleMessage `json:"message"`
-}
 
 const (
 	path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
 	dir  = "C:\\tmp\\"
 	port = "9222"
 )
+
+type ConsoleMessageEventHeader struct {
+	Method string                           `json:"method,omitempty"`
+	Params *gcdapi.ConsoleMessageAddedEvent `json:"params,omitempty"`
+}
 
 func TestChromeDebugger(t *testing.T) {
 	debugger := NewChromeDebugger()
@@ -36,7 +32,7 @@ func TestGetPages(t *testing.T) {
 	debugger.StartProcess(path, dir, port)
 	defer debugger.ExitProcess()
 	time.Sleep(2 * time.Second)
-	targets := debugger.GetTargets()
+	targets, _ := debugger.GetTargets()
 	if len(targets) <= 0 {
 		t.Fatalf("invalid number of targets, got: %d\n", len(targets))
 	}
@@ -49,16 +45,16 @@ func TestConsole(t *testing.T) {
 	debugger.StartProcess(path, dir, port)
 	defer debugger.ExitProcess()
 	time.Sleep(1 * time.Second)
-	targets := debugger.GetTargets()
+	targets, _ := debugger.GetTargets()
 	if len(targets) <= 0 {
 		t.Fatalf("invalid number of targets, got: %d\n", len(targets))
 	}
 	time.Sleep(2 * time.Second)
 	fmt.Printf("page: %s\n", targets[0].Target.Url)
-	console := targets[0].Console()
+	console := targets[0].Console
 
 	targets[0].Subscribe("Console.messageAdded", func(target *ChromeTarget, v []byte) {
-		msg := &EventData{}
+		msg := &ConsoleMessageEventHeader{}
 		err := json.Unmarshal(v, msg)
 		if err != nil {
 			log.Fatalf("error unmarshalling event data: %v\n", err)
@@ -66,7 +62,7 @@ func TestConsole(t *testing.T) {
 		log.Printf("METHOD: %s\n", msg.Method)
 		eventData := msg.Params.Message
 		fmt.Printf("Got event: %v\n", eventData)
-		fmt.Printf("Timestamp: %f\n", *eventData.Timestamp)
+		fmt.Printf("Timestamp: %f\n", eventData.Timestamp)
 	})
 
 	fmt.Printf("Sending enable...")
@@ -98,7 +94,10 @@ func TestCloseTab(t *testing.T) {
 	debugger := NewChromeDebugger()
 	debugger.StartProcess(path, dir, port)
 	defer debugger.ExitProcess()
-	target := debugger.NewTab()
+	target, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error creating new tab: %s\n", err)
+	}
 	time.Sleep(1 * time.Second)
 	debugger.CloseTab(target)
 	time.Sleep(2 * time.Second)
