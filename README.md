@@ -113,7 +113,6 @@ func main() {
 }
 ```
 
-```
 Create 5 tabs, navigate to URLs, wait for them to load, take screen shot
 ```Go
 package main
