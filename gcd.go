@@ -36,6 +36,7 @@ import (
 	"time"
 )
 
+// When we get an error reading the body from the debugger api endpoint
 type GcdBodyReadErr struct {
 	Message string
 }
@@ -44,6 +45,7 @@ func (g *GcdBodyReadErr) Error() string {
 	return "error reading response body: " + g.Message
 }
 
+// Failure to unmarshal the JSON response from debugger API
 type GcdDecodingErr struct {
 	Message string
 }
@@ -58,12 +60,14 @@ type Gcd struct {
 	Targets       []*ChromeTarget
 	timeout       time.Duration // how much time to wait for debugger port to open up
 	chromeProcess *os.Process
+	chromeCmd     *exec.Cmd
 	port          string
 	host          string
 	addr          string
 	readyCh       chan struct{}
 	apiEndpoint   string
 	flags         []string
+	env           []string
 }
 
 // Give it a friendly name.
@@ -74,6 +78,7 @@ func NewChromeDebugger() *Gcd {
 	c.readyCh = make(chan struct{})
 	c.Targets = make([]*ChromeTarget, 0)
 	c.flags = make([]string, 0)
+	c.env = make([]string, 0)
 	return c
 }
 
@@ -81,13 +86,15 @@ func NewChromeDebugger() *Gcd {
 func (c *Gcd) SetTimeout(timeout time.Duration) {
 	c.timeout = timeout
 }
-func (c *Gcd) SetHost(host string) {
-	c.host = host
-}
 
 // Allows caller to add additional startup flags to the chrome process
 func (c *Gcd) AddFlags(flags []string) {
 	c.flags = append(c.flags, flags...)
+}
+
+// Add environment variables for the chrome process, useful for Xvfb etc.
+func (c *Gcd) AddEnvironmentVars(vars []string) {
+	c.env = append(c.env, vars...)
 }
 
 // Starts the process
@@ -103,14 +110,17 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 	// debug port to use
 	c.flags = append(c.flags, fmt.Sprintf("--remote-debugging-port=%s", port))
 
-	cmd := exec.Command(exePath, c.flags...)
+	c.chromeCmd = exec.Command(exePath, c.flags...)
+	// add custom environment variables.
+	c.chromeCmd.Env = os.Environ()
+	c.chromeCmd.Env = append(c.chromeCmd.Env, c.env...)
 	go func() {
-		err := cmd.Start()
+		err := c.chromeCmd.Start()
 		if err != nil {
 			log.Fatalf("error starting chrome process: %s", err)
 		}
-		c.chromeProcess = cmd.Process
-		err = cmd.Wait()
+		c.chromeProcess = c.chromeCmd.Process
+		err = c.chromeCmd.Wait()
 	}()
 	go c.probeDebugPort()
 	<-c.readyCh
@@ -118,6 +128,10 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 
 // Kills the process
 func (c *Gcd) ExitProcess() error {
+	// close all websockets
+	for _, target := range c.Targets {
+		target.shutdown()
+	}
 	return c.chromeProcess.Kill()
 }
 
@@ -175,18 +189,18 @@ func (c *Gcd) CloseTab(target *ChromeTarget) error {
 	target.shutdown() // close WS connection first
 	resp, err := http.Get(fmt.Sprintf("%s/close/%s", c.apiEndpoint, target.Target.Id))
 	if err != nil {
-		log.Fatalf("%v\n", err)
+		log.Fatalf("%s\n", err)
 	}
 	defer resp.Body.Close()
 	_, errRead := ioutil.ReadAll(resp.Body)
 	return errRead
 }
 
-// Activates the tab.
+// Activates (focus) the tab.
 func (c *Gcd) ActivateTab(target *ChromeTarget) error {
 	resp, err := http.Get(fmt.Sprintf("%s/activate/%s", c.apiEndpoint, target.Target.Id))
 	if err != nil {
-		log.Fatalf("%v\n", err)
+		log.Fatalf("%s\n", err)
 	}
 	defer resp.Body.Close()
 	_, errRead := ioutil.ReadAll(resp.Body)

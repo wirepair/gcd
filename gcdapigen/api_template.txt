@@ -97,7 +97,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() ({{range $rets := .Returns}}{{if $
 func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) ({{range $rets := .Returns}}{{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}}, {{end}}error) {
 	paramRequest := make(map[string]interface{}, {{len (.Parameters) }}){{range $param := $element.Parameters}}
 	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

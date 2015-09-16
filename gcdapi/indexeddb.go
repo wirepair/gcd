@@ -89,7 +89,7 @@ func (c *IndexedDB) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *IndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["securityOrigin"] = securityOrigin
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabaseNames"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabaseNames", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -121,7 +121,7 @@ func (c *IndexedDB) RequestDatabase(securityOrigin string, databaseName string) 
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["securityOrigin"] = securityOrigin
 	paramRequest["databaseName"] = databaseName
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabase"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabase", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -163,7 +163,7 @@ func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, obje
 	paramRequest["skipCount"] = skipCount
 	paramRequest["pageSize"] = pageSize
 	paramRequest["keyRange"] = keyRange
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestData"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestData", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

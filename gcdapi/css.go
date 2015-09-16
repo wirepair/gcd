@@ -187,7 +187,7 @@ func (c *CSS) GetMatchedStylesForNode(nodeId int, excludePseudo bool, excludeInh
 	paramRequest["nodeId"] = nodeId
 	paramRequest["excludePseudo"] = excludePseudo
 	paramRequest["excludeInherited"] = excludeInherited
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -219,7 +219,7 @@ func (c *CSS) GetMatchedStylesForNode(nodeId int, excludePseudo bool, excludeInh
 func (c *CSS) GetInlineStylesForNode(nodeId int) (*CSSCSSStyle, *CSSCSSStyle, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getInlineStylesForNode"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getInlineStylesForNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -250,7 +250,7 @@ func (c *CSS) GetInlineStylesForNode(nodeId int) (*CSSCSSStyle, *CSSCSSStyle, er
 func (c *CSS) GetComputedStyleForNode(nodeId int) ([]*CSSCSSComputedStyleProperty, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getComputedStyleForNode"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getComputedStyleForNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -280,7 +280,7 @@ func (c *CSS) GetComputedStyleForNode(nodeId int) ([]*CSSCSSComputedStylePropert
 func (c *CSS) GetPlatformFontsForNode(nodeId int) ([]*CSSPlatformFontUsage, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getPlatformFontsForNode"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getPlatformFontsForNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -310,7 +310,7 @@ func (c *CSS) GetPlatformFontsForNode(nodeId int) ([]*CSSPlatformFontUsage, erro
 func (c *CSS) GetStyleSheetText(styleSheetId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["styleSheetId"] = styleSheetId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getStyleSheetText"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getStyleSheetText", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -354,7 +354,7 @@ func (c *CSS) SetRuleSelector(styleSheetId string, theRange *CSSSourceRange, sel
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
 	paramRequest["selector"] = selector
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setRuleSelector"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setRuleSelector", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -388,7 +388,7 @@ func (c *CSS) SetStyleText(styleSheetId string, theRange *CSSSourceRange, text s
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
 	paramRequest["text"] = text
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleText"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleText", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -422,7 +422,7 @@ func (c *CSS) SetMediaText(styleSheetId string, theRange *CSSSourceRange, text s
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
 	paramRequest["text"] = text
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setMediaText"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setMediaText", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -452,7 +452,7 @@ func (c *CSS) SetMediaText(styleSheetId string, theRange *CSSSourceRange, text s
 func (c *CSS) CreateStyleSheet(frameId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["frameId"] = frameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.createStyleSheet"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.createStyleSheet", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -486,7 +486,7 @@ func (c *CSS) AddRule(styleSheetId string, ruleText string, location *CSSSourceR
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["ruleText"] = ruleText
 	paramRequest["location"] = location
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.addRule"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.addRule", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

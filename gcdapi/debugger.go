@@ -220,7 +220,7 @@ func (c *Debugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex strin
 	paramRequest["urlRegex"] = urlRegex
 	paramRequest["columnNumber"] = columnNumber
 	paramRequest["condition"] = condition
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointByUrl"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointByUrl", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -253,7 +253,7 @@ func (c *Debugger) SetBreakpoint(location *DebuggerLocation, condition string) (
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["location"] = location
 	paramRequest["condition"] = condition
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpoint"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpoint", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -338,7 +338,7 @@ func (c *Debugger) SearchInContent(scriptId string, query string, caseSensitive 
 	paramRequest["query"] = query
 	paramRequest["caseSensitive"] = caseSensitive
 	paramRequest["isRegex"] = isRegex
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.searchInContent"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.searchInContent", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -399,7 +399,7 @@ func (c *Debugger) SetScriptSource(scriptId string, scriptSource string, preview
 	paramRequest["scriptId"] = scriptId
 	paramRequest["scriptSource"] = scriptSource
 	paramRequest["preview"] = preview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setScriptSource"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setScriptSource", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -431,7 +431,7 @@ func (c *Debugger) SetScriptSource(scriptId string, scriptSource string, preview
 func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *DebuggerStackTrace, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["callFrameId"] = callFrameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.restartFrame"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.restartFrame", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -462,7 +462,7 @@ func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *Debu
 func (c *Debugger) GetScriptSource(scriptId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["scriptId"] = scriptId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -492,7 +492,7 @@ func (c *Debugger) GetScriptSource(scriptId string) (string, error) {
 func (c *Debugger) GetFunctionDetails(functionId string) (*DebuggerFunctionDetails, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["functionId"] = functionId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getFunctionDetails"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getFunctionDetails", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -522,7 +522,7 @@ func (c *Debugger) GetFunctionDetails(functionId string) (*DebuggerFunctionDetai
 func (c *Debugger) GetGeneratorObjectDetails(objectId string) (*DebuggerGeneratorObjectDetails, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getGeneratorObjectDetails"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getGeneratorObjectDetails", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -552,7 +552,7 @@ func (c *Debugger) GetGeneratorObjectDetails(objectId string) (*DebuggerGenerato
 func (c *Debugger) GetCollectionEntries(objectId string) ([]*DebuggerCollectionEntry, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getCollectionEntries"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getCollectionEntries", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -602,7 +602,7 @@ func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, ob
 	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
 	paramRequest["returnByValue"] = returnByValue
 	paramRequest["generatePreview"] = generatePreview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.evaluateOnCallFrame"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.evaluateOnCallFrame", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -640,7 +640,7 @@ func (c *Debugger) CompileScript(expression string, sourceURL string, persistScr
 	paramRequest["sourceURL"] = sourceURL
 	paramRequest["persistScript"] = persistScript
 	paramRequest["executionContextId"] = executionContextId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.compileScript"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.compileScript", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -677,7 +677,7 @@ func (c *Debugger) RunScript(scriptId string, executionContextId int, objectGrou
 	paramRequest["executionContextId"] = executionContextId
 	paramRequest["objectGroup"] = objectGroup
 	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.runScript"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.runScript", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -724,7 +724,7 @@ func (c *Debugger) SetVariableValue(scopeNumber int, variableName string, newVal
 func (c *Debugger) GetStepInPositions(callFrameId string) ([]*DebuggerLocation, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["callFrameId"] = callFrameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getStepInPositions"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getStepInPositions", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -815,7 +815,7 @@ func (c *Debugger) GetPromiseById(promiseId int, objectGroup string) (*RuntimeRe
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["promiseId"] = promiseId
 	paramRequest["objectGroup"] = objectGroup
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getPromiseById"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getPromiseById", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

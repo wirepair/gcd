@@ -200,7 +200,6 @@ func (c *ChromeTarget) listenWrite() {
 			c.replyLock.Unlock()
 			//log.Println("Send:", string(msg.Data))
 			websocket.Message.Send(c.conn, string(msg.Data))
-			//log.Println("Done sending to WS")
 		// receive done from listenRead
 		case <-c.doneCh:
 			c.doneCh <- true // for listenRead method
@@ -225,9 +224,8 @@ func (c *ChromeTarget) listenRead() {
 				c.doneCh <- true
 				return
 			} else if err != nil {
-				if c.shuttingdown == false {
-					log.Printf("error in websocket read: %v\n", err)
-				}
+				// DEBUG:
+				// log.Printf("error in ws read: %s\n", err)
 				c.doneCh <- true
 			} else {
 				go c.dispatchResponse([]byte(msg))

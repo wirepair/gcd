@@ -91,7 +91,7 @@ func (c *ApplicationCache) Enable() (*gcdmessage.ChromeResponse, error) {
 func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["frameId"] = frameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getManifestForFrame"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getManifestForFrame", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -121,7 +121,7 @@ func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
 func (c *ApplicationCache) GetApplicationCacheForFrame(frameId string) (*ApplicationCacheApplicationCache, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["frameId"] = frameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getApplicationCacheForFrame"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getApplicationCacheForFrame", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

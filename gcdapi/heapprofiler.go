@@ -88,7 +88,7 @@ func (c *HeapProfiler) GetObjectByHeapObjectId(objectId string, objectGroup stri
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["objectId"] = objectId
 	paramRequest["objectGroup"] = objectGroup
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getObjectByHeapObjectId"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getObjectByHeapObjectId", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -126,7 +126,7 @@ func (c *HeapProfiler) AddInspectedHeapObject(heapObjectId string) (*gcdmessage.
 func (c *HeapProfiler) GetHeapObjectId(objectId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getHeapObjectId"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getHeapObjectId", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

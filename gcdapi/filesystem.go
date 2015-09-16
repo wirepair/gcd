@@ -52,7 +52,7 @@ func (c *FileSystem) RequestFileSystemRoot(origin string, theType string) (int, 
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["origin"] = origin
 	paramRequest["type"] = theType
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.requestFileSystemRoot"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.requestFileSystemRoot", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -83,7 +83,7 @@ func (c *FileSystem) RequestFileSystemRoot(origin string, theType string) (int, 
 func (c *FileSystem) RequestDirectoryContent(url string) (int, []*FileSystemEntry, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.requestDirectoryContent"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.requestDirectoryContent", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -114,7 +114,7 @@ func (c *FileSystem) RequestDirectoryContent(url string) (int, []*FileSystemEntr
 func (c *FileSystem) RequestMetadata(url string) (int, *FileSystemMetadata, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.requestMetadata"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.requestMetadata", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -153,7 +153,7 @@ func (c *FileSystem) RequestFileContent(url string, readAsText bool, start int, 
 	paramRequest["start"] = start
 	paramRequest["end"] = end
 	paramRequest["charset"] = charset
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.requestFileContent"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.requestFileContent", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -185,7 +185,7 @@ func (c *FileSystem) RequestFileContent(url string, readAsText bool, start int, 
 func (c *FileSystem) DeleteEntry(url string) (int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.deleteEntry"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FileSystem.deleteEntry", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

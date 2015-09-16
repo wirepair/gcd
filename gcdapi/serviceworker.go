@@ -194,7 +194,7 @@ func (c *ServiceWorker) DeliverPushMessage(origin string, registrationId string,
 func (c *ServiceWorker) GetTargetInfo(targetId string) (*ServiceWorkerTargetInfo, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["targetId"] = targetId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.getTargetInfo"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.getTargetInfo", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

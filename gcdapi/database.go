@@ -53,7 +53,7 @@ func (c *Database) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["databaseId"] = databaseId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -85,7 +85,7 @@ func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []stri
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["databaseId"] = databaseId
 	paramRequest["query"] = query
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

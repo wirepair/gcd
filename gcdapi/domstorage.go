@@ -66,7 +66,7 @@ func (c *DOMStorage) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *DOMStorage) GetDOMStorageItems(storageId *DOMStorageStorageId) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["storageId"] = storageId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

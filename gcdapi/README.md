@@ -1,4 +1,7 @@
-/*
+# gcdapi
+This package contains the automatically generated API types, events and commands for the Google Chrome Debugger service. Please see [gcdapigen](https://github.com/wirepair/gcd/gcdapigen) for more details.
+
+## Licensing
 The MIT License (MIT)
 
 Copyright (c) 2015 isaac dawson
@@ -20,25 +23,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-*/
-
-package main
-
-type Event struct {
-	protoEvent  *ProtoEvent
-	Name        string
-	Description string
-	Parameters  []*TypeProperties
-	HasParams   bool
-}
-
-func NewEvent(protoEvent *ProtoEvent) *Event {
-	e := &Event{}
-	e.Name = protoEvent.Name
-	e.Description = protoEvent.Description
-	if protoEvent.Parameters != nil && len(protoEvent.Parameters) > 0 {
-		e.HasParams = true
-	}
-	e.Parameters = make([]*TypeProperties, 0)
-	return e
-}

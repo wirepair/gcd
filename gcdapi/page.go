@@ -154,7 +154,7 @@ func (c *Page) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *Page) AddScriptToEvaluateOnLoad(scriptSource string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["scriptSource"] = scriptSource
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.addScriptToEvaluateOnLoad"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.addScriptToEvaluateOnLoad", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -202,7 +202,7 @@ func (c *Page) Reload(ignoreCache bool, scriptToEvaluateOnLoad string) (*gcdmess
 func (c *Page) Navigate(url string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigate"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigate", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -334,7 +334,7 @@ func (c *Page) GetResourceContent(frameId string, url string) (string, bool, err
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["frameId"] = frameId
 	paramRequest["url"] = url
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getResourceContent"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getResourceContent", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -373,7 +373,7 @@ func (c *Page) SearchInResource(frameId string, url string, query string, caseSe
 	paramRequest["query"] = query
 	paramRequest["caseSensitive"] = caseSensitive
 	paramRequest["isRegex"] = isRegex
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.searchInResource"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.searchInResource", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

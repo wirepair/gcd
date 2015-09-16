@@ -77,7 +77,7 @@ func (c *LayerTree) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["layerId"] = layerId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -107,7 +107,7 @@ func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
 func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["layerId"] = layerId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -137,7 +137,7 @@ func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
 func (c *LayerTree) LoadSnapshot(tiles *LayerTreePictureTile) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["tiles"] = tiles
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -181,7 +181,7 @@ func (c *LayerTree) ProfileSnapshot(snapshotId string, minRepeatCount int, minDu
 	paramRequest["minRepeatCount"] = minRepeatCount
 	paramRequest["minDuration"] = minDuration
 	paramRequest["clipRect"] = clipRect
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -217,7 +217,7 @@ func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, 
 	paramRequest["fromStep"] = fromStep
 	paramRequest["toStep"] = toStep
 	paramRequest["scale"] = scale
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.replaySnapshot"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.replaySnapshot", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -247,7 +247,7 @@ func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, 
 func (c *LayerTree) SnapshotCommandLog(snapshotId string) error {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["snapshotId"] = snapshotId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.snapshotCommandLog"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.snapshotCommandLog", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

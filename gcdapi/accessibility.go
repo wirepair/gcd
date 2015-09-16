@@ -68,7 +68,7 @@ func NewAccessibility(target gcdmessage.ChromeTargeter) *Accessibility {
 func (c *Accessibility) GetAXNode(nodeId int) (*AccessibilityAXNode, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getAXNode"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getAXNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

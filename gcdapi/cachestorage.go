@@ -37,7 +37,7 @@ func NewCacheStorage(target gcdmessage.ChromeTargeter) *CacheStorage {
 func (c *CacheStorage) RequestCacheNames(securityOrigin string) ([]*CacheStorageCache, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["securityOrigin"] = securityOrigin
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCacheNames"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCacheNames", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -71,7 +71,7 @@ func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize in
 	paramRequest["cacheId"] = cacheId
 	paramRequest["skipCount"] = skipCount
 	paramRequest["pageSize"] = pageSize
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestEntries"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestEntries", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

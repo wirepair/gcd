@@ -128,7 +128,7 @@ func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommand
 	paramRequest["contextId"] = contextId
 	paramRequest["returnByValue"] = returnByValue
 	paramRequest["generatePreview"] = generatePreview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.evaluate"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.evaluate", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -170,7 +170,7 @@ func (c *Runtime) CallFunctionOn(objectId string, functionDeclaration string, ar
 	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
 	paramRequest["returnByValue"] = returnByValue
 	paramRequest["generatePreview"] = generatePreview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.callFunctionOn"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.callFunctionOn", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -207,7 +207,7 @@ func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPro
 	paramRequest["ownProperties"] = ownProperties
 	paramRequest["accessorPropertiesOnly"] = accessorPropertiesOnly
 	paramRequest["generatePreview"] = generatePreview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getProperties"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getProperties", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

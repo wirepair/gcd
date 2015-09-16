@@ -242,7 +242,7 @@ func (c *DOM) QuerySelector(nodeId int, selector string) (int, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["selector"] = selector
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelector"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelector", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -274,7 +274,7 @@ func (c *DOM) QuerySelectorAll(nodeId int, selector string) ([]int, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["selector"] = selector
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelectorAll"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelectorAll", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -306,7 +306,7 @@ func (c *DOM) SetNodeName(nodeId int, name string) (int, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["name"] = name
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeName"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeName", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -388,7 +388,7 @@ func (c *DOM) RemoveAttribute(nodeId int, name string) (*gcdmessage.ChromeRespon
 func (c *DOM) GetOuterHTML(nodeId int) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getOuterHTML"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getOuterHTML", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -430,7 +430,7 @@ func (c *DOM) PerformSearch(query string, includeUserAgentShadowDOM bool) (strin
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["query"] = query
 	paramRequest["includeUserAgentShadowDOM"] = includeUserAgentShadowDOM
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.performSearch"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.performSearch", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -465,7 +465,7 @@ func (c *DOM) GetSearchResults(searchId string, fromIndex int, toIndex int) ([]i
 	paramRequest["searchId"] = searchId
 	paramRequest["fromIndex"] = fromIndex
 	paramRequest["toIndex"] = toIndex
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getSearchResults"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getSearchResults", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -503,7 +503,7 @@ func (c *DOM) DiscardSearchResults(searchId string) (*gcdmessage.ChromeResponse,
 func (c *DOM) RequestNode(objectId string) (int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestNode"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -604,7 +604,7 @@ func (c *DOM) HighlightFrame(frameId string, contentColor *DOMRGBA, contentOutli
 func (c *DOM) PushNodeByPathToFrontend(path string) (int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["path"] = path
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodeByPathToFrontend"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodeByPathToFrontend", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -634,7 +634,7 @@ func (c *DOM) PushNodeByPathToFrontend(path string) (int, error) {
 func (c *DOM) PushNodesByBackendIdsToFrontend(backendNodeIds int) ([]int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["backendNodeIds"] = backendNodeIds
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodesByBackendIdsToFrontend"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodesByBackendIdsToFrontend", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -674,7 +674,7 @@ func (c *DOM) ResolveNode(nodeId int, objectGroup string) (*RuntimeRemoteObject,
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["objectGroup"] = objectGroup
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.resolveNode"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.resolveNode", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -704,7 +704,7 @@ func (c *DOM) ResolveNode(nodeId int, objectGroup string) (*RuntimeRemoteObject,
 func (c *DOM) GetAttributes(nodeId int) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getAttributes"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getAttributes", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -738,7 +738,7 @@ func (c *DOM) CopyTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 	paramRequest["nodeId"] = nodeId
 	paramRequest["targetNodeId"] = targetNodeId
 	paramRequest["insertBeforeNodeId"] = insertBeforeNodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.copyTo"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.copyTo", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -772,7 +772,7 @@ func (c *DOM) MoveTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 	paramRequest["nodeId"] = nodeId
 	paramRequest["targetNodeId"] = targetNodeId
 	paramRequest["insertBeforeNodeId"] = insertBeforeNodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.moveTo"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.moveTo", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -835,7 +835,7 @@ func (c *DOM) SetFileInputFiles(nodeId int, files string) (*gcdmessage.ChromeRes
 func (c *DOM) GetBoxModel(nodeId int) (*DOMBoxModel, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getBoxModel"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getBoxModel", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -867,7 +867,7 @@ func (c *DOM) GetNodeForLocation(x int, y int) (int, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["x"] = x
 	paramRequest["y"] = y
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -897,7 +897,7 @@ func (c *DOM) GetNodeForLocation(x int, y int) (int, error) {
 func (c *DOM) GetRelayoutBoundary(nodeId int) (int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getRelayoutBoundary"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getRelayoutBoundary", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -927,7 +927,7 @@ func (c *DOM) GetRelayoutBoundary(nodeId int) (int, error) {
 func (c *DOM) GetHighlightObjectForTest(nodeId int) (map[string]interface{}, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getHighlightObjectForTest"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getHighlightObjectForTest", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

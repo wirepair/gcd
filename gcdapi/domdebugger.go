@@ -104,7 +104,7 @@ func (c *DOMDebugger) RemoveXHRBreakpoint(url string) (*gcdmessage.ChromeRespons
 func (c *DOMDebugger) GetEventListeners(objectId string) ([]*DOMDebuggerEventListener, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.getEventListeners"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.getEventListeners", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

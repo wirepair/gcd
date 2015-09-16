@@ -28,7 +28,7 @@ func (c *IO) Read(handle string, offset int, size int) (string, bool, error) {
 	paramRequest["handle"] = handle
 	paramRequest["offset"] = offset
 	paramRequest["size"] = size
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {

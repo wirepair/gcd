@@ -288,7 +288,7 @@ func (c *Network) SetExtraHTTPHeaders(headers map[string]interface{}) (*gcdmessa
 func (c *Network) GetResponseBody(requestId string) (string, bool, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["requestId"] = requestId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getResponseBody"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getResponseBody", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
@@ -511,7 +511,7 @@ func (c *Network) SetDataSizeLimitsForTest(maxTotalSize int, maxResourceSize int
 func (c *Network) GetCertificateDetails(certificateId int) (*NetworkCertificateDetails, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["certificateId"] = certificateId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCertificateDetails"})
+	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCertificateDetails", Params: paramRequest})
 	resp := <-recvCh
 
 	var chromeData struct {
