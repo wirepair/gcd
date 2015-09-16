@@ -3,11 +3,11 @@ This is primarly an auto-generated client library for communicating with a Googl
 
 Because I'm lazy and there are hundereds of different custom types and API methods, this library has been automatically generated using their [protocol.json](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/devtools/protocol.json&q=protocol.json&sq=package:chromium&type=cs). 
 
-The [gcdapigen](https://github.com/wirepair/gcd/gcdapigen) program was created to generate types, event types and commands for gcd. Non-biolerplate code (and the majority of the logic) The .
+The [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) program was created to generate types, event types and commands for gcd.
 
 
 ## Dependencies
-gcd requires the [gcdapi](https://github.com/wirepair/gcd/gcdapi) and [gcdmessage](https://github.com/wirepair/gcd/gcdmessage) packages. gcdapi is the auto-generated API. gcdmessage is the glue between gcd and gcdapi so we can keep the packages clean. 
+gcd requires the [gcdapi](https://github.com/wirepair/gcd/tree/master/gcdapi) and [gcdmessage](https://github.com/wirepair/gcd/tree/master/gcdmessage) packages. gcdapi is the auto-generated API. gcdmessage is the glue between gcd and gcdapi so we can keep the packages clean. 
 
 ## The API
 The API consists of of synchronous requests, asynchronous requests / events. Synchronous requests are handled by using non-buffered channels and methods can be called and will return once the value is available. Events are handled by subscribing the response method type and calling the API's "Enable()" such as:

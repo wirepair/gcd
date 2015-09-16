@@ -1,5 +1,5 @@
 # gcdapi
-This package contains the automatically generated API types, events and commands for the Google Chrome Debugger service. Please see [gcdapigen](https://github.com/wirepair/gcd/gcdapigen) for more details.
+This package contains the automatically generated API types, events and commands for the Google Chrome Debugger service. Please see [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) for more details.
 
 ## Licensing
 The MIT License (MIT)
