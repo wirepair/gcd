@@ -43,11 +43,6 @@ func testCleanUp() {
 
 }
 
-type ConsoleMessageEventHeader struct {
-	Method string                           `json:"method,omitempty"`
-	Params *gcdapi.ConsoleMessageAddedEvent `json:"params,omitempty"`
-}
-
 func TestGetPages(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
@@ -90,7 +85,7 @@ func TestEvents(t *testing.T) {
 	doneCh := make(chan struct{}, 1)
 	target.Subscribe("Console.messageAdded", func(target *ChromeTarget, v []byte) {
 		target.Unsubscribe("Console.messageAdded")
-		msg := &ConsoleMessageEventHeader{}
+		msg := &gcdapi.ConsoleMessageAddedEvent{}
 		err := json.Unmarshal(v, msg)
 		if err != nil {
 			t.Fatalf("error unmarshalling event data: %v\n", err)

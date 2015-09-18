@@ -19,22 +19,15 @@ The API consists of of synchronous requests, asynchronous requests / events. Syn
 	console := target.Console
 
 	target.Subscribe("Console.messageAdded", func(target *ChromeTarget, v []byte) {
-		type EventData struct {
-			Method string         `json:"method"`
-			Params *ConsoleParams `json:"params"`
-		}
-		type ConsoleParams struct {
-			Message *gcdapi.ConsoleConsoleMessage `json:"message"`
-		}
-		msg := &EventData{}
+		
+		msg := &gcdapi.ConsoleMessageAddedEvent{}
 		err := json.Unmarshal(v, msg)
 		if err != nil {
 			log.Fatalf("error unmarshalling event data: %v\n", err)
 		}
-		fmt.Printf("METHOD: %s\n", msg.Method)
+		log.Printf("METHOD: %s\n", msg.Method)
 		eventData := msg.Params.Message
-		fmt.Printf("Got event: %v\n", eventData)
-		fmt.Printf("Timestamp: %f\n", *eventData.Timestamp)
+		log.Printf("Got event: %s\n", eventData)
 	})
 	console.Enable()
 	// recv events
