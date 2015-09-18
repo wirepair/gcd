@@ -43,7 +43,7 @@ type LayerTreeLayer struct {
 
 //
 type LayerTreeLayerTreeDidChangeEvent struct {
-	Layers *LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the comspositing mode.
+	Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the comspositing mode.
 }
 
 //

@@ -155,9 +155,6 @@ func (d *Domain) handleReturns(newCmd *Command, protoReturns []*ProtoCommandRetu
 
 // Takes in a new type, checks if it is a base type, or an object or an array.
 func (d *Domain) handleType(newType *Type, typeProperties []*ProtoProperty) {
-	if newType.IsSubType {
-		fmt.Printf("subtype %s len props: %d\n", newType.Name, len(typeProperties))
-	}
 	// loop over properties of this new type
 	for _, protoProp := range typeProperties {
 		// It's a reference, see if it points to a base type or not
@@ -192,6 +189,7 @@ func (d *Domain) createBase(prop PropSetter, goType string) {
 	if isPointerType(prop) {
 		prop.SetPointerType(true)
 	}
+
 	return
 }
 

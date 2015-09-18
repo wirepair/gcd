@@ -26,10 +26,10 @@ type SecurityMixedContentStatus struct {
 
 // The security state of the page changed.
 type SecuritySecurityStateChangedEvent struct {
-	SecurityState         string                            `json:"securityState"`                   // Security state. enum values: unknown, neutral, insecure, warning, secure
-	Explanations          *SecuritySecurityStateExplanation `json:"explanations,omitempty"`          // List of explanations for the security state. If the overall security state is `insecure` or `warning`, at least one corresponding explanation should be included.
-	MixedContentStatus    *SecurityMixedContentStatus       `json:"mixedContentStatus,omitempty"`    // Information about mixed content on the page.
-	SchemeIsCryptographic bool                              `json:"schemeIsCryptographic,omitempty"` // True if the page was loaded over cryptographic transport such as HTTPS.
+	SecurityState         string                              `json:"securityState"`                   // Security state. enum values: unknown, neutral, insecure, warning, secure
+	Explanations          []*SecuritySecurityStateExplanation `json:"explanations,omitempty"`          // List of explanations for the security state. If the overall security state is `insecure` or `warning`, at least one corresponding explanation should be included.
+	MixedContentStatus    *SecurityMixedContentStatus         `json:"mixedContentStatus,omitempty"`    // Information about mixed content on the page.
+	SchemeIsCryptographic bool                                `json:"schemeIsCryptographic,omitempty"` // True if the page was loaded over cryptographic transport such as HTTPS.
 }
 
 type Security struct {

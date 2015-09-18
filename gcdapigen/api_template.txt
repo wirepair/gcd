@@ -30,7 +30,7 @@ type {{$api.Domain}}{{$element.Name | Title}} struct {
 {{if len ($element.Parameters)}}// {{$element.Description}}
 type {{$api.Domain}}{{$element.Name | Title}}Event struct {
 	{{range $prop := $element.Parameters}}
-	{{$prop.Name | Title}} {{if $prop.IsPointer}}*{{end}}{{$prop.GoType}} `json:"{{$prop.Name}}{{if $prop.Optional}},omitempty{{end}}"` // {{$prop.Description}}{{end}}
+	{{$prop.Name | Title}} {{if $prop.IsTypeArray}}[]{{end}}{{if $prop.IsPointer}}*{{end}}{{$prop.GoType}} `json:"{{$prop.Name}}{{if $prop.Optional}},omitempty{{end}}"` // {{$prop.Description}}{{end}}
 }
 {{end}}
 {{end}}

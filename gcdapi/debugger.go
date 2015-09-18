@@ -148,10 +148,10 @@ type DebuggerBreakpointResolvedEvent struct {
 
 // Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
 type DebuggerPausedEvent struct {
-	CallFrames      *DebuggerCallFrame     `json:"callFrames"`                // Call stack the virtual machine stopped on.
+	CallFrames      []*DebuggerCallFrame   `json:"callFrames"`                // Call stack the virtual machine stopped on.
 	Reason          string                 `json:"reason"`                    // Pause reason.
 	Data            map[string]interface{} `json:"data,omitempty"`            // Object containing break-specific auxiliary properties.
-	HitBreakpoints  string                 `json:"hitBreakpoints,omitempty"`  // Hit breakpoints IDs
+	HitBreakpoints  []string               `json:"hitBreakpoints,omitempty"`  // Hit breakpoints IDs
 	AsyncStackTrace *DebuggerStackTrace    `json:"asyncStackTrace,omitempty"` // Async stack trace, if any.
 }
 

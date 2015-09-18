@@ -18,7 +18,7 @@ type PowerPowerEvent struct {
 
 //
 type PowerDataAvailableEvent struct {
-	Value *PowerPowerEvent `json:"value"` // List of power events.
+	Value []*PowerPowerEvent `json:"value"` // List of power events.
 }
 
 type Power struct {

@@ -101,8 +101,8 @@ type DOMInspectNodeRequestedEvent struct {
 
 // Fired when backend wants to provide client with the missing DOM structure. This happens upon most of the calls requesting node ids.
 type DOMSetChildNodesEvent struct {
-	ParentId int      `json:"parentId"` // Parent node id to populate with children.
-	Nodes    *DOMNode `json:"nodes"`    // Child nodes array.
+	ParentId int        `json:"parentId"` // Parent node id to populate with children.
+	Nodes    []*DOMNode `json:"nodes"`    // Child nodes array.
 }
 
 // Fired when <code>Element</code>'s attribute is modified.
@@ -120,7 +120,7 @@ type DOMAttributeRemovedEvent struct {
 
 // Fired when <code>Element</code>'s inline style is modified via a CSS property modification.
 type DOMInlineStyleInvalidatedEvent struct {
-	NodeIds int `json:"nodeIds"` // Ids of the nodes for which the inline styles have been invalidated.
+	NodeIds []int `json:"nodeIds"` // Ids of the nodes for which the inline styles have been invalidated.
 }
 
 // Mirrors <code>DOMCharacterDataModified</code> event.
@@ -174,8 +174,8 @@ type DOMPseudoElementRemovedEvent struct {
 
 // Called when distrubution is changed.
 type DOMDistributedNodesUpdatedEvent struct {
-	InsertionPointId int             `json:"insertionPointId"` // Insertion point where distrubuted nodes were updated.
-	DistributedNodes *DOMBackendNode `json:"distributedNodes"` // Distributed nodes for given insertion point.
+	InsertionPointId int               `json:"insertionPointId"` // Insertion point where distrubuted nodes were updated.
+	DistributedNodes []*DOMBackendNode `json:"distributedNodes"` // Distributed nodes for given insertion point.
 }
 
 type DOM struct {

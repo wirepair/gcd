@@ -65,12 +65,12 @@ type ServiceWorkerDispatchMessageEvent struct {
 
 //
 type ServiceWorkerWorkerRegistrationUpdatedEvent struct {
-	Registrations *ServiceWorkerServiceWorkerRegistration `json:"registrations"` //
+	Registrations []*ServiceWorkerServiceWorkerRegistration `json:"registrations"` //
 }
 
 //
 type ServiceWorkerWorkerVersionUpdatedEvent struct {
-	Versions *ServiceWorkerServiceWorkerVersion `json:"versions"` //
+	Versions []*ServiceWorkerServiceWorkerVersion `json:"versions"` //
 }
 
 //
