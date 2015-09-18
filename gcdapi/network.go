@@ -138,113 +138,155 @@ type NetworkCookie struct {
 
 // Fired when page is about to send HTTP request.
 type NetworkRequestWillBeSentEvent struct {
-	RequestId        string            `json:"requestId"`                  // Request identifier.
-	FrameId          string            `json:"frameId"`                    // Frame identifier.
-	LoaderId         string            `json:"loaderId"`                   // Loader identifier.
-	DocumentURL      string            `json:"documentURL"`                // URL of the document this request is loaded for.
-	Request          *NetworkRequest   `json:"request"`                    // Request data.
-	Timestamp        float64           `json:"timestamp"`                  // Timestamp.
-	WallTime         float64           `json:"wallTime"`                   // UTC Timestamp.
-	Initiator        *NetworkInitiator `json:"initiator"`                  // Request initiator.
-	RedirectResponse *NetworkResponse  `json:"redirectResponse,omitempty"` // Redirect response data.
-	Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
+	Method string `json:"method"`
+	Params struct {
+		RequestId        string            `json:"requestId"`                  // Request identifier.
+		FrameId          string            `json:"frameId"`                    // Frame identifier.
+		LoaderId         string            `json:"loaderId"`                   // Loader identifier.
+		DocumentURL      string            `json:"documentURL"`                // URL of the document this request is loaded for.
+		Request          *NetworkRequest   `json:"request"`                    // Request data.
+		Timestamp        float64           `json:"timestamp"`                  // Timestamp.
+		WallTime         float64           `json:"wallTime"`                   // UTC Timestamp.
+		Initiator        *NetworkInitiator `json:"initiator"`                  // Request initiator.
+		RedirectResponse *NetworkResponse  `json:"redirectResponse,omitempty"` // Redirect response data.
+		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
+	} `json:"Params,omitempty"`
 }
 
 // Fired if request ended up loading from cache.
 type NetworkRequestServedFromCacheEvent struct {
-	RequestId string `json:"requestId"` // Request identifier.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string `json:"requestId"` // Request identifier.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when HTTP response is available.
 type NetworkResponseReceivedEvent struct {
-	RequestId string           `json:"requestId"` // Request identifier.
-	FrameId   string           `json:"frameId"`   // Frame identifier.
-	LoaderId  string           `json:"loaderId"`  // Loader identifier.
-	Timestamp float64          `json:"timestamp"` // Timestamp.
-	Type      string           `json:"type"`      // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
-	Response  *NetworkResponse `json:"response"`  // Response data.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string           `json:"requestId"` // Request identifier.
+		FrameId   string           `json:"frameId"`   // Frame identifier.
+		LoaderId  string           `json:"loaderId"`  // Loader identifier.
+		Timestamp float64          `json:"timestamp"` // Timestamp.
+		Type      string           `json:"type"`      // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
+		Response  *NetworkResponse `json:"response"`  // Response data.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when data chunk was received over the network.
 type NetworkDataReceivedEvent struct {
-	RequestId         string  `json:"requestId"`         // Request identifier.
-	Timestamp         float64 `json:"timestamp"`         // Timestamp.
-	DataLength        int     `json:"dataLength"`        // Data chunk length.
-	EncodedDataLength int     `json:"encodedDataLength"` // Actual bytes received (might be less than dataLength for compressed encodings).
+	Method string `json:"method"`
+	Params struct {
+		RequestId         string  `json:"requestId"`         // Request identifier.
+		Timestamp         float64 `json:"timestamp"`         // Timestamp.
+		DataLength        int     `json:"dataLength"`        // Data chunk length.
+		EncodedDataLength int     `json:"encodedDataLength"` // Actual bytes received (might be less than dataLength for compressed encodings).
+	} `json:"Params,omitempty"`
 }
 
 // Fired when HTTP request has finished loading.
 type NetworkLoadingFinishedEvent struct {
-	RequestId         string  `json:"requestId"`         // Request identifier.
-	Timestamp         float64 `json:"timestamp"`         // Timestamp.
-	EncodedDataLength float64 `json:"encodedDataLength"` // Total number of bytes received for this request.
+	Method string `json:"method"`
+	Params struct {
+		RequestId         string  `json:"requestId"`         // Request identifier.
+		Timestamp         float64 `json:"timestamp"`         // Timestamp.
+		EncodedDataLength float64 `json:"encodedDataLength"` // Total number of bytes received for this request.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when HTTP request has failed to load.
 type NetworkLoadingFailedEvent struct {
-	RequestId     string  `json:"requestId"`               // Request identifier.
-	Timestamp     float64 `json:"timestamp"`               // Timestamp.
-	Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
-	ErrorText     string  `json:"errorText"`               // User friendly error message.
-	Canceled      bool    `json:"canceled,omitempty"`      // True if loading was canceled.
-	BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: csp, mixed-content, origin, inspector, other
+	Method string `json:"method"`
+	Params struct {
+		RequestId     string  `json:"requestId"`               // Request identifier.
+		Timestamp     float64 `json:"timestamp"`               // Timestamp.
+		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
+		ErrorText     string  `json:"errorText"`               // User friendly error message.
+		Canceled      bool    `json:"canceled,omitempty"`      // True if loading was canceled.
+		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: csp, mixed-content, origin, inspector, other
+	} `json:"Params,omitempty"`
 }
 
 // Fired when WebSocket is about to initiate handshake.
 type NetworkWebSocketWillSendHandshakeRequestEvent struct {
-	RequestId string                   `json:"requestId"` // Request identifier.
-	Timestamp float64                  `json:"timestamp"` // Timestamp.
-	WallTime  float64                  `json:"wallTime"`  // UTC Timestamp.
-	Request   *NetworkWebSocketRequest `json:"request"`   // WebSocket request data.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string                   `json:"requestId"` // Request identifier.
+		Timestamp float64                  `json:"timestamp"` // Timestamp.
+		WallTime  float64                  `json:"wallTime"`  // UTC Timestamp.
+		Request   *NetworkWebSocketRequest `json:"request"`   // WebSocket request data.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when WebSocket handshake response becomes available.
 type NetworkWebSocketHandshakeResponseReceivedEvent struct {
-	RequestId string                    `json:"requestId"` // Request identifier.
-	Timestamp float64                   `json:"timestamp"` // Timestamp.
-	Response  *NetworkWebSocketResponse `json:"response"`  // WebSocket response data.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string                    `json:"requestId"` // Request identifier.
+		Timestamp float64                   `json:"timestamp"` // Timestamp.
+		Response  *NetworkWebSocketResponse `json:"response"`  // WebSocket response data.
+	} `json:"Params,omitempty"`
 }
 
 // Fired upon WebSocket creation.
 type NetworkWebSocketCreatedEvent struct {
-	RequestId string `json:"requestId"` // Request identifier.
-	Url       string `json:"url"`       // WebSocket request URL.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string `json:"requestId"` // Request identifier.
+		Url       string `json:"url"`       // WebSocket request URL.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when WebSocket is closed.
 type NetworkWebSocketClosedEvent struct {
-	RequestId string  `json:"requestId"` // Request identifier.
-	Timestamp float64 `json:"timestamp"` // Timestamp.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string  `json:"requestId"` // Request identifier.
+		Timestamp float64 `json:"timestamp"` // Timestamp.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when WebSocket frame is received.
 type NetworkWebSocketFrameReceivedEvent struct {
-	RequestId string                 `json:"requestId"` // Request identifier.
-	Timestamp float64                `json:"timestamp"` // Timestamp.
-	Response  *NetworkWebSocketFrame `json:"response"`  // WebSocket response data.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string                 `json:"requestId"` // Request identifier.
+		Timestamp float64                `json:"timestamp"` // Timestamp.
+		Response  *NetworkWebSocketFrame `json:"response"`  // WebSocket response data.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when WebSocket frame error occurs.
 type NetworkWebSocketFrameErrorEvent struct {
-	RequestId    string  `json:"requestId"`    // Request identifier.
-	Timestamp    float64 `json:"timestamp"`    // Timestamp.
-	ErrorMessage string  `json:"errorMessage"` // WebSocket frame error message.
+	Method string `json:"method"`
+	Params struct {
+		RequestId    string  `json:"requestId"`    // Request identifier.
+		Timestamp    float64 `json:"timestamp"`    // Timestamp.
+		ErrorMessage string  `json:"errorMessage"` // WebSocket frame error message.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when WebSocket frame is sent.
 type NetworkWebSocketFrameSentEvent struct {
-	RequestId string                 `json:"requestId"` // Request identifier.
-	Timestamp float64                `json:"timestamp"` // Timestamp.
-	Response  *NetworkWebSocketFrame `json:"response"`  // WebSocket response data.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string                 `json:"requestId"` // Request identifier.
+		Timestamp float64                `json:"timestamp"` // Timestamp.
+		Response  *NetworkWebSocketFrame `json:"response"`  // WebSocket response data.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when EventSource message is received.
 type NetworkEventSourceMessageReceivedEvent struct {
-	RequestId string  `json:"requestId"` // Request identifier.
-	Timestamp float64 `json:"timestamp"` // Timestamp.
-	EventName string  `json:"eventName"` // Message type.
-	EventId   string  `json:"eventId"`   // Message identifier.
-	Data      string  `json:"data"`      // Message content.
+	Method string `json:"method"`
+	Params struct {
+		RequestId string  `json:"requestId"` // Request identifier.
+		Timestamp float64 `json:"timestamp"` // Timestamp.
+		EventName string  `json:"eventName"` // Message type.
+		EventId   string  `json:"eventId"`   // Message identifier.
+		Data      string  `json:"data"`      // Message content.
+	} `json:"Params,omitempty"`
 }
 
 type Network struct {

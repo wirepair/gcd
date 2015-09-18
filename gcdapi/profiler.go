@@ -41,17 +41,23 @@ type ProfilerPositionTickInfo struct {
 
 // Sent when new profile recodring is started using console.profile() call.
 type ProfilerConsoleProfileStartedEvent struct {
-	Id       string            `json:"id"`              //
-	Location *DebuggerLocation `json:"location"`        // Location of console.profile().
-	Title    string            `json:"title,omitempty"` // Profile title passed as argument to console.profile().
+	Method string `json:"method"`
+	Params struct {
+		Id       string            `json:"id"`              //
+		Location *DebuggerLocation `json:"location"`        // Location of console.profile().
+		Title    string            `json:"title,omitempty"` // Profile title passed as argument to console.profile().
+	} `json:"Params,omitempty"`
 }
 
 //
 type ProfilerConsoleProfileFinishedEvent struct {
-	Id       string              `json:"id"`              //
-	Location *DebuggerLocation   `json:"location"`        // Location of console.profileEnd().
-	Profile  *ProfilerCPUProfile `json:"profile"`         //
-	Title    string              `json:"title,omitempty"` // Profile title passed as argunet to console.profile().
+	Method string `json:"method"`
+	Params struct {
+		Id       string              `json:"id"`              //
+		Location *DebuggerLocation   `json:"location"`        // Location of console.profileEnd().
+		Profile  *ProfilerCPUProfile `json:"profile"`         //
+		Title    string              `json:"title,omitempty"` // Profile title passed as argunet to console.profile().
+	} `json:"Params,omitempty"`
 }
 
 type Profiler struct {

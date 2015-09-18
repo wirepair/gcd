@@ -17,28 +17,40 @@ type DOMStorageStorageId struct {
 
 //
 type DOMStorageDomStorageItemsClearedEvent struct {
-	StorageId *DOMStorageStorageId `json:"storageId"` //
+	Method string `json:"method"`
+	Params struct {
+		StorageId *DOMStorageStorageId `json:"storageId"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type DOMStorageDomStorageItemRemovedEvent struct {
-	StorageId *DOMStorageStorageId `json:"storageId"` //
-	Key       string               `json:"key"`       //
+	Method string `json:"method"`
+	Params struct {
+		StorageId *DOMStorageStorageId `json:"storageId"` //
+		Key       string               `json:"key"`       //
+	} `json:"Params,omitempty"`
 }
 
 //
 type DOMStorageDomStorageItemAddedEvent struct {
-	StorageId *DOMStorageStorageId `json:"storageId"` //
-	Key       string               `json:"key"`       //
-	NewValue  string               `json:"newValue"`  //
+	Method string `json:"method"`
+	Params struct {
+		StorageId *DOMStorageStorageId `json:"storageId"` //
+		Key       string               `json:"key"`       //
+		NewValue  string               `json:"newValue"`  //
+	} `json:"Params,omitempty"`
 }
 
 //
 type DOMStorageDomStorageItemUpdatedEvent struct {
-	StorageId *DOMStorageStorageId `json:"storageId"` //
-	Key       string               `json:"key"`       //
-	OldValue  string               `json:"oldValue"`  //
-	NewValue  string               `json:"newValue"`  //
+	Method string `json:"method"`
+	Params struct {
+		StorageId *DOMStorageStorageId `json:"storageId"` //
+		Key       string               `json:"key"`       //
+		OldValue  string               `json:"oldValue"`  //
+		NewValue  string               `json:"newValue"`  //
+	} `json:"Params,omitempty"`
 }
 
 type DOMStorage struct {

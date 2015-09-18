@@ -29,8 +29,12 @@ type {{$api.Domain}}{{$element.Name | Title}} struct {
 {{range $element := $api.Events}}
 {{if len ($element.Parameters)}}// {{$element.Description}}
 type {{$api.Domain}}{{$element.Name | Title}}Event struct {
-	{{range $prop := $element.Parameters}}
-	{{$prop.Name | Title}} {{if $prop.IsTypeArray}}[]{{end}}{{if $prop.IsPointer}}*{{end}}{{$prop.GoType}} `json:"{{$prop.Name}}{{if $prop.Optional}},omitempty{{end}}"` // {{$prop.Description}}{{end}}
+	Method string `json:"method"`
+	Params struct {
+		{{range $prop := $element.Parameters}}
+		{{$prop.Name | Title}} {{if $prop.IsTypeArray}}[]{{end}}{{if $prop.IsPointer}}*{{end}}{{$prop.GoType}} `json:"{{$prop.Name}}{{if $prop.Optional}},omitempty{{end}}"` // {{$prop.Description}}{{end}}
+	} `json:"Params,omitempty"`
+	
 }
 {{end}}
 {{end}}

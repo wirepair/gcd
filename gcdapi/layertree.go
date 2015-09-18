@@ -43,13 +43,19 @@ type LayerTreeLayer struct {
 
 //
 type LayerTreeLayerTreeDidChangeEvent struct {
-	Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the comspositing mode.
+	Method string `json:"method"`
+	Params struct {
+		Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the comspositing mode.
+	} `json:"Params,omitempty"`
 }
 
 //
 type LayerTreeLayerPaintedEvent struct {
-	LayerId string   `json:"layerId"` // The id of the painted layer.
-	Clip    *DOMRect `json:"clip"`    // Clip rectangle.
+	Method string `json:"method"`
+	Params struct {
+		LayerId string   `json:"layerId"` // The id of the painted layer.
+		Clip    *DOMRect `json:"clip"`    // Clip rectangle.
+	} `json:"Params,omitempty"`
 }
 
 type LayerTree struct {

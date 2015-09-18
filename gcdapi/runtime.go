@@ -93,12 +93,18 @@ type RuntimeExecutionContextDescription struct {
 
 // Issued when new execution context is created.
 type RuntimeExecutionContextCreatedEvent struct {
-	Context *RuntimeExecutionContextDescription `json:"context"` // A newly created execution contex.
+	Method string `json:"method"`
+	Params struct {
+		Context *RuntimeExecutionContextDescription `json:"context"` // A newly created execution contex.
+	} `json:"Params,omitempty"`
 }
 
 // Issued when execution context is destroyed.
 type RuntimeExecutionContextDestroyedEvent struct {
-	ExecutionContextId int `json:"executionContextId"` // Id of the destroyed context
+	Method string `json:"method"`
+	Params struct {
+		ExecutionContextId int `json:"executionContextId"` // Id of the destroyed context
+	} `json:"Params,omitempty"`
 }
 
 type Runtime struct {

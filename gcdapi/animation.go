@@ -51,13 +51,19 @@ type AnimationKeyframeStyle struct {
 
 // Event for each animation player that has been created.
 type AnimationAnimationCreatedEvent struct {
-	Player        *AnimationAnimation `json:"player"`        // Animation that was created.
-	ResetTimeline bool                `json:"resetTimeline"` // Whether the timeline should be reset.
+	Method string `json:"method"`
+	Params struct {
+		Player        *AnimationAnimation `json:"player"`        // Animation that was created.
+		ResetTimeline bool                `json:"resetTimeline"` // Whether the timeline should be reset.
+	} `json:"Params,omitempty"`
 }
 
 // Event for Animations in the frontend that have been cancelled.
 type AnimationAnimationCanceledEvent struct {
-	Id string `json:"id"` // Id of the Animation that was cancelled.
+	Method string `json:"method"`
+	Params struct {
+		Id string `json:"id"` // Id of the Animation that was cancelled.
+	} `json:"Params,omitempty"`
 }
 
 type Animation struct {

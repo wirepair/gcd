@@ -10,19 +10,28 @@ import (
 
 //
 type InspectorEvaluateForTestInFrontendEvent struct {
-	TestCallId int    `json:"testCallId"` //
-	Script     string `json:"script"`     //
+	Method string `json:"method"`
+	Params struct {
+		TestCallId int    `json:"testCallId"` //
+		Script     string `json:"script"`     //
+	} `json:"Params,omitempty"`
 }
 
 //
 type InspectorInspectEvent struct {
-	Object *RuntimeRemoteObject   `json:"object"` //
-	Hints  map[string]interface{} `json:"hints"`  //
+	Method string `json:"method"`
+	Params struct {
+		Object *RuntimeRemoteObject   `json:"object"` //
+		Hints  map[string]interface{} `json:"hints"`  //
+	} `json:"Params,omitempty"`
 }
 
 // Fired when remote debugging connection is about to be terminated. Contains detach reason.
 type InspectorDetachedEvent struct {
-	Reason string `json:"reason"` // The reason why connection has been terminated.
+	Method string `json:"method"`
+	Params struct {
+		Reason string `json:"reason"` // The reason why connection has been terminated.
+	} `json:"Params,omitempty"`
 }
 
 type Inspector struct {

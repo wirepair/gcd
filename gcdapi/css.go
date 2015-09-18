@@ -139,23 +139,35 @@ type CSSPlatformFontUsage struct {
 
 // Fired whenever a stylesheet is changed as a result of the client operation.
 type CSSStyleSheetChangedEvent struct {
-	StyleSheetId string `json:"styleSheetId"` //
+	Method string `json:"method"`
+	Params struct {
+		StyleSheetId string `json:"styleSheetId"` //
+	} `json:"Params,omitempty"`
 }
 
 // Fired whenever an active document stylesheet is added.
 type CSSStyleSheetAddedEvent struct {
-	Header *CSSCSSStyleSheetHeader `json:"header"` // Added stylesheet metainfo.
+	Method string `json:"method"`
+	Params struct {
+		Header *CSSCSSStyleSheetHeader `json:"header"` // Added stylesheet metainfo.
+	} `json:"Params,omitempty"`
 }
 
 // Fired whenever an active document stylesheet is removed.
 type CSSStyleSheetRemovedEvent struct {
-	StyleSheetId string `json:"styleSheetId"` // Identifier of the removed stylesheet.
+	Method string `json:"method"`
+	Params struct {
+		StyleSheetId string `json:"styleSheetId"` // Identifier of the removed stylesheet.
+	} `json:"Params,omitempty"`
 }
 
 //
 type CSSLayoutEditorChangeEvent struct {
-	StyleSheetId string          `json:"styleSheetId"` // Identifier of the stylesheet where the modification occurred.
-	ChangeRange  *CSSSourceRange `json:"changeRange"`  // Range where the modification occurred.
+	Method string `json:"method"`
+	Params struct {
+		StyleSheetId string          `json:"styleSheetId"` // Identifier of the stylesheet where the modification occurred.
+		ChangeRange  *CSSSourceRange `json:"changeRange"`  // Range where the modification occurred.
+	} `json:"Params,omitempty"`
 }
 
 type CSS struct {

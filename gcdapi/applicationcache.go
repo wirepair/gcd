@@ -34,14 +34,20 @@ type ApplicationCacheFrameWithManifest struct {
 
 //
 type ApplicationCacheApplicationCacheStatusUpdatedEvent struct {
-	FrameId     string `json:"frameId"`     // Identifier of the frame containing document whose application cache updated status.
-	ManifestURL string `json:"manifestURL"` // Manifest URL.
-	Status      int    `json:"status"`      // Updated application cache status.
+	Method string `json:"method"`
+	Params struct {
+		FrameId     string `json:"frameId"`     // Identifier of the frame containing document whose application cache updated status.
+		ManifestURL string `json:"manifestURL"` // Manifest URL.
+		Status      int    `json:"status"`      // Updated application cache status.
+	} `json:"Params,omitempty"`
 }
 
 //
 type ApplicationCacheNetworkStateUpdatedEvent struct {
-	IsNowOnline bool `json:"isNowOnline"` //
+	Method string `json:"method"`
+	Params struct {
+		IsNowOnline bool `json:"isNowOnline"` //
+	} `json:"Params,omitempty"`
 }
 
 type ApplicationCache struct {

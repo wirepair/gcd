@@ -47,13 +47,19 @@ type ConsoleAsyncStackTrace struct {
 
 // Issued when new console message is added.
 type ConsoleMessageAddedEvent struct {
-	Message *ConsoleConsoleMessage `json:"message"` // Console message that has been added.
+	Method string `json:"method"`
+	Params struct {
+		Message *ConsoleConsoleMessage `json:"message"` // Console message that has been added.
+	} `json:"Params,omitempty"`
 }
 
 // Is not issued. Will be gone in the future versions of the protocol.
 type ConsoleMessageRepeatCountUpdatedEvent struct {
-	Count     int     `json:"count"`     // New repeat count value.
-	Timestamp float64 `json:"timestamp"` // Timestamp of most recent message in batch.
+	Method string `json:"method"`
+	Params struct {
+		Count     int     `json:"count"`     // New repeat count value.
+		Timestamp float64 `json:"timestamp"` // Timestamp of most recent message in batch.
+	} `json:"Params,omitempty"`
 }
 
 type Console struct {

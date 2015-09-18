@@ -96,86 +96,128 @@ type DOMHighlightConfig struct {
 
 // Fired when the node should be inspected. This happens after call to <code>setInspectMode</code>.
 type DOMInspectNodeRequestedEvent struct {
-	BackendNodeId int `json:"backendNodeId"` // Id of the node to inspect.
+	Method string `json:"method"`
+	Params struct {
+		BackendNodeId int `json:"backendNodeId"` // Id of the node to inspect.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when backend wants to provide client with the missing DOM structure. This happens upon most of the calls requesting node ids.
 type DOMSetChildNodesEvent struct {
-	ParentId int        `json:"parentId"` // Parent node id to populate with children.
-	Nodes    []*DOMNode `json:"nodes"`    // Child nodes array.
+	Method string `json:"method"`
+	Params struct {
+		ParentId int        `json:"parentId"` // Parent node id to populate with children.
+		Nodes    []*DOMNode `json:"nodes"`    // Child nodes array.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when <code>Element</code>'s attribute is modified.
 type DOMAttributeModifiedEvent struct {
-	NodeId int    `json:"nodeId"` // Id of the node that has changed.
-	Name   string `json:"name"`   // Attribute name.
-	Value  string `json:"value"`  // Attribute value.
+	Method string `json:"method"`
+	Params struct {
+		NodeId int    `json:"nodeId"` // Id of the node that has changed.
+		Name   string `json:"name"`   // Attribute name.
+		Value  string `json:"value"`  // Attribute value.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when <code>Element</code>'s attribute is removed.
 type DOMAttributeRemovedEvent struct {
-	NodeId int    `json:"nodeId"` // Id of the node that has changed.
-	Name   string `json:"name"`   // A ttribute name.
+	Method string `json:"method"`
+	Params struct {
+		NodeId int    `json:"nodeId"` // Id of the node that has changed.
+		Name   string `json:"name"`   // A ttribute name.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when <code>Element</code>'s inline style is modified via a CSS property modification.
 type DOMInlineStyleInvalidatedEvent struct {
-	NodeIds []int `json:"nodeIds"` // Ids of the nodes for which the inline styles have been invalidated.
+	Method string `json:"method"`
+	Params struct {
+		NodeIds []int `json:"nodeIds"` // Ids of the nodes for which the inline styles have been invalidated.
+	} `json:"Params,omitempty"`
 }
 
 // Mirrors <code>DOMCharacterDataModified</code> event.
 type DOMCharacterDataModifiedEvent struct {
-	NodeId        int    `json:"nodeId"`        // Id of the node that has changed.
-	CharacterData string `json:"characterData"` // New text value.
+	Method string `json:"method"`
+	Params struct {
+		NodeId        int    `json:"nodeId"`        // Id of the node that has changed.
+		CharacterData string `json:"characterData"` // New text value.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when <code>Container</code>'s child node count has changed.
 type DOMChildNodeCountUpdatedEvent struct {
-	NodeId         int `json:"nodeId"`         // Id of the node that has changed.
-	ChildNodeCount int `json:"childNodeCount"` // New node count.
+	Method string `json:"method"`
+	Params struct {
+		NodeId         int `json:"nodeId"`         // Id of the node that has changed.
+		ChildNodeCount int `json:"childNodeCount"` // New node count.
+	} `json:"Params,omitempty"`
 }
 
 // Mirrors <code>DOMNodeInserted</code> event.
 type DOMChildNodeInsertedEvent struct {
-	ParentNodeId   int      `json:"parentNodeId"`   // Id of the node that has changed.
-	PreviousNodeId int      `json:"previousNodeId"` // If of the previous siblint.
-	Node           *DOMNode `json:"node"`           // Inserted node data.
+	Method string `json:"method"`
+	Params struct {
+		ParentNodeId   int      `json:"parentNodeId"`   // Id of the node that has changed.
+		PreviousNodeId int      `json:"previousNodeId"` // If of the previous siblint.
+		Node           *DOMNode `json:"node"`           // Inserted node data.
+	} `json:"Params,omitempty"`
 }
 
 // Mirrors <code>DOMNodeRemoved</code> event.
 type DOMChildNodeRemovedEvent struct {
-	ParentNodeId int `json:"parentNodeId"` // Parent id.
-	NodeId       int `json:"nodeId"`       // Id of the node that has been removed.
+	Method string `json:"method"`
+	Params struct {
+		ParentNodeId int `json:"parentNodeId"` // Parent id.
+		NodeId       int `json:"nodeId"`       // Id of the node that has been removed.
+	} `json:"Params,omitempty"`
 }
 
 // Called when shadow root is pushed into the element.
 type DOMShadowRootPushedEvent struct {
-	HostId int      `json:"hostId"` // Host element id.
-	Root   *DOMNode `json:"root"`   // Shadow root.
+	Method string `json:"method"`
+	Params struct {
+		HostId int      `json:"hostId"` // Host element id.
+		Root   *DOMNode `json:"root"`   // Shadow root.
+	} `json:"Params,omitempty"`
 }
 
 // Called when shadow root is popped from the element.
 type DOMShadowRootPoppedEvent struct {
-	HostId int `json:"hostId"` // Host element id.
-	RootId int `json:"rootId"` // Shadow root id.
+	Method string `json:"method"`
+	Params struct {
+		HostId int `json:"hostId"` // Host element id.
+		RootId int `json:"rootId"` // Shadow root id.
+	} `json:"Params,omitempty"`
 }
 
 // Called when a pseudo element is added to an element.
 type DOMPseudoElementAddedEvent struct {
-	ParentId      int      `json:"parentId"`      // Pseudo element's parent element id.
-	PseudoElement *DOMNode `json:"pseudoElement"` // The added pseudo element.
+	Method string `json:"method"`
+	Params struct {
+		ParentId      int      `json:"parentId"`      // Pseudo element's parent element id.
+		PseudoElement *DOMNode `json:"pseudoElement"` // The added pseudo element.
+	} `json:"Params,omitempty"`
 }
 
 // Called when a pseudo element is removed from an element.
 type DOMPseudoElementRemovedEvent struct {
-	ParentId        int `json:"parentId"`        // Pseudo element's parent element id.
-	PseudoElementId int `json:"pseudoElementId"` // The removed pseudo element id.
+	Method string `json:"method"`
+	Params struct {
+		ParentId        int `json:"parentId"`        // Pseudo element's parent element id.
+		PseudoElementId int `json:"pseudoElementId"` // The removed pseudo element id.
+	} `json:"Params,omitempty"`
 }
 
 // Called when distrubution is changed.
 type DOMDistributedNodesUpdatedEvent struct {
-	InsertionPointId int               `json:"insertionPointId"` // Insertion point where distrubuted nodes were updated.
-	DistributedNodes []*DOMBackendNode `json:"distributedNodes"` // Distributed nodes for given insertion point.
+	Method string `json:"method"`
+	Params struct {
+		InsertionPointId int               `json:"insertionPointId"` // Insertion point where distrubuted nodes were updated.
+		DistributedNodes []*DOMBackendNode `json:"distributedNodes"` // Distributed nodes for given insertion point.
+	} `json:"Params,omitempty"`
 }
 
 type DOM struct {

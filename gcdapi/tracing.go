@@ -11,14 +11,20 @@ import (
 
 // Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events.
 type TracingTracingCompleteEvent struct {
-	Stream string `json:"stream,omitempty"` // A handle of the stream that holds resulting trace data.
+	Method string `json:"method"`
+	Params struct {
+		Stream string `json:"stream,omitempty"` // A handle of the stream that holds resulting trace data.
+	} `json:"Params,omitempty"`
 }
 
 //
 type TracingBufferUsageEvent struct {
-	PercentFull float64 `json:"percentFull,omitempty"` // A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size.
-	EventCount  float64 `json:"eventCount,omitempty"`  // An approximate number of events in the trace log.
-	Value       float64 `json:"value,omitempty"`       // A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size.
+	Method string `json:"method"`
+	Params struct {
+		PercentFull float64 `json:"percentFull,omitempty"` // A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size.
+		EventCount  float64 `json:"eventCount,omitempty"`  // An approximate number of events in the trace log.
+		Value       float64 `json:"value,omitempty"`       // A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size.
+	} `json:"Params,omitempty"`
 }
 
 type Tracing struct {

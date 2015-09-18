@@ -22,7 +22,10 @@ type TimelineTimelineEvent struct {
 
 // Deprecated.
 type TimelineEventRecordedEvent struct {
-	Record *TimelineTimelineEvent `json:"record"` // Timeline event record data.
+	Method string `json:"method"`
+	Params struct {
+		Record *TimelineTimelineEvent `json:"record"` // Timeline event record data.
+	} `json:"Params,omitempty"`
 }
 
 type Timeline struct {

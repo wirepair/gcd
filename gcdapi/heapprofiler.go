@@ -11,25 +11,37 @@ import (
 
 //
 type HeapProfilerAddHeapSnapshotChunkEvent struct {
-	Chunk string `json:"chunk"` //
+	Method string `json:"method"`
+	Params struct {
+		Chunk string `json:"chunk"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type HeapProfilerReportHeapSnapshotProgressEvent struct {
-	Done     int  `json:"done"`               //
-	Total    int  `json:"total"`              //
-	Finished bool `json:"finished,omitempty"` //
+	Method string `json:"method"`
+	Params struct {
+		Done     int  `json:"done"`               //
+		Total    int  `json:"total"`              //
+		Finished bool `json:"finished,omitempty"` //
+	} `json:"Params,omitempty"`
 }
 
 // If heap objects tracking has been started then backend regulary sends a current value for last seen object id and corresponding timestamp. If the were changes in the heap since last event then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event.
 type HeapProfilerLastSeenObjectIdEvent struct {
-	LastSeenObjectId int     `json:"lastSeenObjectId"` //
-	Timestamp        float64 `json:"timestamp"`        //
+	Method string `json:"method"`
+	Params struct {
+		LastSeenObjectId int     `json:"lastSeenObjectId"` //
+		Timestamp        float64 `json:"timestamp"`        //
+	} `json:"Params,omitempty"`
 }
 
 // If heap objects tracking has been started then backend may send update for one or more fragments
 type HeapProfilerHeapStatsUpdateEvent struct {
-	StatsUpdate []int `json:"statsUpdate"` // An array of triplets. Each triplet describes a fragment. The first integer is the fragment index, the second integer is a total count of objects for the fragment, the third integer is a total size of the objects for the fragment.
+	Method string `json:"method"`
+	Params struct {
+		StatsUpdate []int `json:"statsUpdate"` // An array of triplets. Each triplet describes a fragment. The first integer is the fragment index, the second integer is a total count of objects for the fragment, the third integer is a total size of the objects for the fragment.
+	} `json:"Params,omitempty"`
 }
 
 type HeapProfiler struct {

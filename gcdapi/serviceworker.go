@@ -48,39 +48,60 @@ type ServiceWorkerTargetInfo struct {
 
 //
 type ServiceWorkerWorkerCreatedEvent struct {
-	WorkerId string `json:"workerId"` //
-	Url      string `json:"url"`      //
+	Method string `json:"method"`
+	Params struct {
+		WorkerId string `json:"workerId"` //
+		Url      string `json:"url"`      //
+	} `json:"Params,omitempty"`
 }
 
 //
 type ServiceWorkerWorkerTerminatedEvent struct {
-	WorkerId string `json:"workerId"` //
+	Method string `json:"method"`
+	Params struct {
+		WorkerId string `json:"workerId"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type ServiceWorkerDispatchMessageEvent struct {
-	WorkerId string `json:"workerId"` //
-	Message  string `json:"message"`  //
+	Method string `json:"method"`
+	Params struct {
+		WorkerId string `json:"workerId"` //
+		Message  string `json:"message"`  //
+	} `json:"Params,omitempty"`
 }
 
 //
 type ServiceWorkerWorkerRegistrationUpdatedEvent struct {
-	Registrations []*ServiceWorkerServiceWorkerRegistration `json:"registrations"` //
+	Method string `json:"method"`
+	Params struct {
+		Registrations []*ServiceWorkerServiceWorkerRegistration `json:"registrations"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type ServiceWorkerWorkerVersionUpdatedEvent struct {
-	Versions []*ServiceWorkerServiceWorkerVersion `json:"versions"` //
+	Method string `json:"method"`
+	Params struct {
+		Versions []*ServiceWorkerServiceWorkerVersion `json:"versions"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type ServiceWorkerWorkerErrorReportedEvent struct {
-	ErrorMessage *ServiceWorkerServiceWorkerErrorMessage `json:"errorMessage"` //
+	Method string `json:"method"`
+	Params struct {
+		ErrorMessage *ServiceWorkerServiceWorkerErrorMessage `json:"errorMessage"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type ServiceWorkerDebugOnStartUpdatedEvent struct {
-	DebugOnStart bool `json:"debugOnStart"` //
+	Method string `json:"method"`
+	Params struct {
+		DebugOnStart bool `json:"debugOnStart"` //
+	} `json:"Params,omitempty"`
 }
 
 type ServiceWorker struct {

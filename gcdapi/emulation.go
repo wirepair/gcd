@@ -22,7 +22,10 @@ type EmulationViewport struct {
 
 // Fired when a visible page viewport has changed. Only fired when device metrics are overridden.
 type EmulationViewportChangedEvent struct {
-	Viewport *EmulationViewport `json:"viewport"` // Viewport description.
+	Method string `json:"method"`
+	Params struct {
+		Viewport *EmulationViewport `json:"viewport"` // Viewport description.
+	} `json:"Params,omitempty"`
 }
 
 type Emulation struct {

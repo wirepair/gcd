@@ -10,20 +10,29 @@ import (
 
 //
 type WorkerWorkerCreatedEvent struct {
-	WorkerId           string `json:"workerId"`           //
-	Url                string `json:"url"`                //
-	InspectorConnected bool   `json:"inspectorConnected"` //
+	Method string `json:"method"`
+	Params struct {
+		WorkerId           string `json:"workerId"`           //
+		Url                string `json:"url"`                //
+		InspectorConnected bool   `json:"inspectorConnected"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type WorkerWorkerTerminatedEvent struct {
-	WorkerId string `json:"workerId"` //
+	Method string `json:"method"`
+	Params struct {
+		WorkerId string `json:"workerId"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type WorkerDispatchMessageFromWorkerEvent struct {
-	WorkerId string `json:"workerId"` //
-	Message  string `json:"message"`  //
+	Method string `json:"method"`
+	Params struct {
+		WorkerId string `json:"workerId"` //
+		Message  string `json:"message"`  //
+	} `json:"Params,omitempty"`
 }
 
 type Worker struct {

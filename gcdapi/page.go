@@ -56,77 +56,119 @@ type PageScreencastFrameMetadata struct {
 
 //
 type PageDomContentEventFiredEvent struct {
-	Timestamp float64 `json:"timestamp"` //
+	Method string `json:"method"`
+	Params struct {
+		Timestamp float64 `json:"timestamp"` //
+	} `json:"Params,omitempty"`
 }
 
 //
 type PageLoadEventFiredEvent struct {
-	Timestamp float64 `json:"timestamp"` //
+	Method string `json:"method"`
+	Params struct {
+		Timestamp float64 `json:"timestamp"` //
+	} `json:"Params,omitempty"`
 }
 
 // Fired when frame has been attached to its parent.
 type PageFrameAttachedEvent struct {
-	FrameId       string `json:"frameId"`       // Id of the frame that has been attached.
-	ParentFrameId string `json:"parentFrameId"` // Parent frame identifier.
+	Method string `json:"method"`
+	Params struct {
+		FrameId       string `json:"frameId"`       // Id of the frame that has been attached.
+		ParentFrameId string `json:"parentFrameId"` // Parent frame identifier.
+	} `json:"Params,omitempty"`
 }
 
 // Fired once navigation of the frame has completed. Frame is now associated with the new loader.
 type PageFrameNavigatedEvent struct {
-	Frame *PageFrame `json:"frame"` // Frame object.
+	Method string `json:"method"`
+	Params struct {
+		Frame *PageFrame `json:"frame"` // Frame object.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when frame has been detached from its parent.
 type PageFrameDetachedEvent struct {
-	FrameId string `json:"frameId"` // Id of the frame that has been detached.
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame that has been detached.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when frame has started loading.
 type PageFrameStartedLoadingEvent struct {
-	FrameId string `json:"frameId"` // Id of the frame that has started loading.
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame that has started loading.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when frame has stopped loading.
 type PageFrameStoppedLoadingEvent struct {
-	FrameId string `json:"frameId"` // Id of the frame that has stopped loading.
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame that has stopped loading.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when frame schedules a potential navigation.
 type PageFrameScheduledNavigationEvent struct {
-	FrameId string  `json:"frameId"` // Id of the frame that has scheduled a navigation.
-	Delay   float64 `json:"delay"`   // Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start.
+	Method string `json:"method"`
+	Params struct {
+		FrameId string  `json:"frameId"` // Id of the frame that has scheduled a navigation.
+		Delay   float64 `json:"delay"`   // Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when frame no longer has a scheduled navigation.
 type PageFrameClearedScheduledNavigationEvent struct {
-	FrameId string `json:"frameId"` // Id of the frame that has cleared its scheduled navigation.
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame that has cleared its scheduled navigation.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open.
 type PageJavascriptDialogOpeningEvent struct {
-	Message string `json:"message"` // Message that will be displayed by the dialog.
-	Type    string `json:"type"`    // Dialog type. enum values: alert, confirm, prompt, beforeunload
+	Method string `json:"method"`
+	Params struct {
+		Message string `json:"message"` // Message that will be displayed by the dialog.
+		Type    string `json:"type"`    // Dialog type. enum values: alert, confirm, prompt, beforeunload
+	} `json:"Params,omitempty"`
 }
 
 // Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.
 type PageJavascriptDialogClosedEvent struct {
-	Result bool `json:"result"` // Whether dialog was confirmed.
+	Method string `json:"method"`
+	Params struct {
+		Result bool `json:"result"` // Whether dialog was confirmed.
+	} `json:"Params,omitempty"`
 }
 
 // Compressed image data requested by the <code>startScreencast</code>.
 type PageScreencastFrameEvent struct {
-	Data        string                       `json:"data"`                  // Base64-encoded compressed image.
-	Metadata    *PageScreencastFrameMetadata `json:"metadata"`              // Screencast frame metadata.
-	FrameNumber int                          `json:"frameNumber,omitempty"` // Frame number.
+	Method string `json:"method"`
+	Params struct {
+		Data        string                       `json:"data"`                  // Base64-encoded compressed image.
+		Metadata    *PageScreencastFrameMetadata `json:"metadata"`              // Screencast frame metadata.
+		FrameNumber int                          `json:"frameNumber,omitempty"` // Frame number.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when the page with currently enabled screencast was shown or hidden </code>.
 type PageScreencastVisibilityChangedEvent struct {
-	Visible bool `json:"visible"` // True if the page is visible.
+	Method string `json:"method"`
+	Params struct {
+		Visible bool `json:"visible"` // True if the page is visible.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when a color has been picked.
 type PageColorPickedEvent struct {
-	Color *DOMRGBA `json:"color"` // RGBA of the picked color.
+	Method string `json:"method"`
+	Params struct {
+		Color *DOMRGBA `json:"color"` // RGBA of the picked color.
+	} `json:"Params,omitempty"`
 }
 
 type Page struct {

@@ -25,7 +25,10 @@ type DatabaseError struct {
 
 //
 type DatabaseAddDatabaseEvent struct {
-	Database *DatabaseDatabase `json:"database"` //
+	Method string `json:"method"`
+	Params struct {
+		Database *DatabaseDatabase `json:"database"` //
+	} `json:"Params,omitempty"`
 }
 
 type Database struct {
