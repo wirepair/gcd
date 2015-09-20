@@ -32,7 +32,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"sync"
 	"time"
 )
 
@@ -56,8 +55,6 @@ func (g *GcdDecodingErr) Error() string {
 
 // The Google Chrome Debugger
 type Gcd struct {
-	sync.RWMutex  // for locking pages (i.e. websocket clients)
-	Targets       []*ChromeTarget
 	timeout       time.Duration // how much time to wait for debugger port to open up
 	chromeProcess *os.Process
 	chromeCmd     *exec.Cmd
@@ -76,7 +73,7 @@ func NewChromeDebugger() *Gcd {
 	c.timeout = 15
 	c.host = "localhost"
 	c.readyCh = make(chan struct{})
-	c.Targets = make([]*ChromeTarget, 0)
+
 	c.flags = make([]string, 0)
 	c.env = make([]string, 0)
 	return c
@@ -128,19 +125,23 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 
 // Kills the process
 func (c *Gcd) ExitProcess() error {
-	// close all websockets
-	for _, target := range c.Targets {
-		target.shutdown()
-	}
 	return c.chromeProcess.Kill()
 }
 
 // Gets the primary tabs/processes to work with. Each will have their own references
 // to the underlying API components (such as Page, Debugger, DOM etc).
 func (c *Gcd) GetTargets() ([]*ChromeTarget, error) {
+	empty := make(map[string]struct{}, 0)
+	return c.GetNewTargets(empty)
+}
+
+// Gets a list of current tabs and creates new chrome targets returning a list
+// provided they weren't in the knownIds list. Note it is a fatal error to attempt
+// to create a new chrome target from one that already exists.
+func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, error) {
 	resp, err := http.Get(c.apiEndpoint)
 	if err != nil {
-		log.Fatalf("%s\n", err)
+		log.Fatalf("gcd fatal error getting targets %s\n", err)
 	}
 	defer resp.Body.Close()
 
@@ -155,11 +156,14 @@ func (c *Gcd) GetTargets() ([]*ChromeTarget, error) {
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
 
+	chromeTargets := make([]*ChromeTarget, 0)
 	for _, v := range targets {
-		target := newChromeTarget(c.addr, v)
-		c.Targets = append(c.Targets, target)
+		if _, ok := knownIds[v.Id]; !ok {
+			target := newChromeTarget(c.addr, v)
+			chromeTargets = append(chromeTargets, target)
+		}
 	}
-	return c.Targets, nil
+	return chromeTargets, nil
 }
 
 // Create a new empty tab, returns the chrome target.
