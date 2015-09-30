@@ -136,12 +136,12 @@ func (c *Gcd) GetTargets() ([]*ChromeTarget, error) {
 }
 
 // Gets a list of current tabs and creates new chrome targets returning a list
-// provided they weren't in the knownIds list. Note it is a fatal error to attempt
+// provided they weren't in the knownIds list. Note it is an error to attempt
 // to create a new chrome target from one that already exists.
 func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, error) {
 	resp, err := http.Get(c.apiEndpoint)
 	if err != nil {
-		log.Fatalf("gcd fatal error getting targets %s\n", err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -170,7 +170,7 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	resp, err := http.Get(c.apiEndpoint + "/new")
 	if err != nil {
-		log.Fatalf("%s\n", err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -193,7 +193,7 @@ func (c *Gcd) CloseTab(target *ChromeTarget) error {
 	target.shutdown() // close WS connection first
 	resp, err := http.Get(fmt.Sprintf("%s/close/%s", c.apiEndpoint, target.Target.Id))
 	if err != nil {
-		log.Fatalf("%s\n", err)
+		return err
 	}
 	defer resp.Body.Close()
 	_, errRead := ioutil.ReadAll(resp.Body)
@@ -204,7 +204,7 @@ func (c *Gcd) CloseTab(target *ChromeTarget) error {
 func (c *Gcd) ActivateTab(target *ChromeTarget) error {
 	resp, err := http.Get(fmt.Sprintf("%s/activate/%s", c.apiEndpoint, target.Target.Id))
 	if err != nil {
-		log.Fatalf("%s\n", err)
+		return err
 	}
 	defer resp.Body.Close()
 	_, errRead := ioutil.ReadAll(resp.Body)
