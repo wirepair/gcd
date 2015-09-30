@@ -141,7 +141,7 @@ func (c *Gcd) GetTargets() ([]*ChromeTarget, error) {
 func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, error) {
 	resp, err := http.Get(c.apiEndpoint)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -170,7 +170,7 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	resp, err := http.Get(c.apiEndpoint + "/new")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
