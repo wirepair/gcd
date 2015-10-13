@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -24,8 +25,13 @@ var (
 )
 
 func init() {
-	flag.StringVar(&testPath, "chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "path to Xvfb")
-	flag.StringVar(&testDir, "dir", "C:\\temp\\", "user directory")
+	flag.StringVar(&testPath, "chrome", "/usr/bin/chromium-browser", "path to chrome")
+	flag.StringVar(&testDir, "dir", "/tmp/", "user directory")
+	if runtime.GOOS == "windows" {
+		flag.StringVar(&testPath, "chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "path to chrome")
+		flag.StringVar(&testDir, "dir", "C:\\temp\\", "user directory")
+	}
+
 	flag.StringVar(&testPort, "port", "9222", "Debugger port")
 }
 
@@ -70,6 +76,29 @@ func TestEnv(t *testing.T) {
 	if !ok {
 		t.Fatalf("error finding our environment vars in chrome process")
 	}
+}
+
+func TestProcessKilled(t *testing.T) {
+	testDefaultStartup(t)
+	doneCh := make(chan struct{})
+	shutdown := time.NewTimer(time.Second * 4)
+	timeout := time.NewTimer(time.Second * 10)
+	terminatedHandler := func(reason string) {
+		t.Logf("reason: %s\n", reason)
+		doneCh <- struct{}{}
+	}
+	debugger.SetTerminationHandler(terminatedHandler)
+	for {
+		select {
+		case <-doneCh:
+			goto DONE
+		case <-shutdown.C:
+			debugger.ExitProcess()
+		case <-timeout.C:
+			t.Fatalf("timed out waiting for termination")
+		}
+	}
+DONE:
 }
 
 func TestEvents(t *testing.T) {

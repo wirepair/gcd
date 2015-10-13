@@ -53,18 +53,21 @@ func (g *GcdDecodingErr) Error() string {
 	return "error decoding inspectable page: " + g.Message
 }
 
+type TerminatedHandler func(reason string)
+
 // The Google Chrome Debugger
 type Gcd struct {
-	timeout       time.Duration // how much time to wait for debugger port to open up
-	chromeProcess *os.Process
-	chromeCmd     *exec.Cmd
-	port          string
-	host          string
-	addr          string
-	readyCh       chan struct{}
-	apiEndpoint   string
-	flags         []string
-	env           []string
+	timeout           time.Duration // how much time to wait for debugger port to open up
+	chromeProcess     *os.Process
+	chromeCmd         *exec.Cmd
+	terminatedHandler TerminatedHandler
+	port              string
+	host              string
+	addr              string
+	readyCh           chan struct{}
+	apiEndpoint       string
+	flags             []string
+	env               []string
 }
 
 // Give it a friendly name.
@@ -73,10 +76,15 @@ func NewChromeDebugger() *Gcd {
 	c.timeout = 15
 	c.host = "localhost"
 	c.readyCh = make(chan struct{})
-
+	c.terminatedHandler = nil
 	c.flags = make([]string, 0)
 	c.env = make([]string, 0)
 	return c
+}
+
+// Pass a handler to be notified when the chrome process exits.
+func (g *Gcd) SetTerminationHandler(handler TerminatedHandler) {
+	g.terminatedHandler = handler
 }
 
 // Set the timeout for how long we should wait for debug port to become available.
@@ -118,6 +126,9 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 		}
 		c.chromeProcess = c.chromeCmd.Process
 		err = c.chromeCmd.Wait()
+		if c.terminatedHandler != nil {
+			c.terminatedHandler(err.Error())
+		}
 	}()
 	go c.probeDebugPort()
 	<-c.readyCh
