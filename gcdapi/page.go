@@ -205,6 +205,10 @@ func (c *Page) AddScriptToEvaluateOnLoad(scriptSource string) (string, error) {
 		}
 	}
 
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -253,6 +257,10 @@ func (c *Page) Navigate(url string) (string, error) {
 		}
 	}
 
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -279,6 +287,10 @@ func (c *Page) GetNavigationHistory() (int, []*PageNavigationEntry, error) {
 			CurrentIndex int
 			Entries      []*PageNavigationEntry
 		}
+	}
+
+	if resp == nil {
+		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -314,6 +326,10 @@ func (c *Page) GetCookies() ([]*NetworkCookie, error) {
 		Result struct {
 			Cookies []*NetworkCookie
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -353,6 +369,10 @@ func (c *Page) GetResourceTree() (*PageFrameResourceTree, error) {
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -384,6 +404,10 @@ func (c *Page) GetResourceContent(frameId string, url string) (string, bool, err
 			Content       string
 			Base64Encoded bool
 		}
+	}
+
+	if resp == nil {
+		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -422,6 +446,10 @@ func (c *Page) SearchInResource(frameId string, url string, query string, caseSe
 		Result struct {
 			Result []*DebuggerSearchMatch
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -540,6 +568,10 @@ func (c *Page) CaptureScreenshot() (string, error) {
 		}
 	}
 
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -565,6 +597,10 @@ func (c *Page) CanScreencast() (bool, error) {
 		Result struct {
 			Result bool
 		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

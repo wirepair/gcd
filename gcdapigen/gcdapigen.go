@@ -129,7 +129,7 @@ func openFile() []byte {
 }
 
 func createOutputDirectory() {
-	err := os.Mkdir(outputDir, 0666)
+	err := os.Mkdir(outputDir, 0755)
 	if err != nil {
 		log.Fatalf("error creating api output directory")
 	}

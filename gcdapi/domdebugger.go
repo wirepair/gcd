@@ -113,6 +113,10 @@ func (c *DOMDebugger) GetEventListeners(objectId string) ([]*DOMDebuggerEventLis
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)

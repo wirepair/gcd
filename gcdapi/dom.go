@@ -251,6 +251,10 @@ func (c *DOM) GetDocument() (*DOMNode, error) {
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -293,6 +297,10 @@ func (c *DOM) QuerySelector(nodeId int, selector string) (int, error) {
 		}
 	}
 
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -325,6 +333,10 @@ func (c *DOM) QuerySelectorAll(nodeId int, selector string) ([]int, error) {
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -355,6 +367,10 @@ func (c *DOM) SetNodeName(nodeId int, name string) (int, error) {
 		Result struct {
 			NodeId int
 		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -439,6 +455,10 @@ func (c *DOM) GetOuterHTML(nodeId int) (string, error) {
 		}
 	}
 
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -482,6 +502,10 @@ func (c *DOM) PerformSearch(query string, includeUserAgentShadowDOM bool) (strin
 		}
 	}
 
+	if resp == nil {
+		return "", 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -514,6 +538,10 @@ func (c *DOM) GetSearchResults(searchId string, fromIndex int, toIndex int) ([]i
 		Result struct {
 			NodeIds []int
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -552,6 +580,10 @@ func (c *DOM) RequestNode(objectId string) (int, error) {
 		Result struct {
 			NodeId int
 		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -655,6 +687,10 @@ func (c *DOM) PushNodeByPathToFrontend(path string) (int, error) {
 		}
 	}
 
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -683,6 +719,10 @@ func (c *DOM) PushNodesByBackendIdsToFrontend(backendNodeIds int) ([]int, error)
 		Result struct {
 			NodeIds []int
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -725,6 +765,10 @@ func (c *DOM) ResolveNode(nodeId int, objectGroup string) (*RuntimeRemoteObject,
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -753,6 +797,10 @@ func (c *DOM) GetAttributes(nodeId int) ([]string, error) {
 		Result struct {
 			Attributes []string
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -789,6 +837,10 @@ func (c *DOM) CopyTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 		}
 	}
 
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -821,6 +873,10 @@ func (c *DOM) MoveTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 		Result struct {
 			NodeId int
 		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -886,6 +942,10 @@ func (c *DOM) GetBoxModel(nodeId int) (*DOMBoxModel, error) {
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -918,6 +978,10 @@ func (c *DOM) GetNodeForLocation(x int, y int) (int, error) {
 		}
 	}
 
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -948,6 +1012,10 @@ func (c *DOM) GetRelayoutBoundary(nodeId int) (int, error) {
 		}
 	}
 
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -976,6 +1044,10 @@ func (c *DOM) GetHighlightObjectForTest(nodeId int) (map[string]interface{}, err
 		Result struct {
 			Highlight map[string]interface{}
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

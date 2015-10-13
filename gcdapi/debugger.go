@@ -251,6 +251,10 @@ func (c *Debugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex strin
 		}
 	}
 
+	if resp == nil {
+		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -282,6 +286,10 @@ func (c *Debugger) SetBreakpoint(location *DebuggerLocation, condition string) (
 			BreakpointId   string
 			ActualLocation *DebuggerLocation
 		}
+	}
+
+	if resp == nil {
+		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -368,6 +376,10 @@ func (c *Debugger) SearchInContent(scriptId string, query string, caseSensitive 
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -393,6 +405,10 @@ func (c *Debugger) CanSetScriptSource() (bool, error) {
 		Result struct {
 			Result bool
 		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -431,6 +447,10 @@ func (c *Debugger) SetScriptSource(scriptId string, scriptSource string, preview
 		}
 	}
 
+	if resp == nil {
+		return nil, false, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -460,6 +480,10 @@ func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *Debu
 			CallFrames      []*DebuggerCallFrame
 			AsyncStackTrace *DebuggerStackTrace
 		}
+	}
+
+	if resp == nil {
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -492,6 +516,10 @@ func (c *Debugger) GetScriptSource(scriptId string) (string, error) {
 		}
 	}
 
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -520,6 +548,10 @@ func (c *Debugger) GetFunctionDetails(functionId string) (*DebuggerFunctionDetai
 		Result struct {
 			Details *DebuggerFunctionDetails
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -552,6 +584,10 @@ func (c *Debugger) GetGeneratorObjectDetails(objectId string) (*DebuggerGenerato
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -580,6 +616,10 @@ func (c *Debugger) GetCollectionEntries(objectId string) ([]*DebuggerCollectionE
 		Result struct {
 			Entries []*DebuggerCollectionEntry
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -634,6 +674,10 @@ func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, ob
 		}
 	}
 
+	if resp == nil {
+		return nil, false, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -671,6 +715,10 @@ func (c *Debugger) CompileScript(expression string, sourceURL string, persistScr
 		}
 	}
 
+	if resp == nil {
+		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -706,6 +754,10 @@ func (c *Debugger) RunScript(scriptId string, executionContextId int, objectGrou
 			Result           *RuntimeRemoteObject
 			ExceptionDetails *DebuggerExceptionDetails
 		}
+	}
+
+	if resp == nil {
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -754,6 +806,10 @@ func (c *Debugger) GetStepInPositions(callFrameId string) ([]*DebuggerLocation, 
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -780,6 +836,10 @@ func (c *Debugger) GetBacktrace() ([]*DebuggerCallFrame, *DebuggerStackTrace, er
 			CallFrames      []*DebuggerCallFrame
 			AsyncStackTrace *DebuggerStackTrace
 		}
+	}
+
+	if resp == nil {
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -843,6 +903,10 @@ func (c *Debugger) GetPromiseById(promiseId int, objectGroup string) (*RuntimeRe
 		Result struct {
 			Promise *RuntimeRemoteObject
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

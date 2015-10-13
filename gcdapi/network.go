@@ -340,6 +340,10 @@ func (c *Network) GetResponseBody(requestId string) (string, bool, error) {
 		}
 	}
 
+	if resp == nil {
+		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -399,6 +403,10 @@ func (c *Network) CanClearBrowserCache() (bool, error) {
 		}
 	}
 
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -431,6 +439,10 @@ func (c *Network) CanClearBrowserCookies() (bool, error) {
 		}
 	}
 
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -461,6 +473,10 @@ func (c *Network) GetCookies() ([]*NetworkCookie, error) {
 		Result struct {
 			Cookies []*NetworkCookie
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -498,6 +514,10 @@ func (c *Network) CanEmulateNetworkConditions() (bool, error) {
 		Result struct {
 			Result bool
 		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -560,6 +580,10 @@ func (c *Network) GetCertificateDetails(certificateId int) (*NetworkCertificateD
 		Result struct {
 			Result *NetworkCertificateDetails
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

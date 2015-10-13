@@ -32,6 +32,10 @@ func (c *Memory) GetDOMCounters() (int, int, int, error) {
 		}
 	}
 
+	if resp == nil {
+		return 0, 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)

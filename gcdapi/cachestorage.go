@@ -46,6 +46,10 @@ func (c *CacheStorage) RequestCacheNames(securityOrigin string) ([]*CacheStorage
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -79,6 +83,10 @@ func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize in
 			CacheDataEntries []*CacheStorageDataEntry
 			HasMore          bool
 		}
+	}
+
+	if resp == nil {
+		return nil, false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

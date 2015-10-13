@@ -109,6 +109,10 @@ func (c *HeapProfiler) GetObjectByHeapObjectId(objectId string, objectGroup stri
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -145,6 +149,10 @@ func (c *HeapProfiler) GetHeapObjectId(objectId string) (string, error) {
 		Result struct {
 			HeapSnapshotObjectId string
 		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

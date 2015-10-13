@@ -92,6 +92,10 @@ func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -122,6 +126,10 @@ func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
 		}
 	}
 
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -150,6 +158,10 @@ func (c *LayerTree) LoadSnapshot(tiles *LayerTreePictureTile) (string, error) {
 		Result struct {
 			SnapshotId string
 		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -196,6 +208,10 @@ func (c *LayerTree) ProfileSnapshot(snapshotId string, minRepeatCount int, minDu
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -232,6 +248,10 @@ func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, 
 		}
 	}
 
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -259,6 +279,10 @@ func (c *LayerTree) SnapshotCommandLog(snapshotId string) error {
 	var chromeData struct {
 		Result struct {
 		}
+	}
+
+	if resp == nil {
+		return &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

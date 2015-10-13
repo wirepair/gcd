@@ -224,6 +224,10 @@ func (c *ServiceWorker) GetTargetInfo(targetId string) (*ServiceWorkerTargetInfo
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)

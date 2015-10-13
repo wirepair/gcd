@@ -55,6 +55,10 @@ func (c *Power) CanProfilePower() (bool, error) {
 		}
 	}
 
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -80,6 +84,10 @@ func (c *Power) GetAccuracyLevel() (string, error) {
 		Result struct {
 			Result string
 		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

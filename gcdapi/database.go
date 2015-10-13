@@ -65,6 +65,10 @@ func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -97,6 +101,10 @@ func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []stri
 			Values      []string
 			SqlError    *DatabaseError
 		}
+	}
+
+	if resp == nil {
+		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

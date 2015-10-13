@@ -35,6 +35,8 @@ import (
 	"time"
 )
 
+var GCDVERSION = "1.1"
+
 // When we get an error reading the body from the debugger api endpoint
 type GcdBodyReadErr struct {
 	Message string
@@ -83,8 +85,8 @@ func NewChromeDebugger() *Gcd {
 }
 
 // Pass a handler to be notified when the chrome process exits.
-func (g *Gcd) SetTerminationHandler(handler TerminatedHandler) {
-	g.terminatedHandler = handler
+func (c *Gcd) SetTerminationHandler(handler TerminatedHandler) {
+	c.terminatedHandler = handler
 }
 
 // Set the timeout for how long we should wait for debug port to become available.
@@ -126,8 +128,13 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 		}
 		c.chromeProcess = c.chromeCmd.Process
 		err = c.chromeCmd.Wait()
+
+		closeMessage := "exited"
+		if err != nil {
+			closeMessage = err.Error()
+		}
 		if c.terminatedHandler != nil {
-			c.terminatedHandler(err.Error())
+			c.terminatedHandler(closeMessage)
 		}
 	}()
 	go c.probeDebugPort()

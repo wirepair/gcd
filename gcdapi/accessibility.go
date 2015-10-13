@@ -77,6 +77,10 @@ func (c *Accessibility) GetAXNode(nodeId int) (*AccessibilityAXNode, error) {
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)

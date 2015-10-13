@@ -80,6 +80,14 @@ func (cerr *ChromeRequestErr) Error() string {
 	return "request " + strconv.FormatInt(cerr.Resp.Id, 10) + " failed, code: " + strconv.FormatInt(cerr.Resp.Error.Code, 10) + " msg: " + cerr.Resp.Error.Message
 }
 
+// When a chrometarget crashes and we have to close response channels and return nil
+type ChromeEmptyResponseErr struct {
+}
+
+func (cerr *ChromeEmptyResponseErr) Error() string {
+	return "nil response received"
+}
+
 // default request object that has parameters.
 type ParamRequest struct {
 	Id     int64       `json:"id"`

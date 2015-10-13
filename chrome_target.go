@@ -198,8 +198,11 @@ func (c *ChromeTarget) listenWrite() {
 			c.replyLock.Lock()
 			c.replyDispatcher[msg.Id] = msg.ReplyCh
 			c.replyLock.Unlock()
-			//log.Println("Send:", string(msg.Data))
-			websocket.Message.Send(c.conn, string(msg.Data))
+
+			err := websocket.Message.Send(c.conn, string(msg.Data))
+			if err != nil {
+				c.doneCh <- true
+			}
 		// receive done from listenRead
 		case <-c.doneCh:
 			c.doneCh <- true // for listenRead method
@@ -258,6 +261,8 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	}
 	c.replyLock.Unlock()
 
+	c.checkTargetDisconnected(f.Method)
+
 	c.eventLock.RLock()
 	if r, ok := c.eventDispatcher[f.Method]; ok {
 		c.eventLock.RUnlock()
@@ -270,6 +275,20 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	if c.debugEvents == true {
 		log.Printf("\n\nno event recv bound for: %s\n", f.Method)
 		log.Printf("data: %s\n\n", string(msg))
+	}
+}
+
+// check target detached/crashed
+// close any replier channels that are open
+// dispatch detached / crashed event as usual
+func (c *ChromeTarget) checkTargetDisconnected(method string) {
+	switch method {
+	case "Inspector.targetCrashed", "Inspector.detached":
+		c.replyLock.Lock()
+		for _, replyCh := range c.replyDispatcher {
+			close(replyCh)
+		}
+		c.replyLock.Unlock()
 	}
 }
 

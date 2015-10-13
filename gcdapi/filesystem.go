@@ -62,6 +62,10 @@ func (c *FileSystem) RequestFileSystemRoot(origin string, theType string) (int, 
 		}
 	}
 
+	if resp == nil {
+		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -93,6 +97,10 @@ func (c *FileSystem) RequestDirectoryContent(url string) (int, []*FileSystemEntr
 		}
 	}
 
+	if resp == nil {
+		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -122,6 +130,10 @@ func (c *FileSystem) RequestMetadata(url string) (int, *FileSystemMetadata, erro
 			ErrorCode int
 			Metadata  *FileSystemMetadata
 		}
+	}
+
+	if resp == nil {
+		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -164,6 +176,10 @@ func (c *FileSystem) RequestFileContent(url string, readAsText bool, start int, 
 		}
 	}
 
+	if resp == nil {
+		return 0, "", "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -192,6 +208,10 @@ func (c *FileSystem) DeleteEntry(url string) (int, error) {
 		Result struct {
 			ErrorCode int
 		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

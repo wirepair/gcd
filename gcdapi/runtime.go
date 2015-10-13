@@ -145,6 +145,10 @@ func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommand
 		}
 	}
 
+	if resp == nil {
+		return nil, false, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -186,6 +190,10 @@ func (c *Runtime) CallFunctionOn(objectId string, functionDeclaration string, ar
 		}
 	}
 
+	if resp == nil {
+		return nil, false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -222,6 +230,10 @@ func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPro
 			InternalProperties []*RuntimeInternalPropertyDescriptor
 			ExceptionDetails   *DebuggerExceptionDetails
 		}
+	}
+
+	if resp == nil {
+		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -280,6 +292,10 @@ func (c *Runtime) IsRunRequired() (bool, error) {
 		Result struct {
 			Result bool
 		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

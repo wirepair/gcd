@@ -210,6 +210,10 @@ func (c *CSS) GetMatchedStylesForNode(nodeId int, excludePseudo bool, excludeInh
 		}
 	}
 
+	if resp == nil {
+		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -239,6 +243,10 @@ func (c *CSS) GetInlineStylesForNode(nodeId int) (*CSSCSSStyle, *CSSCSSStyle, er
 			InlineStyle     *CSSCSSStyle
 			AttributesStyle *CSSCSSStyle
 		}
+	}
+
+	if resp == nil {
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -271,6 +279,10 @@ func (c *CSS) GetComputedStyleForNode(nodeId int) ([]*CSSCSSComputedStylePropert
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -301,6 +313,10 @@ func (c *CSS) GetPlatformFontsForNode(nodeId int) ([]*CSSPlatformFontUsage, erro
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -329,6 +345,10 @@ func (c *CSS) GetStyleSheetText(styleSheetId string) (string, error) {
 		Result struct {
 			Text string
 		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -375,6 +395,10 @@ func (c *CSS) SetRuleSelector(styleSheetId string, theRange *CSSSourceRange, sel
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -407,6 +431,10 @@ func (c *CSS) SetStyleText(styleSheetId string, theRange *CSSSourceRange, text s
 		Result struct {
 			Style *CSSCSSStyle
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -443,6 +471,10 @@ func (c *CSS) SetMediaText(styleSheetId string, theRange *CSSSourceRange, text s
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -471,6 +503,10 @@ func (c *CSS) CreateStyleSheet(frameId string) (string, error) {
 		Result struct {
 			StyleSheetId string
 		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -505,6 +541,10 @@ func (c *CSS) AddRule(styleSheetId string, ruleText string, location *CSSSourceR
 		Result struct {
 			Rule *CSSCSSRule
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -542,6 +582,10 @@ func (c *CSS) GetMediaQueries() ([]*CSSCSSMedia, error) {
 		Result struct {
 			Medias []*CSSCSSMedia
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

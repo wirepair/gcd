@@ -67,6 +67,10 @@ func (c *Tracing) GetCategories() ([]string, error) {
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -93,6 +97,10 @@ func (c *Tracing) RequestMemoryDump() (string, bool, error) {
 			DumpGuid string
 			Success  bool
 		}
+	}
+
+	if resp == nil {
+		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

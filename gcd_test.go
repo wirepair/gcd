@@ -101,6 +101,37 @@ func TestProcessKilled(t *testing.T) {
 DONE:
 }
 
+func TestTargetCrashed(t *testing.T) {
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+
+	doneCh := make(chan struct{})
+	timeout := time.NewTimer(time.Second * 10)
+
+	targetCrashedFn := func(targ *ChromeTarget, payload []byte) {
+		t.Logf("reason: %s\n", string(payload))
+		doneCh <- struct{}{}
+	}
+
+	tab, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error creating new tab")
+	}
+
+	tab.Subscribe("Inspector.targetCrashed", targetCrashedFn)
+	go func() {
+		<-timeout.C
+		t.Fatalf("timed out waiting for crashed to be handled")
+	}()
+
+	_, err = tab.Page.Navigate("chrome://crash")
+	if err == nil {
+		t.Fatalf("Navigation should have failed")
+	}
+
+	<-doneCh
+}
+
 func TestEvents(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()

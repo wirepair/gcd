@@ -71,6 +71,10 @@ func (c *ApplicationCache) GetFramesWithManifests() ([]*ApplicationCacheFrameWit
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -106,6 +110,10 @@ func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
 		}
 	}
 
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -134,6 +142,10 @@ func (c *ApplicationCache) GetApplicationCacheForFrame(frameId string) (*Applica
 		Result struct {
 			ApplicationCache *ApplicationCacheApplicationCache
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

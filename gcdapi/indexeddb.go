@@ -98,6 +98,10 @@ func (c *IndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error
 		}
 	}
 
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -128,6 +132,10 @@ func (c *IndexedDB) RequestDatabase(securityOrigin string, databaseName string) 
 		Result struct {
 			DatabaseWithObjectStores *IndexedDBDatabaseWithObjectStores
 		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
@@ -171,6 +179,10 @@ func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, obje
 			ObjectStoreDataEntries []*IndexedDBDataEntry
 			HasMore                bool
 		}
+	}
+
+	if resp == nil {
+		return nil, false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first

@@ -78,6 +78,10 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() ({{range $rets := .Returns}}{{if $
 		}
 	}
 
+	if resp == nil {
+		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeEmptyResponseErr{}
+	}
+
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
@@ -108,6 +112,10 @@ func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameter
 		Result struct { {{range $rets := .Returns}}
 			{{$rets.Name | Title | Reserved }}  {{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}} {{end}}
 		}
+	}
+
+	if resp == nil {
+		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
