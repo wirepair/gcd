@@ -25,11 +25,16 @@ var (
 )
 
 func init() {
-	flag.StringVar(&testPath, "chrome", "/usr/bin/chromium-browser", "path to chrome")
-	flag.StringVar(&testDir, "dir", "/tmp/", "user directory")
-	if runtime.GOOS == "windows" {
+	switch runtime.GOOS {
+	case "windows":
 		flag.StringVar(&testPath, "chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "path to chrome")
 		flag.StringVar(&testDir, "dir", "C:\\temp\\", "user directory")
+	case "darwin":
+		flag.StringVar(&testPath, "chrome", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "path to chrome")
+		flag.StringVar(&testDir, "dir", "/tmp/", "user directory")
+	case "linux":
+		flag.StringVar(&testPath, "chrome", "/usr/bin/chromium-browser", "path to chrome")
+		flag.StringVar(&testDir, "dir", "/tmp/", "user directory")
 	}
 
 	flag.StringVar(&testPort, "port", "9222", "Debugger port")

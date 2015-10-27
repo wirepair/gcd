@@ -116,6 +116,10 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 	c.flags = append(c.flags, fmt.Sprintf("--user-data-dir=%s", userDir))
 	// debug port to use
 	c.flags = append(c.flags, fmt.Sprintf("--remote-debugging-port=%s", port))
+	// bypass first run check
+	c.flags = append(c.flags, "--no-first-run")
+	// bypass default browser check
+	c.flags = append(c.flags, "--no-default-browser-check")
 
 	c.chromeCmd = exec.Command(exePath, c.flags...)
 	// add custom environment variables.
