@@ -80,7 +80,7 @@ func (cerr *ChromeRequestErr) Error() string {
 	return "request " + strconv.FormatInt(cerr.Resp.Id, 10) + " failed, code: " + strconv.FormatInt(cerr.Resp.Error.Code, 10) + " msg: " + cerr.Resp.Error.Message
 }
 
-// When a chrometarget crashes and we have to close response channels and return nil
+// When a ChromeTarget crashes and we have to close response channels and return nil
 type ChromeEmptyResponseErr struct {
 }
 
@@ -120,6 +120,11 @@ func SendDefaultRequest(sendCh chan<- *Message, paramRequest *ParamRequest) (*Ch
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
 	sendCh <- sendMsg
 	resp := <-recvCh
+
+	if resp == nil || resp.Data == nil {
+		return nil, &ChromeEmptyResponseErr{}
+	}
+
 	chromeResponse := &ChromeResponse{}
 	err = json.Unmarshal(resp.Data, chromeResponse)
 	if err != nil {
