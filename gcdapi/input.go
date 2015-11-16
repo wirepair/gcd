@@ -58,7 +58,7 @@ func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float6
 	paramRequest["autoRepeat"] = autoRepeat
 	paramRequest["isKeypad"] = isKeypad
 	paramRequest["isSystemKey"] = isSystemKey
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchKeyEvent", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchKeyEvent", Params: paramRequest})
 }
 
 // DispatchMouseEvent - Dispatches a mouse event to the page.
@@ -78,7 +78,7 @@ func (c *Input) DispatchMouseEvent(theType string, x int, y int, modifiers int, 
 	paramRequest["timestamp"] = timestamp
 	paramRequest["button"] = button
 	paramRequest["clickCount"] = clickCount
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchMouseEvent", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchMouseEvent", Params: paramRequest})
 }
 
 // DispatchTouchEvent - Dispatches a touch event to the page.
@@ -92,7 +92,7 @@ func (c *Input) DispatchTouchEvent(theType string, touchPoints *InputTouchPoint,
 	paramRequest["touchPoints"] = touchPoints
 	paramRequest["modifiers"] = modifiers
 	paramRequest["timestamp"] = timestamp
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchTouchEvent", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchTouchEvent", Params: paramRequest})
 }
 
 // EmulateTouchFromMouseEvent - Emulates touch event from the mouse event parameters.
@@ -116,7 +116,7 @@ func (c *Input) EmulateTouchFromMouseEvent(theType string, x int, y int, timesta
 	paramRequest["deltaY"] = deltaY
 	paramRequest["modifiers"] = modifiers
 	paramRequest["clickCount"] = clickCount
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.emulateTouchFromMouseEvent", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.emulateTouchFromMouseEvent", Params: paramRequest})
 }
 
 // SynthesizePinchGesture - Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
@@ -132,7 +132,7 @@ func (c *Input) SynthesizePinchGesture(x int, y int, scaleFactor float64, relati
 	paramRequest["scaleFactor"] = scaleFactor
 	paramRequest["relativeSpeed"] = relativeSpeed
 	paramRequest["gestureSourceType"] = gestureSourceType
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizePinchGesture", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizePinchGesture", Params: paramRequest})
 }
 
 // SynthesizeScrollGesture - Synthesizes a scroll gesture over a time period by issuing appropriate touch events.
@@ -162,7 +162,7 @@ func (c *Input) SynthesizeScrollGesture(x int, y int, xDistance int, yDistance i
 	paramRequest["repeatCount"] = repeatCount
 	paramRequest["repeatDelayMs"] = repeatDelayMs
 	paramRequest["interactionMarkerName"] = interactionMarkerName
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeScrollGesture", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeScrollGesture", Params: paramRequest})
 }
 
 // SynthesizeTapGesture - Synthesizes a tap gesture over a time period by issuing appropriate touch events.
@@ -178,5 +178,5 @@ func (c *Input) SynthesizeTapGesture(x int, y int, duration int, tapCount int, g
 	paramRequest["duration"] = duration
 	paramRequest["tapCount"] = tapCount
 	paramRequest["gestureSourceType"] = gestureSourceType
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeTapGesture", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeTapGesture", Params: paramRequest})
 }

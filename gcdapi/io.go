@@ -28,8 +28,10 @@ func (c *IO) Read(handle string, offset int, size int) (string, bool, error) {
 	paramRequest["handle"] = handle
 	paramRequest["offset"] = offset
 	paramRequest["size"] = size
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: paramRequest})
+	if err != nil {
+		return "", false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -49,8 +51,7 @@ func (c *IO) Read(handle string, offset int, size int) (string, bool, error) {
 		return "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
 	}
 
@@ -62,5 +63,5 @@ func (c *IO) Read(handle string, offset int, size int) (string, bool, error) {
 func (c *IO) Close(handle string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["handle"] = handle
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: paramRequest})
 }

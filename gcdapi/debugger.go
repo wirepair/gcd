@@ -203,12 +203,12 @@ func NewDebugger(target gcdmessage.ChromeTargeter) *Debugger {
 
 // Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
 func (c *Debugger) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enable"})
 }
 
 // Disables debugger for given page.
 func (c *Debugger) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disable"})
 }
 
 // SetBreakpointsActive - Activates / deactivates all breakpoints on the page.
@@ -216,7 +216,7 @@ func (c *Debugger) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *Debugger) SetBreakpointsActive(active bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["active"] = active
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointsActive", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointsActive", Params: paramRequest})
 }
 
 // SetSkipAllPauses - Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
@@ -224,7 +224,7 @@ func (c *Debugger) SetBreakpointsActive(active bool) (*gcdmessage.ChromeResponse
 func (c *Debugger) SetSkipAllPauses(skipped bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["skipped"] = skipped
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setSkipAllPauses", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setSkipAllPauses", Params: paramRequest})
 }
 
 // SetBreakpointByUrl - Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in <code>locations</code> property. Further matching script parsing will result in subsequent <code>breakpointResolved</code> events issued. This logical breakpoint will survive page reloads.
@@ -241,8 +241,10 @@ func (c *Debugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex strin
 	paramRequest["urlRegex"] = urlRegex
 	paramRequest["columnNumber"] = columnNumber
 	paramRequest["condition"] = condition
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointByUrl", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointByUrl", Params: paramRequest})
+	if err != nil {
+		return "", nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -262,8 +264,7 @@ func (c *Debugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex strin
 		return "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, err
 	}
 
@@ -278,8 +279,10 @@ func (c *Debugger) SetBreakpoint(location *DebuggerLocation, condition string) (
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["location"] = location
 	paramRequest["condition"] = condition
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpoint", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpoint", Params: paramRequest})
+	if err != nil {
+		return "", nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -299,8 +302,7 @@ func (c *Debugger) SetBreakpoint(location *DebuggerLocation, condition string) (
 		return "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, err
 	}
 
@@ -312,7 +314,7 @@ func (c *Debugger) SetBreakpoint(location *DebuggerLocation, condition string) (
 func (c *Debugger) RemoveBreakpoint(breakpointId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["breakpointId"] = breakpointId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.removeBreakpoint", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.removeBreakpoint", Params: paramRequest})
 }
 
 // ContinueToLocation - Continues execution until specific location is reached.
@@ -322,37 +324,37 @@ func (c *Debugger) ContinueToLocation(location *DebuggerLocation, interstatement
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["location"] = location
 	paramRequest["interstatementLocation"] = interstatementLocation
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.continueToLocation", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.continueToLocation", Params: paramRequest})
 }
 
 // Steps over the statement.
 func (c *Debugger) StepOver() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOver"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOver"})
 }
 
 // Steps into the function call.
 func (c *Debugger) StepInto() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepInto"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepInto"})
 }
 
 // Steps out of the function call.
 func (c *Debugger) StepOut() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOut"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOut"})
 }
 
 // Stops on the next JavaScript statement.
 func (c *Debugger) Pause() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.pause"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.pause"})
 }
 
 // Resumes JavaScript execution.
 func (c *Debugger) Resume() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.resume"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.resume"})
 }
 
 // Steps into the first async operation handler that was scheduled by or after the current statement.
 func (c *Debugger) StepIntoAsync() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepIntoAsync"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepIntoAsync"})
 }
 
 // SearchInContent - Searches for given string in script content.
@@ -367,8 +369,10 @@ func (c *Debugger) SearchInContent(scriptId string, query string, caseSensitive 
 	paramRequest["query"] = query
 	paramRequest["caseSensitive"] = caseSensitive
 	paramRequest["isRegex"] = isRegex
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.searchInContent", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.searchInContent", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -387,8 +391,7 @@ func (c *Debugger) SearchInContent(scriptId string, query string, caseSensitive 
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -398,8 +401,10 @@ func (c *Debugger) SearchInContent(scriptId string, query string, caseSensitive 
 // CanSetScriptSource - Always returns true.
 // Returns -  result - True if <code>setScriptSource</code> is supported.
 func (c *Debugger) CanSetScriptSource() (bool, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.canSetScriptSource"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.canSetScriptSource"})
+	if err != nil {
+		return false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -418,8 +423,7 @@ func (c *Debugger) CanSetScriptSource() (bool, error) {
 		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -436,8 +440,10 @@ func (c *Debugger) SetScriptSource(scriptId string, scriptSource string, preview
 	paramRequest["scriptId"] = scriptId
 	paramRequest["scriptSource"] = scriptSource
 	paramRequest["preview"] = preview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setScriptSource", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setScriptSource", Params: paramRequest})
+	if err != nil {
+		return nil, false, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -458,8 +464,7 @@ func (c *Debugger) SetScriptSource(scriptId string, scriptSource string, preview
 		return nil, false, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, nil, err
 	}
 
@@ -472,8 +477,10 @@ func (c *Debugger) SetScriptSource(scriptId string, scriptSource string, preview
 func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *DebuggerStackTrace, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["callFrameId"] = callFrameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.restartFrame", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.restartFrame", Params: paramRequest})
+	if err != nil {
+		return nil, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -493,8 +500,7 @@ func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *Debu
 		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -507,8 +513,10 @@ func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *Debu
 func (c *Debugger) GetScriptSource(scriptId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["scriptId"] = scriptId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -527,8 +535,7 @@ func (c *Debugger) GetScriptSource(scriptId string) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -541,8 +548,10 @@ func (c *Debugger) GetScriptSource(scriptId string) (string, error) {
 func (c *Debugger) GetFunctionDetails(functionId string) (*DebuggerFunctionDetails, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["functionId"] = functionId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getFunctionDetails", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getFunctionDetails", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -561,8 +570,7 @@ func (c *Debugger) GetFunctionDetails(functionId string) (*DebuggerFunctionDetai
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -575,8 +583,10 @@ func (c *Debugger) GetFunctionDetails(functionId string) (*DebuggerFunctionDetai
 func (c *Debugger) GetGeneratorObjectDetails(objectId string) (*DebuggerGeneratorObjectDetails, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getGeneratorObjectDetails", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getGeneratorObjectDetails", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -595,8 +605,7 @@ func (c *Debugger) GetGeneratorObjectDetails(objectId string) (*DebuggerGenerato
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -609,8 +618,10 @@ func (c *Debugger) GetGeneratorObjectDetails(objectId string) (*DebuggerGenerato
 func (c *Debugger) GetCollectionEntries(objectId string) ([]*DebuggerCollectionEntry, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getCollectionEntries", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getCollectionEntries", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -629,8 +640,7 @@ func (c *Debugger) GetCollectionEntries(objectId string) ([]*DebuggerCollectionE
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -642,7 +652,7 @@ func (c *Debugger) GetCollectionEntries(objectId string) ([]*DebuggerCollectionE
 func (c *Debugger) SetPauseOnExceptions(state string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["state"] = state
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setPauseOnExceptions", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setPauseOnExceptions", Params: paramRequest})
 }
 
 // EvaluateOnCallFrame - Evaluates expression on a given call frame.
@@ -663,8 +673,10 @@ func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, ob
 	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
 	paramRequest["returnByValue"] = returnByValue
 	paramRequest["generatePreview"] = generatePreview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.evaluateOnCallFrame", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.evaluateOnCallFrame", Params: paramRequest})
+	if err != nil {
+		return nil, false, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -685,8 +697,7 @@ func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, ob
 		return nil, false, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, nil, err
 	}
 
@@ -705,8 +716,10 @@ func (c *Debugger) CompileScript(expression string, sourceURL string, persistScr
 	paramRequest["sourceURL"] = sourceURL
 	paramRequest["persistScript"] = persistScript
 	paramRequest["executionContextId"] = executionContextId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.compileScript", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.compileScript", Params: paramRequest})
+	if err != nil {
+		return "", nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -726,8 +739,7 @@ func (c *Debugger) CompileScript(expression string, sourceURL string, persistScr
 		return "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, err
 	}
 
@@ -746,8 +758,10 @@ func (c *Debugger) RunScript(scriptId string, executionContextId int, objectGrou
 	paramRequest["executionContextId"] = executionContextId
 	paramRequest["objectGroup"] = objectGroup
 	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.runScript", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.runScript", Params: paramRequest})
+	if err != nil {
+		return nil, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -767,8 +781,7 @@ func (c *Debugger) RunScript(scriptId string, executionContextId int, objectGrou
 		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -788,7 +801,7 @@ func (c *Debugger) SetVariableValue(scopeNumber int, variableName string, newVal
 	paramRequest["newValue"] = newValue
 	paramRequest["callFrameId"] = callFrameId
 	paramRequest["functionObjectId"] = functionObjectId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setVariableValue", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setVariableValue", Params: paramRequest})
 }
 
 // GetStepInPositions - Lists all positions where step-in is possible for a current statement in a specified call frame
@@ -797,8 +810,10 @@ func (c *Debugger) SetVariableValue(scopeNumber int, variableName string, newVal
 func (c *Debugger) GetStepInPositions(callFrameId string) ([]*DebuggerLocation, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["callFrameId"] = callFrameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getStepInPositions", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getStepInPositions", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -817,8 +832,7 @@ func (c *Debugger) GetStepInPositions(callFrameId string) ([]*DebuggerLocation, 
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -828,8 +842,10 @@ func (c *Debugger) GetStepInPositions(callFrameId string) ([]*DebuggerLocation, 
 // GetBacktrace - Returns call stack including variables changed since VM was paused. VM must be paused.
 // Returns -  callFrames - Call stack the virtual machine stopped on. asyncStackTrace - Async stack trace, if any.
 func (c *Debugger) GetBacktrace() ([]*DebuggerCallFrame, *DebuggerStackTrace, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getBacktrace"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getBacktrace"})
+	if err != nil {
+		return nil, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -849,8 +865,7 @@ func (c *Debugger) GetBacktrace() ([]*DebuggerCallFrame, *DebuggerStackTrace, er
 		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -864,7 +879,7 @@ func (c *Debugger) SkipStackFrames(script string, skipContentScripts bool) (*gcd
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["script"] = script
 	paramRequest["skipContentScripts"] = skipContentScripts
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.skipStackFrames", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.skipStackFrames", Params: paramRequest})
 }
 
 // SetAsyncCallStackDepth - Enables or disables async call stacks tracking.
@@ -872,7 +887,7 @@ func (c *Debugger) SkipStackFrames(script string, skipContentScripts bool) (*gcd
 func (c *Debugger) SetAsyncCallStackDepth(maxDepth int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["maxDepth"] = maxDepth
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setAsyncCallStackDepth", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setAsyncCallStackDepth", Params: paramRequest})
 }
 
 // EnablePromiseTracker - Enables promise tracking, information about <code>Promise</code>s created or updated will now be stored on the backend.
@@ -880,12 +895,12 @@ func (c *Debugger) SetAsyncCallStackDepth(maxDepth int) (*gcdmessage.ChromeRespo
 func (c *Debugger) EnablePromiseTracker(captureStacks bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["captureStacks"] = captureStacks
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enablePromiseTracker", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enablePromiseTracker", Params: paramRequest})
 }
 
 // Disables promise tracking.
 func (c *Debugger) DisablePromiseTracker() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disablePromiseTracker"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disablePromiseTracker"})
 }
 
 // GetPromiseById - Returns <code>Promise</code> with specified ID.
@@ -896,8 +911,10 @@ func (c *Debugger) GetPromiseById(promiseId int, objectGroup string) (*RuntimeRe
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["promiseId"] = promiseId
 	paramRequest["objectGroup"] = objectGroup
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getPromiseById", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getPromiseById", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -916,8 +933,7 @@ func (c *Debugger) GetPromiseById(promiseId int, objectGroup string) (*RuntimeRe
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -926,7 +942,7 @@ func (c *Debugger) GetPromiseById(promiseId int, objectGroup string) (*RuntimeRe
 
 // Fires pending <code>asyncOperationStarted</code> events (if any), as if a debugger stepping session has just been started.
 func (c *Debugger) FlushAsyncOperationEvents() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.flushAsyncOperationEvents"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.flushAsyncOperationEvents"})
 }
 
 // SetAsyncOperationBreakpoint - Sets breakpoint on AsyncOperation callback handler.
@@ -934,7 +950,7 @@ func (c *Debugger) FlushAsyncOperationEvents() (*gcdmessage.ChromeResponse, erro
 func (c *Debugger) SetAsyncOperationBreakpoint(operationId int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["operationId"] = operationId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setAsyncOperationBreakpoint", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setAsyncOperationBreakpoint", Params: paramRequest})
 }
 
 // RemoveAsyncOperationBreakpoint - Removes AsyncOperation breakpoint.
@@ -942,5 +958,5 @@ func (c *Debugger) SetAsyncOperationBreakpoint(operationId int) (*gcdmessage.Chr
 func (c *Debugger) RemoveAsyncOperationBreakpoint(operationId int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["operationId"] = operationId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.removeAsyncOperationBreakpoint", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.removeAsyncOperationBreakpoint", Params: paramRequest})
 }

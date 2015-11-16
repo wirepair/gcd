@@ -37,8 +37,10 @@ func NewCacheStorage(target gcdmessage.ChromeTargeter) *CacheStorage {
 func (c *CacheStorage) RequestCacheNames(securityOrigin string) ([]*CacheStorageCache, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["securityOrigin"] = securityOrigin
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCacheNames", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCacheNames", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -57,8 +59,7 @@ func (c *CacheStorage) RequestCacheNames(securityOrigin string) ([]*CacheStorage
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -75,8 +76,10 @@ func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize in
 	paramRequest["cacheId"] = cacheId
 	paramRequest["skipCount"] = skipCount
 	paramRequest["pageSize"] = pageSize
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestEntries", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestEntries", Params: paramRequest})
+	if err != nil {
+		return nil, false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -96,8 +99,7 @@ func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize in
 		return nil, false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, err
 	}
 
@@ -109,7 +111,7 @@ func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize in
 func (c *CacheStorage) DeleteCache(cacheId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["cacheId"] = cacheId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteCache", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteCache", Params: paramRequest})
 }
 
 // DeleteEntry - Deletes a cache entry.
@@ -119,5 +121,5 @@ func (c *CacheStorage) DeleteEntry(cacheId string, request string) (*gcdmessage.
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["cacheId"] = cacheId
 	paramRequest["request"] = request
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteEntry", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteEntry", Params: paramRequest})
 }

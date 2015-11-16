@@ -73,15 +73,15 @@ func NewConsole(target gcdmessage.ChromeTargeter) *Console {
 
 // Enables console domain, sends the messages collected so far to the client by means of the <code>messageAdded</code> notification.
 func (c *Console) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Console.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Console.enable"})
 }
 
 // Disables console domain, prevents further console messages from being reported to the client.
 func (c *Console) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Console.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Console.disable"})
 }
 
 // Clears console messages collected in the browser.
 func (c *Console) ClearMessages() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Console.clearMessages"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Console.clearMessages"})
 }

@@ -47,19 +47,21 @@ func (c *Tracing) Start(categories string, options string, bufferUsageReportingI
 	paramRequest["options"] = options
 	paramRequest["bufferUsageReportingInterval"] = bufferUsageReportingInterval
 	paramRequest["transferMode"] = transferMode
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.start", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.start", Params: paramRequest})
 }
 
 // Stop trace events collection.
 func (c *Tracing) End() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.end"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.end"})
 }
 
 // GetCategories - Gets supported tracing categories.
 // Returns -  categories - A list of supported tracing categories.
 func (c *Tracing) GetCategories() ([]string, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.getCategories"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.getCategories"})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -78,8 +80,7 @@ func (c *Tracing) GetCategories() ([]string, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -89,8 +90,10 @@ func (c *Tracing) GetCategories() ([]string, error) {
 // RequestMemoryDump - Request a global memory dump.
 // Returns -  dumpGuid - GUID of the resulting global memory dump. success - True iff the global memory dump succeeded.
 func (c *Tracing) RequestMemoryDump() (string, bool, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.requestMemoryDump"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.requestMemoryDump"})
+	if err != nil {
+		return "", false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -110,8 +113,7 @@ func (c *Tracing) RequestMemoryDump() (string, bool, error) {
 		return "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
 	}
 

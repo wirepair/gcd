@@ -115,12 +115,12 @@ func NewServiceWorker(target gcdmessage.ChromeTargeter) *ServiceWorker {
 
 //
 func (c *ServiceWorker) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.enable"})
 }
 
 //
 func (c *ServiceWorker) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.disable"})
 }
 
 // SendMessage -
@@ -130,7 +130,7 @@ func (c *ServiceWorker) SendMessage(workerId string, message string) (*gcdmessag
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["workerId"] = workerId
 	paramRequest["message"] = message
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.sendMessage", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.sendMessage", Params: paramRequest})
 }
 
 // Stop -
@@ -138,7 +138,7 @@ func (c *ServiceWorker) SendMessage(workerId string, message string) (*gcdmessag
 func (c *ServiceWorker) Stop(workerId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["workerId"] = workerId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stop", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stop", Params: paramRequest})
 }
 
 // Unregister -
@@ -146,7 +146,7 @@ func (c *ServiceWorker) Stop(workerId string) (*gcdmessage.ChromeResponse, error
 func (c *ServiceWorker) Unregister(scopeURL string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["scopeURL"] = scopeURL
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.unregister", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.unregister", Params: paramRequest})
 }
 
 // UpdateRegistration -
@@ -154,7 +154,7 @@ func (c *ServiceWorker) Unregister(scopeURL string) (*gcdmessage.ChromeResponse,
 func (c *ServiceWorker) UpdateRegistration(scopeURL string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["scopeURL"] = scopeURL
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.updateRegistration", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.updateRegistration", Params: paramRequest})
 }
 
 // StartWorker -
@@ -162,7 +162,7 @@ func (c *ServiceWorker) UpdateRegistration(scopeURL string) (*gcdmessage.ChromeR
 func (c *ServiceWorker) StartWorker(scopeURL string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["scopeURL"] = scopeURL
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.startWorker", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.startWorker", Params: paramRequest})
 }
 
 // StopWorker -
@@ -170,7 +170,7 @@ func (c *ServiceWorker) StartWorker(scopeURL string) (*gcdmessage.ChromeResponse
 func (c *ServiceWorker) StopWorker(versionId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["versionId"] = versionId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stopWorker", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stopWorker", Params: paramRequest})
 }
 
 // InspectWorker -
@@ -178,7 +178,7 @@ func (c *ServiceWorker) StopWorker(versionId string) (*gcdmessage.ChromeResponse
 func (c *ServiceWorker) InspectWorker(versionId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["versionId"] = versionId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.inspectWorker", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.inspectWorker", Params: paramRequest})
 }
 
 // SkipWaiting -
@@ -186,7 +186,7 @@ func (c *ServiceWorker) InspectWorker(versionId string) (*gcdmessage.ChromeRespo
 func (c *ServiceWorker) SkipWaiting(versionId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["versionId"] = versionId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.skipWaiting", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.skipWaiting", Params: paramRequest})
 }
 
 // SetDebugOnStart -
@@ -194,7 +194,7 @@ func (c *ServiceWorker) SkipWaiting(versionId string) (*gcdmessage.ChromeRespons
 func (c *ServiceWorker) SetDebugOnStart(debugOnStart bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["debugOnStart"] = debugOnStart
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.setDebugOnStart", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.setDebugOnStart", Params: paramRequest})
 }
 
 // DeliverPushMessage -
@@ -206,7 +206,7 @@ func (c *ServiceWorker) DeliverPushMessage(origin string, registrationId string,
 	paramRequest["origin"] = origin
 	paramRequest["registrationId"] = registrationId
 	paramRequest["data"] = data
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.deliverPushMessage", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.deliverPushMessage", Params: paramRequest})
 }
 
 // GetTargetInfo -
@@ -215,8 +215,10 @@ func (c *ServiceWorker) DeliverPushMessage(origin string, registrationId string,
 func (c *ServiceWorker) GetTargetInfo(targetId string) (*ServiceWorkerTargetInfo, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["targetId"] = targetId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.getTargetInfo", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.getTargetInfo", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -235,8 +237,7 @@ func (c *ServiceWorker) GetTargetInfo(targetId string) (*ServiceWorkerTargetInfo
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -248,5 +249,5 @@ func (c *ServiceWorker) GetTargetInfo(targetId string) (*ServiceWorkerTargetInfo
 func (c *ServiceWorker) ActivateTarget(targetId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["targetId"] = targetId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.activateTarget", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.activateTarget", Params: paramRequest})
 }

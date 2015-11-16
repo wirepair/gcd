@@ -69,12 +69,12 @@ func NewLayerTree(target gcdmessage.ChromeTargeter) *LayerTree {
 
 // Enables compositing tree inspection.
 func (c *LayerTree) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.enable"})
 }
 
 // Disables compositing tree inspection.
 func (c *LayerTree) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.disable"})
 }
 
 // CompositingReasons - Provides the reasons why the given layer was composited.
@@ -83,8 +83,10 @@ func (c *LayerTree) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["layerId"] = layerId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -103,8 +105,7 @@ func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -117,8 +118,10 @@ func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
 func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["layerId"] = layerId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -137,8 +140,7 @@ func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -151,8 +153,10 @@ func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
 func (c *LayerTree) LoadSnapshot(tiles *LayerTreePictureTile) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["tiles"] = tiles
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -171,8 +175,7 @@ func (c *LayerTree) LoadSnapshot(tiles *LayerTreePictureTile) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -184,7 +187,7 @@ func (c *LayerTree) LoadSnapshot(tiles *LayerTreePictureTile) (string, error) {
 func (c *LayerTree) ReleaseSnapshot(snapshotId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["snapshotId"] = snapshotId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.releaseSnapshot", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.releaseSnapshot", Params: paramRequest})
 }
 
 // ProfileSnapshot -
@@ -199,8 +202,10 @@ func (c *LayerTree) ProfileSnapshot(snapshotId string, minRepeatCount int, minDu
 	paramRequest["minRepeatCount"] = minRepeatCount
 	paramRequest["minDuration"] = minDuration
 	paramRequest["clipRect"] = clipRect
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -219,8 +224,7 @@ func (c *LayerTree) ProfileSnapshot(snapshotId string, minRepeatCount int, minDu
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -239,8 +243,10 @@ func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, 
 	paramRequest["fromStep"] = fromStep
 	paramRequest["toStep"] = toStep
 	paramRequest["scale"] = scale
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.replaySnapshot", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.replaySnapshot", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -259,8 +265,7 @@ func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, 
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -273,8 +278,10 @@ func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, 
 func (c *LayerTree) SnapshotCommandLog(snapshotId string) error {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["snapshotId"] = snapshotId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.snapshotCommandLog", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.snapshotCommandLog", Params: paramRequest})
+	if err != nil {
+		return err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -292,8 +299,7 @@ func (c *LayerTree) SnapshotCommandLog(snapshotId string) error {
 		return &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return err
 	}
 

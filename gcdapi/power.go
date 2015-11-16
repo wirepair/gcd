@@ -35,19 +35,21 @@ func NewPower(target gcdmessage.ChromeTargeter) *Power {
 
 // Start power events collection.
 func (c *Power) Start() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Power.start"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Power.start"})
 }
 
 // Stop power events collection.
 func (c *Power) End() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Power.end"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Power.end"})
 }
 
 // CanProfilePower - Tells whether power profiling is supported.
 // Returns -  result - True if power profiling is supported.
 func (c *Power) CanProfilePower() (bool, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Power.canProfilePower"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Power.canProfilePower"})
+	if err != nil {
+		return false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -66,8 +68,7 @@ func (c *Power) CanProfilePower() (bool, error) {
 		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -77,8 +78,10 @@ func (c *Power) CanProfilePower() (bool, error) {
 // GetAccuracyLevel - Describes the accuracy level of the data provider.
 // Returns -  result -
 func (c *Power) GetAccuracyLevel() (string, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Power.getAccuracyLevel"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Power.getAccuracyLevel"})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -97,8 +100,7 @@ func (c *Power) GetAccuracyLevel() (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 

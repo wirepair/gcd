@@ -231,19 +231,21 @@ func NewDOM(target gcdmessage.ChromeTargeter) *DOM {
 
 // Enables DOM agent for the given page.
 func (c *DOM) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.enable"})
 }
 
 // Disables DOM agent for the given page.
 func (c *DOM) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.disable"})
 }
 
 // GetDocument - Returns the root DOM node to the caller.
 // Returns -  root - Resulting node.
 func (c *DOM) GetDocument() (*DOMNode, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getDocument"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getDocument"})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -262,8 +264,7 @@ func (c *DOM) GetDocument() (*DOMNode, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -277,7 +278,7 @@ func (c *DOM) RequestChildNodes(nodeId int, depth int) (*gcdmessage.ChromeRespon
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["depth"] = depth
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestChildNodes", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestChildNodes", Params: paramRequest})
 }
 
 // QuerySelector - Executes <code>querySelector</code> on a given node.
@@ -288,8 +289,10 @@ func (c *DOM) QuerySelector(nodeId int, selector string) (int, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["selector"] = selector
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelector", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelector", Params: paramRequest})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -308,8 +311,7 @@ func (c *DOM) QuerySelector(nodeId int, selector string) (int, error) {
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -324,8 +326,10 @@ func (c *DOM) QuerySelectorAll(nodeId int, selector string) ([]int, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["selector"] = selector
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelectorAll", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelectorAll", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -344,8 +348,7 @@ func (c *DOM) QuerySelectorAll(nodeId int, selector string) ([]int, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -360,8 +363,10 @@ func (c *DOM) SetNodeName(nodeId int, name string) (int, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["name"] = name
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeName", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeName", Params: paramRequest})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -380,8 +385,7 @@ func (c *DOM) SetNodeName(nodeId int, name string) (int, error) {
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -395,7 +399,7 @@ func (c *DOM) SetNodeValue(nodeId int, value string) (*gcdmessage.ChromeResponse
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["value"] = value
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeValue", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeValue", Params: paramRequest})
 }
 
 // RemoveNode - Removes node with given id.
@@ -403,7 +407,7 @@ func (c *DOM) SetNodeValue(nodeId int, value string) (*gcdmessage.ChromeResponse
 func (c *DOM) RemoveNode(nodeId int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.removeNode", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.removeNode", Params: paramRequest})
 }
 
 // SetAttributeValue - Sets attribute for an element with given id.
@@ -415,7 +419,7 @@ func (c *DOM) SetAttributeValue(nodeId int, name string, value string) (*gcdmess
 	paramRequest["nodeId"] = nodeId
 	paramRequest["name"] = name
 	paramRequest["value"] = value
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setAttributeValue", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setAttributeValue", Params: paramRequest})
 }
 
 // SetAttributesAsText - Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs.
@@ -427,7 +431,7 @@ func (c *DOM) SetAttributesAsText(nodeId int, text string, name string) (*gcdmes
 	paramRequest["nodeId"] = nodeId
 	paramRequest["text"] = text
 	paramRequest["name"] = name
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setAttributesAsText", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setAttributesAsText", Params: paramRequest})
 }
 
 // RemoveAttribute - Removes attribute with given name from an element with given id.
@@ -437,7 +441,7 @@ func (c *DOM) RemoveAttribute(nodeId int, name string) (*gcdmessage.ChromeRespon
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["name"] = name
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.removeAttribute", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.removeAttribute", Params: paramRequest})
 }
 
 // GetOuterHTML - Returns node's HTML markup.
@@ -446,8 +450,10 @@ func (c *DOM) RemoveAttribute(nodeId int, name string) (*gcdmessage.ChromeRespon
 func (c *DOM) GetOuterHTML(nodeId int) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getOuterHTML", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getOuterHTML", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -466,8 +472,7 @@ func (c *DOM) GetOuterHTML(nodeId int) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -481,7 +486,7 @@ func (c *DOM) SetOuterHTML(nodeId int, outerHTML string) (*gcdmessage.ChromeResp
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["outerHTML"] = outerHTML
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setOuterHTML", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setOuterHTML", Params: paramRequest})
 }
 
 // PerformSearch - Searches for a given string in the DOM tree. Use <code>getSearchResults</code> to access search results or <code>cancelSearch</code> to end this search session.
@@ -492,8 +497,10 @@ func (c *DOM) PerformSearch(query string, includeUserAgentShadowDOM bool) (strin
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["query"] = query
 	paramRequest["includeUserAgentShadowDOM"] = includeUserAgentShadowDOM
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.performSearch", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.performSearch", Params: paramRequest})
+	if err != nil {
+		return "", 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -513,8 +520,7 @@ func (c *DOM) PerformSearch(query string, includeUserAgentShadowDOM bool) (strin
 		return "", 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", 0, err
 	}
 
@@ -531,8 +537,10 @@ func (c *DOM) GetSearchResults(searchId string, fromIndex int, toIndex int) ([]i
 	paramRequest["searchId"] = searchId
 	paramRequest["fromIndex"] = fromIndex
 	paramRequest["toIndex"] = toIndex
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getSearchResults", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getSearchResults", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -551,8 +559,7 @@ func (c *DOM) GetSearchResults(searchId string, fromIndex int, toIndex int) ([]i
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -564,7 +571,7 @@ func (c *DOM) GetSearchResults(searchId string, fromIndex int, toIndex int) ([]i
 func (c *DOM) DiscardSearchResults(searchId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["searchId"] = searchId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.discardSearchResults", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.discardSearchResults", Params: paramRequest})
 }
 
 // RequestNode - Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of <code>setChildNodes</code> notifications.
@@ -573,8 +580,10 @@ func (c *DOM) DiscardSearchResults(searchId string) (*gcdmessage.ChromeResponse,
 func (c *DOM) RequestNode(objectId string) (int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestNode", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestNode", Params: paramRequest})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -593,8 +602,7 @@ func (c *DOM) RequestNode(objectId string) (int, error) {
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -608,7 +616,7 @@ func (c *DOM) SetInspectMode(mode string, highlightConfig *DOMHighlightConfig) (
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["mode"] = mode
 	paramRequest["highlightConfig"] = highlightConfig
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setInspectMode", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setInspectMode", Params: paramRequest})
 }
 
 // HighlightRect - Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
@@ -626,7 +634,7 @@ func (c *DOM) HighlightRect(x int, y int, width int, height int, color *DOMRGBA,
 	paramRequest["height"] = height
 	paramRequest["color"] = color
 	paramRequest["outlineColor"] = outlineColor
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightRect", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightRect", Params: paramRequest})
 }
 
 // HighlightQuad - Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
@@ -638,7 +646,7 @@ func (c *DOM) HighlightQuad(quad float64, color *DOMRGBA, outlineColor *DOMRGBA)
 	paramRequest["quad"] = quad
 	paramRequest["color"] = color
 	paramRequest["outlineColor"] = outlineColor
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightQuad", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightQuad", Params: paramRequest})
 }
 
 // HighlightNode - Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified.
@@ -652,12 +660,12 @@ func (c *DOM) HighlightNode(highlightConfig *DOMHighlightConfig, nodeId int, bac
 	paramRequest["nodeId"] = nodeId
 	paramRequest["backendNodeId"] = backendNodeId
 	paramRequest["objectId"] = objectId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightNode", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightNode", Params: paramRequest})
 }
 
 // Hides DOM node highlight.
 func (c *DOM) HideHighlight() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.hideHighlight"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.hideHighlight"})
 }
 
 // HighlightFrame - Highlights owner element of the frame with given id.
@@ -669,7 +677,7 @@ func (c *DOM) HighlightFrame(frameId string, contentColor *DOMRGBA, contentOutli
 	paramRequest["frameId"] = frameId
 	paramRequest["contentColor"] = contentColor
 	paramRequest["contentOutlineColor"] = contentOutlineColor
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightFrame", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightFrame", Params: paramRequest})
 }
 
 // PushNodeByPathToFrontend - Requests that the node is sent to the caller given its path. // FIXME, use XPath
@@ -678,8 +686,10 @@ func (c *DOM) HighlightFrame(frameId string, contentColor *DOMRGBA, contentOutli
 func (c *DOM) PushNodeByPathToFrontend(path string) (int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["path"] = path
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodeByPathToFrontend", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodeByPathToFrontend", Params: paramRequest})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -698,8 +708,7 @@ func (c *DOM) PushNodeByPathToFrontend(path string) (int, error) {
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -712,8 +721,10 @@ func (c *DOM) PushNodeByPathToFrontend(path string) (int, error) {
 func (c *DOM) PushNodesByBackendIdsToFrontend(backendNodeIds int) ([]int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["backendNodeIds"] = backendNodeIds
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodesByBackendIdsToFrontend", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodesByBackendIdsToFrontend", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -732,8 +743,7 @@ func (c *DOM) PushNodesByBackendIdsToFrontend(backendNodeIds int) ([]int, error)
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -745,7 +755,7 @@ func (c *DOM) PushNodesByBackendIdsToFrontend(backendNodeIds int) ([]int, error)
 func (c *DOM) SetInspectedNode(nodeId int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setInspectedNode", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setInspectedNode", Params: paramRequest})
 }
 
 // ResolveNode - Resolves JavaScript node object for given node id.
@@ -756,8 +766,10 @@ func (c *DOM) ResolveNode(nodeId int, objectGroup string) (*RuntimeRemoteObject,
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["objectGroup"] = objectGroup
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.resolveNode", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.resolveNode", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -776,8 +788,7 @@ func (c *DOM) ResolveNode(nodeId int, objectGroup string) (*RuntimeRemoteObject,
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -790,8 +801,10 @@ func (c *DOM) ResolveNode(nodeId int, objectGroup string) (*RuntimeRemoteObject,
 func (c *DOM) GetAttributes(nodeId int) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getAttributes", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getAttributes", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -810,8 +823,7 @@ func (c *DOM) GetAttributes(nodeId int) ([]string, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -828,8 +840,10 @@ func (c *DOM) CopyTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 	paramRequest["nodeId"] = nodeId
 	paramRequest["targetNodeId"] = targetNodeId
 	paramRequest["insertBeforeNodeId"] = insertBeforeNodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.copyTo", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.copyTo", Params: paramRequest})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -848,8 +862,7 @@ func (c *DOM) CopyTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -866,8 +879,10 @@ func (c *DOM) MoveTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 	paramRequest["nodeId"] = nodeId
 	paramRequest["targetNodeId"] = targetNodeId
 	paramRequest["insertBeforeNodeId"] = insertBeforeNodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.moveTo", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.moveTo", Params: paramRequest})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -886,8 +901,7 @@ func (c *DOM) MoveTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -896,17 +910,17 @@ func (c *DOM) MoveTo(nodeId int, targetNodeId int, insertBeforeNodeId int) (int,
 
 // Undoes the last performed action.
 func (c *DOM) Undo() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.undo"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.undo"})
 }
 
 // Re-does the last undone action.
 func (c *DOM) Redo() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.redo"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.redo"})
 }
 
 // Marks last undoable state.
 func (c *DOM) MarkUndoableState() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.markUndoableState"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.markUndoableState"})
 }
 
 // Focus - Focuses the given element.
@@ -914,7 +928,7 @@ func (c *DOM) MarkUndoableState() (*gcdmessage.ChromeResponse, error) {
 func (c *DOM) Focus(nodeId int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.focus", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.focus", Params: paramRequest})
 }
 
 // SetFileInputFiles - Sets files for the given file input element.
@@ -924,7 +938,7 @@ func (c *DOM) SetFileInputFiles(nodeId int, files string) (*gcdmessage.ChromeRes
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["files"] = files
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setFileInputFiles", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setFileInputFiles", Params: paramRequest})
 }
 
 // GetBoxModel - Returns boxes for the currently selected nodes.
@@ -933,8 +947,10 @@ func (c *DOM) SetFileInputFiles(nodeId int, files string) (*gcdmessage.ChromeRes
 func (c *DOM) GetBoxModel(nodeId int) (*DOMBoxModel, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getBoxModel", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getBoxModel", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -953,8 +969,7 @@ func (c *DOM) GetBoxModel(nodeId int) (*DOMBoxModel, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -969,8 +984,10 @@ func (c *DOM) GetNodeForLocation(x int, y int) (int, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["x"] = x
 	paramRequest["y"] = y
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: paramRequest})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -989,8 +1006,7 @@ func (c *DOM) GetNodeForLocation(x int, y int) (int, error) {
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -1003,8 +1019,10 @@ func (c *DOM) GetNodeForLocation(x int, y int) (int, error) {
 func (c *DOM) GetRelayoutBoundary(nodeId int) (int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getRelayoutBoundary", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getRelayoutBoundary", Params: paramRequest})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -1023,8 +1041,7 @@ func (c *DOM) GetRelayoutBoundary(nodeId int) (int, error) {
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -1037,8 +1054,10 @@ func (c *DOM) GetRelayoutBoundary(nodeId int) (int, error) {
 func (c *DOM) GetHighlightObjectForTest(nodeId int) (map[string]interface{}, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getHighlightObjectForTest", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getHighlightObjectForTest", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -1057,8 +1076,7 @@ func (c *DOM) GetHighlightObjectForTest(nodeId int) (map[string]interface{}, err
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

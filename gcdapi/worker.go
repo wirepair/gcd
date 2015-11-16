@@ -46,12 +46,12 @@ func NewWorker(target gcdmessage.ChromeTargeter) *Worker {
 
 //
 func (c *Worker) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.enable"})
 }
 
 //
 func (c *Worker) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.disable"})
 }
 
 // SendMessageToWorker -
@@ -61,7 +61,7 @@ func (c *Worker) SendMessageToWorker(workerId string, message string) (*gcdmessa
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["workerId"] = workerId
 	paramRequest["message"] = message
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.sendMessageToWorker", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.sendMessageToWorker", Params: paramRequest})
 }
 
 // ConnectToWorker -
@@ -69,7 +69,7 @@ func (c *Worker) SendMessageToWorker(workerId string, message string) (*gcdmessa
 func (c *Worker) ConnectToWorker(workerId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["workerId"] = workerId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.connectToWorker", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.connectToWorker", Params: paramRequest})
 }
 
 // DisconnectFromWorker -
@@ -77,7 +77,7 @@ func (c *Worker) ConnectToWorker(workerId string) (*gcdmessage.ChromeResponse, e
 func (c *Worker) DisconnectFromWorker(workerId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["workerId"] = workerId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.disconnectFromWorker", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.disconnectFromWorker", Params: paramRequest})
 }
 
 // SetAutoconnectToWorkers -
@@ -85,5 +85,5 @@ func (c *Worker) DisconnectFromWorker(workerId string) (*gcdmessage.ChromeRespon
 func (c *Worker) SetAutoconnectToWorkers(value bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["value"] = value
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.setAutoconnectToWorkers", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.setAutoconnectToWorkers", Params: paramRequest})
 }

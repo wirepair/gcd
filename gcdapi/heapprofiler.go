@@ -55,12 +55,12 @@ func NewHeapProfiler(target gcdmessage.ChromeTargeter) *HeapProfiler {
 
 //
 func (c *HeapProfiler) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.enable"})
 }
 
 //
 func (c *HeapProfiler) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.disable"})
 }
 
 // StartTrackingHeapObjects -
@@ -68,7 +68,7 @@ func (c *HeapProfiler) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *HeapProfiler) StartTrackingHeapObjects(trackAllocations bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["trackAllocations"] = trackAllocations
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.startTrackingHeapObjects", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.startTrackingHeapObjects", Params: paramRequest})
 }
 
 // StopTrackingHeapObjects -
@@ -76,7 +76,7 @@ func (c *HeapProfiler) StartTrackingHeapObjects(trackAllocations bool) (*gcdmess
 func (c *HeapProfiler) StopTrackingHeapObjects(reportProgress bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["reportProgress"] = reportProgress
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.stopTrackingHeapObjects", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.stopTrackingHeapObjects", Params: paramRequest})
 }
 
 // TakeHeapSnapshot -
@@ -84,12 +84,12 @@ func (c *HeapProfiler) StopTrackingHeapObjects(reportProgress bool) (*gcdmessage
 func (c *HeapProfiler) TakeHeapSnapshot(reportProgress bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["reportProgress"] = reportProgress
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.takeHeapSnapshot", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.takeHeapSnapshot", Params: paramRequest})
 }
 
 //
 func (c *HeapProfiler) CollectGarbage() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.collectGarbage"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.collectGarbage"})
 }
 
 // GetObjectByHeapObjectId -
@@ -100,8 +100,10 @@ func (c *HeapProfiler) GetObjectByHeapObjectId(objectId string, objectGroup stri
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["objectId"] = objectId
 	paramRequest["objectGroup"] = objectGroup
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getObjectByHeapObjectId", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getObjectByHeapObjectId", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -120,8 +122,7 @@ func (c *HeapProfiler) GetObjectByHeapObjectId(objectId string, objectGroup stri
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -133,7 +134,7 @@ func (c *HeapProfiler) GetObjectByHeapObjectId(objectId string, objectGroup stri
 func (c *HeapProfiler) AddInspectedHeapObject(heapObjectId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["heapObjectId"] = heapObjectId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.addInspectedHeapObject", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.addInspectedHeapObject", Params: paramRequest})
 }
 
 // GetHeapObjectId -
@@ -142,8 +143,10 @@ func (c *HeapProfiler) AddInspectedHeapObject(heapObjectId string) (*gcdmessage.
 func (c *HeapProfiler) GetHeapObjectId(objectId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getHeapObjectId", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getHeapObjectId", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -162,8 +165,7 @@ func (c *HeapProfiler) GetHeapObjectId(objectId string) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 

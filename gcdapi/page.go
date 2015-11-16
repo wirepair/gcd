@@ -182,12 +182,12 @@ func NewPage(target gcdmessage.ChromeTargeter) *Page {
 
 // Enables page domain notifications.
 func (c *Page) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.enable"})
 }
 
 // Disables page domain notifications.
 func (c *Page) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.disable"})
 }
 
 // AddScriptToEvaluateOnLoad -
@@ -196,8 +196,10 @@ func (c *Page) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *Page) AddScriptToEvaluateOnLoad(scriptSource string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["scriptSource"] = scriptSource
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.addScriptToEvaluateOnLoad", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.addScriptToEvaluateOnLoad", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -216,8 +218,7 @@ func (c *Page) AddScriptToEvaluateOnLoad(scriptSource string) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -229,7 +230,7 @@ func (c *Page) AddScriptToEvaluateOnLoad(scriptSource string) (string, error) {
 func (c *Page) RemoveScriptToEvaluateOnLoad(identifier string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["identifier"] = identifier
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.removeScriptToEvaluateOnLoad", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.removeScriptToEvaluateOnLoad", Params: paramRequest})
 }
 
 // Reload - Reloads given page optionally ignoring the cache.
@@ -239,7 +240,7 @@ func (c *Page) Reload(ignoreCache bool, scriptToEvaluateOnLoad string) (*gcdmess
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["ignoreCache"] = ignoreCache
 	paramRequest["scriptToEvaluateOnLoad"] = scriptToEvaluateOnLoad
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.reload", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.reload", Params: paramRequest})
 }
 
 // Navigate - Navigates current page to the given URL.
@@ -248,8 +249,10 @@ func (c *Page) Reload(ignoreCache bool, scriptToEvaluateOnLoad string) (*gcdmess
 func (c *Page) Navigate(url string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["url"] = url
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigate", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigate", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -268,8 +271,7 @@ func (c *Page) Navigate(url string) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -279,8 +281,10 @@ func (c *Page) Navigate(url string) (string, error) {
 // GetNavigationHistory - Returns navigation history for the current page.
 // Returns -  currentIndex - Index of the current navigation history entry. entries - Array of navigation history entries.
 func (c *Page) GetNavigationHistory() (int, []*PageNavigationEntry, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getNavigationHistory"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getNavigationHistory"})
+	if err != nil {
+		return 0, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -300,8 +304,7 @@ func (c *Page) GetNavigationHistory() (int, []*PageNavigationEntry, error) {
 		return 0, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, nil, err
 	}
 
@@ -313,14 +316,16 @@ func (c *Page) GetNavigationHistory() (int, []*PageNavigationEntry, error) {
 func (c *Page) NavigateToHistoryEntry(entryId int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["entryId"] = entryId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigateToHistoryEntry", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigateToHistoryEntry", Params: paramRequest})
 }
 
 // GetCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
 // Returns -  cookies - Array of cookie objects.
 func (c *Page) GetCookies() ([]*NetworkCookie, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getCookies"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getCookies"})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -339,8 +344,7 @@ func (c *Page) GetCookies() ([]*NetworkCookie, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -354,14 +358,16 @@ func (c *Page) DeleteCookie(cookieName string, url string) (*gcdmessage.ChromeRe
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["cookieName"] = cookieName
 	paramRequest["url"] = url
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.deleteCookie", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.deleteCookie", Params: paramRequest})
 }
 
 // GetResourceTree - Returns present frame / resource tree structure.
 // Returns -  frameTree - Present frame / resource tree structure.
 func (c *Page) GetResourceTree() (*PageFrameResourceTree, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getResourceTree"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getResourceTree"})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -380,8 +386,7 @@ func (c *Page) GetResourceTree() (*PageFrameResourceTree, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -396,8 +401,10 @@ func (c *Page) GetResourceContent(frameId string, url string) (string, bool, err
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["frameId"] = frameId
 	paramRequest["url"] = url
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getResourceContent", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getResourceContent", Params: paramRequest})
+	if err != nil {
+		return "", false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -417,8 +424,7 @@ func (c *Page) GetResourceContent(frameId string, url string) (string, bool, err
 		return "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
 	}
 
@@ -439,8 +445,10 @@ func (c *Page) SearchInResource(frameId string, url string, query string, caseSe
 	paramRequest["query"] = query
 	paramRequest["caseSensitive"] = caseSensitive
 	paramRequest["isRegex"] = isRegex
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.searchInResource", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.searchInResource", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -459,8 +467,7 @@ func (c *Page) SearchInResource(frameId string, url string, query string, caseSe
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -474,7 +481,7 @@ func (c *Page) SetDocumentContent(frameId string, html string) (*gcdmessage.Chro
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["frameId"] = frameId
 	paramRequest["html"] = html
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setDocumentContent", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setDocumentContent", Params: paramRequest})
 }
 
 // SetDeviceMetricsOverride - Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results).
@@ -504,12 +511,12 @@ func (c *Page) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor
 	paramRequest["screenHeight"] = screenHeight
 	paramRequest["positionX"] = positionX
 	paramRequest["positionY"] = positionY
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setDeviceMetricsOverride", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setDeviceMetricsOverride", Params: paramRequest})
 }
 
 // Clears the overriden device metrics.
 func (c *Page) ClearDeviceMetricsOverride() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearDeviceMetricsOverride"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearDeviceMetricsOverride"})
 }
 
 // SetGeolocationOverride - Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.
@@ -521,12 +528,12 @@ func (c *Page) SetGeolocationOverride(latitude float64, longitude float64, accur
 	paramRequest["latitude"] = latitude
 	paramRequest["longitude"] = longitude
 	paramRequest["accuracy"] = accuracy
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setGeolocationOverride", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setGeolocationOverride", Params: paramRequest})
 }
 
 // Clears the overriden Geolocation Position and Error.
 func (c *Page) ClearGeolocationOverride() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearGeolocationOverride"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearGeolocationOverride"})
 }
 
 // SetDeviceOrientationOverride - Overrides the Device Orientation.
@@ -538,12 +545,12 @@ func (c *Page) SetDeviceOrientationOverride(alpha float64, beta float64, gamma f
 	paramRequest["alpha"] = alpha
 	paramRequest["beta"] = beta
 	paramRequest["gamma"] = gamma
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setDeviceOrientationOverride", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setDeviceOrientationOverride", Params: paramRequest})
 }
 
 // Clears the overridden Device Orientation.
 func (c *Page) ClearDeviceOrientationOverride() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearDeviceOrientationOverride"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearDeviceOrientationOverride"})
 }
 
 // SetTouchEmulationEnabled - Toggles mouse event-based touch event emulation.
@@ -553,14 +560,16 @@ func (c *Page) SetTouchEmulationEnabled(enabled bool, configuration string) (*gc
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["enabled"] = enabled
 	paramRequest["configuration"] = configuration
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setTouchEmulationEnabled", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setTouchEmulationEnabled", Params: paramRequest})
 }
 
 // CaptureScreenshot - Capture page screenshot.
 // Returns -  data - Base64-encoded image data (PNG).
 func (c *Page) CaptureScreenshot() (string, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.captureScreenshot"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.captureScreenshot"})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -579,8 +588,7 @@ func (c *Page) CaptureScreenshot() (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -590,8 +598,10 @@ func (c *Page) CaptureScreenshot() (string, error) {
 // CanScreencast - Tells whether screencast is supported.
 // Returns -  result - True if screencast is supported.
 func (c *Page) CanScreencast() (bool, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.canScreencast"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.canScreencast"})
+	if err != nil {
+		return false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -610,8 +620,7 @@ func (c *Page) CanScreencast() (bool, error) {
 		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -629,12 +638,12 @@ func (c *Page) StartScreencast(format string, quality int, maxWidth int, maxHeig
 	paramRequest["quality"] = quality
 	paramRequest["maxWidth"] = maxWidth
 	paramRequest["maxHeight"] = maxHeight
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.startScreencast", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.startScreencast", Params: paramRequest})
 }
 
 // Stops sending each frame in the <code>screencastFrame</code>.
 func (c *Page) StopScreencast() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.stopScreencast"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.stopScreencast"})
 }
 
 // ScreencastFrameAck - Acknowledges that a screencast frame has been received by the frontend.
@@ -642,7 +651,7 @@ func (c *Page) StopScreencast() (*gcdmessage.ChromeResponse, error) {
 func (c *Page) ScreencastFrameAck(frameNumber int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["frameNumber"] = frameNumber
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.screencastFrameAck", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.screencastFrameAck", Params: paramRequest})
 }
 
 // HandleJavaScriptDialog - Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
@@ -652,7 +661,7 @@ func (c *Page) HandleJavaScriptDialog(accept bool, promptText string) (*gcdmessa
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["accept"] = accept
 	paramRequest["promptText"] = promptText
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.handleJavaScriptDialog", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.handleJavaScriptDialog", Params: paramRequest})
 }
 
 // SetShowViewportSizeOnResize - Paints viewport size upon main frame resize.
@@ -662,7 +671,7 @@ func (c *Page) SetShowViewportSizeOnResize(show bool, showGrid bool) (*gcdmessag
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["show"] = show
 	paramRequest["showGrid"] = showGrid
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setShowViewportSizeOnResize", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setShowViewportSizeOnResize", Params: paramRequest})
 }
 
 // SetColorPickerEnabled - Shows / hides color picker
@@ -670,7 +679,7 @@ func (c *Page) SetShowViewportSizeOnResize(show bool, showGrid bool) (*gcdmessag
 func (c *Page) SetColorPickerEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["enabled"] = enabled
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setColorPickerEnabled", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setColorPickerEnabled", Params: paramRequest})
 }
 
 // SetOverlayMessage - Sets overlay message.
@@ -678,5 +687,5 @@ func (c *Page) SetColorPickerEnabled(enabled bool) (*gcdmessage.ChromeResponse, 
 func (c *Page) SetOverlayMessage(message string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["message"] = message
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setOverlayMessage", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setOverlayMessage", Params: paramRequest})
 }

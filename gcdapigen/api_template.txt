@@ -50,7 +50,7 @@ func New{{.Domain}}(target gcdmessage.ChromeTargeter) *{{.Domain}} {
 
 {{range $element := $api.Commands}}{{if $element.NoParamReturnCalls}}// {{$element.Description}}
 func (c *{{$api.Domain}}) {{.Name | Title}}() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}"})
 }
 {{end}}
 
@@ -60,7 +60,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() (*gcdmessage.ChromeResponse, error
 func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, {{len (.Parameters) }}){{range $param := $element.Parameters}}
 	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})
 }
 {{end}}
 
@@ -69,8 +69,10 @@ func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameter
 {{if $element.ReturnCalls}}// {{.Name | Title}} - {{$element.Description}}
 // Returns - {{range $return := .Returns}} {{$return.Name}} - {{$return.Description}}{{ end }}
 func (c *{{$api.Domain}}) {{.Name | Title}}() ({{range $rets := .Returns}}{{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}}, {{end}}error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}"})
+	if err != nil {
+		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
+	}
 
 	var chromeData struct {
 		Result struct { {{range $rets := .Returns}}
@@ -89,8 +91,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() ({{range $rets := .Returns}}{{if $
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
 	}
 
@@ -105,8 +106,10 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() ({{range $rets := .Returns}}{{if $
 func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) ({{range $rets := .Returns}}{{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}}, {{end}}error) {
 	paramRequest := make(map[string]interface{}, {{len (.Parameters) }}){{range $param := $element.Parameters}}
 	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})
+	if err != nil {
+		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
+	}
 
 	var chromeData struct {
 		Result struct { {{range $rets := .Returns}}
@@ -125,8 +128,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameter
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
 	}
 

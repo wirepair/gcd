@@ -62,8 +62,10 @@ func NewApplicationCache(target gcdmessage.ChromeTargeter) *ApplicationCache {
 // GetFramesWithManifests - Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache.
 // Returns -  frameIds - Array of frame identifiers with manifest urls for each frame containing a document associated with some application cache.
 func (c *ApplicationCache) GetFramesWithManifests() ([]*ApplicationCacheFrameWithManifest, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getFramesWithManifests"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getFramesWithManifests"})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -82,8 +84,7 @@ func (c *ApplicationCache) GetFramesWithManifests() ([]*ApplicationCacheFrameWit
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -92,7 +93,7 @@ func (c *ApplicationCache) GetFramesWithManifests() ([]*ApplicationCacheFrameWit
 
 // Enables application cache domain notifications.
 func (c *ApplicationCache) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.enable"})
 }
 
 // GetManifestForFrame - Returns manifest URL for document in the given frame.
@@ -101,8 +102,10 @@ func (c *ApplicationCache) Enable() (*gcdmessage.ChromeResponse, error) {
 func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["frameId"] = frameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getManifestForFrame", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getManifestForFrame", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -121,8 +124,7 @@ func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -135,8 +137,10 @@ func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
 func (c *ApplicationCache) GetApplicationCacheForFrame(frameId string) (*ApplicationCacheApplicationCache, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["frameId"] = frameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getApplicationCacheForFrame", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getApplicationCacheForFrame", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -155,8 +159,7 @@ func (c *ApplicationCache) GetApplicationCacheForFrame(frameId string) (*Applica
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

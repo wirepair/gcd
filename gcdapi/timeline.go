@@ -39,12 +39,12 @@ func NewTimeline(target gcdmessage.ChromeTargeter) *Timeline {
 
 // Deprecated.
 func (c *Timeline) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Timeline.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Timeline.enable"})
 }
 
 // Deprecated.
 func (c *Timeline) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Timeline.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Timeline.disable"})
 }
 
 // Start - Deprecated.
@@ -60,10 +60,10 @@ func (c *Timeline) Start(maxCallStackDepth int, bufferEvents bool, liveEvents st
 	paramRequest["liveEvents"] = liveEvents
 	paramRequest["includeCounters"] = includeCounters
 	paramRequest["includeGPUEvents"] = includeGPUEvents
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Timeline.start", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Timeline.start", Params: paramRequest})
 }
 
 // Deprecated.
 func (c *Timeline) Stop() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Timeline.stop"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Timeline.stop"})
 }

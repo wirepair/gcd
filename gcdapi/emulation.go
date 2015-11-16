@@ -64,17 +64,17 @@ func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleF
 	paramRequest["screenHeight"] = screenHeight
 	paramRequest["positionX"] = positionX
 	paramRequest["positionY"] = positionY
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDeviceMetricsOverride", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDeviceMetricsOverride", Params: paramRequest})
 }
 
 // Clears the overriden device metrics.
 func (c *Emulation) ClearDeviceMetricsOverride() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDeviceMetricsOverride"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDeviceMetricsOverride"})
 }
 
 // Requests that scroll offsets and page scale factor are reset to initial values.
 func (c *Emulation) ResetScrollAndPageScaleFactor() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetScrollAndPageScaleFactor"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetScrollAndPageScaleFactor"})
 }
 
 // SetPageScaleFactor - Sets a specified page scale factor.
@@ -82,7 +82,7 @@ func (c *Emulation) ResetScrollAndPageScaleFactor() (*gcdmessage.ChromeResponse,
 func (c *Emulation) SetPageScaleFactor(pageScaleFactor float64) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["pageScaleFactor"] = pageScaleFactor
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setPageScaleFactor", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setPageScaleFactor", Params: paramRequest})
 }
 
 // SetScriptExecutionDisabled - Switches script execution in the page.
@@ -90,7 +90,7 @@ func (c *Emulation) SetPageScaleFactor(pageScaleFactor float64) (*gcdmessage.Chr
 func (c *Emulation) SetScriptExecutionDisabled(value bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["value"] = value
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setScriptExecutionDisabled", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setScriptExecutionDisabled", Params: paramRequest})
 }
 
 // SetGeolocationOverride - Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.
@@ -102,12 +102,12 @@ func (c *Emulation) SetGeolocationOverride(latitude float64, longitude float64, 
 	paramRequest["latitude"] = latitude
 	paramRequest["longitude"] = longitude
 	paramRequest["accuracy"] = accuracy
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setGeolocationOverride", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setGeolocationOverride", Params: paramRequest})
 }
 
 // Clears the overriden Geolocation Position and Error.
 func (c *Emulation) ClearGeolocationOverride() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearGeolocationOverride"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearGeolocationOverride"})
 }
 
 // SetTouchEmulationEnabled - Toggles mouse event-based touch event emulation.
@@ -117,7 +117,7 @@ func (c *Emulation) SetTouchEmulationEnabled(enabled bool, configuration string)
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["enabled"] = enabled
 	paramRequest["configuration"] = configuration
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setTouchEmulationEnabled", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setTouchEmulationEnabled", Params: paramRequest})
 }
 
 // SetEmulatedMedia - Emulates the given media for CSS media queries.
@@ -125,14 +125,16 @@ func (c *Emulation) SetTouchEmulationEnabled(enabled bool, configuration string)
 func (c *Emulation) SetEmulatedMedia(media string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["media"] = media
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedMedia", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedMedia", Params: paramRequest})
 }
 
 // CanEmulate - Tells whether emulation is supported.
 // Returns -  result - True if emulation is supported.
 func (c *Emulation) CanEmulate() (bool, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.canEmulate"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.canEmulate"})
+	if err != nil {
+		return false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -151,8 +153,7 @@ func (c *Emulation) CanEmulate() (bool, error) {
 		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 

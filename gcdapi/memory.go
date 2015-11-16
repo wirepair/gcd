@@ -21,8 +21,10 @@ func NewMemory(target gcdmessage.ChromeTargeter) *Memory {
 // GetDOMCounters -
 // Returns -  documents -  nodes -  jsEventListeners -
 func (c *Memory) GetDOMCounters() (int, int, int, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getDOMCounters"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getDOMCounters"})
+	if err != nil {
+		return 0, 0, 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -43,8 +45,7 @@ func (c *Memory) GetDOMCounters() (int, int, int, error) {
 		return 0, 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, 0, 0, err
 	}
 

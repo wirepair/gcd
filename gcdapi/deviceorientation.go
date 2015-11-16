@@ -26,10 +26,10 @@ func (c *DeviceOrientation) SetDeviceOrientationOverride(alpha float64, beta flo
 	paramRequest["alpha"] = alpha
 	paramRequest["beta"] = beta
 	paramRequest["gamma"] = gamma
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.setDeviceOrientationOverride", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.setDeviceOrientationOverride", Params: paramRequest})
 }
 
 // Clears the overridden Device Orientation.
 func (c *DeviceOrientation) ClearDeviceOrientationOverride() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.clearDeviceOrientationOverride"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.clearDeviceOrientationOverride"})
 }

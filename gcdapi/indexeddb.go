@@ -75,12 +75,12 @@ func NewIndexedDB(target gcdmessage.ChromeTargeter) *IndexedDB {
 
 // Enables events from backend.
 func (c *IndexedDB) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.enable"})
 }
 
 // Disables events from backend.
 func (c *IndexedDB) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.disable"})
 }
 
 // RequestDatabaseNames - Requests database names for given security origin.
@@ -89,8 +89,10 @@ func (c *IndexedDB) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *IndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["securityOrigin"] = securityOrigin
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabaseNames", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabaseNames", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -109,8 +111,7 @@ func (c *IndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -125,8 +126,10 @@ func (c *IndexedDB) RequestDatabase(securityOrigin string, databaseName string) 
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["securityOrigin"] = securityOrigin
 	paramRequest["databaseName"] = databaseName
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabase", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabase", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -145,8 +148,7 @@ func (c *IndexedDB) RequestDatabase(securityOrigin string, databaseName string) 
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -171,8 +173,10 @@ func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, obje
 	paramRequest["skipCount"] = skipCount
 	paramRequest["pageSize"] = pageSize
 	paramRequest["keyRange"] = keyRange
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestData", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestData", Params: paramRequest})
+	if err != nil {
+		return nil, false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -192,8 +196,7 @@ func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, obje
 		return nil, false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, err
 	}
 
@@ -209,5 +212,5 @@ func (c *IndexedDB) ClearObjectStore(securityOrigin string, databaseName string,
 	paramRequest["securityOrigin"] = securityOrigin
 	paramRequest["databaseName"] = databaseName
 	paramRequest["objectStoreName"] = objectStoreName
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.clearObjectStore", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.clearObjectStore", Params: paramRequest})
 }

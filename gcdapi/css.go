@@ -181,12 +181,12 @@ func NewCSS(target gcdmessage.ChromeTargeter) *CSS {
 
 // Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received.
 func (c *CSS) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.enable"})
 }
 
 // Disables the CSS agent for the given page.
 func (c *CSS) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.disable"})
 }
 
 // GetMatchedStylesForNode - Returns requested styles for a DOM node identified by <code>nodeId</code>.
@@ -199,8 +199,10 @@ func (c *CSS) GetMatchedStylesForNode(nodeId int, excludePseudo bool, excludeInh
 	paramRequest["nodeId"] = nodeId
 	paramRequest["excludePseudo"] = excludePseudo
 	paramRequest["excludeInherited"] = excludeInherited
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode", Params: paramRequest})
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -221,8 +223,7 @@ func (c *CSS) GetMatchedStylesForNode(nodeId int, excludePseudo bool, excludeInh
 		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
 	}
 
@@ -235,8 +236,10 @@ func (c *CSS) GetMatchedStylesForNode(nodeId int, excludePseudo bool, excludeInh
 func (c *CSS) GetInlineStylesForNode(nodeId int) (*CSSCSSStyle, *CSSCSSStyle, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getInlineStylesForNode", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getInlineStylesForNode", Params: paramRequest})
+	if err != nil {
+		return nil, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -256,8 +259,7 @@ func (c *CSS) GetInlineStylesForNode(nodeId int) (*CSSCSSStyle, *CSSCSSStyle, er
 		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -270,8 +272,10 @@ func (c *CSS) GetInlineStylesForNode(nodeId int) (*CSSCSSStyle, *CSSCSSStyle, er
 func (c *CSS) GetComputedStyleForNode(nodeId int) ([]*CSSCSSComputedStyleProperty, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getComputedStyleForNode", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getComputedStyleForNode", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -290,8 +294,7 @@ func (c *CSS) GetComputedStyleForNode(nodeId int) ([]*CSSCSSComputedStylePropert
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -304,8 +307,10 @@ func (c *CSS) GetComputedStyleForNode(nodeId int) ([]*CSSCSSComputedStylePropert
 func (c *CSS) GetPlatformFontsForNode(nodeId int) ([]*CSSPlatformFontUsage, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getPlatformFontsForNode", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getPlatformFontsForNode", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -324,8 +329,7 @@ func (c *CSS) GetPlatformFontsForNode(nodeId int) ([]*CSSPlatformFontUsage, erro
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -338,8 +342,10 @@ func (c *CSS) GetPlatformFontsForNode(nodeId int) ([]*CSSPlatformFontUsage, erro
 func (c *CSS) GetStyleSheetText(styleSheetId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["styleSheetId"] = styleSheetId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getStyleSheetText", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getStyleSheetText", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -358,8 +364,7 @@ func (c *CSS) GetStyleSheetText(styleSheetId string) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -373,7 +378,7 @@ func (c *CSS) SetStyleSheetText(styleSheetId string, text string) (*gcdmessage.C
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["text"] = text
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleSheetText", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleSheetText", Params: paramRequest})
 }
 
 // SetRuleSelector - Modifies the rule selector.
@@ -386,8 +391,10 @@ func (c *CSS) SetRuleSelector(styleSheetId string, theRange *CSSSourceRange, sel
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
 	paramRequest["selector"] = selector
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setRuleSelector", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setRuleSelector", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -406,8 +413,7 @@ func (c *CSS) SetRuleSelector(styleSheetId string, theRange *CSSSourceRange, sel
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -424,8 +430,10 @@ func (c *CSS) SetStyleText(styleSheetId string, theRange *CSSSourceRange, text s
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
 	paramRequest["text"] = text
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleText", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleText", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -444,8 +452,7 @@ func (c *CSS) SetStyleText(styleSheetId string, theRange *CSSSourceRange, text s
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -462,8 +469,10 @@ func (c *CSS) SetMediaText(styleSheetId string, theRange *CSSSourceRange, text s
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
 	paramRequest["text"] = text
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setMediaText", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setMediaText", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -482,8 +491,7 @@ func (c *CSS) SetMediaText(styleSheetId string, theRange *CSSSourceRange, text s
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -496,8 +504,10 @@ func (c *CSS) SetMediaText(styleSheetId string, theRange *CSSSourceRange, text s
 func (c *CSS) CreateStyleSheet(frameId string) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["frameId"] = frameId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.createStyleSheet", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.createStyleSheet", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -516,8 +526,7 @@ func (c *CSS) CreateStyleSheet(frameId string) (string, error) {
 		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -534,8 +543,10 @@ func (c *CSS) AddRule(styleSheetId string, ruleText string, location *CSSSourceR
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["ruleText"] = ruleText
 	paramRequest["location"] = location
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.addRule", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.addRule", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -554,8 +565,7 @@ func (c *CSS) AddRule(styleSheetId string, ruleText string, location *CSSSourceR
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -569,14 +579,16 @@ func (c *CSS) ForcePseudoState(nodeId int, forcedPseudoClasses string) (*gcdmess
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["forcedPseudoClasses"] = forcedPseudoClasses
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.forcePseudoState", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.forcePseudoState", Params: paramRequest})
 }
 
 // GetMediaQueries - Returns all media queries parsed by the rendering engine.
 // Returns -  medias -
 func (c *CSS) GetMediaQueries() ([]*CSSCSSMedia, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMediaQueries"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMediaQueries"})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -595,8 +607,7 @@ func (c *CSS) GetMediaQueries() ([]*CSSCSSMedia, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -612,5 +623,5 @@ func (c *CSS) SetEffectivePropertyValueForNode(nodeId int, propertyName string, 
 	paramRequest["nodeId"] = nodeId
 	paramRequest["propertyName"] = propertyName
 	paramRequest["value"] = value
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setEffectivePropertyValueForNode", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setEffectivePropertyValueForNode", Params: paramRequest})
 }

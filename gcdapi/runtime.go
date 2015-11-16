@@ -134,8 +134,10 @@ func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommand
 	paramRequest["contextId"] = contextId
 	paramRequest["returnByValue"] = returnByValue
 	paramRequest["generatePreview"] = generatePreview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.evaluate", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.evaluate", Params: paramRequest})
+	if err != nil {
+		return nil, false, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -156,8 +158,7 @@ func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommand
 		return nil, false, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, nil, err
 	}
 
@@ -180,8 +181,10 @@ func (c *Runtime) CallFunctionOn(objectId string, functionDeclaration string, ar
 	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
 	paramRequest["returnByValue"] = returnByValue
 	paramRequest["generatePreview"] = generatePreview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.callFunctionOn", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.callFunctionOn", Params: paramRequest})
+	if err != nil {
+		return nil, false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -201,8 +204,7 @@ func (c *Runtime) CallFunctionOn(objectId string, functionDeclaration string, ar
 		return nil, false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, err
 	}
 
@@ -221,8 +223,10 @@ func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPro
 	paramRequest["ownProperties"] = ownProperties
 	paramRequest["accessorPropertiesOnly"] = accessorPropertiesOnly
 	paramRequest["generatePreview"] = generatePreview
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getProperties", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getProperties", Params: paramRequest})
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -243,8 +247,7 @@ func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPro
 		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
 	}
 
@@ -256,7 +259,7 @@ func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPro
 func (c *Runtime) ReleaseObject(objectId string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectId"] = objectId
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObject", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObject", Params: paramRequest})
 }
 
 // ReleaseObjectGroup - Releases all remote objects that belong to a given group.
@@ -264,29 +267,31 @@ func (c *Runtime) ReleaseObject(objectId string) (*gcdmessage.ChromeResponse, er
 func (c *Runtime) ReleaseObjectGroup(objectGroup string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["objectGroup"] = objectGroup
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObjectGroup", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObjectGroup", Params: paramRequest})
 }
 
 // Tells inspected instance(worker or page) that it can run in case it was started paused.
 func (c *Runtime) Run() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.run"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.run"})
 }
 
 // Enables reporting of execution contexts creation by means of <code>executionContextCreated</code> event. When the reporting gets enabled the event will be sent immediately for each existing execution context.
 func (c *Runtime) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.enable"})
 }
 
 // Disables reporting of execution contexts creation.
 func (c *Runtime) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.disable"})
 }
 
 // IsRunRequired -
 // Returns -  result - True if the Runtime is in paused on start state.
 func (c *Runtime) IsRunRequired() (bool, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.isRunRequired"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.isRunRequired"})
+	if err != nil {
+		return false, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -305,8 +310,7 @@ func (c *Runtime) IsRunRequired() (bool, error) {
 		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -318,5 +322,5 @@ func (c *Runtime) IsRunRequired() (bool, error) {
 func (c *Runtime) SetCustomObjectFormatterEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["enabled"] = enabled
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setCustomObjectFormatterEnabled", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setCustomObjectFormatterEnabled", Params: paramRequest})
 }

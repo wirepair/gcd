@@ -42,12 +42,12 @@ func NewDatabase(target gcdmessage.ChromeTargeter) *Database {
 
 // Enables database tracking, database events will now be delivered to the client.
 func (c *Database) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.enable"})
 }
 
 // Disables database tracking, prevents database events from being sent to the client.
 func (c *Database) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.disable"})
 }
 
 // GetDatabaseTableNames -
@@ -56,8 +56,10 @@ func (c *Database) Disable() (*gcdmessage.ChromeResponse, error) {
 func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["databaseId"] = databaseId
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -76,8 +78,7 @@ func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
 		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -92,8 +93,10 @@ func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []stri
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["databaseId"] = databaseId
 	paramRequest["query"] = query
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: paramRequest})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: paramRequest})
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -114,8 +117,7 @@ func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []stri
 		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
 	}
 

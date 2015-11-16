@@ -77,19 +77,21 @@ func NewAnimation(target gcdmessage.ChromeTargeter) *Animation {
 
 // Enables animation domain notifications.
 func (c *Animation) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.enable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.enable"})
 }
 
 // Disables animation domain notifications.
 func (c *Animation) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.disable"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.disable"})
 }
 
 // GetPlaybackRate - Gets the playback rate of the document timeline.
 // Returns -  playbackRate - Playback rate for animations on page.
 func (c *Animation) GetPlaybackRate() (float64, error) {
-	recvCh, _ := gcdmessage.SendCustomReturn(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.getPlaybackRate"})
-	resp := <-recvCh
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.getPlaybackRate"})
+	if err != nil {
+		return 0, err
+	}
 
 	var chromeData struct {
 		Result struct {
@@ -108,8 +110,7 @@ func (c *Animation) GetPlaybackRate() (float64, error) {
 		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
-	err := json.Unmarshal(resp.Data, &chromeData)
-	if err != nil {
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -121,7 +122,7 @@ func (c *Animation) GetPlaybackRate() (float64, error) {
 func (c *Animation) SetPlaybackRate(playbackRate float64) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["playbackRate"] = playbackRate
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setPlaybackRate", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setPlaybackRate", Params: paramRequest})
 }
 
 // SetCurrentTime - Sets the current time of the document timeline.
@@ -129,7 +130,7 @@ func (c *Animation) SetPlaybackRate(playbackRate float64) (*gcdmessage.ChromeRes
 func (c *Animation) SetCurrentTime(currentTime float64) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["currentTime"] = currentTime
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setCurrentTime", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setCurrentTime", Params: paramRequest})
 }
 
 // SetTiming - Sets the timing of an animation node.
@@ -141,5 +142,5 @@ func (c *Animation) SetTiming(playerId string, duration float64, delay float64) 
 	paramRequest["playerId"] = playerId
 	paramRequest["duration"] = duration
 	paramRequest["delay"] = delay
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setTiming", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setTiming", Params: paramRequest})
 }

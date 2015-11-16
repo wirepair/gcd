@@ -24,10 +24,10 @@ func (c *ScreenOrientation) SetScreenOrientationOverride(angle int, theType stri
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["angle"] = angle
 	paramRequest["type"] = theType
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ScreenOrientation.setScreenOrientationOverride", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ScreenOrientation.setScreenOrientationOverride", Params: paramRequest})
 }
 
 // Clears the overridden Screen Orientation.
 func (c *ScreenOrientation) ClearScreenOrientationOverride() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ScreenOrientation.clearScreenOrientationOverride"})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ScreenOrientation.clearScreenOrientationOverride"})
 }

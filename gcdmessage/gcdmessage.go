@@ -29,10 +29,12 @@ package gcdmessage
 import (
 	"encoding/json"
 	"strconv"
+	"time"
 )
 
 type ChromeTargeter interface {
 	GetId() int64
+	GetApiTimeout() time.Duration
 	GetSendCh() chan *Message
 }
 
@@ -88,6 +90,13 @@ func (cerr *ChromeEmptyResponseErr) Error() string {
 	return "nil response received"
 }
 
+type ChromeApiTimeoutErr struct {
+}
+
+func (cerr *ChromeApiTimeoutErr) Error() string {
+	return "timed out waiting for response from chrome"
+}
+
 // default request object that has parameters.
 type ParamRequest struct {
 	Id     int64       `json:"id"`
@@ -96,7 +105,7 @@ type ParamRequest struct {
 }
 
 // Takes in a ParamRequest and gives back a response channel so the caller can decode as necessary.
-func SendCustomReturn(sendCh chan<- *Message, paramRequest *ParamRequest) (<-chan *Message, error) {
+func SendCustomReturn(target ChromeTargeter, sendCh chan<- *Message, paramRequest *ParamRequest) (*Message, error) {
 	data, err := json.Marshal(paramRequest)
 	if err != nil {
 		return nil, err
@@ -105,12 +114,22 @@ func SendCustomReturn(sendCh chan<- *Message, paramRequest *ParamRequest) (<-cha
 	recvCh := make(chan *Message)
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
 	sendCh <- sendMsg
-	return recvCh, nil
+
+	timeout := time.NewTimer(target.GetApiTimeout())
+	defer timeout.Stop()
+
+	var resp *Message
+	select {
+	case <-timeout.C:
+		return nil, &ChromeApiTimeoutErr{}
+	case resp = <-recvCh:
+	}
+	return resp, nil
 }
 
 // Sends a generic request that gets back a generic response, or error. This returns a ChromeResponse
 // object.
-func SendDefaultRequest(sendCh chan<- *Message, paramRequest *ParamRequest) (*ChromeResponse, error) {
+func SendDefaultRequest(target ChromeTargeter, sendCh chan<- *Message, paramRequest *ParamRequest) (*ChromeResponse, error) {
 	req := &ChromeRequest{Id: paramRequest.Id, Method: paramRequest.Method, Params: paramRequest.Params}
 	data, err := json.Marshal(req)
 	if err != nil {
@@ -119,7 +138,16 @@ func SendDefaultRequest(sendCh chan<- *Message, paramRequest *ParamRequest) (*Ch
 	recvCh := make(chan *Message)
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
 	sendCh <- sendMsg
-	resp := <-recvCh
+
+	timeout := time.NewTimer(target.GetApiTimeout())
+	defer timeout.Stop()
+
+	var resp *Message
+	select {
+	case <-timeout.C:
+		return nil, &ChromeApiTimeoutErr{}
+	case resp = <-recvCh:
+	}
 
 	if resp == nil || resp.Data == nil {
 		return nil, &ChromeEmptyResponseErr{}
