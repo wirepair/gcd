@@ -105,6 +105,7 @@ type ChromeTarget struct {
 	apiTimeout   time.Duration            // A customizable timeout for waiting on Chrome to respond to us
 	sendId       int64                    // An Id which is atomically incremented per request.
 	debugEvents  bool                     // flag for spitting out event data as a string which we have not subscribed to.
+	debug        bool                     // flag for printing internal debugging messages
 	shuttingdown bool
 }
 
@@ -118,7 +119,7 @@ func newChromeTarget(addr string, target *TargetInfo) *ChromeTarget {
 	sendCh := make(chan *gcdmessage.Message)
 	doneCh := make(chan bool)
 	chromeTarget := &ChromeTarget{conn: conn, eventLock: eventLock, replyLock: replyLock, Target: target, sendCh: sendCh, replyDispatcher: replier, eventDispatcher: eventer, doneCh: doneCh, sendId: 0}
-	chromeTarget.apiTimeout = 20 * time.Second // default 20 seconds to wait for chrome to respond to us
+	chromeTarget.apiTimeout = 120 * time.Second // default 120 seconds to wait for chrome to respond to us
 	chromeTarget.Init()
 	chromeTarget.listen()
 	return chromeTarget
@@ -201,6 +202,10 @@ func (c *ChromeTarget) DebugEvents(debug bool) {
 	c.debugEvents = debug
 }
 
+func (c *ChromeTarget) Debug(debug bool) {
+	c.debug = debug
+}
+
 // Listens for API components wanting to send, and recv'ing data from the Chrome Debugger Service
 func (c *ChromeTarget) listen() {
 	go c.listenRead()
@@ -271,10 +276,11 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	}
 
 	c.replyLock.Lock()
+
 	if r, ok := c.replyDispatcher[f.Id]; ok {
 		delete(c.replyDispatcher, f.Id)
 		c.replyLock.Unlock()
-		r <- &gcdmessage.Message{Id: f.Id, Data: msg}
+		c.dispatchWithTimeout(r, f.Id, msg)
 		return
 	}
 	c.replyLock.Unlock()
@@ -294,6 +300,19 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 		log.Printf("\n\nno event recv bound for: %s\n", f.Method)
 		log.Printf("data: %s\n\n", string(msg))
 	}
+}
+
+func (c *ChromeTarget) dispatchWithTimeout(r chan<- *gcdmessage.Message, id int64, msg []byte) {
+	timeout := time.NewTimer(c.GetApiTimeout())
+	defer timeout.Stop()
+	select {
+	case r <- &gcdmessage.Message{Id: id, Data: msg}:
+	case <-timeout.C:
+		c.debugf("timed out sending request id: %d of msg: %s\n", id, msg)
+		close(r)
+		return
+	}
+	return
 }
 
 // check target detached/crashed
@@ -337,4 +356,10 @@ func (c *ChromeTarget) GetId() int64 {
 // The channel used for API components to send back to use
 func (c *ChromeTarget) GetSendCh() chan *gcdmessage.Message {
 	return c.sendCh
+}
+
+func (c *ChromeTarget) debugf(format string, args ...interface{}) {
+	if c.debug {
+		log.Printf(format, args...)
+	}
 }
