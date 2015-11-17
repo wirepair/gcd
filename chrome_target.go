@@ -308,7 +308,7 @@ func (c *ChromeTarget) dispatchWithTimeout(r chan<- *gcdmessage.Message, id int6
 	select {
 	case r <- &gcdmessage.Message{Id: id, Data: msg}:
 	case <-timeout.C:
-		c.debugf("timed out sending request id: %d of msg: %s\n", id, msg)
+		c.debugf("timed out dispatching request id: %d of msg: %s\n", id, msg)
 		close(r)
 		return
 	}
