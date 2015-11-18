@@ -26,16 +26,16 @@ package gcd
 
 import (
 	"encoding/json"
+	"fmt" // TESTING
 	"github.com/wirepair/gcd/gcdapi"
 	"github.com/wirepair/gcd/gcdmessage"
+	"golang.org/x/net/websocket"
 	"io"
 	"log"
 	"net"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"golang.org/x/net/websocket"
 )
 
 // Defines the 'tab' or target for this chrome instance, can be multiple and background processes
@@ -222,8 +222,11 @@ func (c *ChromeTarget) listenWrite() {
 			c.replyDispatcher[msg.Id] = msg.ReplyCh
 			c.replyLock.Unlock()
 
+			c.debugf("%d sending to chrome. %s\n", msg.Id, msg.Data)
+
 			err := websocket.Message.Send(c.conn, string(msg.Data))
 			if err != nil {
+				c.debugf("error sending message: %s\n", err)
 				c.doneCh <- true
 			}
 		// receive done from listenRead
@@ -247,11 +250,12 @@ func (c *ChromeTarget) listenRead() {
 			var msg string
 			err := websocket.Message.Receive(c.conn, &msg)
 			if err == io.EOF {
+				c.debugf("error io.EOF in websocket read")
 				c.doneCh <- true
 				return
 			} else if err != nil {
 				// DEBUG:
-				// log.Printf("error in ws read: %s\n", err)
+				c.debugf("error in ws read: %s\n", err)
 				c.doneCh <- true
 			} else {
 				go c.dispatchResponse([]byte(msg))
@@ -280,6 +284,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	if r, ok := c.replyDispatcher[f.Id]; ok {
 		delete(c.replyDispatcher, f.Id)
 		c.replyLock.Unlock()
+		c.debugf("%d dispatching\n", f.Id)
 		c.dispatchWithTimeout(r, f.Id, msg)
 		return
 	}
@@ -360,6 +365,6 @@ func (c *ChromeTarget) GetSendCh() chan *gcdmessage.Message {
 
 func (c *ChromeTarget) debugf(format string, args ...interface{}) {
 	if c.debug {
-		log.Printf(format, args...)
+		fmt.Printf(format, args...)
 	}
 }
