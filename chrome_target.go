@@ -26,7 +26,6 @@ package gcd
 
 import (
 	"encoding/json"
-	"fmt" // TESTING
 	"github.com/wirepair/gcd/gcdapi"
 	"github.com/wirepair/gcd/gcdmessage"
 	"golang.org/x/net/websocket"
@@ -99,14 +98,14 @@ type ChromeTarget struct {
 	Security          *gcdapi.Security
 	ServiceWorker     *gcdapi.ServiceWorker
 
-	Target       *TargetInfo              // The target information see, TargetInfo
-	sendCh       chan *gcdmessage.Message // The channel used for API components to send back to use
-	doneCh       chan bool                // we be donez.
-	apiTimeout   time.Duration            // A customizable timeout for waiting on Chrome to respond to us
-	sendId       int64                    // An Id which is atomically incremented per request.
-	debugEvents  bool                     // flag for spitting out event data as a string which we have not subscribed to.
-	debug        bool                     // flag for printing internal debugging messages
-	shuttingdown bool
+	Target      *TargetInfo              // The target information see, TargetInfo
+	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
+	doneCh      chan struct{}            // we be donez.
+	apiTimeout  time.Duration            // A customizable timeout for waiting on Chrome to respond to us
+	sendId      int64                    // An Id which is atomically incremented per request.
+	debugEvents bool                     // flag for spitting out event data as a string which we have not subscribed to.
+	debug       bool                     // flag for printing internal debugging messages
+	stopped     bool                     // we are/have shutdown
 }
 
 // Creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
@@ -117,7 +116,7 @@ func newChromeTarget(addr string, target *TargetInfo) *ChromeTarget {
 	var eventLock sync.RWMutex
 	eventer := make(map[string]func(*ChromeTarget, []byte))
 	sendCh := make(chan *gcdmessage.Message)
-	doneCh := make(chan bool)
+	doneCh := make(chan struct{})
 	chromeTarget := &ChromeTarget{conn: conn, eventLock: eventLock, replyLock: replyLock, Target: target, sendCh: sendCh, replyDispatcher: replier, eventDispatcher: eventer, doneCh: doneCh, sendId: 0}
 	chromeTarget.apiTimeout = 120 * time.Second // default 120 seconds to wait for chrome to respond to us
 	chromeTarget.Init()
@@ -162,8 +161,17 @@ func (c *ChromeTarget) Init() {
 	c.ServiceWorker = gcdapi.NewServiceWorker(c)
 }
 
+// clean up this target
 func (c *ChromeTarget) shutdown() {
-	c.shuttingdown = true
+	if c.stopped == true {
+		return
+	}
+	c.stopped = true
+
+	// close websocket read/write goroutines
+	close(c.doneCh)
+
+	// close websocket connection
 	c.conn.Close()
 }
 
@@ -197,7 +205,7 @@ func (c *ChromeTarget) Unsubscribe(method string) {
 	c.eventLock.Unlock()
 }
 
-// Whether to print out raw JSON event data.
+// Whether to print out raw JSON event data when not Subscribed.
 func (c *ChromeTarget) DebugEvents(debug bool) {
 	c.debugEvents = debug
 }
@@ -227,11 +235,10 @@ func (c *ChromeTarget) listenWrite() {
 			err := websocket.Message.Send(c.conn, string(msg.Data))
 			if err != nil {
 				c.debugf("error sending message: %s\n", err)
-				c.doneCh <- true
+				return
 			}
 		// receive done from listenRead
 		case <-c.doneCh:
-			c.doneCh <- true // for listenRead method
 			return
 		}
 	}
@@ -243,7 +250,6 @@ func (c *ChromeTarget) listenRead() {
 		select {
 		// receive done from listenWrite
 		case <-c.doneCh:
-			c.doneCh <- true
 			return
 		// read data from websocket connection
 		default:
@@ -251,12 +257,9 @@ func (c *ChromeTarget) listenRead() {
 			err := websocket.Message.Receive(c.conn, &msg)
 			if err == io.EOF {
 				c.debugf("error io.EOF in websocket read")
-				c.doneCh <- true
 				return
 			} else if err != nil {
-				// DEBUG:
 				c.debugf("error in ws read: %s\n", err)
-				c.doneCh <- true
 			} else {
 				go c.dispatchResponse([]byte(msg))
 			}
@@ -312,6 +315,7 @@ func (c *ChromeTarget) dispatchWithTimeout(r chan<- *gcdmessage.Message, id int6
 	defer timeout.Stop()
 	select {
 	case r <- &gcdmessage.Message{Id: id, Data: msg}:
+		timeout.Stop()
 	case <-timeout.C:
 		c.debugf("timed out dispatching request id: %d of msg: %s\n", id, msg)
 		close(r)
@@ -363,8 +367,14 @@ func (c *ChromeTarget) GetSendCh() chan *gcdmessage.Message {
 	return c.sendCh
 }
 
+// The channel used to signal any pending SendDefaultRequest and SendCustomReturn
+// that we are exiting so we don't block goroutines from exiting.
+func (c *ChromeTarget) GetDoneCh() chan struct{} {
+	return c.doneCh
+}
+
 func (c *ChromeTarget) debugf(format string, args ...interface{}) {
 	if c.debug {
-		fmt.Printf(format, args...)
+		log.Printf(format, args...)
 	}
 }

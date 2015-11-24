@@ -204,7 +204,6 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	tabTarget := &TargetInfo{}
 	err = json.Unmarshal(body, &tabTarget)
 	if err != nil {
-		fmt.Printf("body: %s\n", string(body))
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
 	return newChromeTarget(c.addr, tabTarget), nil

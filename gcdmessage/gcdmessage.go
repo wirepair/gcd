@@ -36,6 +36,7 @@ type ChromeTargeter interface {
 	GetId() int64
 	GetApiTimeout() time.Duration
 	GetSendCh() chan *Message
+	GetDoneCh() chan struct{} // if tab is closed we don't want dangling goroutines.
 }
 
 // An internal message object used for components and ChromeTarget to communicate back and forth
@@ -97,6 +98,13 @@ func (cerr *ChromeApiTimeoutErr) Error() string {
 	return "timed out waiting for response from chrome"
 }
 
+type ChromeDoneErr struct {
+}
+
+func (cerr *ChromeDoneErr) Error() string {
+	return "tab is shutting down"
+}
+
 // default request object that has parameters.
 type ParamRequest struct {
 	Id     int64       `json:"id"`
@@ -111,18 +119,28 @@ func SendCustomReturn(target ChromeTargeter, sendCh chan<- *Message, paramReques
 		return nil, err
 	}
 
-	recvCh := make(chan *Message)
+	recvCh := make(chan *Message, 1)
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
-	sendCh <- sendMsg
 
 	timeout := time.NewTimer(target.GetApiTimeout())
 	defer timeout.Stop()
+
+	select {
+	case sendCh <- sendMsg:
+	case <-timeout.C:
+	case <-target.GetDoneCh():
+		return nil, &ChromeDoneErr{}
+	}
+
+	timeout.Reset(target.GetApiTimeout())
 
 	var resp *Message
 	select {
 	case <-timeout.C:
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
+	case <-target.GetDoneCh():
+		return nil, &ChromeDoneErr{}
 	}
 	return resp, nil
 }
@@ -135,18 +153,32 @@ func SendDefaultRequest(target ChromeTargeter, sendCh chan<- *Message, paramRequ
 	if err != nil {
 		return nil, err
 	}
-	recvCh := make(chan *Message)
+
+	recvCh := make(chan *Message, 1)
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
-	sendCh <- sendMsg
 
 	timeout := time.NewTimer(target.GetApiTimeout())
 	defer timeout.Stop()
+
+	select {
+	case sendCh <- sendMsg:
+		timeout.Stop()
+	case <-timeout.C:
+		return nil, &ChromeApiTimeoutErr{}
+	case <-target.GetDoneCh():
+		return nil, &ChromeDoneErr{}
+	}
+
+	timeout.Reset(target.GetApiTimeout())
 
 	var resp *Message
 	select {
 	case <-timeout.C:
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
+		timeout.Stop()
+	case <-target.GetDoneCh():
+		return nil, &ChromeDoneErr{}
 	}
 
 	if resp == nil || resp.Data == nil {
