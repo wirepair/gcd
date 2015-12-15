@@ -109,8 +109,11 @@ type ChromeTarget struct {
 }
 
 // Creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
-func newChromeTarget(addr string, target *TargetInfo) *ChromeTarget {
-	conn := wsConnection(addr, target.WebSocketDebuggerUrl)
+func openChromeTarget(addr string, target *TargetInfo) (*ChromeTarget, error) {
+	conn, err := wsConnection(addr, target.WebSocketDebuggerUrl)
+	if err != nil {
+		return nil, err
+	}
 	replier := make(map[int64]chan *gcdmessage.Message)
 	var replyLock sync.RWMutex
 	var eventLock sync.RWMutex
@@ -121,7 +124,7 @@ func newChromeTarget(addr string, target *TargetInfo) *ChromeTarget {
 	chromeTarget.apiTimeout = 120 * time.Second // default 120 seconds to wait for chrome to respond to us
 	chromeTarget.Init()
 	chromeTarget.listen()
-	return chromeTarget
+	return chromeTarget, nil
 }
 
 // Initialize all api objects
@@ -279,7 +282,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	f := &responseHeader{}
 	err := json.Unmarshal(msg, f)
 	if err != nil {
-		log.Fatalf("error reading response data from chrome target: %v\n", err)
+		c.debugf("error reading response data from chrome target: %v\n", err)
 	}
 
 	c.replyLock.Lock()
@@ -298,6 +301,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	c.eventLock.RLock()
 	if r, ok := c.eventDispatcher[f.Method]; ok {
 		c.eventLock.RUnlock()
+		c.debugf("dispatching %s event: %s\n", f.Method, string(msg))
 		go r(c, msg)
 		return
 
@@ -339,20 +343,21 @@ func (c *ChromeTarget) checkTargetDisconnected(method string) {
 }
 
 // Connects to the tab/process for sending/recv'ing debug events
-func wsConnection(addr, url string) *websocket.Conn {
+func wsConnection(addr, url string) (*websocket.Conn, error) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
-		log.Fatal("error dialing ChromeTarget websocket: ", err)
+		return nil, err
 	}
+
 	config, errConfig := websocket.NewConfig(url, "http://localhost")
 	if errConfig != nil {
-		log.Fatalf("error building websocket config: addr: %s url: %s %v\n", addr, url, err)
+		return nil, errConfig
 	}
 	client, errWS := websocket.NewClient(config, conn)
 	if errWS != nil {
-		log.Fatalf("error during websocket handshake: %v\n", errWS)
+		return nil, errWS
 	}
-	return client
+	return client, nil
 }
 
 // gcdmessage.ChromeTargeter interface methods

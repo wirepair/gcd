@@ -181,7 +181,10 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 	chromeTargets := make([]*ChromeTarget, 0)
 	for _, v := range targets {
 		if _, ok := knownIds[v.Id]; !ok {
-			target := newChromeTarget(c.addr, v)
+			target, err := openChromeTarget(c.addr, v)
+			if err != nil {
+				return nil, err
+			}
 			chromeTargets = append(chromeTargets, target)
 		}
 	}
@@ -206,7 +209,7 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	if err != nil {
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
-	return newChromeTarget(c.addr, tabTarget), nil
+	return openChromeTarget(c.addr, tabTarget)
 }
 
 // Closes the tab
