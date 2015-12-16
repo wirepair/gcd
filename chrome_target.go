@@ -317,6 +317,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 func (c *ChromeTarget) dispatchWithTimeout(r chan<- *gcdmessage.Message, id int64, msg []byte) {
 	timeout := time.NewTimer(c.GetApiTimeout())
 	defer timeout.Stop()
+
 	select {
 	case r <- &gcdmessage.Message{Id: id, Data: msg}:
 		timeout.Stop()
@@ -338,6 +339,8 @@ func (c *ChromeTarget) checkTargetDisconnected(method string) {
 		for _, replyCh := range c.replyDispatcher {
 			close(replyCh)
 		}
+		// empty out the dispatcher
+		c.replyDispatcher = make(map[int64]chan *gcdmessage.Message)
 		c.replyLock.Unlock()
 	}
 }
