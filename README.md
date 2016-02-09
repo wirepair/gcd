@@ -5,6 +5,8 @@ Because I'm lazy and there are hundereds of different custom types and API metho
 
 The [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) program was created to generate types, event types and commands for gcd.
 
+# Update (2016)
+I created a new library for actual automation purposes. If you want something with more functionality and more usability I suggest checking out [autogcd](https://github.com/wirepair/autogcd).
 
 ## Dependencies
 gcd requires the [gcdapi](https://github.com/wirepair/gcd/tree/master/gcdapi) and [gcdmessage](https://github.com/wirepair/gcd/tree/master/gcdmessage) packages. gcdapi is the auto-generated API. gcdmessage is the glue between gcd and gcdapi so we can keep the packages clean. 
