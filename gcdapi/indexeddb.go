@@ -12,8 +12,7 @@ import (
 // Database with an array of object stores.
 type IndexedDBDatabaseWithObjectStores struct {
 	Name         string                  `json:"name"`         // Database name.
-	Version      string                  `json:"version"`      // Deprecated string database version.
-	IntVersion   int                     `json:"intVersion"`   // Integer database version.
+	Version      int                     `json:"version"`      // Database version.
 	ObjectStores []*IndexedDBObjectStore `json:"objectStores"` // Object stores in this database.
 }
 

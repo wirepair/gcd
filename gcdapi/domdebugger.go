@@ -11,10 +11,13 @@ import (
 
 // Object event listener.
 type DOMDebuggerEventListener struct {
-	Type       string               `json:"type"`              // <code>EventListener</code>'s type.
-	UseCapture bool                 `json:"useCapture"`        // <code>EventListener</code>'s useCapture.
-	Location   *DebuggerLocation    `json:"location"`          // Handler code location.
-	Handler    *RuntimeRemoteObject `json:"handler,omitempty"` // Event handler function value.
+	Type            string               `json:"type"`                      // <code>EventListener</code>'s type.
+	UseCapture      bool                 `json:"useCapture"`                // <code>EventListener</code>'s useCapture.
+	Passive         bool                 `json:"passive"`                   // <code>EventListener</code>'s passive flag.
+	Location        *DebuggerLocation    `json:"location"`                  // Handler code location.
+	Handler         *RuntimeRemoteObject `json:"handler,omitempty"`         // Event handler function value.
+	OriginalHandler *RuntimeRemoteObject `json:"originalHandler,omitempty"` // Event original handler function value.
+	RemoveFunction  *RuntimeRemoteObject `json:"removeFunction,omitempty"`  // Event listener remove function.
 }
 
 type DOMDebugger struct {

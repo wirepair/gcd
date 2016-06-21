@@ -24,6 +24,8 @@ type NetworkResourceTiming struct {
 	WorkerReady       float64 `json:"workerReady"`       // Finished Starting ServiceWorker.
 	SendStart         float64 `json:"sendStart"`         // Started sending request.
 	SendEnd           float64 `json:"sendEnd"`           // Finished sending request.
+	PushStart         float64 `json:"pushStart"`         // Time the server started pushing request.
+	PushEnd           float64 `json:"pushEnd"`           // Time the server finished pushing request.
 	ReceiveHeadersEnd float64 `json:"receiveHeadersEnd"` // Finished receiving response headers.
 }
 
@@ -52,13 +54,21 @@ type NetworkCertificateDetails struct {
 	ValidTo   float64                    `json:"validTo"`   // Certificate valid to (expiration) date
 }
 
+// Details about the validation status of a request's certificate.
+type NetworkCertificateValidationDetails struct {
+	NumUnknownScts int `json:"numUnknownScts"` // The number of SCTs from unknown logs.
+	NumInvalidScts int `json:"numInvalidScts"` // The number of invalid SCTs.
+	NumValidScts   int `json:"numValidScts"`   // The number of valid SCTs.
+}
+
 // Security details about a request.
 type NetworkSecurityDetails struct {
-	Protocol      string `json:"protocol"`      // Protocol name (e.g. "TLS 1.2" or "QUIC".
-	KeyExchange   string `json:"keyExchange"`   // Key Exchange used by the connection.
-	Cipher        string `json:"cipher"`        // Cipher name.
-	Mac           string `json:"mac,omitempty"` // TLS MAC. Note that AEAD ciphers do not have separate MACs.
-	CertificateId int    `json:"certificateId"` // Certificate ID value.
+	Protocol                     string                               `json:"protocol"`                               // Protocol name (e.g. "TLS 1.2" or "QUIC").
+	KeyExchange                  string                               `json:"keyExchange"`                            // Key Exchange used by the connection.
+	Cipher                       string                               `json:"cipher"`                                 // Cipher name.
+	Mac                          string                               `json:"mac,omitempty"`                          // TLS MAC. Note that AEAD ciphers do not have separate MACs.
+	CertificateId                int                                  `json:"certificateId"`                          // Certificate ID value.
+	CertificateValidationDetails *NetworkCertificateValidationDetails `json:"certificateValidationDetails,omitempty"` // Validation details for the request's certficate.
 }
 
 // HTTP response data.
@@ -80,7 +90,7 @@ type NetworkResponse struct {
 	EncodedDataLength  float64                 `json:"encodedDataLength"`            // Total number of bytes received for this request so far.
 	Timing             *NetworkResourceTiming  `json:"timing,omitempty"`             // Timing information for the given request.
 	Protocol           string                  `json:"protocol,omitempty"`           // Protocol used to fetch this request.
-	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, warning, secure
+	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, warning, secure, info
 	SecurityDetails    *NetworkSecurityDetails `json:"securityDetails,omitempty"`    // Security details for the request.
 }
 
@@ -109,31 +119,41 @@ type NetworkWebSocketFrame struct {
 // Information about the cached resource.
 type NetworkCachedResource struct {
 	Url      string           `json:"url"`                // Resource URL. This is the url of the original network request.
-	Type     string           `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
+	Type     string           `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
 	Response *NetworkResponse `json:"response,omitempty"` // Cached response data.
 	BodySize float64          `json:"bodySize"`           // Cached response body size.
 }
 
 // Information about the request initiator.
 type NetworkInitiator struct {
-	Type            string                  `json:"type"`                      // Type of this initiator.
-	StackTrace      []*ConsoleCallFrame     `json:"stackTrace,omitempty"`      // Initiator JavaScript stack trace, set for Script only.
-	Url             string                  `json:"url,omitempty"`             // Initiator URL, set for Parser type only.
-	LineNumber      float64                 `json:"lineNumber,omitempty"`      // Initiator line number, set for Parser type only.
-	AsyncStackTrace *ConsoleAsyncStackTrace `json:"asyncStackTrace,omitempty"` // Initiator asynchronous JavaScript stack trace, if available.
+	Type       string             `json:"type"`                 // Type of this initiator.
+	Stack      *RuntimeStackTrace `json:"stack,omitempty"`      // Initiator JavaScript stack trace, set for Script only.
+	Url        string             `json:"url,omitempty"`        // Initiator URL, set for Parser type only.
+	LineNumber float64            `json:"lineNumber,omitempty"` // Initiator line number, set for Parser type only.
 }
 
 // Cookie object
 type NetworkCookie struct {
-	Name     string  `json:"name"`     // Cookie name.
-	Value    string  `json:"value"`    // Cookie value.
-	Domain   string  `json:"domain"`   // Cookie domain.
-	Path     string  `json:"path"`     // Cookie path.
-	Expires  float64 `json:"expires"`  // Cookie expires.
-	Size     int     `json:"size"`     // Cookie size.
-	HttpOnly bool    `json:"httpOnly"` // True if cookie is http-only.
-	Secure   bool    `json:"secure"`   // True if cookie is secure.
-	Session  bool    `json:"session"`  // True in case of session cookie.
+	Name     string  `json:"name"`               // Cookie name.
+	Value    string  `json:"value"`              // Cookie value.
+	Domain   string  `json:"domain"`             // Cookie domain.
+	Path     string  `json:"path"`               // Cookie path.
+	Expires  float64 `json:"expires"`            // Cookie expires.
+	Size     int     `json:"size"`               // Cookie size.
+	HttpOnly bool    `json:"httpOnly"`           // True if cookie is http-only.
+	Secure   bool    `json:"secure"`             // True if cookie is secure.
+	Session  bool    `json:"session"`            // True in case of session cookie.
+	SameSite string  `json:"sameSite,omitempty"` // Represents the cookies' 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies
+}
+
+// Fired when resource loading priority is changed
+type NetworkResourceChangedPriorityEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		RequestId   string  `json:"requestId"`   // Request identifier.
+		NewPriority string  `json:"newPriority"` // New priority enum values: VeryLow, Low, Medium, High, VeryHigh
+		Timestamp   float64 `json:"timestamp"`   // Timestamp.
+	} `json:"Params,omitempty"`
 }
 
 // Fired when page is about to send HTTP request.
@@ -149,7 +169,7 @@ type NetworkRequestWillBeSentEvent struct {
 		WallTime         float64           `json:"wallTime"`                   // UTC Timestamp.
 		Initiator        *NetworkInitiator `json:"initiator"`                  // Request initiator.
 		RedirectResponse *NetworkResponse  `json:"redirectResponse,omitempty"` // Redirect response data.
-		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
+		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
 	} `json:"Params,omitempty"`
 }
 
@@ -169,7 +189,7 @@ type NetworkResponseReceivedEvent struct {
 		FrameId   string           `json:"frameId"`   // Frame identifier.
 		LoaderId  string           `json:"loaderId"`  // Loader identifier.
 		Timestamp float64          `json:"timestamp"` // Timestamp.
-		Type      string           `json:"type"`      // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
+		Type      string           `json:"type"`      // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
 		Response  *NetworkResponse `json:"response"`  // Response data.
 	} `json:"Params,omitempty"`
 }
@@ -201,10 +221,10 @@ type NetworkLoadingFailedEvent struct {
 	Params struct {
 		RequestId     string  `json:"requestId"`               // Request identifier.
 		Timestamp     float64 `json:"timestamp"`               // Timestamp.
-		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
+		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
 		ErrorText     string  `json:"errorText"`               // User friendly error message.
 		Canceled      bool    `json:"canceled,omitempty"`      // True if loading was canceled.
-		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: csp, mixed-content, origin, inspector, other
+		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: csp, mixed-content, origin, inspector, subresource-filter, other
 	} `json:"Params,omitempty"`
 }
 
@@ -298,9 +318,14 @@ func NewNetwork(target gcdmessage.ChromeTargeter) *Network {
 	return c
 }
 
-// Enables network tracking, network events will now be delivered to the client.
-func (c *Network) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.enable"})
+// Enable - Enables network tracking, network events will now be delivered to the client.
+// maxTotalBufferSize - Buffer size in bytes to use when preserving network payloads (XHRs, etc).
+// maxResourceBufferSize - Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
+func (c *Network) Enable(maxTotalBufferSize int, maxResourceBufferSize int) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["maxTotalBufferSize"] = maxTotalBufferSize
+	paramRequest["maxResourceBufferSize"] = maxResourceBufferSize
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.enable", Params: paramRequest})
 }
 
 // Disables network tracking, prevents network events from being sent to the client.
@@ -560,6 +585,14 @@ func (c *Network) SetCacheDisabled(cacheDisabled bool) (*gcdmessage.ChromeRespon
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["cacheDisabled"] = cacheDisabled
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCacheDisabled", Params: paramRequest})
+}
+
+// SetBypassServiceWorker - Toggles ignoring of service worker for each request.
+// bypass - Bypass service worker and load from network.
+func (c *Network) SetBypassServiceWorker(bypass bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["bypass"] = bypass
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBypassServiceWorker", Params: paramRequest})
 }
 
 // SetDataSizeLimitsForTest - For testing.

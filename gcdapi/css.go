@@ -10,9 +10,9 @@ import (
 )
 
 // CSS rule collection for a single pseudo style.
-type CSSPseudoIdMatches struct {
-	PseudoId int             `json:"pseudoId"` // Pseudo style identifier (see <code>enum PseudoId</code> in <code>ComputedStyleConstants.h</code>).
-	Matches  []*CSSRuleMatch `json:"matches"`  // Matches of CSS rules applicable to the pseudo style.
+type CSSPseudoElementMatches struct {
+	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	Matches    []*CSSRuleMatch `json:"matches"`    // Matches of CSS rules applicable to the pseudo style.
 }
 
 // Inherited CSS rule collection from ancestor node.
@@ -28,15 +28,15 @@ type CSSRuleMatch struct {
 }
 
 // Data for a simple selector (these are delimited by commas in a selector list).
-type CSSSelector struct {
-	Value string          `json:"value"`           // Selector text.
-	Range *CSSSourceRange `json:"range,omitempty"` // Selector range in the underlying resource (if available).
+type CSSValue struct {
+	Text  string          `json:"text"`            // Value text.
+	Range *CSSSourceRange `json:"range,omitempty"` // Value range in the underlying resource (if available).
 }
 
 // Selector list data.
 type CSSSelectorList struct {
-	Selectors []*CSSSelector `json:"selectors"` // Selectors in the list.
-	Text      string         `json:"text"`      // Rule selector text.
+	Selectors []*CSSValue `json:"selectors"` // Selectors in the list.
+	Text      string      `json:"text"`      // Rule selector text.
 }
 
 // CSS stylesheet metainformation.
@@ -108,12 +108,12 @@ type CSSCSSProperty struct {
 
 // CSS media rule descriptor.
 type CSSCSSMedia struct {
-	Text               string           `json:"text"`                         // Media query text.
-	Source             string           `json:"source"`                       // Source of the media query: "mediaRule" if specified by a @media rule, "importRule" if specified by an @import rule, "linkedSheet" if specified by a "media" attribute in a linked stylesheet's LINK tag, "inlineSheet" if specified by a "media" attribute in an inline stylesheet's STYLE tag.
-	SourceURL          string           `json:"sourceURL,omitempty"`          // URL of the document containing the media query description.
-	Range              *CSSSourceRange  `json:"range,omitempty"`              // The associated rule (@media or @import) header range in the enclosing stylesheet (if available).
-	ParentStyleSheetId string           `json:"parentStyleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
-	MediaList          []*CSSMediaQuery `json:"mediaList,omitempty"`          // Array of media queries.
+	Text         string           `json:"text"`                   // Media query text.
+	Source       string           `json:"source"`                 // Source of the media query: "mediaRule" if specified by a @media rule, "importRule" if specified by an @import rule, "linkedSheet" if specified by a "media" attribute in a linked stylesheet's LINK tag, "inlineSheet" if specified by a "media" attribute in an inline stylesheet's STYLE tag.
+	SourceURL    string           `json:"sourceURL,omitempty"`    // URL of the document containing the media query description.
+	Range        *CSSSourceRange  `json:"range,omitempty"`        // The associated rule (@media or @import) header range in the enclosing stylesheet (if available).
+	StyleSheetId string           `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
+	MediaList    []*CSSMediaQuery `json:"mediaList,omitempty"`    // Array of media queries.
 }
 
 // Media query descriptor.
@@ -133,8 +133,30 @@ type CSSMediaQueryExpression struct {
 
 // Information about amount of glyphs that were rendered with given font.
 type CSSPlatformFontUsage struct {
-	FamilyName string  `json:"familyName"` // Font's family name reported by platform.
-	GlyphCount float64 `json:"glyphCount"` // Amount of glyphs that were rendered with this font.
+	FamilyName   string  `json:"familyName"`   // Font's family name reported by platform.
+	IsCustomFont bool    `json:"isCustomFont"` // Indicates if the font was downloaded or resolved locally.
+	GlyphCount   float64 `json:"glyphCount"`   // Amount of glyphs that were rendered with this font.
+}
+
+// CSS keyframes rule representation.
+type CSSCSSKeyframesRule struct {
+	AnimationName *CSSValue             `json:"animationName"` // Animation name.
+	Keyframes     []*CSSCSSKeyframeRule `json:"keyframes"`     // List of keyframes.
+}
+
+// CSS keyframe rule representation.
+type CSSCSSKeyframeRule struct {
+	StyleSheetId string       `json:"styleSheetId,omitempty"` // The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
+	Origin       string       `json:"origin"`                 // Parent stylesheet's origin. enum values: injected, user-agent, inspector, regular
+	KeyText      *CSSValue    `json:"keyText"`                // Associated key text.
+	Style        *CSSCSSStyle `json:"style"`                  // Associated style declaration.
+}
+
+// A descriptor of operation to mutate style declaration text.
+type CSSStyleDeclarationEdit struct {
+	StyleSheetId string          `json:"styleSheetId"` // The css style sheet identifier.
+	Range        *CSSSourceRange `json:"range"`        // The range of the style text in the enclosing stylesheet.
+	Text         string          `json:"text"`         // New style text.
 }
 
 // Fired whenever a stylesheet is changed as a result of the client operation.
@@ -191,43 +213,42 @@ func (c *CSS) Disable() (*gcdmessage.ChromeResponse, error) {
 
 // GetMatchedStylesForNode - Returns requested styles for a DOM node identified by <code>nodeId</code>.
 // nodeId -
-// excludePseudo - Whether to exclude pseudo styles (default: false).
-// excludeInherited - Whether to exclude inherited styles (default: false).
-// Returns -  matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root).
-func (c *CSS) GetMatchedStylesForNode(nodeId int, excludePseudo bool, excludeInherited bool) ([]*CSSRuleMatch, []*CSSPseudoIdMatches, []*CSSInheritedStyleEntry, error) {
-	paramRequest := make(map[string]interface{}, 3)
+// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node.
+func (c *CSS) GetMatchedStylesForNode(nodeId int) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSCSSKeyframesRule, error) {
+	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["nodeId"] = nodeId
-	paramRequest["excludePseudo"] = excludePseudo
-	paramRequest["excludeInherited"] = excludeInherited
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode", Params: paramRequest})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			MatchedCSSRules []*CSSRuleMatch
-			PseudoElements  []*CSSPseudoIdMatches
-			Inherited       []*CSSInheritedStyleEntry
+			InlineStyle       *CSSCSSStyle
+			AttributesStyle   *CSSCSSStyle
+			MatchedCSSRules   []*CSSRuleMatch
+			PseudoElements    []*CSSPseudoElementMatches
+			Inherited         []*CSSInheritedStyleEntry
+			CssKeyframesRules []*CSSCSSKeyframesRule
 		}
 	}
 
 	if resp == nil {
-		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
-	return chromeData.Result.MatchedCSSRules, chromeData.Result.PseudoElements, chromeData.Result.Inherited, nil
+	return chromeData.Result.InlineStyle, chromeData.Result.AttributesStyle, chromeData.Result.MatchedCSSRules, chromeData.Result.PseudoElements, chromeData.Result.Inherited, chromeData.Result.CssKeyframesRules, nil
 }
 
 // GetInlineStylesForNode - Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by <code>nodeId</code>.
@@ -374,19 +395,46 @@ func (c *CSS) GetStyleSheetText(styleSheetId string) (string, error) {
 // SetStyleSheetText - Sets the new stylesheet text.
 // styleSheetId -
 // text -
-func (c *CSS) SetStyleSheetText(styleSheetId string, text string) (*gcdmessage.ChromeResponse, error) {
+// Returns -  sourceMapURL - URL of source map associated with script (if any).
+func (c *CSS) SetStyleSheetText(styleSheetId string, text string) (string, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["text"] = text
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleSheetText", Params: paramRequest})
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleSheetText", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			SourceMapURL string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.SourceMapURL, nil
 }
 
 // SetRuleSelector - Modifies the rule selector.
 // styleSheetId -
 // range -
 // selector -
-// Returns -  rule - The resulting rule after the selector modification.
-func (c *CSS) SetRuleSelector(styleSheetId string, theRange *CSSSourceRange, selector string) (*CSSCSSRule, error) {
+// Returns -  selectorList - The resulting selector list after modification.
+func (c *CSS) SetRuleSelector(styleSheetId string, theRange *CSSSourceRange, selector string) (*CSSSelectorList, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
@@ -398,7 +446,7 @@ func (c *CSS) SetRuleSelector(styleSheetId string, theRange *CSSSourceRange, sel
 
 	var chromeData struct {
 		Result struct {
-			Rule *CSSCSSRule
+			SelectorList *CSSSelectorList
 		}
 	}
 
@@ -417,27 +465,27 @@ func (c *CSS) SetRuleSelector(styleSheetId string, theRange *CSSSourceRange, sel
 		return nil, err
 	}
 
-	return chromeData.Result.Rule, nil
+	return chromeData.Result.SelectorList, nil
 }
 
-// SetStyleText - Modifies the style text.
+// SetKeyframeKey - Modifies the keyframe rule key text.
 // styleSheetId -
 // range -
-// text -
-// Returns -  style - The resulting style after the selector modification.
-func (c *CSS) SetStyleText(styleSheetId string, theRange *CSSSourceRange, text string) (*CSSCSSStyle, error) {
+// keyText -
+// Returns -  keyText - The resulting key text after modification.
+func (c *CSS) SetKeyframeKey(styleSheetId string, theRange *CSSSourceRange, keyText string) (*CSSValue, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["styleSheetId"] = styleSheetId
 	paramRequest["range"] = theRange
-	paramRequest["text"] = text
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleText", Params: paramRequest})
+	paramRequest["keyText"] = keyText
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setKeyframeKey", Params: paramRequest})
 	if err != nil {
 		return nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Style *CSSCSSStyle
+			KeyText *CSSValue
 		}
 	}
 
@@ -456,7 +504,42 @@ func (c *CSS) SetStyleText(styleSheetId string, theRange *CSSSourceRange, text s
 		return nil, err
 	}
 
-	return chromeData.Result.Style, nil
+	return chromeData.Result.KeyText, nil
+}
+
+// SetStyleTexts - Applies specified style edits one after another in the given order.
+// edits -
+// Returns -  styles - The resulting styles after modification.
+func (c *CSS) SetStyleTexts(edits *CSSStyleDeclarationEdit) ([]*CSSCSSStyle, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["edits"] = edits
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleTexts", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Styles []*CSSCSSStyle
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Styles, nil
 }
 
 // SetMediaText - Modifies the rule selector.
@@ -624,4 +707,39 @@ func (c *CSS) SetEffectivePropertyValueForNode(nodeId int, propertyName string, 
 	paramRequest["propertyName"] = propertyName
 	paramRequest["value"] = value
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setEffectivePropertyValueForNode", Params: paramRequest})
+}
+
+// GetBackgroundColors -
+// nodeId - Id of the node to get background colors for.
+// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).
+func (c *CSS) GetBackgroundColors(nodeId int) ([]string, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["nodeId"] = nodeId
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getBackgroundColors", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			BackgroundColors []string
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.BackgroundColors, nil
 }

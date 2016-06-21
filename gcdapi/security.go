@@ -10,7 +10,7 @@ import (
 
 // An explanation of an factor contributing to the security state.
 type SecuritySecurityStateExplanation struct {
-	SecurityState string `json:"securityState"`           // Security state representing the severity of the factor being explained. enum values: unknown, neutral, insecure, warning, secure
+	SecurityState string `json:"securityState"`           // Security state representing the severity of the factor being explained. enum values: unknown, neutral, insecure, warning, secure, info
 	Summary       string `json:"summary"`                 // Short phrase describing the type of factor.
 	Description   string `json:"description"`             // Full text explanation of the factor.
 	CertificateId int    `json:"certificateId,omitempty"` // Associated certificate id.
@@ -20,15 +20,15 @@ type SecuritySecurityStateExplanation struct {
 type SecurityMixedContentStatus struct {
 	RanInsecureContent            bool   `json:"ranInsecureContent"`            // True if the page ran insecure content such as scripts.
 	DisplayedInsecureContent      bool   `json:"displayedInsecureContent"`      // True if the page displayed insecure content such as images.
-	RanInsecureContentStyle       string `json:"ranInsecureContentStyle"`       // Security state representing a page that ran insecure content. enum values: unknown, neutral, insecure, warning, secure
-	DisplayedInsecureContentStyle string `json:"displayedInsecureContentStyle"` // Security state representing a page that displayed insecure content. enum values: unknown, neutral, insecure, warning, secure
+	RanInsecureContentStyle       string `json:"ranInsecureContentStyle"`       // Security state representing a page that ran insecure content. enum values: unknown, neutral, insecure, warning, secure, info
+	DisplayedInsecureContentStyle string `json:"displayedInsecureContentStyle"` // Security state representing a page that displayed insecure content. enum values: unknown, neutral, insecure, warning, secure, info
 }
 
 // The security state of the page changed.
 type SecuritySecurityStateChangedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		SecurityState         string                              `json:"securityState"`                   // Security state. enum values: unknown, neutral, insecure, warning, secure
+		SecurityState         string                              `json:"securityState"`                   // Security state. enum values: unknown, neutral, insecure, warning, secure, info
 		Explanations          []*SecuritySecurityStateExplanation `json:"explanations,omitempty"`          // List of explanations for the security state. If the overall security state is `insecure` or `warning`, at least one corresponding explanation should be included.
 		MixedContentStatus    *SecurityMixedContentStatus         `json:"mixedContentStatus,omitempty"`    // Information about mixed content on the page.
 		SchemeIsCryptographic bool                                `json:"schemeIsCryptographic,omitempty"` // True if the page was loaded over cryptographic transport such as HTTPS.

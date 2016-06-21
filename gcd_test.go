@@ -186,7 +186,7 @@ func TestSimpleReturn(t *testing.T) {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
 	network := target.Network
-	if _, err := network.Enable(); err != nil {
+	if _, err := network.Enable(-1, -1); err != nil {
 		t.Fatalf("error enabling network")
 	}
 	ret, err = network.CanClearBrowserCache()
@@ -209,7 +209,7 @@ func TestComplexReturn(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
-	if _, err := target.Network.Enable(); err != nil {
+	if _, err := target.Network.Enable(-1, -1); err != nil {
 		t.Fatalf("error enabling network %s\n", err)
 	}
 

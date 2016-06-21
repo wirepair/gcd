@@ -9,18 +9,17 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
-//
-type DebuggerSubCompileError struct {
-	Message      string `json:"message"`      // Compiler error message
-	LineNumber   int    `json:"lineNumber"`   // Compile error line number (1-based)
-	ColumnNumber int    `json:"columnNumber"` // Compile error column number (1-based)
-}
-
 // Location in the source code.
 type DebuggerLocation struct {
 	ScriptId     string `json:"scriptId"`               // Script identifier as reported in the <code>Debugger.scriptParsed</code>.
 	LineNumber   int    `json:"lineNumber"`             // Line number in the script (0-based).
 	ColumnNumber int    `json:"columnNumber,omitempty"` // Column number in the script (0-based).
+}
+
+// Location in the source code.
+type DebuggerScriptPosition struct {
+	Line   int `json:"line"`   //
+	Column int `json:"column"` //
 }
 
 // Information about the function.
@@ -56,54 +55,20 @@ type DebuggerCallFrame struct {
 	ReturnValue      *RuntimeRemoteObject `json:"returnValue,omitempty"`      // The value being returned, if the function is at return point.
 }
 
-// JavaScript call stack, including async stack traces.
-type DebuggerStackTrace struct {
-	CallFrames      []*DebuggerCallFrame `json:"callFrames"`                // Call frames of the stack trace.
-	Description     string               `json:"description,omitempty"`     // String label of this stack trace. For async traces this may be a name of the function that initiated the async call.
-	AsyncStackTrace *DebuggerStackTrace  `json:"asyncStackTrace,omitempty"` // Async stack trace, if any.
-}
-
 // Scope description.
 type DebuggerScope struct {
-	Type   string               `json:"type"`   // Scope type.
-	Object *RuntimeRemoteObject `json:"object"` // Object representing the scope. For <code>global</code> and <code>with</code> scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties.
+	Type          string               `json:"type"`                    // Scope type.
+	Object        *RuntimeRemoteObject `json:"object"`                  // Object representing the scope. For <code>global</code> and <code>with</code> scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties.
+	Name          string               `json:"name,omitempty"`          //
+	StartLocation *DebuggerLocation    `json:"startLocation,omitempty"` // Location in the source code where scope starts
+	EndLocation   *DebuggerLocation    `json:"endLocation,omitempty"`   // Location in the source code where scope ends
 }
 
-// Detailed information on exception (or error) that was thrown during script compilation or execution.
-type DebuggerExceptionDetails struct {
-	Text       string              `json:"text"`                 // Exception text.
-	Url        string              `json:"url,omitempty"`        // URL of the message origin.
-	ScriptId   string              `json:"scriptId,omitempty"`   // Script ID of the message origin.
-	Line       int                 `json:"line,omitempty"`       // Line number in the resource that generated this message.
-	Column     int                 `json:"column,omitempty"`     // Column number in the resource that generated this message.
-	StackTrace []*ConsoleCallFrame `json:"stackTrace,omitempty"` // JavaScript stack trace for assertions and error messages.
-}
-
-// Error data for setScriptSource command. compileError is a case type for uncompilable script source error.
+// Error data for setScriptSource command. Contains uncompilable script source error.
 type DebuggerSetScriptSourceError struct {
-	CompileError DebuggerSubCompileError `json:"compileError,omitempty"` //
-}
-
-// Information about the promise. All fields but id are optional and if present they reflect the new state of the property on the promise with given id.
-type DebuggerPromiseDetails struct {
-	Id                   int                     `json:"id"`                             // Unique id of the promise.
-	Status               string                  `json:"status,omitempty"`               // Status of the promise.
-	ParentId             int                     `json:"parentId,omitempty"`             // Id of the parent promise.
-	CallFrame            *ConsoleCallFrame       `json:"callFrame,omitempty"`            // Top call frame on promise creation.
-	CreationTime         float64                 `json:"creationTime,omitempty"`         // Creation time of the promise.
-	SettlementTime       float64                 `json:"settlementTime,omitempty"`       // Settlement time of the promise.
-	CreationStack        []*ConsoleCallFrame     `json:"creationStack,omitempty"`        // JavaScript stack trace on promise creation.
-	AsyncCreationStack   *ConsoleAsyncStackTrace `json:"asyncCreationStack,omitempty"`   // JavaScript asynchronous stack trace on promise creation, if available.
-	SettlementStack      []*ConsoleCallFrame     `json:"settlementStack,omitempty"`      // JavaScript stack trace on promise settlement.
-	AsyncSettlementStack *ConsoleAsyncStackTrace `json:"asyncSettlementStack,omitempty"` // JavaScript asynchronous stack trace on promise settlement, if available.
-}
-
-// Information about the async operation.
-type DebuggerAsyncOperation struct {
-	Id              int                     `json:"id"`                        // Unique id of the async operation.
-	Description     string                  `json:"description"`               // String description of the async operation.
-	StackTrace      []*ConsoleCallFrame     `json:"stackTrace,omitempty"`      // Stack trace where async operation was scheduled.
-	AsyncStackTrace *ConsoleAsyncStackTrace `json:"asyncStackTrace,omitempty"` // Asynchronous stack trace where async operation was scheduled, if available.
+	Message      string `json:"message"`      // Compiler error message
+	LineNumber   int    `json:"lineNumber"`   // Compile error line number (1-based)
+	ColumnNumber int    `json:"columnNumber"` // Compile error column number (1-based)
 }
 
 // Search match for resource.
@@ -116,16 +81,20 @@ type DebuggerSearchMatch struct {
 type DebuggerScriptParsedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		ScriptId         string `json:"scriptId"`                   // Identifier of the script parsed.
-		Url              string `json:"url"`                        // URL or name of the script parsed (if any).
-		StartLine        int    `json:"startLine"`                  // Line offset of the script within the resource with given URL (for script tags).
-		StartColumn      int    `json:"startColumn"`                // Column offset of the script within the resource with given URL.
-		EndLine          int    `json:"endLine"`                    // Last line of the script.
-		EndColumn        int    `json:"endColumn"`                  // Length of the last line of the script.
-		IsContentScript  bool   `json:"isContentScript,omitempty"`  // Determines whether this script is a user extension script.
-		IsInternalScript bool   `json:"isInternalScript,omitempty"` // Determines whether this script is an internal script.
-		SourceMapURL     string `json:"sourceMapURL,omitempty"`     // URL of source map associated with script (if any).
-		HasSourceURL     bool   `json:"hasSourceURL,omitempty"`     // True, if this script has sourceURL.
+		ScriptId                 string `json:"scriptId"`                           // Identifier of the script parsed.
+		Url                      string `json:"url"`                                // URL or name of the script parsed (if any).
+		StartLine                int    `json:"startLine"`                          // Line offset of the script within the resource with given URL (for script tags).
+		StartColumn              int    `json:"startColumn"`                        // Column offset of the script within the resource with given URL.
+		EndLine                  int    `json:"endLine"`                            // Last line of the script.
+		EndColumn                int    `json:"endColumn"`                          // Length of the last line of the script.
+		ExecutionContextId       int    `json:"executionContextId"`                 // Specifies script creation context.
+		Hash                     string `json:"hash"`                               // Content hash of the script.
+		IsContentScript          bool   `json:"isContentScript,omitempty"`          // Determines whether this script is a user extension script.
+		IsInternalScript         bool   `json:"isInternalScript,omitempty"`         // Determines whether this script is an internal script.
+		IsLiveEdit               bool   `json:"isLiveEdit,omitempty"`               // True, if this script is generated as a result of the live edit operation.
+		SourceMapURL             string `json:"sourceMapURL,omitempty"`             // URL of source map associated with script (if any).
+		HasSourceURL             bool   `json:"hasSourceURL,omitempty"`             // True, if this script has sourceURL.
+		DeprecatedCommentWasUsed bool   `json:"deprecatedCommentWasUsed,omitempty"` // True, if '//@ sourceURL' or '//@ sourceMappingURL' was used.
 	} `json:"Params,omitempty"`
 }
 
@@ -133,16 +102,19 @@ type DebuggerScriptParsedEvent struct {
 type DebuggerScriptFailedToParseEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		ScriptId         string `json:"scriptId"`                   // Identifier of the script parsed.
-		Url              string `json:"url"`                        // URL or name of the script parsed (if any).
-		StartLine        int    `json:"startLine"`                  // Line offset of the script within the resource with given URL (for script tags).
-		StartColumn      int    `json:"startColumn"`                // Column offset of the script within the resource with given URL.
-		EndLine          int    `json:"endLine"`                    // Last line of the script.
-		EndColumn        int    `json:"endColumn"`                  // Length of the last line of the script.
-		IsContentScript  bool   `json:"isContentScript,omitempty"`  // Determines whether this script is a user extension script.
-		IsInternalScript bool   `json:"isInternalScript,omitempty"` // Determines whether this script is an internal script.
-		SourceMapURL     string `json:"sourceMapURL,omitempty"`     // URL of source map associated with script (if any).
-		HasSourceURL     bool   `json:"hasSourceURL,omitempty"`     // True, if this script has sourceURL.
+		ScriptId                 string `json:"scriptId"`                           // Identifier of the script parsed.
+		Url                      string `json:"url"`                                // URL or name of the script parsed (if any).
+		StartLine                int    `json:"startLine"`                          // Line offset of the script within the resource with given URL (for script tags).
+		StartColumn              int    `json:"startColumn"`                        // Column offset of the script within the resource with given URL.
+		EndLine                  int    `json:"endLine"`                            // Last line of the script.
+		EndColumn                int    `json:"endColumn"`                          // Length of the last line of the script.
+		ExecutionContextId       int    `json:"executionContextId"`                 // Specifies script creation context.
+		Hash                     string `json:"hash"`                               // Content hash of the script.
+		IsContentScript          bool   `json:"isContentScript,omitempty"`          // Determines whether this script is a user extension script.
+		IsInternalScript         bool   `json:"isInternalScript,omitempty"`         // Determines whether this script is an internal script.
+		SourceMapURL             string `json:"sourceMapURL,omitempty"`             // URL of source map associated with script (if any).
+		HasSourceURL             bool   `json:"hasSourceURL,omitempty"`             // True, if this script has sourceURL.
+		DeprecatedCommentWasUsed bool   `json:"deprecatedCommentWasUsed,omitempty"` // True, if '//@ sourceURL' or '//@ sourceMappingURL' was used.
 	} `json:"Params,omitempty"`
 }
 
@@ -163,32 +135,7 @@ type DebuggerPausedEvent struct {
 		Reason          string                 `json:"reason"`                    // Pause reason.
 		Data            map[string]interface{} `json:"data,omitempty"`            // Object containing break-specific auxiliary properties.
 		HitBreakpoints  []string               `json:"hitBreakpoints,omitempty"`  // Hit breakpoints IDs
-		AsyncStackTrace *DebuggerStackTrace    `json:"asyncStackTrace,omitempty"` // Async stack trace, if any.
-	} `json:"Params,omitempty"`
-}
-
-// Fired when a <code>Promise</code> is created, updated or garbage collected.
-type DebuggerPromiseUpdatedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		EventType string                  `json:"eventType"` // Type of the event.
-		Promise   *DebuggerPromiseDetails `json:"promise"`   // Information about the updated <code>Promise</code>.
-	} `json:"Params,omitempty"`
-}
-
-// Fired when an async operation is scheduled (while in a debugger stepping session).
-type DebuggerAsyncOperationStartedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Operation *DebuggerAsyncOperation `json:"operation"` // Information about the async operation.
-	} `json:"Params,omitempty"`
-}
-
-// Fired when an async operation is completed (while in a debugger stepping session).
-type DebuggerAsyncOperationCompletedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Id int `json:"id"` // ID of the async operation that was completed.
+		AsyncStackTrace *RuntimeStackTrace     `json:"asyncStackTrace,omitempty"` // Async stack trace, if any.
 	} `json:"Params,omitempty"`
 }
 
@@ -352,11 +299,6 @@ func (c *Debugger) Resume() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.resume"})
 }
 
-// Steps into the first async operation handler that was scheduled by or after the current statement.
-func (c *Debugger) StepIntoAsync() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepIntoAsync"})
-}
-
 // SearchInContent - Searches for given string in script content.
 // scriptId - Id of the script to search in.
 // query - String to search for.
@@ -434,47 +376,48 @@ func (c *Debugger) CanSetScriptSource() (bool, error) {
 // scriptId - Id of the script to edit.
 // scriptSource - New content of the script.
 // preview -  If true the change will not actually be applied. Preview mode may be used to get result description without actually modifying the code.
-// Returns -  callFrames - New stack trace in case editing has happened while VM was stopped. stackChanged - Whether current call stack  was modified after applying the changes. asyncStackTrace - Async stack trace, if any.
-func (c *Debugger) SetScriptSource(scriptId string, scriptSource string, preview bool) ([]*DebuggerCallFrame, bool, *DebuggerStackTrace, error) {
+// Returns -  callFrames - New stack trace in case editing has happened while VM was stopped. stackChanged - Whether current call stack  was modified after applying the changes. asyncStackTrace - Async stack trace, if any. compileError - Error data if any.
+func (c *Debugger) SetScriptSource(scriptId string, scriptSource string, preview bool) ([]*DebuggerCallFrame, bool, *RuntimeStackTrace, *DebuggerSetScriptSourceError, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["scriptId"] = scriptId
 	paramRequest["scriptSource"] = scriptSource
 	paramRequest["preview"] = preview
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setScriptSource", Params: paramRequest})
 	if err != nil {
-		return nil, false, nil, err
+		return nil, false, nil, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
 			CallFrames      []*DebuggerCallFrame
 			StackChanged    bool
-			AsyncStackTrace *DebuggerStackTrace
+			AsyncStackTrace *RuntimeStackTrace
+			CompileError    *DebuggerSetScriptSourceError
 		}
 	}
 
 	if resp == nil {
-		return nil, false, nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, false, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, false, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, false, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, false, nil, err
+		return nil, false, nil, nil, err
 	}
 
-	return chromeData.Result.CallFrames, chromeData.Result.StackChanged, chromeData.Result.AsyncStackTrace, nil
+	return chromeData.Result.CallFrames, chromeData.Result.StackChanged, chromeData.Result.AsyncStackTrace, chromeData.Result.CompileError, nil
 }
 
 // RestartFrame - Restarts particular call frame from the beginning.
 // callFrameId - Call frame identifier to evaluate on.
 // Returns -  callFrames - New stack trace. asyncStackTrace - Async stack trace, if any.
-func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *DebuggerStackTrace, error) {
+func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *RuntimeStackTrace, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["callFrameId"] = callFrameId
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.restartFrame", Params: paramRequest})
@@ -485,7 +428,7 @@ func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *Debu
 	var chromeData struct {
 		Result struct {
 			CallFrames      []*DebuggerCallFrame
-			AsyncStackTrace *DebuggerStackTrace
+			AsyncStackTrace *RuntimeStackTrace
 		}
 	}
 
@@ -664,7 +607,7 @@ func (c *Debugger) SetPauseOnExceptions(state string) (*gcdmessage.ChromeRespons
 // returnByValue - Whether the result is expected to be a JSON object that should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
 // Returns -  result - Object wrapper for the evaluation result. wasThrown - True if the result was thrown during the evaluation. exceptionDetails - Exception details.
-func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, objectGroup string, includeCommandLineAPI bool, doNotPauseOnExceptionsAndMuteConsole bool, returnByValue bool, generatePreview bool) (*RuntimeRemoteObject, bool, *DebuggerExceptionDetails, error) {
+func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, objectGroup string, includeCommandLineAPI bool, doNotPauseOnExceptionsAndMuteConsole bool, returnByValue bool, generatePreview bool) (*RuntimeRemoteObject, bool, *RuntimeExceptionDetails, error) {
 	paramRequest := make(map[string]interface{}, 7)
 	paramRequest["callFrameId"] = callFrameId
 	paramRequest["expression"] = expression
@@ -682,7 +625,7 @@ func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, ob
 		Result struct {
 			Result           *RuntimeRemoteObject
 			WasThrown        bool
-			ExceptionDetails *DebuggerExceptionDetails
+			ExceptionDetails *RuntimeExceptionDetails
 		}
 	}
 
@@ -704,144 +647,23 @@ func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, ob
 	return chromeData.Result.Result, chromeData.Result.WasThrown, chromeData.Result.ExceptionDetails, nil
 }
 
-// CompileScript - Compiles expression.
-// expression - Expression to compile.
-// sourceURL - Source url to be set for the script.
-// persistScript - Specifies whether the compiled script should be persisted.
-// executionContextId - Specifies in which isolated context to perform script run. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted or 0 the evaluation will be performed in the context of the inspected page.
-// Returns -  scriptId - Id of the script. exceptionDetails - Exception details.
-func (c *Debugger) CompileScript(expression string, sourceURL string, persistScript bool, executionContextId int) (string, *DebuggerExceptionDetails, error) {
-	paramRequest := make(map[string]interface{}, 4)
-	paramRequest["expression"] = expression
-	paramRequest["sourceURL"] = sourceURL
-	paramRequest["persistScript"] = persistScript
-	paramRequest["executionContextId"] = executionContextId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.compileScript", Params: paramRequest})
-	if err != nil {
-		return "", nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			ScriptId         string
-			ExceptionDetails *DebuggerExceptionDetails
-		}
-	}
-
-	if resp == nil {
-		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", nil, err
-	}
-
-	return chromeData.Result.ScriptId, chromeData.Result.ExceptionDetails, nil
-}
-
-// RunScript - Runs script with given id in a given context.
-// scriptId - Id of the script to run.
-// executionContextId - Specifies in which isolated context to perform script run. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted or 0 the evaluation will be performed in the context of the inspected page.
-// objectGroup - Symbolic group name that can be used to release multiple objects.
-// doNotPauseOnExceptionsAndMuteConsole - Specifies whether script run should stop on exceptions and mute console. Overrides setPauseOnException state.
-// Returns -  result - Run result. exceptionDetails - Exception details.
-func (c *Debugger) RunScript(scriptId string, executionContextId int, objectGroup string, doNotPauseOnExceptionsAndMuteConsole bool) (*RuntimeRemoteObject, *DebuggerExceptionDetails, error) {
-	paramRequest := make(map[string]interface{}, 4)
-	paramRequest["scriptId"] = scriptId
-	paramRequest["executionContextId"] = executionContextId
-	paramRequest["objectGroup"] = objectGroup
-	paramRequest["doNotPauseOnExceptionsAndMuteConsole"] = doNotPauseOnExceptionsAndMuteConsole
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.runScript", Params: paramRequest})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Result           *RuntimeRemoteObject
-			ExceptionDetails *DebuggerExceptionDetails
-		}
-	}
-
-	if resp == nil {
-		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, err
-	}
-
-	return chromeData.Result.Result, chromeData.Result.ExceptionDetails, nil
-}
-
-// SetVariableValue - Changes value of variable in a callframe or a closure. Either callframe or function must be specified. Object-based scopes are not supported and must be mutated manually.
+// SetVariableValue - Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually.
 // scopeNumber - 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually.
 // variableName - Variable name.
 // newValue - New variable value.
 // callFrameId - Id of callframe that holds variable.
-// functionObjectId - Object id of closure (function) that holds variable.
-func (c *Debugger) SetVariableValue(scopeNumber int, variableName string, newValue *RuntimeCallArgument, callFrameId string, functionObjectId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 5)
+func (c *Debugger) SetVariableValue(scopeNumber int, variableName string, newValue *RuntimeCallArgument, callFrameId string) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 4)
 	paramRequest["scopeNumber"] = scopeNumber
 	paramRequest["variableName"] = variableName
 	paramRequest["newValue"] = newValue
 	paramRequest["callFrameId"] = callFrameId
-	paramRequest["functionObjectId"] = functionObjectId
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setVariableValue", Params: paramRequest})
-}
-
-// GetStepInPositions - Lists all positions where step-in is possible for a current statement in a specified call frame
-// callFrameId - Id of a call frame where the current statement should be analized
-// Returns -  stepInPositions - experimental
-func (c *Debugger) GetStepInPositions(callFrameId string) ([]*DebuggerLocation, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["callFrameId"] = callFrameId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getStepInPositions", Params: paramRequest})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			StepInPositions []*DebuggerLocation
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.StepInPositions, nil
 }
 
 // GetBacktrace - Returns call stack including variables changed since VM was paused. VM must be paused.
 // Returns -  callFrames - Call stack the virtual machine stopped on. asyncStackTrace - Async stack trace, if any.
-func (c *Debugger) GetBacktrace() ([]*DebuggerCallFrame, *DebuggerStackTrace, error) {
+func (c *Debugger) GetBacktrace() ([]*DebuggerCallFrame, *RuntimeStackTrace, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getBacktrace"})
 	if err != nil {
 		return nil, nil, err
@@ -850,7 +672,7 @@ func (c *Debugger) GetBacktrace() ([]*DebuggerCallFrame, *DebuggerStackTrace, er
 	var chromeData struct {
 		Result struct {
 			CallFrames      []*DebuggerCallFrame
-			AsyncStackTrace *DebuggerStackTrace
+			AsyncStackTrace *RuntimeStackTrace
 		}
 	}
 
@@ -872,16 +694,6 @@ func (c *Debugger) GetBacktrace() ([]*DebuggerCallFrame, *DebuggerStackTrace, er
 	return chromeData.Result.CallFrames, chromeData.Result.AsyncStackTrace, nil
 }
 
-// SkipStackFrames - Makes backend skip steps in the sources with names matching given pattern. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
-// script - Regular expression defining the scripts to ignore while stepping.
-// skipContentScripts - True, if all content scripts should be ignored.
-func (c *Debugger) SkipStackFrames(script string, skipContentScripts bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["script"] = script
-	paramRequest["skipContentScripts"] = skipContentScripts
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.skipStackFrames", Params: paramRequest})
-}
-
 // SetAsyncCallStackDepth - Enables or disables async call stacks tracking.
 // maxDepth - Maximum depth of async call stacks. Setting to <code>0</code> will effectively disable collecting async call stacks (default).
 func (c *Debugger) SetAsyncCallStackDepth(maxDepth int) (*gcdmessage.ChromeResponse, error) {
@@ -890,73 +702,20 @@ func (c *Debugger) SetAsyncCallStackDepth(maxDepth int) (*gcdmessage.ChromeRespo
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setAsyncCallStackDepth", Params: paramRequest})
 }
 
-// EnablePromiseTracker - Enables promise tracking, information about <code>Promise</code>s created or updated will now be stored on the backend.
-// captureStacks - Whether to capture stack traces for promise creation and settlement events (default: false).
-func (c *Debugger) EnablePromiseTracker(captureStacks bool) (*gcdmessage.ChromeResponse, error) {
+// SetBlackboxPatterns - Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
+// patterns - Array of regexps that will be used to check script url for blackbox state.
+func (c *Debugger) SetBlackboxPatterns(patterns string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["captureStacks"] = captureStacks
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enablePromiseTracker", Params: paramRequest})
+	paramRequest["patterns"] = patterns
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBlackboxPatterns", Params: paramRequest})
 }
 
-// Disables promise tracking.
-func (c *Debugger) DisablePromiseTracker() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disablePromiseTracker"})
-}
-
-// GetPromiseById - Returns <code>Promise</code> with specified ID.
-// promiseId -
-// objectGroup - Symbolic group name that can be used to release multiple objects.
-// Returns -  promise - Object wrapper for <code>Promise</code> with specified ID, if any.
-func (c *Debugger) GetPromiseById(promiseId int, objectGroup string) (*RuntimeRemoteObject, error) {
+// SetBlackboxedRanges - Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted.
+// scriptId - Id of the script.
+// positions -
+func (c *Debugger) SetBlackboxedRanges(scriptId string, positions *DebuggerScriptPosition) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["promiseId"] = promiseId
-	paramRequest["objectGroup"] = objectGroup
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getPromiseById", Params: paramRequest})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Promise *RuntimeRemoteObject
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.Promise, nil
-}
-
-// Fires pending <code>asyncOperationStarted</code> events (if any), as if a debugger stepping session has just been started.
-func (c *Debugger) FlushAsyncOperationEvents() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.flushAsyncOperationEvents"})
-}
-
-// SetAsyncOperationBreakpoint - Sets breakpoint on AsyncOperation callback handler.
-// operationId - ID of the async operation to set breakpoint for.
-func (c *Debugger) SetAsyncOperationBreakpoint(operationId int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["operationId"] = operationId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setAsyncOperationBreakpoint", Params: paramRequest})
-}
-
-// RemoveAsyncOperationBreakpoint - Removes AsyncOperation breakpoint.
-// operationId - ID of the async operation to remove breakpoint for.
-func (c *Debugger) RemoveAsyncOperationBreakpoint(operationId int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["operationId"] = operationId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.removeAsyncOperationBreakpoint", Params: paramRequest})
+	paramRequest["scriptId"] = scriptId
+	paramRequest["positions"] = positions
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBlackboxedRanges", Params: paramRequest})
 }

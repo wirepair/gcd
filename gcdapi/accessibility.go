@@ -10,19 +10,23 @@ import (
 )
 
 // A single source for a computed AX property.
-type AccessibilityAXPropertySource struct {
-	Name          string `json:"name"`                    // The name/label of this source.
-	SourceType    string `json:"sourceType"`              // What type of source this is. enum values: attribute, implicit, style
-	Value         string `json:"value"`                   // The value of this property source.
-	Type          string `json:"type"`                    // What type the value should be interpreted as. enum values: boolean, tristate, booleanOrUndefined, idref, idrefList, integer, number, string, token, tokenList, domRelation, role, internalRole
-	Invalid       bool   `json:"invalid,omitempty"`       // Whether the value for this property is invalid.
-	InvalidReason string `json:"invalidReason,omitempty"` // Reason for the value being invalid, if it is.
+type AccessibilityAXValueSource struct {
+	Type              string                `json:"type"`                        // What type of source this is. enum values: attribute, implicit, style, contents, placeholder, relatedElement
+	Value             *AccessibilityAXValue `json:"value,omitempty"`             // The value of this property source.
+	Attribute         string                `json:"attribute,omitempty"`         // The name of the relevant attribute, if any.
+	AttributeValue    *AccessibilityAXValue `json:"attributeValue,omitempty"`    // The value of the relevant attribute, if any.
+	Superseded        bool                  `json:"superseded,omitempty"`        // Whether this source is superseded by a higher priority source.
+	NativeSource      string                `json:"nativeSource,omitempty"`      // The native markup source for this value, e.g. a <label> element. enum values: figcaption, label, labelfor, labelwrapped, legend, tablecaption, title, other
+	NativeSourceValue *AccessibilityAXValue `json:"nativeSourceValue,omitempty"` // The value, such as a node or node list, of the native source.
+	Invalid           bool                  `json:"invalid,omitempty"`           // Whether the value for this property is invalid.
+	InvalidReason     string                `json:"invalidReason,omitempty"`     // Reason for the value being invalid, if it is.
 }
 
 // No Description.
 type AccessibilityAXRelatedNode struct {
-	Idref         string `json:"idref,omitempty"` // The IDRef value provided, if any.
 	BackendNodeId int    `json:"backendNodeId"`   // The BackendNodeId of the related node.
+	Idref         string `json:"idref,omitempty"` // The IDRef value provided, if any.
+	Text          string `json:"text,omitempty"`  // The text alternative of this node in the current context.
 }
 
 // No Description.
@@ -33,11 +37,10 @@ type AccessibilityAXProperty struct {
 
 // A single computed AX property.
 type AccessibilityAXValue struct {
-	Type                  string                           `json:"type"`                            // The type of this value. enum values: boolean, tristate, booleanOrUndefined, idref, idrefList, integer, number, string, token, tokenList, domRelation, role, internalRole
-	Value                 string                           `json:"value,omitempty"`                 // The computed value of this property.
-	RelatedNodeValue      *AccessibilityAXRelatedNode      `json:"relatedNodeValue,omitempty"`      // The related node value, if any.
-	RelatedNodeArrayValue []*AccessibilityAXRelatedNode    `json:"relatedNodeArrayValue,omitempty"` // Multiple relted nodes, if applicable.
-	Sources               []*AccessibilityAXPropertySource `json:"sources,omitempty"`               // The sources which contributed to the computation of this property.
+	Type         string                        `json:"type"`                   // The type of this value. enum values: boolean, tristate, booleanOrUndefined, idref, idrefList, integer, node, nodeList, number, string, computedString, token, tokenList, domRelation, role, internalRole, valueUndefined
+	Value        string                        `json:"value,omitempty"`        // The computed value of this property.
+	RelatedNodes []*AccessibilityAXRelatedNode `json:"relatedNodes,omitempty"` // One or more related nodes, if applicable.
+	Sources      []*AccessibilityAXValueSource `json:"sources,omitempty"`      // The sources which contributed to the computation of this property.
 }
 
 // A node in the accessibility tree.
@@ -49,7 +52,6 @@ type AccessibilityAXNode struct {
 	Name           *AccessibilityAXValue      `json:"name,omitempty"`           // The accessible name for this <code>Node</code>.
 	Description    *AccessibilityAXValue      `json:"description,omitempty"`    // The accessible description for this <code>Node</code>.
 	Value          *AccessibilityAXValue      `json:"value,omitempty"`          // The value for this <code>Node</code>.
-	Help           *AccessibilityAXValue      `json:"help,omitempty"`           // Help.
 	Properties     []*AccessibilityAXProperty `json:"properties,omitempty"`     // All other properties
 }
 

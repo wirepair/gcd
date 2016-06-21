@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015 isaac dawson
+Copyright (c) 2016 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -235,7 +235,7 @@ func (d *Domain) resolveReference(prop PropSetter) bool {
 	}
 
 	ref := globalRefs[refName]
-	fmt.Printf("REF: %#v\n", ref)
+	fmt.Printf("REF (%s): %#v\n", refName, ref)
 	// base type
 	if ref.IsBaseType {
 		prop.SetGoType(ref.BaseType)

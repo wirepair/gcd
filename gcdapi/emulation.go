@@ -9,23 +9,10 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
-// Visible page viewport
-type EmulationViewport struct {
-	ScrollX                float64 `json:"scrollX"`                // X scroll offset in CSS pixels.
-	ScrollY                float64 `json:"scrollY"`                // Y scroll offset in CSS pixels.
-	ContentsWidth          float64 `json:"contentsWidth"`          // Contents width in CSS pixels.
-	ContentsHeight         float64 `json:"contentsHeight"`         // Contents height in CSS pixels.
-	PageScaleFactor        float64 `json:"pageScaleFactor"`        // Page scale factor.
-	MinimumPageScaleFactor float64 `json:"minimumPageScaleFactor"` // Minimum page scale factor.
-	MaximumPageScaleFactor float64 `json:"maximumPageScaleFactor"` // Maximum page scale factor.
-}
-
-// Fired when a visible page viewport has changed. Only fired when device metrics are overridden.
-type EmulationViewportChangedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Viewport *EmulationViewport `json:"viewport"` // Viewport description.
-	} `json:"Params,omitempty"`
+// Screen orientation.
+type EmulationScreenOrientation struct {
+	Type  string `json:"type"`  // Orientation type.
+	Angle int    `json:"angle"` // Orientation angle.
 }
 
 type Emulation struct {
@@ -50,8 +37,9 @@ func NewEmulation(target gcdmessage.ChromeTargeter) *Emulation {
 // screenHeight - Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionX - Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionY - Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
-func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, fitWindow bool, scale float64, offsetX float64, offsetY float64, screenWidth int, screenHeight int, positionX int, positionY int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 12)
+// screenOrientation - Screen orientation override.
+func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, fitWindow bool, scale float64, offsetX float64, offsetY float64, screenWidth int, screenHeight int, positionX int, positionY int, screenOrientation *EmulationScreenOrientation) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 13)
 	paramRequest["width"] = width
 	paramRequest["height"] = height
 	paramRequest["deviceScaleFactor"] = deviceScaleFactor
@@ -64,6 +52,7 @@ func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleF
 	paramRequest["screenHeight"] = screenHeight
 	paramRequest["positionX"] = positionX
 	paramRequest["positionY"] = positionY
+	paramRequest["screenOrientation"] = screenOrientation
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDeviceMetricsOverride", Params: paramRequest})
 }
 
@@ -72,9 +61,9 @@ func (c *Emulation) ClearDeviceMetricsOverride() (*gcdmessage.ChromeResponse, er
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDeviceMetricsOverride"})
 }
 
-// Requests that scroll offsets and page scale factor are reset to initial values.
-func (c *Emulation) ResetScrollAndPageScaleFactor() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetScrollAndPageScaleFactor"})
+// Requests that page scale factor is reset to initial values.
+func (c *Emulation) ResetPageScaleFactor() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetPageScaleFactor"})
 }
 
 // SetPageScaleFactor - Sets a specified page scale factor.
@@ -126,6 +115,14 @@ func (c *Emulation) SetEmulatedMedia(media string) (*gcdmessage.ChromeResponse, 
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["media"] = media
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedMedia", Params: paramRequest})
+}
+
+// SetCPUThrottlingRate - Enables CPU throttling to emulate slow CPUs.
+// rate - Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc).
+func (c *Emulation) SetCPUThrottlingRate(rate float64) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["rate"] = rate
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setCPUThrottlingRate", Params: paramRequest})
 }
 
 // CanEmulate - Tells whether emulation is supported.

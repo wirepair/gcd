@@ -8,24 +8,6 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
-//
-type InspectorEvaluateForTestInFrontendEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		TestCallId int    `json:"testCallId"` //
-		Script     string `json:"script"`     //
-	} `json:"Params,omitempty"`
-}
-
-//
-type InspectorInspectEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Object *RuntimeRemoteObject   `json:"object"` //
-		Hints  map[string]interface{} `json:"hints"`  //
-	} `json:"Params,omitempty"`
-}
-
 // Fired when remote debugging connection is about to be terminated. Contains detach reason.
 type InspectorDetachedEvent struct {
 	Method string `json:"method"`

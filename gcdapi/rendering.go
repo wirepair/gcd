@@ -48,3 +48,11 @@ func (c *Rendering) SetShowScrollBottleneckRects(show bool) (*gcdmessage.ChromeR
 	paramRequest["show"] = show
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Rendering.setShowScrollBottleneckRects", Params: paramRequest})
 }
+
+// SetShowViewportSizeOnResize - Paints viewport size upon main frame resize.
+// show - Whether to paint size or not.
+func (c *Rendering) SetShowViewportSizeOnResize(show bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["show"] = show
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Rendering.setShowViewportSizeOnResize", Params: paramRequest})
+}

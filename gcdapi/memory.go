@@ -51,3 +51,19 @@ func (c *Memory) GetDOMCounters() (int, int, int, error) {
 
 	return chromeData.Result.Documents, chromeData.Result.Nodes, chromeData.Result.JsEventListeners, nil
 }
+
+// SetPressureNotificationsSuppressed - Enable/disable suppressing memory pressure notifications in all processes.
+// suppressed - If true, memory pressure notifications will be suppressed.
+func (c *Memory) SetPressureNotificationsSuppressed(suppressed bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["suppressed"] = suppressed
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.setPressureNotificationsSuppressed", Params: paramRequest})
+}
+
+// SimulatePressureNotification - Simulate a memory pressure notification in all processes.
+// level - Memory pressure level of the notification. enum values: moderate, critical
+func (c *Memory) SimulatePressureNotification(level string) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["level"] = level
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.simulatePressureNotification", Params: paramRequest})
+}

@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/base64"
+	"flag"
 	"fmt"
 	"github.com/wirepair/gcd"
 	"log"
 	"net/url"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -18,11 +20,34 @@ const (
 var debugger *gcd.Gcd
 var wg sync.WaitGroup
 
+var path string
+var dir string
+var port string
+
+func init() {
+	switch runtime.GOOS {
+	case "windows":
+		flag.StringVar(&path, "chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "path to chrome")
+		flag.StringVar(&dir, "dir", "C:\\temp\\", "user directory")
+	case "darwin":
+		flag.StringVar(&path, "chrome", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "path to chrome")
+		flag.StringVar(&dir, "dir", "/tmp/", "user directory")
+	case "linux":
+		flag.StringVar(&path, "chrome", "/usr/bin/chromium-browser", "path to chrome")
+		flag.StringVar(&dir, "dir", "/tmp/", "user directory")
+	}
+
+	flag.StringVar(&port, "port", "9222", "Debugger port")
+}
+
 func main() {
 	var err error
 	urls := []string{"http://www.google.com", "http://www.veracode.com", "http://www.microsoft.com", "http://bbc.co.uk", "http://www.reddit.com/r/golang"}
+
+	flag.Parse()
+
 	debugger = gcd.NewChromeDebugger()
-	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	debugger.StartProcess(path, dir, port)
 	defer debugger.ExitProcess()
 	targets := make([]*gcd.ChromeTarget, numTabs)
 

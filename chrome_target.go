@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015 isaac dawson
+Copyright (c) 2016 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -64,39 +64,37 @@ type ChromeTarget struct {
 	conn            *websocket.Conn                        // the connection to the chrome debugger service for this tab/process
 
 	// Chrome Debugger Domains
-	ApplicationCache  *gcdapi.ApplicationCache  // application cache API
+	Accessibility     *gcdapi.Accessibility
+	Animation         *gcdapi.Animation
+	ApplicationCache  *gcdapi.ApplicationCache // application cache API
+	Browser           *gcdapi.Browser
+	CacheStorage      *gcdapi.CacheStorage
 	Console           *gcdapi.Console           // console API
 	CSS               *gcdapi.CSS               // CSS API
 	Database          *gcdapi.Database          // Database API
 	Debugger          *gcdapi.Debugger          // JS Debugger API
 	DeviceOrientation *gcdapi.DeviceOrientation // Device Orientation API
-	DOM               *gcdapi.DOM               // DOM API
 	DOMDebugger       *gcdapi.DOMDebugger       // DOM Debugger API
+	DOM               *gcdapi.DOM               // DOM API
 	DOMStorage        *gcdapi.DOMStorage        // DOM Storage API
-	FileSystem        *gcdapi.FileSystem        // Is anyone still reading this? FileSystem API
-	HeapProfiler      *gcdapi.HeapProfiler      // HeapProfiler API
-	IndexedDB         *gcdapi.IndexedDB         // IndexedDB API
-	Input             *gcdapi.Input             // Why am i doing this, it's obvious what they are, I quit.
+	Emulation         *gcdapi.Emulation
+	HeapProfiler      *gcdapi.HeapProfiler // HeapProfiler API
+	IndexedDB         *gcdapi.IndexedDB    // IndexedDB API
+	Input             *gcdapi.Input        // Why am i doing this, it's obvious what they are, I quit.
 	Inspector         *gcdapi.Inspector
+	IO                *gcdapi.IO
 	LayerTree         *gcdapi.LayerTree
 	Memory            *gcdapi.Memory
 	Network           *gcdapi.Network
 	Page              *gcdapi.Page
-	Power             *gcdapi.Power
 	Profiler          *gcdapi.Profiler
-	Runtime           *gcdapi.Runtime
-	Timeline          *gcdapi.Timeline
-	Tracing           *gcdapi.Tracing
-	Worker            *gcdapi.Worker
-	Accessibility     *gcdapi.Accessibility
-	Animation         *gcdapi.Animation
-	CacheStorage      *gcdapi.CacheStorage
-	Emulation         *gcdapi.Emulation
-	IO                *gcdapi.IO
 	Rendering         *gcdapi.Rendering
-	ScreenOrientation *gcdapi.ScreenOrientation
+	Runtime           *gcdapi.Runtime
 	Security          *gcdapi.Security
 	ServiceWorker     *gcdapi.ServiceWorker
+	Storage           *gcdapi.Storage
+	Tracing           *gcdapi.Tracing
+	Worker            *gcdapi.Worker
 
 	Target      *TargetInfo              // The target information see, TargetInfo
 	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
@@ -129,39 +127,36 @@ func openChromeTarget(addr string, target *TargetInfo) (*ChromeTarget, error) {
 
 // Initialize all api objects
 func (c *ChromeTarget) Init() {
+	c.Accessibility = gcdapi.NewAccessibility(c)
+	c.Animation = gcdapi.NewAnimation(c)
 	c.ApplicationCache = gcdapi.NewApplicationCache(c)
+	c.Browser = gcdapi.NewBrowser(c)
+	c.CacheStorage = gcdapi.NewCacheStorage(c)
 	c.Console = gcdapi.NewConsole(c)
 	c.CSS = gcdapi.NewCSS(c)
 	c.Database = gcdapi.NewDatabase(c)
 	c.Debugger = gcdapi.NewDebugger(c)
 	c.DeviceOrientation = gcdapi.NewDeviceOrientation(c)
-	c.DOM = gcdapi.NewDOM(c)
 	c.DOMDebugger = gcdapi.NewDOMDebugger(c)
+	c.DOM = gcdapi.NewDOM(c)
 	c.DOMStorage = gcdapi.NewDOMStorage(c)
-	c.FileSystem = gcdapi.NewFileSystem(c)
+	c.Emulation = gcdapi.NewEmulation(c)
 	c.HeapProfiler = gcdapi.NewHeapProfiler(c)
 	c.IndexedDB = gcdapi.NewIndexedDB(c)
 	c.Input = gcdapi.NewInput(c)
 	c.Inspector = gcdapi.NewInspector(c)
+	c.IO = gcdapi.NewIO(c)
 	c.LayerTree = gcdapi.NewLayerTree(c)
 	c.Memory = gcdapi.NewMemory(c)
 	c.Network = gcdapi.NewNetwork(c)
 	c.Page = gcdapi.NewPage(c)
-	c.Power = gcdapi.NewPower(c)
 	c.Profiler = gcdapi.NewProfiler(c)
-	c.Runtime = gcdapi.NewRuntime(c)
-	c.Timeline = gcdapi.NewTimeline(c)
-	c.Tracing = gcdapi.NewTracing(c)
-	c.Worker = gcdapi.NewWorker(c)
-	c.Accessibility = gcdapi.NewAccessibility(c)
-	c.Animation = gcdapi.NewAnimation(c)
-	c.CacheStorage = gcdapi.NewCacheStorage(c)
-	c.Emulation = gcdapi.NewEmulation(c)
-	c.IO = gcdapi.NewIO(c)
 	c.Rendering = gcdapi.NewRendering(c)
-	c.ScreenOrientation = gcdapi.NewScreenOrientation(c)
+	c.Runtime = gcdapi.NewRuntime(c)
 	c.Security = gcdapi.NewSecurity(c)
 	c.ServiceWorker = gcdapi.NewServiceWorker(c)
+	c.Tracing = gcdapi.NewTracing(c)
+	c.Worker = gcdapi.NewWorker(c)
 }
 
 // clean up this target

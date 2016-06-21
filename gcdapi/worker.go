@@ -14,7 +14,7 @@ type WorkerWorkerCreatedEvent struct {
 	Params struct {
 		WorkerId           string `json:"workerId"`           //
 		Url                string `json:"url"`                //
-		InspectorConnected bool   `json:"inspectorConnected"` //
+		WaitingForDebugger bool   `json:"waitingForDebugger"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -64,26 +64,10 @@ func (c *Worker) SendMessageToWorker(workerId string, message string) (*gcdmessa
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.sendMessageToWorker", Params: paramRequest})
 }
 
-// ConnectToWorker -
-// workerId -
-func (c *Worker) ConnectToWorker(workerId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["workerId"] = workerId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.connectToWorker", Params: paramRequest})
-}
-
-// DisconnectFromWorker -
-// workerId -
-func (c *Worker) DisconnectFromWorker(workerId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["workerId"] = workerId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.disconnectFromWorker", Params: paramRequest})
-}
-
-// SetAutoconnectToWorkers -
+// SetWaitForDebuggerOnStart -
 // value -
-func (c *Worker) SetAutoconnectToWorkers(value bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Worker) SetWaitForDebuggerOnStart(value bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["value"] = value
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.setAutoconnectToWorkers", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Worker.setWaitForDebuggerOnStart", Params: paramRequest})
 }

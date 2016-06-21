@@ -11,9 +11,9 @@ import (
 
 // ServiceWorker registration.
 type ServiceWorkerServiceWorkerRegistration struct {
-	RegistrationId string `json:"registrationId"`      //
-	ScopeURL       string `json:"scopeURL"`            //
-	IsDeleted      bool   `json:"isDeleted,omitempty"` //
+	RegistrationId string `json:"registrationId"` //
+	ScopeURL       string `json:"scopeURL"`       //
+	IsDeleted      bool   `json:"isDeleted"`      //
 }
 
 // ServiceWorker version.
@@ -50,8 +50,9 @@ type ServiceWorkerTargetInfo struct {
 type ServiceWorkerWorkerCreatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		WorkerId string `json:"workerId"` //
-		Url      string `json:"url"`      //
+		WorkerId  string `json:"workerId"`  //
+		Url       string `json:"url"`       //
+		VersionId string `json:"versionId"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -93,14 +94,6 @@ type ServiceWorkerWorkerErrorReportedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		ErrorMessage *ServiceWorkerServiceWorkerErrorMessage `json:"errorMessage"` //
-	} `json:"Params,omitempty"`
-}
-
-//
-type ServiceWorkerDebugOnStartUpdatedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		DebugOnStart bool `json:"debugOnStart"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -165,6 +158,14 @@ func (c *ServiceWorker) StartWorker(scopeURL string) (*gcdmessage.ChromeResponse
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.startWorker", Params: paramRequest})
 }
 
+// SkipWaiting -
+// scopeURL -
+func (c *ServiceWorker) SkipWaiting(scopeURL string) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["scopeURL"] = scopeURL
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.skipWaiting", Params: paramRequest})
+}
+
 // StopWorker -
 // versionId -
 func (c *ServiceWorker) StopWorker(versionId string) (*gcdmessage.ChromeResponse, error) {
@@ -181,20 +182,12 @@ func (c *ServiceWorker) InspectWorker(versionId string) (*gcdmessage.ChromeRespo
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.inspectWorker", Params: paramRequest})
 }
 
-// SkipWaiting -
-// versionId -
-func (c *ServiceWorker) SkipWaiting(versionId string) (*gcdmessage.ChromeResponse, error) {
+// SetForceUpdateOnPageLoad -
+// forceUpdateOnPageLoad -
+func (c *ServiceWorker) SetForceUpdateOnPageLoad(forceUpdateOnPageLoad bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["versionId"] = versionId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.skipWaiting", Params: paramRequest})
-}
-
-// SetDebugOnStart -
-// debugOnStart -
-func (c *ServiceWorker) SetDebugOnStart(debugOnStart bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["debugOnStart"] = debugOnStart
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.setDebugOnStart", Params: paramRequest})
+	paramRequest["forceUpdateOnPageLoad"] = forceUpdateOnPageLoad
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.setForceUpdateOnPageLoad", Params: paramRequest})
 }
 
 // DeliverPushMessage -
@@ -207,6 +200,20 @@ func (c *ServiceWorker) DeliverPushMessage(origin string, registrationId string,
 	paramRequest["registrationId"] = registrationId
 	paramRequest["data"] = data
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.deliverPushMessage", Params: paramRequest})
+}
+
+// DispatchSyncEvent -
+// origin -
+// registrationId -
+// tag -
+// lastChance -
+func (c *ServiceWorker) DispatchSyncEvent(origin string, registrationId string, tag string, lastChance bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 4)
+	paramRequest["origin"] = origin
+	paramRequest["registrationId"] = registrationId
+	paramRequest["tag"] = tag
+	paramRequest["lastChance"] = lastChance
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.dispatchSyncEvent", Params: paramRequest})
 }
 
 // GetTargetInfo -

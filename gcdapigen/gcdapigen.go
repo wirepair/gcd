@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015 isaac dawson
+Copyright (c) 2016 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,18 +48,22 @@ type GlobalReference struct {
 var globalRefs map[string]*GlobalReference
 
 const (
-	debug        = false
-	outputDir    = "output"
-	prefix       = "chrome_"
-	templateFile = "api_template.txt"
+	debug               = false
+	outputDir           = "output"
+	prefix              = "chrome_"
+	templateFile        = "api_template.txt"
+	browserProtocolFile = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/inspector/browser_protocol.json?format=text"
+	jsProtocolFile      = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/platform/v8_inspector/js_protocol.json?format=text"
 )
 
 var file string
+var update bool
 var templates *template.Template // for code generation
 var funcMap template.FuncMap     // helper funcs
 
 func init() {
-	flag.StringVar(&file, "file", "protocol.json", "open remote debugger protocol file.")
+	flag.BoolVar(&update, "update", false, "download and merge js_protocol.json and browser_protocol.json into protocol.json")
+	flag.StringVar(&file, "file", "protocol.json", "open remote debugger protocol file, if -update the filename to write to.")
 	funcMap := template.FuncMap{
 		"Title":    strings.Title,
 		"ToLower":  strings.ToLower,
@@ -74,6 +78,12 @@ func main() {
 	globalRefs = make(map[string]*GlobalReference)
 
 	flag.Parse()
+
+	if update {
+		download(browserProtocolFile, jsProtocolFile)
+		return
+	}
+
 	protocolData := openFile()
 	if debug == false {
 		createOutputDirectory()
@@ -129,8 +139,18 @@ func openFile() []byte {
 }
 
 func createOutputDirectory() {
+
+	if _, err := os.Stat(outputDir); os.IsExist(err) {
+
+		return
+	}
+
 	err := os.Mkdir(outputDir, 0755)
-	if err != nil {
+
+	if err != nil && os.IsExist(err) {
+		log.Printf("output directory %s already exists\n", outputDir)
+		return
+	} else if err != nil {
 		log.Fatalf("error creating api output directory")
 	}
 }

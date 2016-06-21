@@ -9,15 +9,6 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
-//
-type PageSubResources struct {
-	Url      string `json:"url"`                // Resource URL.
-	Type     string `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Other
-	MimeType string `json:"mimeType"`           // Resource mimeType as determined by the browser.
-	Failed   bool   `json:"failed,omitempty"`   // True if the resource failed to load.
-	Canceled bool   `json:"canceled,omitempty"` // True if the resource was canceled during loading.
-}
-
 // Information about the Frame on the page.
 type PageFrame struct {
 	Id             string `json:"id"`                 // Frame unique identifier.
@@ -29,11 +20,20 @@ type PageFrame struct {
 	MimeType       string `json:"mimeType"`           // Frame document's mimeType as determined by the browser.
 }
 
+// Information about the Resource on the page.
+type PageFrameResource struct {
+	Url      string `json:"url"`                // Resource URL.
+	Type     string `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+	MimeType string `json:"mimeType"`           // Resource mimeType as determined by the browser.
+	Failed   bool   `json:"failed,omitempty"`   // True if the resource failed to load.
+	Canceled bool   `json:"canceled,omitempty"` // True if the resource was canceled during loading.
+}
+
 // Information about the Frame hierarchy along with their cached resources.
 type PageFrameResourceTree struct {
 	Frame       *PageFrame               `json:"frame"`                 // Frame information for this tree item.
 	ChildFrames []*PageFrameResourceTree `json:"childFrames,omitempty"` // Child frames.
-	Resources   []PageSubResources       `json:"resources"`             // Information about frame resources.
+	Resources   []*PageFrameResource     `json:"resources"`             // Information about frame resources.
 }
 
 // Navigation history entry.
@@ -43,7 +43,7 @@ type PageNavigationEntry struct {
 	Title string `json:"title"` // Title of the navigation history entry.
 }
 
-// Screencast frame metadata
+// Screencast frame metadata.
 type PageScreencastFrameMetadata struct {
 	OffsetTop       float64 `json:"offsetTop"`           // Top offset in DIP.
 	PageScaleFactor float64 `json:"pageScaleFactor"`     // Page scale factor.
@@ -52,6 +52,14 @@ type PageScreencastFrameMetadata struct {
 	ScrollOffsetX   float64 `json:"scrollOffsetX"`       // Position of horizontal scroll in CSS pixels.
 	ScrollOffsetY   float64 `json:"scrollOffsetY"`       // Position of vertical scroll in CSS pixels.
 	Timestamp       float64 `json:"timestamp,omitempty"` // Frame swap timestamp.
+}
+
+// Error while paring app manifest.
+type PageAppManifestError struct {
+	Message  string `json:"message"`  // Error message.
+	Critical int    `json:"critical"` // If criticial, this is a non-recoverable parse error.
+	Line     int    `json:"line"`     // Error line.
+	Column   int    `json:"column"`   // Error column.
 }
 
 //
@@ -149,9 +157,9 @@ type PageJavascriptDialogClosedEvent struct {
 type PageScreencastFrameEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Data        string                       `json:"data"`                  // Base64-encoded compressed image.
-		Metadata    *PageScreencastFrameMetadata `json:"metadata"`              // Screencast frame metadata.
-		FrameNumber int                          `json:"frameNumber,omitempty"` // Frame number.
+		Data      string                       `json:"data"`      // Base64-encoded compressed image.
+		Metadata  *PageScreencastFrameMetadata `json:"metadata"`  // Screencast frame metadata.
+		SessionId int                          `json:"sessionId"` // Frame number.
 	} `json:"Params,omitempty"`
 }
 
@@ -231,6 +239,14 @@ func (c *Page) RemoveScriptToEvaluateOnLoad(identifier string) (*gcdmessage.Chro
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["identifier"] = identifier
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.removeScriptToEvaluateOnLoad", Params: paramRequest})
+}
+
+// SetAutoAttachToCreatedPages - Controls whether browser will open a new inspector window for connected pages.
+// autoAttach - If true, browser will open a new inspector window for every page created from this one.
+func (c *Page) SetAutoAttachToCreatedPages(autoAttach bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["autoAttach"] = autoAttach
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setAutoAttachToCreatedPages", Params: paramRequest})
 }
 
 // Reload - Reloads given page optionally ignoring the cache.
@@ -497,8 +513,9 @@ func (c *Page) SetDocumentContent(frameId string, html string) (*gcdmessage.Chro
 // screenHeight - Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionX - Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionY - Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
-func (c *Page) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, fitWindow bool, scale float64, offsetX float64, offsetY float64, screenWidth int, screenHeight int, positionX int, positionY int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 12)
+// screenOrientation - Screen orientation override.
+func (c *Page) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, fitWindow bool, scale float64, offsetX float64, offsetY float64, screenWidth int, screenHeight int, positionX int, positionY int, screenOrientation *EmulationScreenOrientation) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 13)
 	paramRequest["width"] = width
 	paramRequest["height"] = height
 	paramRequest["deviceScaleFactor"] = deviceScaleFactor
@@ -511,6 +528,7 @@ func (c *Page) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor
 	paramRequest["screenHeight"] = screenHeight
 	paramRequest["positionX"] = positionX
 	paramRequest["positionY"] = positionY
+	paramRequest["screenOrientation"] = screenOrientation
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setDeviceMetricsOverride", Params: paramRequest})
 }
 
@@ -595,49 +613,19 @@ func (c *Page) CaptureScreenshot() (string, error) {
 	return chromeData.Result.Data, nil
 }
 
-// CanScreencast - Tells whether screencast is supported.
-// Returns -  result - True if screencast is supported.
-func (c *Page) CanScreencast() (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.canScreencast"})
-	if err != nil {
-		return false, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Result bool
-		}
-	}
-
-	if resp == nil {
-		return false, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return false, err
-	}
-
-	return chromeData.Result.Result, nil
-}
-
 // StartScreencast - Starts sending each frame using the <code>screencastFrame</code> event.
 // format - Image compression format.
 // quality - Compression quality from range [0..100].
 // maxWidth - Maximum screenshot width.
 // maxHeight - Maximum screenshot height.
-func (c *Page) StartScreencast(format string, quality int, maxWidth int, maxHeight int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 4)
+// everyNthFrame - Send every n-th frame.
+func (c *Page) StartScreencast(format string, quality int, maxWidth int, maxHeight int, everyNthFrame int) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 5)
 	paramRequest["format"] = format
 	paramRequest["quality"] = quality
 	paramRequest["maxWidth"] = maxWidth
 	paramRequest["maxHeight"] = maxHeight
+	paramRequest["everyNthFrame"] = everyNthFrame
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.startScreencast", Params: paramRequest})
 }
 
@@ -647,10 +635,10 @@ func (c *Page) StopScreencast() (*gcdmessage.ChromeResponse, error) {
 }
 
 // ScreencastFrameAck - Acknowledges that a screencast frame has been received by the frontend.
-// frameNumber - Frame number.
-func (c *Page) ScreencastFrameAck(frameNumber int) (*gcdmessage.ChromeResponse, error) {
+// sessionId - Frame number.
+func (c *Page) ScreencastFrameAck(sessionId int) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["frameNumber"] = frameNumber
+	paramRequest["sessionId"] = sessionId
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.screencastFrameAck", Params: paramRequest})
 }
 
@@ -662,16 +650,6 @@ func (c *Page) HandleJavaScriptDialog(accept bool, promptText string) (*gcdmessa
 	paramRequest["accept"] = accept
 	paramRequest["promptText"] = promptText
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.handleJavaScriptDialog", Params: paramRequest})
-}
-
-// SetShowViewportSizeOnResize - Paints viewport size upon main frame resize.
-// show - Whether to paint size or not.
-// showGrid - Whether to paint grid as well.
-func (c *Page) SetShowViewportSizeOnResize(show bool, showGrid bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["show"] = show
-	paramRequest["showGrid"] = showGrid
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setShowViewportSizeOnResize", Params: paramRequest})
 }
 
 // SetColorPickerEnabled - Shows / hides color picker
@@ -688,4 +666,51 @@ func (c *Page) SetOverlayMessage(message string) (*gcdmessage.ChromeResponse, er
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["message"] = message
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setOverlayMessage", Params: paramRequest})
+}
+
+// GetAppManifest -
+// Returns -  url - Manifest location. errors -  data - Manifest content.
+func (c *Page) GetAppManifest() (string, []*PageAppManifestError, string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getAppManifest"})
+	if err != nil {
+		return "", nil, "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Url    string
+			Errors []*PageAppManifestError
+			Data   string
+		}
+	}
+
+	if resp == nil {
+		return "", nil, "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", nil, "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", nil, "", err
+	}
+
+	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, nil
+}
+
+//
+func (c *Page) RequestAppBanner() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.requestAppBanner"})
+}
+
+// SetBlockedEventsWarningThreshold -
+// threshold - If set to a positive number, specifies threshold in seconds for input event latency that will cause a console warning about blocked event to be issued. If zero or less, the warning is disabled.
+func (c *Page) SetBlockedEventsWarningThreshold(threshold float64) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["threshold"] = threshold
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setBlockedEventsWarningThreshold", Params: paramRequest})
 }

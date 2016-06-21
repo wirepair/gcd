@@ -92,6 +92,7 @@ type DOMHighlightConfig struct {
 	EventTargetColor   *DOMRGBA `json:"eventTargetColor,omitempty"`   // The event target element highlight fill color (default: transparent).
 	ShapeColor         *DOMRGBA `json:"shapeColor,omitempty"`         // The shape outside fill color (default: transparent).
 	ShapeMarginColor   *DOMRGBA `json:"shapeMarginColor,omitempty"`   // The shape margin fill color (default: transparent).
+	SelectorList       string   `json:"selectorList,omitempty"`       // Selectors to highlight relevant nodes.
 }
 
 // Fired when the node should be inspected. This happens after call to <code>setInspectMode</code>.
@@ -217,6 +218,14 @@ type DOMDistributedNodesUpdatedEvent struct {
 	Params struct {
 		InsertionPointId int               `json:"insertionPointId"` // Insertion point where distrubuted nodes were updated.
 		DistributedNodes []*DOMBackendNode `json:"distributedNodes"` // Distributed nodes for given insertion point.
+	} `json:"Params,omitempty"`
+}
+
+//
+type DOMNodeHighlightRequestedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		NodeId int `json:"nodeId"` //
 	} `json:"Params,omitempty"`
 }
 

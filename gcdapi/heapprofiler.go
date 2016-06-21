@@ -9,6 +9,22 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
+// Sampling Heap Profile node. Holds callsite information, allocation statistics and child nodes.
+type HeapProfilerSamplingHeapProfileNode struct {
+	FunctionName string                                 `json:"functionName"` // Function name.
+	ScriptId     string                                 `json:"scriptId"`     // Script identifier.
+	Url          string                                 `json:"url"`          // URL.
+	LineNumber   int                                    `json:"lineNumber"`   // 1-based line number of the function start position.
+	ColumnNumber int                                    `json:"columnNumber"` // 1-based column number of the function start position.
+	SelfSize     float64                                `json:"selfSize"`     // Allocations size in bytes for the node excluding children.
+	Children     []*HeapProfilerSamplingHeapProfileNode `json:"children"`     // Child nodes.
+}
+
+// Profile.
+type HeapProfilerSamplingHeapProfile struct {
+	Head *HeapProfilerSamplingHeapProfileNode `json:"head"` //
+}
+
 //
 type HeapProfilerAddHeapSnapshotChunkEvent struct {
 	Method string `json:"method"`
@@ -170,4 +186,44 @@ func (c *HeapProfiler) GetHeapObjectId(objectId string) (string, error) {
 	}
 
 	return chromeData.Result.HeapSnapshotObjectId, nil
+}
+
+// StartSampling -
+// samplingInterval - Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes.
+func (c *HeapProfiler) StartSampling(samplingInterval float64) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["samplingInterval"] = samplingInterval
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.startSampling", Params: paramRequest})
+}
+
+// StopSampling -
+// Returns -  profile - Recorded sampling heap profile.
+func (c *HeapProfiler) StopSampling() (*HeapProfilerSamplingHeapProfile, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.stopSampling"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Profile *HeapProfilerSamplingHeapProfile
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Profile, nil
 }
