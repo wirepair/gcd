@@ -150,17 +150,6 @@ func (c *Gcd) ExitProcess() error {
 	return c.chromeProcess.Kill()
 }
 
-// ConnectToInstance connects to a running chrome instance without starting a local process
-// Host - The host destination.
-// Port - The port to listen on.
-func (c *Gcd) ConnectToInstance(host string, port string) {
-	c.port = port
-	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
-	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
-	go c.probeDebugPort()
-	<-c.readyCh
-}
-
 // Gets the primary tabs/processes to work with. Each will have their own references
 // to the underlying API components (such as Page, Debugger, DOM etc).
 func (c *Gcd) GetTargets() ([]*ChromeTarget, error) {
@@ -189,15 +178,8 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
 
-	connectableTargets := make([]*TargetInfo, 0)
-	for _, v := range targets {
-		if v.WebSocketDebuggerUrl != "" {
-			connectableTargets = append(connectableTargets, v)
-		}
-	}
-
 	chromeTargets := make([]*ChromeTarget, 0)
-	for _, v := range connectableTargets {
+	for _, v := range targets {
 		if _, ok := knownIds[v.Id]; !ok {
 			target, err := openChromeTarget(c.addr, v)
 			if err != nil {
