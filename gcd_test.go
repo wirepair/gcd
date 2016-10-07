@@ -254,7 +254,7 @@ func TestConnectToInstance(t *testing.T) {
 
 	doneCh := make(chan struct{})
 
-	go testTimeoutListener(t, 7, "timed out waiting for remote connection")
+	go testTimeoutListener(t, 15, "timed out waiting for remote connection")
 	go func() {
 		remoteDebugger := NewChromeDebugger()
 		remoteDebugger.ConnectToInstance(debugger.host, debugger.port)
