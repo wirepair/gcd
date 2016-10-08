@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/wirepair/gcd/gcdapi"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -13,6 +12,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/wirepair/gcd/gcdapi"
 )
 
 var (
@@ -245,6 +246,37 @@ func TestComplexReturn(t *testing.T) {
 	go testTimeoutListener(t, 7, "waiting for page load to get cookies")
 	t.Logf("waiting for loadEventFired")
 	wg.Wait()
+}
+
+func TestConnectToInstance(t *testing.T) {
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+
+	doneCh := make(chan struct{})
+
+	go testTimeoutListener(t, 15, "timed out waiting for remote connection")
+	go func() {
+		remoteDebugger := NewChromeDebugger()
+		remoteDebugger.ConnectToInstance(debugger.host, debugger.port)
+
+		_, err := remoteDebugger.NewTab()
+		if err != nil {
+			t.Fatalf("error creating new tab")
+		}
+
+		targets, error := remoteDebugger.GetTargets()
+		if error != nil {
+			t.Fatalf("cannot get targets: %s \n", error)
+		}
+		if len(targets) <= 0 {
+			t.Fatalf("invalid number of targets, got: %d\n", len(targets))
+		}
+		for _, target := range targets {
+			t.Logf("page: %s\n", target.Target.Url)
+		}
+		doneCh <- struct{}{}
+	}()
+	<-doneCh
 }
 
 // UTILITY FUNCTIONS
