@@ -267,7 +267,11 @@ func (c *Gcd) probeDebugPort() {
 	for {
 		select {
 		case <-ticker.C:
-			_, err := http.Get(c.apiEndpoint)
+			resp, err := http.Get(c.apiEndpoint)
+			if err != nil {
+				continue
+			}
+			defer resp.Body.Close()
 			if err == nil {
 				c.readyCh <- struct{}{}
 				return
