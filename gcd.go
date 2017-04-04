@@ -272,10 +272,8 @@ func (c *Gcd) probeDebugPort() {
 				continue
 			}
 			defer resp.Body.Close()
-			if err == nil {
-				c.readyCh <- struct{}{}
-				return
-			}
+			c.readyCh <- struct{}{}
+			return
 		case <-timeoutTicker.C:
 			log.Fatalf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
 		}
