@@ -156,7 +156,6 @@ func (c *Gcd) ExitProcess() error {
 func (c *Gcd) ConnectToInstance(host string, port string) {
 	c.host = host
 	c.port = port
-	c.host = host
 	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
 	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
 	go c.probeDebugPort()
