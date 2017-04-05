@@ -267,11 +267,13 @@ func (c *Gcd) probeDebugPort() {
 	for {
 		select {
 		case <-ticker.C:
-			_, err := http.Get(c.apiEndpoint)
-			if err == nil {
-				c.readyCh <- struct{}{}
-				return
+			resp, err := http.Get(c.apiEndpoint)
+			if err != nil {
+				continue
 			}
+			defer resp.Body.Close()
+			c.readyCh <- struct{}{}
+			return
 		case <-timeoutTicker.C:
 			log.Fatalf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
 		}
