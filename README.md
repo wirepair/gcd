@@ -5,6 +5,9 @@ Because I'm lazy and there are hundereds of different custom types and API metho
 
 The [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) program was created to generate types, event types and commands for gcd.
 
+# Changelog (2017)
+April: Updated to the latest protocol.json (version 1.2). Note this changes quite a few APIs.
+
 # Changelog (2016)
 June: Updated to the latest protocol.json, gcdapigen will download the js_protocol and browser_protocol json files from chromium repositories. It will also fix them up and merge them into a single file and output it. 
 Note that several API endpoints have been removed and method calls have changed since the last update.
@@ -75,7 +78,7 @@ func main() {
 	if _, err := target.Page.Enable(); err != nil {
 		log.Fatalf("error getting page: %s\n", err)
 	}
-	ret, err := target.Page.Navigate("http://www.veracode.com") // navigate
+	ret, err := target.Page.Navigate("http://www.veracode.com", "") // navigate
 	if err != nil {
 		log.Fatalf("Error navigating: %s\n", err)
 	}
@@ -102,7 +105,7 @@ func main() {
 		log.Fatalf("error getting new tab: %s\n", err)
 	}
 	dom := target.DOM
-	r, err := dom.GetDocument()
+	r, err := dom.GetDocument(-1, true)
 	if err != nil {
 		log.Fatalf("error: %s\n", err)
 	}
@@ -165,7 +168,7 @@ func PageLoaded(target *gcd.ChromeTarget, event []byte) {
 func TakeScreenShot(target *gcd.ChromeTarget) {
 	dom := target.DOM
 	page := target.Page
-	doc, err := dom.GetDocument()
+	doc, err := dom.GetDocument(-1, true)
 	if err != nil {
 		fmt.Errorf("error getting doc: %s\n", err)
 		return
@@ -178,7 +181,7 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 		return
 	}
 	fmt.Printf("Taking screen shot of: %s\n", u.Host)
-	img, errCap := page.CaptureScreenshot()
+	img, errCap := page.CaptureScreenshot("png", 0, false)
 	if errCap != nil {
 		fmt.Errorf("error getting doc: %s\n", errCap)
 		return

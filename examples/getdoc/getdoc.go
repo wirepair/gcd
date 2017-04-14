@@ -37,7 +37,7 @@ func main() {
 		log.Fatalf("error getting new tab: %s\n", err)
 	}
 	dom := target.DOM
-	r, err := dom.GetDocument()
+	r, err := dom.GetDocument(-1, true)
 	if err != nil {
 		log.Fatalf("error: %s\n", err)
 	}

@@ -60,7 +60,7 @@ func main() {
 		page := targets[i].Page
 		page.Enable()
 		targets[i].Subscribe("Page.loadEventFired", PageLoaded)
-		page.Navigate(urls[i])
+		page.Navigate(urls[i], "")
 	}
 	wg.Wait()
 	for i := 0; i < numTabs; i++ {
@@ -75,7 +75,7 @@ func PageLoaded(target *gcd.ChromeTarget, event []byte) {
 func TakeScreenShot(target *gcd.ChromeTarget) {
 	dom := target.DOM
 	page := target.Page
-	doc, err := dom.GetDocument()
+	doc, err := dom.GetDocument(-1, true)
 	if err != nil {
 		fmt.Errorf("error getting doc: %s\n", err)
 		return
@@ -88,7 +88,7 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 		return
 	}
 	fmt.Printf("Taking screen shot of: %s\n", u.Host)
-	img, errCap := page.CaptureScreenshot()
+	img, errCap := page.CaptureScreenshot("png", 0, false)
 	if errCap != nil {
 		fmt.Errorf("error getting doc: %s\n", errCap)
 		return

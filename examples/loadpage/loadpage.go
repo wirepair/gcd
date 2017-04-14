@@ -44,7 +44,7 @@ func main() {
 	target := targets[0] // take the first one
 	//subscribe to page load
 	target.Subscribe("Page.loadEventFired", func(targ *gcd.ChromeTarget, v []byte) {
-		doc, err := target.DOM.GetDocument()
+		doc, err := target.DOM.GetDocument(-1, true)
 		if err == nil {
 			log.Printf("%s\n", doc.DocumentURL)
 		}
@@ -55,7 +55,7 @@ func main() {
 	if _, err := target.Page.Enable(); err != nil {
 		log.Fatalf("error getting page: %s\n", err)
 	}
-	ret, err := target.Page.Navigate("http://www.veracode.com") // navigate
+	ret, err := target.Page.Navigate("http://www.veracode.com", "") // navigate
 	if err != nil {
 		log.Fatalf("Error navigating: %s\n", err)
 	}
