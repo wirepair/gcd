@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains CSS functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -53,6 +53,7 @@ type CSSCSSStyleSheetHeader struct {
 	IsInline     bool    `json:"isInline"`               // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
 	StartLine    float64 `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
 	StartColumn  float64 `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
+	Length       float64 `json:"length"`                 // Size of the content (in characters).
 }
 
 // CSS rule representation.
@@ -62,6 +63,14 @@ type CSSCSSRule struct {
 	Origin       string           `json:"origin"`                 // Parent stylesheet's origin. enum values: injected, user-agent, inspector, regular
 	Style        *CSSCSSStyle     `json:"style"`                  // Associated style declaration.
 	Media        []*CSSCSSMedia   `json:"media,omitempty"`        // Media list array (for rules involving media queries). The array enumerates media queries starting with the innermost one, going outwards.
+}
+
+// CSS coverage information.
+type CSSRuleUsage struct {
+	StyleSheetId string  `json:"styleSheetId"` // The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
+	StartOffset  float64 `json:"startOffset"`  // Offset of the start of the rule (including selector) from the beginning of the stylesheet.
+	EndOffset    float64 `json:"endOffset"`    // Offset of the end of the rule body from the beginning of the stylesheet.
+	Used         bool    `json:"used"`         // Indicates whether the rule was actually used by some element in the page.
 }
 
 // Text range within a resource. All numbers are zero-based.
@@ -159,6 +168,27 @@ type CSSStyleDeclarationEdit struct {
 	Text         string          `json:"text"`         // New style text.
 }
 
+// Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.
+type CSSInlineTextBox struct {
+	BoundingBox         *DOMRect `json:"boundingBox"`         // The absolute position bounding box.
+	StartCharacterIndex int      `json:"startCharacterIndex"` // The starting index in characters, for this post layout textbox substring.
+	NumCharacters       int      `json:"numCharacters"`       // The number of characters in this post layout textbox substring.
+}
+
+// Details of an element in the DOM tree with a LayoutObject.
+type CSSLayoutTreeNode struct {
+	NodeId          int                 `json:"nodeId"`                    // The id of the related DOM node matching one from DOM.GetDocument.
+	BoundingBox     *DOMRect            `json:"boundingBox"`               // The absolute position bounding box.
+	LayoutText      string              `json:"layoutText,omitempty"`      // Contents of the LayoutText if any
+	InlineTextNodes []*CSSInlineTextBox `json:"inlineTextNodes,omitempty"` // The post layout inline text nodes, if any.
+	StyleIndex      int                 `json:"styleIndex,omitempty"`      // Index into the computedStyles array returned by getLayoutTreeAndStyles.
+}
+
+// A subset of the full ComputedStyle as defined by the request whitelist.
+type CSSComputedStyle struct {
+	Properties []*CSSCSSComputedStyleProperty `json:"properties"` //
+}
+
 // Fired whenever a stylesheet is changed as a result of the client operation.
 type CSSStyleSheetChangedEvent struct {
 	Method string `json:"method"`
@@ -180,15 +210,6 @@ type CSSStyleSheetRemovedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		StyleSheetId string `json:"styleSheetId"` // Identifier of the removed stylesheet.
-	} `json:"Params,omitempty"`
-}
-
-//
-type CSSLayoutEditorChangeEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		StyleSheetId string          `json:"styleSheetId"` // Identifier of the stylesheet where the modification occurred.
-		ChangeRange  *CSSSourceRange `json:"changeRange"`  // Range where the modification occurred.
 	} `json:"Params,omitempty"`
 }
 
@@ -390,6 +411,41 @@ func (c *CSS) GetStyleSheetText(styleSheetId string) (string, error) {
 	}
 
 	return chromeData.Result.Text, nil
+}
+
+// CollectClassNames - Returns all class names from specified stylesheet.
+// styleSheetId -
+// Returns -  classNames - Class name list.
+func (c *CSS) CollectClassNames(styleSheetId string) ([]string, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["styleSheetId"] = styleSheetId
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.collectClassNames", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ClassNames []string
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.ClassNames, nil
 }
 
 // SetStyleSheetText - Sets the new stylesheet text.
@@ -742,4 +798,109 @@ func (c *CSS) GetBackgroundColors(nodeId int) ([]string, error) {
 	}
 
 	return chromeData.Result.BackgroundColors, nil
+}
+
+// GetLayoutTreeAndStyles - For the main document and any content documents, return the LayoutTreeNodes and a whitelisted subset of the computed style. It only returns pushed nodes, on way to pull all nodes is to call DOM.getDocument with a depth of -1.
+// computedStyleWhitelist - Whitelist of computed styles to return.
+// Returns -  layoutTreeNodes -  computedStyles -
+func (c *CSS) GetLayoutTreeAndStyles(computedStyleWhitelist string) ([]*CSSLayoutTreeNode, []*CSSComputedStyle, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["computedStyleWhitelist"] = computedStyleWhitelist
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getLayoutTreeAndStyles", Params: paramRequest})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			LayoutTreeNodes []*CSSLayoutTreeNode
+			ComputedStyles  []*CSSComputedStyle
+		}
+	}
+
+	if resp == nil {
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, nil, err
+	}
+
+	return chromeData.Result.LayoutTreeNodes, chromeData.Result.ComputedStyles, nil
+}
+
+// Enables the selector recording.
+func (c *CSS) StartRuleUsageTracking() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.startRuleUsageTracking"})
+}
+
+// TakeCoverageDelta - Obtain list of rules that became used since last call to this method (or since start of coverage instrumentation)
+// Returns -  coverage -
+func (c *CSS) TakeCoverageDelta() ([]*CSSRuleUsage, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeCoverageDelta"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Coverage []*CSSRuleUsage
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Coverage, nil
+}
+
+// StopRuleUsageTracking - The list of rules with an indication of whether these were used
+// Returns -  ruleUsage -
+func (c *CSS) StopRuleUsageTracking() ([]*CSSRuleUsage, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.stopRuleUsageTracking"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			RuleUsage []*CSSRuleUsage
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.RuleUsage, nil
 }

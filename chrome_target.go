@@ -84,17 +84,21 @@ type ChromeTarget struct {
 	Inspector         *gcdapi.Inspector
 	IO                *gcdapi.IO
 	LayerTree         *gcdapi.LayerTree
+	Log               *gcdapi.Log
 	Memory            *gcdapi.Memory
 	Network           *gcdapi.Network
 	Page              *gcdapi.Page
 	Profiler          *gcdapi.Profiler
 	Rendering         *gcdapi.Rendering
 	Runtime           *gcdapi.Runtime
+	Schema            *gcdapi.Schema
 	Security          *gcdapi.Security
 	ServiceWorker     *gcdapi.ServiceWorker
 	Storage           *gcdapi.Storage
+	SystemInfo        *gcdapi.SystemInfo
+	TargetApi         *gcdapi.Target // buh name collision
 	Tracing           *gcdapi.Tracing
-	Worker            *gcdapi.Worker
+	Tethering         *gcdapi.Tethering
 
 	Target      *TargetInfo              // The target information see, TargetInfo
 	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
@@ -148,15 +152,19 @@ func (c *ChromeTarget) Init() {
 	c.IO = gcdapi.NewIO(c)
 	c.LayerTree = gcdapi.NewLayerTree(c)
 	c.Memory = gcdapi.NewMemory(c)
+	c.Log = gcdapi.NewLog(c)
 	c.Network = gcdapi.NewNetwork(c)
 	c.Page = gcdapi.NewPage(c)
 	c.Profiler = gcdapi.NewProfiler(c)
 	c.Rendering = gcdapi.NewRendering(c)
 	c.Runtime = gcdapi.NewRuntime(c)
+	c.Schema = gcdapi.NewSchema(c)
 	c.Security = gcdapi.NewSecurity(c)
+	c.SystemInfo = gcdapi.NewSystemInfo(c)
 	c.ServiceWorker = gcdapi.NewServiceWorker(c)
+	c.TargetApi = gcdapi.NewTarget(c)
 	c.Tracing = gcdapi.NewTracing(c)
-	c.Worker = gcdapi.NewWorker(c)
+	c.Tethering = gcdapi.NewTethering(c)
 }
 
 // clean up this target

@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Emulation functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -31,8 +31,8 @@ func NewEmulation(target gcdmessage.ChromeTargeter) *Emulation {
 // mobile - Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
 // fitWindow - Whether a view that exceeds the available browser window area should be scaled down to fit.
 // scale - Scale to apply to resulting view image. Ignored in |fitWindow| mode.
-// offsetX - X offset to shift resulting view image by. Ignored in |fitWindow| mode.
-// offsetY - Y offset to shift resulting view image by. Ignored in |fitWindow| mode.
+// offsetX - Not used.
+// offsetY - Not used.
 // screenWidth - Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // screenHeight - Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionX - Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
@@ -61,6 +61,23 @@ func (c *Emulation) ClearDeviceMetricsOverride() (*gcdmessage.ChromeResponse, er
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDeviceMetricsOverride"})
 }
 
+// ForceViewport - Overrides the visible area of the page. The change is hidden from the page, i.e. the observable scroll position and page scale does not change. In effect, the command moves the specified area of the page into the top-left corner of the frame.
+// x - X coordinate of top-left corner of the area (CSS pixels).
+// y - Y coordinate of top-left corner of the area (CSS pixels).
+// scale - Scale to apply to the area (relative to a page scale of 1.0).
+func (c *Emulation) ForceViewport(x float64, y float64, scale float64) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 3)
+	paramRequest["x"] = x
+	paramRequest["y"] = y
+	paramRequest["scale"] = scale
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.forceViewport", Params: paramRequest})
+}
+
+// Resets the visible area of the page to the original viewport, undoing any effects of the <code>forceViewport</code> command.
+func (c *Emulation) ResetViewport() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetViewport"})
+}
+
 // Requests that page scale factor is reset to initial values.
 func (c *Emulation) ResetPageScaleFactor() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetPageScaleFactor"})
@@ -72,6 +89,16 @@ func (c *Emulation) SetPageScaleFactor(pageScaleFactor float64) (*gcdmessage.Chr
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["pageScaleFactor"] = pageScaleFactor
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setPageScaleFactor", Params: paramRequest})
+}
+
+// SetVisibleSize - Resizes the frame/viewport of the page. Note that this does not affect the frame's container (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported on Android.
+// width - Frame width (DIP).
+// height - Frame height (DIP).
+func (c *Emulation) SetVisibleSize(width int, height int) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["width"] = width
+	paramRequest["height"] = height
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setVisibleSize", Params: paramRequest})
 }
 
 // SetScriptExecutionDisabled - Switches script execution in the page.
@@ -155,4 +182,22 @@ func (c *Emulation) CanEmulate() (bool, error) {
 	}
 
 	return chromeData.Result.Result, nil
+}
+
+// SetVirtualTimePolicy - Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.
+// policy -  enum values: advance, pause, pauseIfNetworkFetchesPending
+// budget - If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
+func (c *Emulation) SetVirtualTimePolicy(policy string, budget int) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["policy"] = policy
+	paramRequest["budget"] = budget
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setVirtualTimePolicy", Params: paramRequest})
+}
+
+// SetDefaultBackgroundColorOverride - Sets or clears an override of the default background color of the frame. This override is used if the content does not specify one.
+// color - RGBA of the default background color. If not specified, any existing override will be cleared.
+func (c *Emulation) SetDefaultBackgroundColorOverride(color *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["color"] = color
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDefaultBackgroundColorOverride", Params: paramRequest})
 }

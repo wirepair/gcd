@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Browser functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -9,21 +9,13 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
-// No Description.
-type BrowserTargetInfo struct {
-	TargetId string `json:"targetId"` //
-	Type     string `json:"type"`     //
-	Title    string `json:"title"`    //
-	Url      string `json:"url"`      //
-}
-
-// Dispatches protocol message from the target with given id.
-type BrowserDispatchMessageEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		TargetId string `json:"targetId"` //
-		Message  string `json:"message"`  //
-	} `json:"Params,omitempty"`
+// Browser window bounds information
+type BrowserBounds struct {
+	Left        int    `json:"left,omitempty"`        // The offset from the left edge of the screen to the window in pixels.
+	Top         int    `json:"top,omitempty"`         // The offset from the top edge of the screen to the window in pixels.
+	Width       int    `json:"width,omitempty"`       // The window width in pixels.
+	Height      int    `json:"height,omitempty"`      // The window height in pixels.
+	WindowState string `json:"windowState,omitempty"` // The window state. Default to normal. enum values: normal, minimized, maximized, fullscreen
 }
 
 type Browser struct {
@@ -35,17 +27,66 @@ func NewBrowser(target gcdmessage.ChromeTargeter) *Browser {
 	return c
 }
 
-// GetTargets - Returns target information for all potential targets.
-// Returns -  targetInfo -
-func (c *Browser) GetTargets() ([]*BrowserTargetInfo, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getTargets"})
+// GetWindowForTarget - Get the browser window that contains the devtools target.
+// targetId - Devtools agent host id.
+// Returns -  windowId - Browser window id. bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
+func (c *Browser) GetWindowForTarget(targetId string) (int, *BrowserBounds, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["targetId"] = targetId
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowForTarget", Params: paramRequest})
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			WindowId int
+			Bounds   *BrowserBounds
+		}
+	}
+
+	if resp == nil {
+		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return 0, nil, err
+	}
+
+	return chromeData.Result.WindowId, chromeData.Result.Bounds, nil
+}
+
+// SetWindowBounds - Set position and/or size of the browser window.
+// windowId - Browser window id.
+// bounds - New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
+func (c *Browser) SetWindowBounds(windowId int, bounds *BrowserBounds) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["windowId"] = windowId
+	paramRequest["bounds"] = bounds
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setWindowBounds", Params: paramRequest})
+}
+
+// GetWindowBounds - Get position and size of the browser window.
+// windowId - Browser window id.
+// Returns -  bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
+func (c *Browser) GetWindowBounds(windowId int) (*BrowserBounds, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["windowId"] = windowId
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowBounds", Params: paramRequest})
 	if err != nil {
 		return nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			TargetInfo []*BrowserTargetInfo
+			Bounds *BrowserBounds
 		}
 	}
 
@@ -64,31 +105,5 @@ func (c *Browser) GetTargets() ([]*BrowserTargetInfo, error) {
 		return nil, err
 	}
 
-	return chromeData.Result.TargetInfo, nil
-}
-
-// Attach - Attaches to the target with given id.
-// targetId - Target id.
-func (c *Browser) Attach(targetId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["targetId"] = targetId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.attach", Params: paramRequest})
-}
-
-// Detach - Detaches from the target with given id.
-// targetId -
-func (c *Browser) Detach(targetId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["targetId"] = targetId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.detach", Params: paramRequest})
-}
-
-// SendMessage - Sends protocol message to the target with given id.
-// targetId -
-// message -
-func (c *Browser) SendMessage(targetId string, message string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["targetId"] = targetId
-	paramRequest["message"] = message
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.sendMessage", Params: paramRequest})
+	return chromeData.Result.Bounds, nil
 }

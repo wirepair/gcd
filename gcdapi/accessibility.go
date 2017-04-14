@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Accessibility functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -24,9 +24,9 @@ type AccessibilityAXValueSource struct {
 
 // No Description.
 type AccessibilityAXRelatedNode struct {
-	BackendNodeId int    `json:"backendNodeId"`   // The BackendNodeId of the related node.
-	Idref         string `json:"idref,omitempty"` // The IDRef value provided, if any.
-	Text          string `json:"text,omitempty"`  // The text alternative of this node in the current context.
+	BackendDOMNodeId int    `json:"backendDOMNodeId"` // The BackendNodeId of the related DOM node.
+	Idref            string `json:"idref,omitempty"`  // The IDRef value provided, if any.
+	Text             string `json:"text,omitempty"`   // The text alternative of this node in the current context.
 }
 
 // No Description.
@@ -45,14 +45,16 @@ type AccessibilityAXValue struct {
 
 // A node in the accessibility tree.
 type AccessibilityAXNode struct {
-	NodeId         string                     `json:"nodeId"`                   // Unique identifier for this node.
-	Ignored        bool                       `json:"ignored"`                  // Whether this node is ignored for accessibility
-	IgnoredReasons []*AccessibilityAXProperty `json:"ignoredReasons,omitempty"` // Collection of reasons why this node is hidden.
-	Role           *AccessibilityAXValue      `json:"role,omitempty"`           // This <code>Node</code>'s role, whether explicit or implicit.
-	Name           *AccessibilityAXValue      `json:"name,omitempty"`           // The accessible name for this <code>Node</code>.
-	Description    *AccessibilityAXValue      `json:"description,omitempty"`    // The accessible description for this <code>Node</code>.
-	Value          *AccessibilityAXValue      `json:"value,omitempty"`          // The value for this <code>Node</code>.
-	Properties     []*AccessibilityAXProperty `json:"properties,omitempty"`     // All other properties
+	NodeId           string                     `json:"nodeId"`                     // Unique identifier for this node.
+	Ignored          bool                       `json:"ignored"`                    // Whether this node is ignored for accessibility
+	IgnoredReasons   []*AccessibilityAXProperty `json:"ignoredReasons,omitempty"`   // Collection of reasons why this node is hidden.
+	Role             *AccessibilityAXValue      `json:"role,omitempty"`             // This <code>Node</code>'s role, whether explicit or implicit.
+	Name             *AccessibilityAXValue      `json:"name,omitempty"`             // The accessible name for this <code>Node</code>.
+	Description      *AccessibilityAXValue      `json:"description,omitempty"`      // The accessible description for this <code>Node</code>.
+	Value            *AccessibilityAXValue      `json:"value,omitempty"`            // The value for this <code>Node</code>.
+	Properties       []*AccessibilityAXProperty `json:"properties,omitempty"`       // All other properties
+	ChildIds         []string                   `json:"childIds,omitempty"`         // IDs for each of this node's child nodes.
+	BackendDOMNodeId int                        `json:"backendDOMNodeId,omitempty"` // The backend ID for the associated DOM node, if any.
 }
 
 type Accessibility struct {
@@ -64,20 +66,22 @@ func NewAccessibility(target gcdmessage.ChromeTargeter) *Accessibility {
 	return c
 }
 
-// GetAXNode - Fetches the accessibility node for this DOM node, if it exists.
-// nodeId - ID of node to get accessibility node for.
-// Returns -  accessibilityNode - The <code>Accessibility.AXNode</code> for this DOM node, if it exists.
-func (c *Accessibility) GetAXNode(nodeId int) (*AccessibilityAXNode, error) {
-	paramRequest := make(map[string]interface{}, 1)
+// GetPartialAXTree - Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
+// nodeId - ID of node to get the partial accessibility tree for.
+// fetchRelatives - Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+// Returns -  nodes - The <code>Accessibility.AXNode</code> for this DOM node, if it exists, plus its ancestors, siblings and children, if requested.
+func (c *Accessibility) GetPartialAXTree(nodeId int, fetchRelatives bool) ([]*AccessibilityAXNode, error) {
+	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getAXNode", Params: paramRequest})
+	paramRequest["fetchRelatives"] = fetchRelatives
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getPartialAXTree", Params: paramRequest})
 	if err != nil {
 		return nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			AccessibilityNode *AccessibilityAXNode
+			Nodes []*AccessibilityAXNode
 		}
 	}
 
@@ -96,5 +100,5 @@ func (c *Accessibility) GetAXNode(nodeId int) (*AccessibilityAXNode, error) {
 		return nil, err
 	}
 
-	return chromeData.Result.AccessibilityNode, nil
+	return chromeData.Result.Nodes, nil
 }

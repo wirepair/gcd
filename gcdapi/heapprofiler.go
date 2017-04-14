@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains HeapProfiler functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -11,13 +11,9 @@ import (
 
 // Sampling Heap Profile node. Holds callsite information, allocation statistics and child nodes.
 type HeapProfilerSamplingHeapProfileNode struct {
-	FunctionName string                                 `json:"functionName"` // Function name.
-	ScriptId     string                                 `json:"scriptId"`     // Script identifier.
-	Url          string                                 `json:"url"`          // URL.
-	LineNumber   int                                    `json:"lineNumber"`   // 1-based line number of the function start position.
-	ColumnNumber int                                    `json:"columnNumber"` // 1-based column number of the function start position.
-	SelfSize     float64                                `json:"selfSize"`     // Allocations size in bytes for the node excluding children.
-	Children     []*HeapProfilerSamplingHeapProfileNode `json:"children"`     // Child nodes.
+	CallFrame *RuntimeCallFrame                      `json:"callFrame"` // Function location.
+	SelfSize  float64                                `json:"selfSize"`  // Allocations size in bytes for the node excluding children.
+	Children  []*HeapProfilerSamplingHeapProfileNode `json:"children"`  // Child nodes.
 }
 
 // Profile.

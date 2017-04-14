@@ -82,7 +82,7 @@ func getProtocolFile(fileName string) []byte {
 func decodeProtocol(data []byte) []byte {
 	decoded, err := base64.StdEncoding.DecodeString(string(data))
 	if err != nil {
-		log.Fatalf("error base64 decoding data: %s\n", err)
+		log.Fatalf("error base64 decoding data: %s %s\n", err, string(data))
 	}
 	return decoded
 }

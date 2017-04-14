@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains DOM functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -19,6 +19,8 @@ type DOMBackendNode struct {
 // DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type.
 type DOMNode struct {
 	NodeId           int               `json:"nodeId"`                     // Node identifier that is passed into the rest of the DOM messages as the <code>nodeId</code>. Backend will only push node with given <code>id</code> once. It is aware of all requested nodes and will only fire DOM events for nodes known to the client.
+	ParentId         int               `json:"parentId,omitempty"`         // The id of the parent node if any.
+	BackendNodeId    int               `json:"backendNodeId"`              // The BackendNodeId for this node.
 	NodeType         int               `json:"nodeType"`                   // <code>Node</code>'s nodeType.
 	NodeName         string            `json:"nodeName"`                   // <code>Node</code>'s nodeName.
 	LocalName        string            `json:"localName"`                  // <code>Node</code>'s localName.
@@ -43,6 +45,7 @@ type DOMNode struct {
 	PseudoElements   []*DOMNode        `json:"pseudoElements,omitempty"`   // Pseudo elements associated with this node.
 	ImportedDocument *DOMNode          `json:"importedDocument,omitempty"` // Import document for the HTMLImport links.
 	DistributedNodes []*DOMBackendNode `json:"distributedNodes,omitempty"` // Distributed nodes for given insertion point.
+	IsSVG            bool              `json:"isSVG,omitempty"`            // Whether the node is SVG.
 }
 
 // A structure holding an RGBA color.
@@ -248,10 +251,15 @@ func (c *DOM) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.disable"})
 }
 
-// GetDocument - Returns the root DOM node to the caller.
+// GetDocument - Returns the root DOM node (and optionally the subtree) to the caller.
+// depth - The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+// pierce - Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
 // Returns -  root - Resulting node.
-func (c *DOM) GetDocument() (*DOMNode, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getDocument"})
+func (c *DOM) GetDocument(depth int, pierce bool) (*DOMNode, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["depth"] = depth
+	paramRequest["pierce"] = pierce
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getDocument", Params: paramRequest})
 	if err != nil {
 		return nil, err
 	}
@@ -280,13 +288,87 @@ func (c *DOM) GetDocument() (*DOMNode, error) {
 	return chromeData.Result.Root, nil
 }
 
+// GetFlattenedDocument - Returns the root DOM node (and optionally the subtree) to the caller.
+// depth - The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+// pierce - Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
+// Returns -  nodes - Resulting node.
+func (c *DOM) GetFlattenedDocument(depth int, pierce bool) ([]*DOMNode, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["depth"] = depth
+	paramRequest["pierce"] = pierce
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFlattenedDocument", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Nodes []*DOMNode
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Nodes, nil
+}
+
+// CollectClassNamesFromSubtree - Collects class names for the node with given id and all of it's child nodes.
+// nodeId - Id of the node to collect class names.
+// Returns -  classNames - Class name list.
+func (c *DOM) CollectClassNamesFromSubtree(nodeId int) ([]string, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["nodeId"] = nodeId
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.collectClassNamesFromSubtree", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ClassNames []string
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.ClassNames, nil
+}
+
 // RequestChildNodes - Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events where not only immediate children are retrieved, but all children down to the specified depth.
 // nodeId - Id of the node to get children for.
 // depth - The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
-func (c *DOM) RequestChildNodes(nodeId int, depth int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
+// pierce - Whether or not iframes and shadow roots should be traversed when returning the sub-tree (default is false).
+func (c *DOM) RequestChildNodes(nodeId int, depth int, pierce bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["depth"] = depth
+	paramRequest["pierce"] = pierce
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestChildNodes", Params: paramRequest})
 }
 
@@ -619,7 +701,7 @@ func (c *DOM) RequestNode(objectId string) (int, error) {
 }
 
 // SetInspectMode - Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection.
-// mode - Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, showLayoutEditor, none
+// mode - Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, none
 // highlightConfig - A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>.
 func (c *DOM) SetInspectMode(mode string, highlightConfig *DOMHighlightConfig) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
@@ -988,11 +1070,13 @@ func (c *DOM) GetBoxModel(nodeId int) (*DOMBoxModel, error) {
 // GetNodeForLocation - Returns node id at given location.
 // x - X coordinate.
 // y - Y coordinate.
+// includeUserAgentShadowDOM - False to skip to the nearest non-UA shadow root ancestor (default: false).
 // Returns -  nodeId - Id of the node at given coordinates.
-func (c *DOM) GetNodeForLocation(x int, y int) (int, error) {
-	paramRequest := make(map[string]interface{}, 2)
+func (c *DOM) GetNodeForLocation(x int, y int, includeUserAgentShadowDOM bool) (int, error) {
+	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["x"] = x
 	paramRequest["y"] = y
+	paramRequest["includeUserAgentShadowDOM"] = includeUserAgentShadowDOM
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: paramRequest})
 	if err != nil {
 		return 0, err

@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains DOMDebugger functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -14,10 +14,13 @@ type DOMDebuggerEventListener struct {
 	Type            string               `json:"type"`                      // <code>EventListener</code>'s type.
 	UseCapture      bool                 `json:"useCapture"`                // <code>EventListener</code>'s useCapture.
 	Passive         bool                 `json:"passive"`                   // <code>EventListener</code>'s passive flag.
-	Location        *DebuggerLocation    `json:"location"`                  // Handler code location.
+	Once            bool                 `json:"once"`                      // <code>EventListener</code>'s once flag.
+	ScriptId        string               `json:"scriptId"`                  // Script id of the handler code.
+	LineNumber      int                  `json:"lineNumber"`                // Line number in the script (0-based).
+	ColumnNumber    int                  `json:"columnNumber"`              // Column number in the script (0-based).
 	Handler         *RuntimeRemoteObject `json:"handler,omitempty"`         // Event handler function value.
 	OriginalHandler *RuntimeRemoteObject `json:"originalHandler,omitempty"` // Event original handler function value.
-	RemoveFunction  *RuntimeRemoteObject `json:"removeFunction,omitempty"`  // Event listener remove function.
+	BackendNodeId   int                  `json:"backendNodeId,omitempty"`   // Node the listener is added to (if any).
 }
 
 type DOMDebugger struct {
@@ -103,10 +106,14 @@ func (c *DOMDebugger) RemoveXHRBreakpoint(url string) (*gcdmessage.ChromeRespons
 
 // GetEventListeners - Returns event listeners of the given object.
 // objectId - Identifier of the object to return listeners for.
+// depth - The maximum depth at which Node children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+// pierce - Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false). Reports listeners for all contexts if pierce is enabled.
 // Returns -  listeners - Array of relevant listeners.
-func (c *DOMDebugger) GetEventListeners(objectId string) ([]*DOMDebuggerEventListener, error) {
-	paramRequest := make(map[string]interface{}, 1)
+func (c *DOMDebugger) GetEventListeners(objectId string, depth int, pierce bool) ([]*DOMDebuggerEventListener, error) {
+	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["objectId"] = objectId
+	paramRequest["depth"] = depth
+	paramRequest["pierce"] = pierce
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.getEventListeners", Params: paramRequest})
 	if err != nil {
 		return nil, err

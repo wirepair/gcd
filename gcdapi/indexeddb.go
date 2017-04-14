@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains IndexedDB functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -51,9 +51,9 @@ type IndexedDBKeyRange struct {
 
 // Data entry.
 type IndexedDBDataEntry struct {
-	Key        string `json:"key"`        // JSON-stringified key object.
-	PrimaryKey string `json:"primaryKey"` // JSON-stringified primary key object.
-	Value      string `json:"value"`      // JSON-stringified value object.
+	Key        *RuntimeRemoteObject `json:"key"`        // Key object.
+	PrimaryKey *RuntimeRemoteObject `json:"primaryKey"` // Primary key object.
+	Value      *RuntimeRemoteObject `json:"value"`      // Value object.
 }
 
 // Key path.
@@ -212,4 +212,14 @@ func (c *IndexedDB) ClearObjectStore(securityOrigin string, databaseName string,
 	paramRequest["databaseName"] = databaseName
 	paramRequest["objectStoreName"] = objectStoreName
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.clearObjectStore", Params: paramRequest})
+}
+
+// DeleteDatabase - Deletes a database.
+// securityOrigin - Security origin.
+// databaseName - Database name.
+func (c *IndexedDB) DeleteDatabase(securityOrigin string, databaseName string) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["securityOrigin"] = securityOrigin
+	paramRequest["databaseName"] = databaseName
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.deleteDatabase", Params: paramRequest})
 }

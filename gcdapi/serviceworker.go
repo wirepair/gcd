@@ -1,11 +1,10 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains ServiceWorker functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
 import (
-	"encoding/json"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -26,6 +25,7 @@ type ServiceWorkerServiceWorkerVersion struct {
 	ScriptLastModified float64  `json:"scriptLastModified,omitempty"` // The Last-Modified header value of the main script.
 	ScriptResponseTime float64  `json:"scriptResponseTime,omitempty"` // The time at which the response headers of the main script were received from the server.  For cached script it is the last time the cache entry was validated.
 	ControlledClients  []string `json:"controlledClients,omitempty"`  //
+	TargetId           string   `json:"targetId,omitempty"`           //
 }
 
 // ServiceWorker error message.
@@ -36,41 +36,6 @@ type ServiceWorkerServiceWorkerErrorMessage struct {
 	SourceURL      string `json:"sourceURL"`      //
 	LineNumber     int    `json:"lineNumber"`     //
 	ColumnNumber   int    `json:"columnNumber"`   //
-}
-
-// No Description.
-type ServiceWorkerTargetInfo struct {
-	Id    string `json:"id"`    //
-	Type  string `json:"type"`  //
-	Title string `json:"title"` //
-	Url   string `json:"url"`   //
-}
-
-//
-type ServiceWorkerWorkerCreatedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		WorkerId  string `json:"workerId"`  //
-		Url       string `json:"url"`       //
-		VersionId string `json:"versionId"` //
-	} `json:"Params,omitempty"`
-}
-
-//
-type ServiceWorkerWorkerTerminatedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		WorkerId string `json:"workerId"` //
-	} `json:"Params,omitempty"`
-}
-
-//
-type ServiceWorkerDispatchMessageEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		WorkerId string `json:"workerId"` //
-		Message  string `json:"message"`  //
-	} `json:"Params,omitempty"`
 }
 
 //
@@ -114,24 +79,6 @@ func (c *ServiceWorker) Enable() (*gcdmessage.ChromeResponse, error) {
 //
 func (c *ServiceWorker) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.disable"})
-}
-
-// SendMessage -
-// workerId -
-// message -
-func (c *ServiceWorker) SendMessage(workerId string, message string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["workerId"] = workerId
-	paramRequest["message"] = message
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.sendMessage", Params: paramRequest})
-}
-
-// Stop -
-// workerId -
-func (c *ServiceWorker) Stop(workerId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["workerId"] = workerId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stop", Params: paramRequest})
 }
 
 // Unregister -
@@ -214,47 +161,4 @@ func (c *ServiceWorker) DispatchSyncEvent(origin string, registrationId string, 
 	paramRequest["tag"] = tag
 	paramRequest["lastChance"] = lastChance
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.dispatchSyncEvent", Params: paramRequest})
-}
-
-// GetTargetInfo -
-// targetId -
-// Returns -  targetInfo -
-func (c *ServiceWorker) GetTargetInfo(targetId string) (*ServiceWorkerTargetInfo, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["targetId"] = targetId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.getTargetInfo", Params: paramRequest})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			TargetInfo *ServiceWorkerTargetInfo
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.TargetInfo, nil
-}
-
-// ActivateTarget -
-// targetId -
-func (c *ServiceWorker) ActivateTarget(targetId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["targetId"] = targetId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.activateTarget", Params: paramRequest})
 }

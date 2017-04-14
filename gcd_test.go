@@ -130,7 +130,7 @@ func TestTargetCrashed(t *testing.T) {
 		t.Fatalf("timed out waiting for crashed to be handled")
 	}()
 
-	_, err = tab.Page.Navigate("chrome://crash")
+	_, err = tab.Page.Navigate("chrome://crash", "")
 	if err == nil {
 		t.Fatalf("Navigation should have failed")
 	}
@@ -159,7 +159,6 @@ func TestEvents(t *testing.T) {
 		t.Logf("METHOD: %s\n", msg.Method)
 		eventData := msg.Params.Message
 		t.Logf("Got event: %v\n", eventData)
-		t.Logf("Timestamp: %f\n", eventData.Timestamp)
 		doneCh <- struct{}{}
 	})
 
@@ -168,7 +167,7 @@ func TestEvents(t *testing.T) {
 		t.Fatalf("error sending enable: %s\n", err)
 	}
 
-	if _, err := target.Page.Navigate(testServerAddr + "console_log.html"); err != nil {
+	if _, err := target.Page.Navigate(testServerAddr+"console_log.html", ""); err != nil {
 		t.Fatalf("error attempting to navigate: %s\n", err)
 	}
 
@@ -221,7 +220,7 @@ func TestComplexReturn(t *testing.T) {
 	target.Subscribe("Page.loadEventFired", func(target *ChromeTarget, payload []byte) {
 		var ok bool
 		t.Logf("page load event fired\n")
-		cookies, err := target.Network.GetCookies()
+		cookies, err := target.Network.GetCookies("")
 		if err != nil {
 			t.Fatalf("error getting cookies!")
 		}
@@ -238,7 +237,7 @@ func TestComplexReturn(t *testing.T) {
 		wg.Done()
 	})
 
-	_, err = target.Page.Navigate(testServerAddr + "cookie.html")
+	_, err = target.Page.Navigate(testServerAddr+"cookie.html", "")
 	if err != nil {
 		t.Fatalf("error navigating to cookie page: %s\n", err)
 	}

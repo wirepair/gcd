@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Page functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -22,11 +22,13 @@ type PageFrame struct {
 
 // Information about the Resource on the page.
 type PageFrameResource struct {
-	Url      string `json:"url"`                // Resource URL.
-	Type     string `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
-	MimeType string `json:"mimeType"`           // Resource mimeType as determined by the browser.
-	Failed   bool   `json:"failed,omitempty"`   // True if the resource failed to load.
-	Canceled bool   `json:"canceled,omitempty"` // True if the resource was canceled during loading.
+	Url          string  `json:"url"`                    // Resource URL.
+	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+	MimeType     string  `json:"mimeType"`               // Resource mimeType as determined by the browser.
+	LastModified float64 `json:"lastModified,omitempty"` // last-modified timestamp as reported by server.
+	ContentSize  float64 `json:"contentSize,omitempty"`  // Resource content size.
+	Failed       bool    `json:"failed,omitempty"`       // True if the resource failed to load.
+	Canceled     bool    `json:"canceled,omitempty"`     // True if the resource was canceled during loading.
 }
 
 // Information about the Frame hierarchy along with their cached resources.
@@ -62,6 +64,25 @@ type PageAppManifestError struct {
 	Column   int    `json:"column"`   // Error column.
 }
 
+// Layout viewport position and dimensions.
+type PageLayoutViewport struct {
+	PageX        int `json:"pageX"`        // Horizontal offset relative to the document (CSS pixels).
+	PageY        int `json:"pageY"`        // Vertical offset relative to the document (CSS pixels).
+	ClientWidth  int `json:"clientWidth"`  // Width (CSS pixels), excludes scrollbar if present.
+	ClientHeight int `json:"clientHeight"` // Height (CSS pixels), excludes scrollbar if present.
+}
+
+// Visual viewport position, dimensions, and scale.
+type PageVisualViewport struct {
+	OffsetX      float64 `json:"offsetX"`      // Horizontal offset relative to the layout viewport (CSS pixels).
+	OffsetY      float64 `json:"offsetY"`      // Vertical offset relative to the layout viewport (CSS pixels).
+	PageX        float64 `json:"pageX"`        // Horizontal offset relative to the document (CSS pixels).
+	PageY        float64 `json:"pageY"`        // Vertical offset relative to the document (CSS pixels).
+	ClientWidth  float64 `json:"clientWidth"`  // Width (CSS pixels), excludes scrollbar if present.
+	ClientHeight float64 `json:"clientHeight"` // Height (CSS pixels), excludes scrollbar if present.
+	Scale        float64 `json:"scale"`        // Scale relative to the ideal viewport (size at width=device-width).
+}
+
 //
 type PageDomContentEventFiredEvent struct {
 	Method string `json:"method"`
@@ -82,8 +103,9 @@ type PageLoadEventFiredEvent struct {
 type PageFrameAttachedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		FrameId       string `json:"frameId"`       // Id of the frame that has been attached.
-		ParentFrameId string `json:"parentFrameId"` // Parent frame identifier.
+		FrameId       string             `json:"frameId"`         // Id of the frame that has been attached.
+		ParentFrameId string             `json:"parentFrameId"`   // Parent frame identifier.
+		Stack         *RuntimeStackTrace `json:"stack,omitempty"` // JavaScript stack trace of when frame was attached, only set if frame initiated from script.
 	} `json:"Params,omitempty"`
 }
 
@@ -179,6 +201,17 @@ type PageColorPickedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+// Fired when a navigation is started if navigation throttles are enabled.  The navigation will be deferred until processNavigation is called.
+type PageNavigationRequestedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		IsInMainFrame bool   `json:"isInMainFrame"` // Whether the navigation is taking place in the main frame or in a subframe.
+		IsRedirect    bool   `json:"isRedirect"`    // Whether the navigation has encountered a server redirect or not.
+		NavigationId  int    `json:"navigationId"`  //
+		Url           string `json:"url"`           // URL of requested navigation.
+	} `json:"Params,omitempty"`
+}
+
 type Page struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -261,10 +294,12 @@ func (c *Page) Reload(ignoreCache bool, scriptToEvaluateOnLoad string) (*gcdmess
 
 // Navigate - Navigates current page to the given URL.
 // url - URL to navigate the page to.
+// referrer - Referrer URL.
 // Returns -  frameId - Frame id that will be navigated.
-func (c *Page) Navigate(url string) (string, error) {
-	paramRequest := make(map[string]interface{}, 1)
+func (c *Page) Navigate(url string, referrer string) (string, error) {
+	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["url"] = url
+	paramRequest["referrer"] = referrer
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigate", Params: paramRequest})
 	if err != nil {
 		return "", err
@@ -292,6 +327,11 @@ func (c *Page) Navigate(url string) (string, error) {
 	}
 
 	return chromeData.Result.FrameId, nil
+}
+
+// Force the page stop all navigations and pending resource fetches.
+func (c *Page) StopLoading() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.stopLoading"})
 }
 
 // GetNavigationHistory - Returns navigation history for the current page.
@@ -582,9 +622,48 @@ func (c *Page) SetTouchEmulationEnabled(enabled bool, configuration string) (*gc
 }
 
 // CaptureScreenshot - Capture page screenshot.
-// Returns -  data - Base64-encoded image data (PNG).
-func (c *Page) CaptureScreenshot() (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.captureScreenshot"})
+// format - Image compression format (defaults to png).
+// quality - Compression quality from range [0..100] (jpeg only).
+// fromSurface - Capture the screenshot from the surface, rather than the view. Defaults to false.
+// Returns -  data - Base64-encoded image data.
+func (c *Page) CaptureScreenshot(format string, quality int, fromSurface bool) (string, error) {
+	paramRequest := make(map[string]interface{}, 3)
+	paramRequest["format"] = format
+	paramRequest["quality"] = quality
+	paramRequest["fromSurface"] = fromSurface
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.captureScreenshot", Params: paramRequest})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Data string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.Data, nil
+}
+
+// PrintToPDF - Print page as pdf.
+// Returns -  data - Base64-encoded pdf data.
+func (c *Page) PrintToPDF() (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.printToPDF"})
 	if err != nil {
 		return "", err
 	}
@@ -660,12 +739,14 @@ func (c *Page) SetColorPickerEnabled(enabled bool) (*gcdmessage.ChromeResponse, 
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setColorPickerEnabled", Params: paramRequest})
 }
 
-// SetOverlayMessage - Sets overlay message.
-// message - Overlay message to display when paused in debugger.
-func (c *Page) SetOverlayMessage(message string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
+// ConfigureOverlay - Configures overlay.
+// suspended - Whether overlay should be suspended and not consume any resources.
+// message - Overlay message to display.
+func (c *Page) ConfigureOverlay(suspended bool, message string) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["suspended"] = suspended
 	paramRequest["message"] = message
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setOverlayMessage", Params: paramRequest})
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.configureOverlay", Params: paramRequest})
 }
 
 // GetAppManifest -
@@ -707,10 +788,54 @@ func (c *Page) RequestAppBanner() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.requestAppBanner"})
 }
 
-// SetBlockedEventsWarningThreshold -
-// threshold - If set to a positive number, specifies threshold in seconds for input event latency that will cause a console warning about blocked event to be issued. If zero or less, the warning is disabled.
-func (c *Page) SetBlockedEventsWarningThreshold(threshold float64) (*gcdmessage.ChromeResponse, error) {
+// SetControlNavigations - Toggles navigation throttling which allows programatic control over navigation and redirect response.
+// enabled -
+func (c *Page) SetControlNavigations(enabled bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["threshold"] = threshold
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setBlockedEventsWarningThreshold", Params: paramRequest})
+	paramRequest["enabled"] = enabled
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setControlNavigations", Params: paramRequest})
+}
+
+// ProcessNavigation - Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation.
+// response -  enum values: Proceed, Cancel, CancelAndIgnore
+// navigationId -
+func (c *Page) ProcessNavigation(response string, navigationId int) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
+	paramRequest["response"] = response
+	paramRequest["navigationId"] = navigationId
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.processNavigation", Params: paramRequest})
+}
+
+// GetLayoutMetrics - Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
+// Returns -  layoutViewport - Metrics relating to the layout viewport. visualViewport - Metrics relating to the visual viewport. contentSize - Size of scrollable area.
+func (c *Page) GetLayoutMetrics() (*PageLayoutViewport, *PageVisualViewport, *DOMRect, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getLayoutMetrics"})
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			LayoutViewport *PageLayoutViewport
+			VisualViewport *PageVisualViewport
+			ContentSize    *DOMRect
+		}
+	}
+
+	if resp == nil {
+		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, nil, nil, err
+	}
+
+	return chromeData.Result.LayoutViewport, chromeData.Result.VisualViewport, chromeData.Result.ContentSize, nil
 }

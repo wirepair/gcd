@@ -53,7 +53,7 @@ const (
 	prefix              = "chrome_"
 	templateFile        = "api_template.txt"
 	browserProtocolFile = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/inspector/browser_protocol.json?format=text"
-	jsProtocolFile      = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/platform/v8_inspector/js_protocol.json?format=text"
+	jsProtocolFile      = "https://chromium.googlesource.com/v8/v8/+/master/src/inspector/js_protocol.json?format=text"
 )
 
 var file string

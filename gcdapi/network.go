@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Network functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -37,38 +37,36 @@ type NetworkRequest struct {
 	PostData         string                 `json:"postData,omitempty"`         // HTTP POST request data.
 	MixedContentType string                 `json:"mixedContentType,omitempty"` // The mixed content status of the request, as defined in http://www.w3.org/TR/mixed-content/
 	InitialPriority  string                 `json:"initialPriority"`            // Priority of the resource request at the time request is sent. enum values: VeryLow, Low, Medium, High, VeryHigh
+	ReferrerPolicy   string                 `json:"referrerPolicy"`             // The referrer policy of the request, as defined in https://www.w3.org/TR/referrer-policy/
+	IsLinkPreload    bool                   `json:"isLinkPreload,omitempty"`    // Whether is loaded via link preload.
 }
 
-// Subject of a certificate.
-type NetworkCertificateSubject struct {
-	Name           string   `json:"name"`           // Certificate subject name.
-	SanDnsNames    []string `json:"sanDnsNames"`    // Subject Alternative Name (SAN) DNS names.
-	SanIpAddresses []string `json:"sanIpAddresses"` // Subject Alternative Name (SAN) IP addresses.
-}
-
-// Details about a request's certificate.
-type NetworkCertificateDetails struct {
-	Subject   *NetworkCertificateSubject `json:"subject"`   // Certificate subject.
-	Issuer    string                     `json:"issuer"`    // Name of the issuing CA.
-	ValidFrom float64                    `json:"validFrom"` // Certificate valid from date.
-	ValidTo   float64                    `json:"validTo"`   // Certificate valid to (expiration) date
-}
-
-// Details about the validation status of a request's certificate.
-type NetworkCertificateValidationDetails struct {
-	NumUnknownScts int `json:"numUnknownScts"` // The number of SCTs from unknown logs.
-	NumInvalidScts int `json:"numInvalidScts"` // The number of invalid SCTs.
-	NumValidScts   int `json:"numValidScts"`   // The number of valid SCTs.
+// Details of a signed certificate timestamp (SCT).
+type NetworkSignedCertificateTimestamp struct {
+	Status             string  `json:"status"`             // Validation status.
+	Origin             string  `json:"origin"`             // Origin.
+	LogDescription     string  `json:"logDescription"`     // Log name / description.
+	LogId              string  `json:"logId"`              // Log ID.
+	Timestamp          float64 `json:"timestamp"`          // Issuance date.
+	HashAlgorithm      string  `json:"hashAlgorithm"`      // Hash algorithm.
+	SignatureAlgorithm string  `json:"signatureAlgorithm"` // Signature algorithm.
+	SignatureData      string  `json:"signatureData"`      // Signature data.
 }
 
 // Security details about a request.
 type NetworkSecurityDetails struct {
-	Protocol                     string                               `json:"protocol"`                               // Protocol name (e.g. "TLS 1.2" or "QUIC").
-	KeyExchange                  string                               `json:"keyExchange"`                            // Key Exchange used by the connection.
-	Cipher                       string                               `json:"cipher"`                                 // Cipher name.
-	Mac                          string                               `json:"mac,omitempty"`                          // TLS MAC. Note that AEAD ciphers do not have separate MACs.
-	CertificateId                int                                  `json:"certificateId"`                          // Certificate ID value.
-	CertificateValidationDetails *NetworkCertificateValidationDetails `json:"certificateValidationDetails,omitempty"` // Validation details for the request's certficate.
+	Protocol                       string                               `json:"protocol"`                       // Protocol name (e.g. "TLS 1.2" or "QUIC").
+	KeyExchange                    string                               `json:"keyExchange"`                    // Key Exchange used by the connection, or the empty string if not applicable.
+	KeyExchangeGroup               string                               `json:"keyExchangeGroup,omitempty"`     // (EC)DH group used by the connection, if applicable.
+	Cipher                         string                               `json:"cipher"`                         // Cipher name.
+	Mac                            string                               `json:"mac,omitempty"`                  // TLS MAC. Note that AEAD ciphers do not have separate MACs.
+	CertificateId                  int                                  `json:"certificateId"`                  // Certificate ID value.
+	SubjectName                    string                               `json:"subjectName"`                    // Certificate subject name.
+	SanList                        []string                             `json:"sanList"`                        // Subject Alternative Name (SAN) DNS names and IP addresses.
+	Issuer                         string                               `json:"issuer"`                         // Name of the issuing CA.
+	ValidFrom                      float64                              `json:"validFrom"`                      // Certificate valid from date.
+	ValidTo                        float64                              `json:"validTo"`                        // Certificate valid to (expiration) date
+	SignedCertificateTimestampList []*NetworkSignedCertificateTimestamp `json:"signedCertificateTimestampList"` // List of signed certificate timestamps (SCTs).
 }
 
 // HTTP response data.
@@ -129,7 +127,7 @@ type NetworkInitiator struct {
 	Type       string             `json:"type"`                 // Type of this initiator.
 	Stack      *RuntimeStackTrace `json:"stack,omitempty"`      // Initiator JavaScript stack trace, set for Script only.
 	Url        string             `json:"url,omitempty"`        // Initiator URL, set for Parser type only.
-	LineNumber float64            `json:"lineNumber,omitempty"` // Initiator line number, set for Parser type only.
+	LineNumber float64            `json:"lineNumber,omitempty"` // Initiator line number, set for Parser type only (0-based).
 }
 
 // Cookie object
@@ -138,12 +136,12 @@ type NetworkCookie struct {
 	Value    string  `json:"value"`              // Cookie value.
 	Domain   string  `json:"domain"`             // Cookie domain.
 	Path     string  `json:"path"`               // Cookie path.
-	Expires  float64 `json:"expires"`            // Cookie expires.
+	Expires  float64 `json:"expires"`            // Cookie expiration date as the number of seconds since the UNIX epoch.
 	Size     int     `json:"size"`               // Cookie size.
 	HttpOnly bool    `json:"httpOnly"`           // True if cookie is http-only.
 	Secure   bool    `json:"secure"`             // True if cookie is secure.
 	Session  bool    `json:"session"`            // True in case of session cookie.
-	SameSite string  `json:"sameSite,omitempty"` // Represents the cookies' 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies
+	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax
 }
 
 // Fired when resource loading priority is changed
@@ -253,8 +251,9 @@ type NetworkWebSocketHandshakeResponseReceivedEvent struct {
 type NetworkWebSocketCreatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		RequestId string `json:"requestId"` // Request identifier.
-		Url       string `json:"url"`       // WebSocket request URL.
+		RequestId string            `json:"requestId"`           // Request identifier.
+		Url       string            `json:"url"`                 // WebSocket request URL.
+		Initiator *NetworkInitiator `json:"initiator,omitempty"` // Request initiator.
 	} `json:"Params,omitempty"`
 }
 
@@ -385,20 +384,12 @@ func (c *Network) GetResponseBody(requestId string) (string, bool, error) {
 	return chromeData.Result.Body, chromeData.Result.Base64Encoded, nil
 }
 
-// AddBlockedURL - Blocks specific URL from loading.
-// url - URL to block.
-func (c *Network) AddBlockedURL(url string) (*gcdmessage.ChromeResponse, error) {
+// SetBlockedURLs - Blocks URLs from loading.
+// urls - URL patterns to block. Wildcards ('*') are allowed.
+func (c *Network) SetBlockedURLs(urls string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["url"] = url
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.addBlockedURL", Params: paramRequest})
-}
-
-// RemoveBlockedURL - Cancels blocking of a specific URL from loading.
-// url - URL to stop blocking.
-func (c *Network) RemoveBlockedURL(url string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["url"] = url
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.removeBlockedURL", Params: paramRequest})
+	paramRequest["urls"] = urls
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBlockedURLs", Params: paramRequest})
 }
 
 // ReplayXHR - This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password.
@@ -491,10 +482,45 @@ func (c *Network) ClearBrowserCookies() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearBrowserCookies"})
 }
 
-// GetCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
+// GetCookies - Returns all browser cookies for the current URL. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
+// urls - The list of URLs for which applicable cookies will be fetched
 // Returns -  cookies - Array of cookie objects.
-func (c *Network) GetCookies() ([]*NetworkCookie, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCookies"})
+func (c *Network) GetCookies(urls string) ([]*NetworkCookie, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["urls"] = urls
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCookies", Params: paramRequest})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Cookies []*NetworkCookie
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Cookies, nil
+}
+
+// GetAllCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
+// Returns -  cookies - Array of cookie objects.
+func (c *Network) GetAllCookies() ([]*NetworkCookie, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getAllCookies"})
 	if err != nil {
 		return nil, err
 	}
@@ -531,6 +557,57 @@ func (c *Network) DeleteCookie(cookieName string, url string) (*gcdmessage.Chrom
 	paramRequest["cookieName"] = cookieName
 	paramRequest["url"] = url
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.deleteCookie", Params: paramRequest})
+}
+
+// SetCookie - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
+// url - The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
+// name - The name of the cookie.
+// value - The value of the cookie.
+// domain - If omitted, the cookie becomes a host-only cookie.
+// path - Defaults to the path portion of the url parameter.
+// secure - Defaults ot false.
+// httpOnly - Defaults to false.
+// sameSite - Defaults to browser default behavior. enum values: Strict, Lax
+// expirationDate - If omitted, the cookie becomes a session cookie.
+// Returns -  success - True if successfully set cookie.
+func (c *Network) SetCookie(url string, name string, value string, domain string, path string, secure bool, httpOnly bool, sameSite string, expirationDate float64) (bool, error) {
+	paramRequest := make(map[string]interface{}, 9)
+	paramRequest["url"] = url
+	paramRequest["name"] = name
+	paramRequest["value"] = value
+	paramRequest["domain"] = domain
+	paramRequest["path"] = path
+	paramRequest["secure"] = secure
+	paramRequest["httpOnly"] = httpOnly
+	paramRequest["sameSite"] = sameSite
+	paramRequest["expirationDate"] = expirationDate
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCookie", Params: paramRequest})
+	if err != nil {
+		return false, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Success bool
+		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return false, err
+	}
+
+	return chromeData.Result.Success, nil
 }
 
 // CanEmulateNetworkConditions - Tells whether emulation of network conditions is supported.
@@ -570,12 +647,14 @@ func (c *Network) CanEmulateNetworkConditions() (bool, error) {
 // latency - Additional latency (ms).
 // downloadThroughput - Maximal aggregated download throughput.
 // uploadThroughput - Maximal aggregated upload throughput.
-func (c *Network) EmulateNetworkConditions(offline bool, latency float64, downloadThroughput float64, uploadThroughput float64) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 4)
+// connectionType - Connection type if known. enum values: none, cellular2g, cellular3g, cellular4g, bluetooth, ethernet, wifi, wimax, other
+func (c *Network) EmulateNetworkConditions(offline bool, latency float64, downloadThroughput float64, uploadThroughput float64, connectionType string) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 5)
 	paramRequest["offline"] = offline
 	paramRequest["latency"] = latency
 	paramRequest["downloadThroughput"] = downloadThroughput
 	paramRequest["uploadThroughput"] = uploadThroughput
+	paramRequest["connectionType"] = connectionType
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.emulateNetworkConditions", Params: paramRequest})
 }
 
@@ -605,20 +684,20 @@ func (c *Network) SetDataSizeLimitsForTest(maxTotalSize int, maxResourceSize int
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setDataSizeLimitsForTest", Params: paramRequest})
 }
 
-// GetCertificateDetails - Returns details for the given certificate.
-// certificateId - ID of the certificate to get details for.
-// Returns -  result - Certificate details.
-func (c *Network) GetCertificateDetails(certificateId int) (*NetworkCertificateDetails, error) {
+// GetCertificate - Returns the DER-encoded certificate.
+// origin - Origin to get certificate for.
+// Returns -  tableNames -
+func (c *Network) GetCertificate(origin string) ([]string, error) {
 	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["certificateId"] = certificateId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCertificateDetails", Params: paramRequest})
+	paramRequest["origin"] = origin
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCertificate", Params: paramRequest})
 	if err != nil {
 		return nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Result *NetworkCertificateDetails
+			TableNames []string
 		}
 	}
 
@@ -637,13 +716,5 @@ func (c *Network) GetCertificateDetails(certificateId int) (*NetworkCertificateD
 		return nil, err
 	}
 
-	return chromeData.Result.Result, nil
-}
-
-// ShowCertificateViewer - Displays native dialog with the certificate details.
-// certificateId - Certificate id.
-func (c *Network) ShowCertificateViewer(certificateId int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["certificateId"] = certificateId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.showCertificateViewer", Params: paramRequest})
+	return chromeData.Result.TableNames, nil
 }

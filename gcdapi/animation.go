@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Animation functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -27,7 +27,6 @@ type AnimationAnimation struct {
 type AnimationAnimationEffect struct {
 	Delay          float64                 `json:"delay"`                   // <code>AnimationEffect</code>'s delay.
 	EndDelay       float64                 `json:"endDelay"`                // <code>AnimationEffect</code>'s end delay.
-	PlaybackRate   float64                 `json:"playbackRate"`            // <code>AnimationEffect</code>'s playbackRate.
 	IterationStart float64                 `json:"iterationStart"`          // <code>AnimationEffect</code>'s iteration start.
 	Iterations     float64                 `json:"iterations"`              // <code>AnimationEffect</code>'s iterations.
 	Duration       float64                 `json:"duration"`                // <code>AnimationEffect</code>'s iteration duration.

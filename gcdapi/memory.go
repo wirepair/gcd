@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Memory functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 

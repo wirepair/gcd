@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains DOMStorage functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -70,6 +70,14 @@ func (c *DOMStorage) Enable() (*gcdmessage.ChromeResponse, error) {
 // Disables storage tracking, prevents storage events from being sent to the client.
 func (c *DOMStorage) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.disable"})
+}
+
+// Clear -
+// storageId -
+func (c *DOMStorage) Clear(storageId *DOMStorageStorageId) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["storageId"] = storageId
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.clear", Params: paramRequest})
 }
 
 // GetDOMStorageItems -

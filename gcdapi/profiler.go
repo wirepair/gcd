@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Profiler functionality.
-// API Version: 1.1
+// API Version: 1.2
 
 package gcdapi
 
@@ -9,28 +9,23 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
-// CPU Profile node. Holds callsite information, execution statistics and child nodes.
-type ProfilerCPUProfileNode struct {
-	FunctionName  string                      `json:"functionName"`  // Function name.
-	ScriptId      string                      `json:"scriptId"`      // Script identifier.
-	Url           string                      `json:"url"`           // URL.
-	LineNumber    int                         `json:"lineNumber"`    // 1-based line number of the function start position.
-	ColumnNumber  int                         `json:"columnNumber"`  // 1-based column number of the function start position.
-	HitCount      int                         `json:"hitCount"`      // Number of samples where this node was on top of the call stack.
-	CallUID       float64                     `json:"callUID"`       // Call UID.
-	Children      []*ProfilerCPUProfileNode   `json:"children"`      // Child nodes.
-	DeoptReason   string                      `json:"deoptReason"`   // The reason of being not optimized. The function may be deoptimized or marked as don't optimize.
-	Id            int                         `json:"id"`            // Unique id of the node.
-	PositionTicks []*ProfilerPositionTickInfo `json:"positionTicks"` // An array of source position ticks.
+// Profile node. Holds callsite information, execution statistics and child nodes.
+type ProfilerProfileNode struct {
+	Id            int                         `json:"id"`                      // Unique id of the node.
+	CallFrame     *RuntimeCallFrame           `json:"callFrame"`               // Function location.
+	HitCount      int                         `json:"hitCount,omitempty"`      // Number of samples where this node was on top of the call stack.
+	Children      []int                       `json:"children,omitempty"`      // Child node ids.
+	DeoptReason   string                      `json:"deoptReason,omitempty"`   // The reason of being not optimized. The function may be deoptimized or marked as don't optimize.
+	PositionTicks []*ProfilerPositionTickInfo `json:"positionTicks,omitempty"` // An array of source position ticks.
 }
 
 // Profile.
-type ProfilerCPUProfile struct {
-	Head       *ProfilerCPUProfileNode `json:"head"`                 //
-	StartTime  float64                 `json:"startTime"`            // Profiling start time in seconds.
-	EndTime    float64                 `json:"endTime"`              // Profiling end time in seconds.
-	Samples    []int                   `json:"samples,omitempty"`    // Ids of samples top nodes.
-	Timestamps []float64               `json:"timestamps,omitempty"` // Timestamps of the samples in microseconds.
+type ProfilerProfile struct {
+	Nodes      []*ProfilerProfileNode `json:"nodes"`                // The list of profile nodes. First item is the root node.
+	StartTime  float64                `json:"startTime"`            // Profiling start timestamp in microseconds.
+	EndTime    float64                `json:"endTime"`              // Profiling end timestamp in microseconds.
+	Samples    []int                  `json:"samples,omitempty"`    // Ids of samples top nodes.
+	TimeDeltas []int                  `json:"timeDeltas,omitempty"` // Time intervals between adjacent samples in microseconds. The first delta is relative to the profile startTime.
 }
 
 // Specifies a number of samples attributed to a certain source position.
@@ -39,13 +34,33 @@ type ProfilerPositionTickInfo struct {
 	Ticks int `json:"ticks"` // Number of samples attributed to the source line.
 }
 
+// Coverage data for a source range.
+type ProfilerCoverageRange struct {
+	StartOffset int `json:"startOffset"` // JavaScript script source offset for the range start.
+	EndOffset   int `json:"endOffset"`   // JavaScript script source offset for the range end.
+	Count       int `json:"count"`       // Collected execution count of the source range.
+}
+
+// Coverage data for a JavaScript function.
+type ProfilerFunctionCoverage struct {
+	FunctionName string                   `json:"functionName"` // JavaScript function name.
+	Ranges       []*ProfilerCoverageRange `json:"ranges"`       // Source ranges inside the function with coverage data.
+}
+
+// Coverage data for a JavaScript script.
+type ProfilerScriptCoverage struct {
+	ScriptId  string                      `json:"scriptId"`  // JavaScript script id.
+	Url       string                      `json:"url"`       // JavaScript script name or url.
+	Functions []*ProfilerFunctionCoverage `json:"functions"` // Functions contained in the script that has coverage data.
+}
+
 // Sent when new profile recodring is started using console.profile() call.
 type ProfilerConsoleProfileStartedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Id       string            `json:"id"`              //
 		Location *DebuggerLocation `json:"location"`        // Location of console.profile().
-		Title    string            `json:"title,omitempty"` // Profile title passed as argument to console.profile().
+		Title    string            `json:"title,omitempty"` // Profile title passed as an argument to console.profile().
 	} `json:"Params,omitempty"`
 }
 
@@ -53,10 +68,10 @@ type ProfilerConsoleProfileStartedEvent struct {
 type ProfilerConsoleProfileFinishedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Id       string              `json:"id"`              //
-		Location *DebuggerLocation   `json:"location"`        // Location of console.profileEnd().
-		Profile  *ProfilerCPUProfile `json:"profile"`         //
-		Title    string              `json:"title,omitempty"` // Profile title passed as argunet to console.profile().
+		Id       string            `json:"id"`              //
+		Location *DebuggerLocation `json:"location"`        // Location of console.profileEnd().
+		Profile  *ProfilerProfile  `json:"profile"`         //
+		Title    string            `json:"title,omitempty"` // Profile title passed as an argument to console.profile().
 	} `json:"Params,omitempty"`
 }
 
@@ -94,7 +109,7 @@ func (c *Profiler) Start() (*gcdmessage.ChromeResponse, error) {
 
 // Stop -
 // Returns -  profile - Recorded profile.
-func (c *Profiler) Stop() (*ProfilerCPUProfile, error) {
+func (c *Profiler) Stop() (*ProfilerProfile, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stop"})
 	if err != nil {
 		return nil, err
@@ -102,7 +117,7 @@ func (c *Profiler) Stop() (*ProfilerCPUProfile, error) {
 
 	var chromeData struct {
 		Result struct {
-			Profile *ProfilerCPUProfile
+			Profile *ProfilerProfile
 		}
 	}
 
@@ -122,4 +137,81 @@ func (c *Profiler) Stop() (*ProfilerCPUProfile, error) {
 	}
 
 	return chromeData.Result.Profile, nil
+}
+
+// StartPreciseCoverage - Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code coverage may be incomplete. Enabling prevents running optimized code and resets execution counters.
+// callCount - Collect accurate call counts beyond simple 'covered' or 'not covered'.
+func (c *Profiler) StartPreciseCoverage(callCount bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["callCount"] = callCount
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startPreciseCoverage", Params: paramRequest})
+}
+
+// Disable precise code coverage. Disabling releases unnecessary execution count records and allows executing optimized code.
+func (c *Profiler) StopPreciseCoverage() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stopPreciseCoverage"})
+}
+
+// TakePreciseCoverage - Collect coverage data for the current isolate, and resets execution counters. Precise code coverage needs to have started.
+// Returns -  result - Coverage data for the current isolate.
+func (c *Profiler) TakePreciseCoverage() ([]*ProfilerScriptCoverage, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takePreciseCoverage"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Result []*ProfilerScriptCoverage
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Result, nil
+}
+
+// GetBestEffortCoverage - Collect coverage data for the current isolate. The coverage data may be incomplete due to garbage collection.
+// Returns -  result - Coverage data for the current isolate.
+func (c *Profiler) GetBestEffortCoverage() ([]*ProfilerScriptCoverage, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getBestEffortCoverage"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Result []*ProfilerScriptCoverage
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Result, nil
 }
