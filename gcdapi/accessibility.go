@@ -38,7 +38,7 @@ type AccessibilityAXProperty struct {
 // A single computed AX property.
 type AccessibilityAXValue struct {
 	Type         string                        `json:"type"`                   // The type of this value. enum values: boolean, tristate, booleanOrUndefined, idref, idrefList, integer, node, nodeList, number, string, computedString, token, tokenList, domRelation, role, internalRole, valueUndefined
-	Value        string                        `json:"value,omitempty"`        // The computed value of this property.
+	Value        interface{}                   `json:"value,omitempty"`        // The computed value of this property.
 	RelatedNodes []*AccessibilityAXRelatedNode `json:"relatedNodes,omitempty"` // One or more related nodes, if applicable.
 	Sources      []*AccessibilityAXValueSource `json:"sources,omitempty"`      // The sources which contributed to the computation of this property.
 }

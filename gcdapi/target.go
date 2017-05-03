@@ -102,7 +102,7 @@ func (c *Target) SetAttachToFrames(value bool) (*gcdmessage.ChromeResponse, erro
 
 // SetRemoteLocations - Enables target discovery for the specified locations, when <code>setDiscoverTargets</code> was set to <code>true</code>.
 // locations - List of remote locations.
-func (c *Target) SetRemoteLocations(locations *TargetRemoteLocation) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) SetRemoteLocations(locations []*TargetRemoteLocation) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["locations"] = locations
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setRemoteLocations", Params: paramRequest})

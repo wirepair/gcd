@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"sync"
 	"testing"
 	"time"
 
@@ -112,11 +111,11 @@ func TestTargetCrashed(t *testing.T) {
 	defer debugger.ExitProcess()
 
 	doneCh := make(chan struct{})
-	timeout := time.NewTimer(time.Second * 10)
+	go testTimeoutListener(t, doneCh, 5, "timed out waiting for crashed to be handled")
 
 	targetCrashedFn := func(targ *ChromeTarget, payload []byte) {
 		t.Logf("reason: %s\n", string(payload))
-		doneCh <- struct{}{}
+		close(doneCh)
 	}
 
 	tab, err := debugger.NewTab()
@@ -125,11 +124,6 @@ func TestTargetCrashed(t *testing.T) {
 	}
 
 	tab.Subscribe("Inspector.targetCrashed", targetCrashedFn)
-	go func() {
-		<-timeout.C
-		t.Fatalf("timed out waiting for crashed to be handled")
-	}()
-
 	_, err = tab.Page.Navigate("chrome://crash", "")
 	if err == nil {
 		t.Fatalf("Navigation should have failed")
@@ -159,7 +153,7 @@ func TestEvents(t *testing.T) {
 		t.Logf("METHOD: %s\n", msg.Method)
 		eventData := msg.Params.Message
 		t.Logf("Got event: %v\n", eventData)
-		doneCh <- struct{}{}
+		close(doneCh)
 	})
 
 	_, err = console.Enable()
@@ -171,8 +165,56 @@ func TestEvents(t *testing.T) {
 		t.Fatalf("error attempting to navigate: %s\n", err)
 	}
 
-	go testTimeoutListener(t, 5, "console message")
+	go testTimeoutListener(t, doneCh, 5, "console message")
 
+	<-doneCh
+}
+
+func TestEvaluate(t *testing.T) {
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+	target, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error getting new tab: %s\n", err)
+	}
+
+	doneCh := make(chan struct{}, 1)
+	target.Subscribe("Runtime.executionContextCreated", func(target *ChromeTarget, v []byte) {
+		//target.Unsubscribe("Console.messageAdded")
+		msg := &gcdapi.RuntimeExecutionContextCreatedEvent{}
+		err := json.Unmarshal(v, msg)
+		if err != nil {
+			t.Fatalf("error unmarshalling event data: %v\n", err)
+		}
+
+		if msg.Params.Context.Origin != testServerAddr[:len(testServerAddr)-1] {
+			return
+		}
+		scriptSource := "document.location.href"
+		objectGroup := "gcdtest"
+		awaitPromise := false
+		includeCommandLineAPI := true
+		contextId := msg.Params.Context.Id
+		silent := true
+		returnByValue := false
+		generatePreview := true
+		userGestures := true
+		rro, exception, err := target.Runtime.Evaluate(scriptSource, objectGroup, includeCommandLineAPI, silent, contextId, returnByValue, generatePreview, userGestures, awaitPromise)
+		if err != nil {
+			t.Fatalf("error evaulating: %s %s\n", err, exception)
+		}
+
+		if val, ok := rro.Value.(string); ok {
+			if val != testServerAddr {
+				t.Fatalf("invalid location returned expected %s got %s\n", testServerAddr, val)
+			}
+		} else {
+			t.Fatalf("error rro.Value was not a string")
+		}
+		close(doneCh)
+	})
+	target.Runtime.Enable()
+	target.Page.Navigate(testServerAddr, "")
 	<-doneCh
 }
 
@@ -203,9 +245,10 @@ func TestComplexReturn(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
+	doneCh := make(chan struct{}, 1)
+	go testTimeoutListener(t, doneCh, 7, "waiting for page load to get cookies")
 	target, err := debugger.NewTab()
+
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
@@ -220,7 +263,7 @@ func TestComplexReturn(t *testing.T) {
 	target.Subscribe("Page.loadEventFired", func(target *ChromeTarget, payload []byte) {
 		var ok bool
 		t.Logf("page load event fired\n")
-		cookies, err := target.Network.GetCookies("")
+		cookies, err := target.Network.GetCookies([]string{testServerAddr})
 		if err != nil {
 			t.Fatalf("error getting cookies!")
 		}
@@ -234,7 +277,7 @@ func TestComplexReturn(t *testing.T) {
 		if !ok {
 			t.Fatalf("error finding our cookie value!")
 		}
-		wg.Done()
+		close(doneCh)
 	})
 
 	_, err = target.Page.Navigate(testServerAddr+"cookie.html", "")
@@ -242,9 +285,8 @@ func TestComplexReturn(t *testing.T) {
 		t.Fatalf("error navigating to cookie page: %s\n", err)
 	}
 
-	go testTimeoutListener(t, 7, "waiting for page load to get cookies")
 	t.Logf("waiting for loadEventFired")
-	wg.Wait()
+	<-doneCh
 }
 
 func TestConnectToInstance(t *testing.T) {
@@ -253,7 +295,7 @@ func TestConnectToInstance(t *testing.T) {
 
 	doneCh := make(chan struct{})
 
-	go testTimeoutListener(t, 15, "timed out waiting for remote connection")
+	go testTimeoutListener(t, doneCh, 15, "timed out waiting for remote connection")
 	go func() {
 		remoteDebugger := NewChromeDebugger()
 		remoteDebugger.ConnectToInstance(debugger.host, debugger.port)
@@ -273,7 +315,7 @@ func TestConnectToInstance(t *testing.T) {
 		for _, target := range targets {
 			t.Logf("page: %s\n", target.Target.Url)
 		}
-		doneCh <- struct{}{}
+		close(doneCh)
 	}()
 	<-doneCh
 }
@@ -292,10 +334,13 @@ func testServer() {
 	go http.Serve(testListener, http.FileServer(http.Dir("testdata/")))
 }
 
-func testTimeoutListener(t *testing.T, seconds time.Duration, message string) {
+func testTimeoutListener(t *testing.T, closeCh chan struct{}, seconds time.Duration, message string) {
 	timeout := time.NewTimer(seconds * time.Second)
 	for {
 		select {
+		case <-closeCh:
+			timeout.Stop()
+			return
 		case <-timeout.C:
 			t.Fatalf("timed out waiting for %s", message)
 		}

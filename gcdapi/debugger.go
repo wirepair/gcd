@@ -558,7 +558,7 @@ func (c *Debugger) SetAsyncCallStackDepth(maxDepth int) (*gcdmessage.ChromeRespo
 
 // SetBlackboxPatterns - Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
 // patterns - Array of regexps that will be used to check script url for blackbox state.
-func (c *Debugger) SetBlackboxPatterns(patterns string) (*gcdmessage.ChromeResponse, error) {
+func (c *Debugger) SetBlackboxPatterns(patterns []string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["patterns"] = patterns
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBlackboxPatterns", Params: paramRequest})
@@ -567,7 +567,7 @@ func (c *Debugger) SetBlackboxPatterns(patterns string) (*gcdmessage.ChromeRespo
 // SetBlackboxedRanges - Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted.
 // scriptId - Id of the script.
 // positions -
-func (c *Debugger) SetBlackboxedRanges(scriptId string, positions *DebuggerScriptPosition) (*gcdmessage.ChromeResponse, error) {
+func (c *Debugger) SetBlackboxedRanges(scriptId string, positions []*DebuggerScriptPosition) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["scriptId"] = scriptId
 	paramRequest["positions"] = positions

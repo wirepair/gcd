@@ -566,7 +566,7 @@ func (c *CSS) SetKeyframeKey(styleSheetId string, theRange *CSSSourceRange, keyT
 // SetStyleTexts - Applies specified style edits one after another in the given order.
 // edits -
 // Returns -  styles - The resulting styles after modification.
-func (c *CSS) SetStyleTexts(edits *CSSStyleDeclarationEdit) ([]*CSSCSSStyle, error) {
+func (c *CSS) SetStyleTexts(edits []*CSSStyleDeclarationEdit) ([]*CSSCSSStyle, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["edits"] = edits
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleTexts", Params: paramRequest})
@@ -714,7 +714,7 @@ func (c *CSS) AddRule(styleSheetId string, ruleText string, location *CSSSourceR
 // ForcePseudoState - Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser.
 // nodeId - The element id for which to force the pseudo state.
 // forcedPseudoClasses - Element pseudo classes to force when computing the element's style.
-func (c *CSS) ForcePseudoState(nodeId int, forcedPseudoClasses string) (*gcdmessage.ChromeResponse, error) {
+func (c *CSS) ForcePseudoState(nodeId int, forcedPseudoClasses []string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["forcedPseudoClasses"] = forcedPseudoClasses
@@ -803,7 +803,7 @@ func (c *CSS) GetBackgroundColors(nodeId int) ([]string, error) {
 // GetLayoutTreeAndStyles - For the main document and any content documents, return the LayoutTreeNodes and a whitelisted subset of the computed style. It only returns pushed nodes, on way to pull all nodes is to call DOM.getDocument with a depth of -1.
 // computedStyleWhitelist - Whitelist of computed styles to return.
 // Returns -  layoutTreeNodes -  computedStyles -
-func (c *CSS) GetLayoutTreeAndStyles(computedStyleWhitelist string) ([]*CSSLayoutTreeNode, []*CSSComputedStyle, error) {
+func (c *CSS) GetLayoutTreeAndStyles(computedStyleWhitelist []string) ([]*CSSLayoutTreeNode, []*CSSComputedStyle, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["computedStyleWhitelist"] = computedStyleWhitelist
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getLayoutTreeAndStyles", Params: paramRequest})

@@ -170,7 +170,7 @@ func (c *Animation) GetCurrentTime(id string) (float64, error) {
 // SetPaused - Sets the paused state of a set of animations.
 // animations - Animations to set the pause state of.
 // paused - Paused state to set to.
-func (c *Animation) SetPaused(animations string, paused bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Animation) SetPaused(animations []string, paused bool) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["animations"] = animations
 	paramRequest["paused"] = paused
@@ -192,7 +192,7 @@ func (c *Animation) SetTiming(animationId string, duration float64, delay float6
 // SeekAnimations - Seek a set of animations to a particular time within each animation.
 // animations - List of animation ids to seek.
 // currentTime - Set the current time of each animation.
-func (c *Animation) SeekAnimations(animations string, currentTime float64) (*gcdmessage.ChromeResponse, error) {
+func (c *Animation) SeekAnimations(animations []string, currentTime float64) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["animations"] = animations
 	paramRequest["currentTime"] = currentTime
@@ -201,7 +201,7 @@ func (c *Animation) SeekAnimations(animations string, currentTime float64) (*gcd
 
 // ReleaseAnimations - Releases a set of animations to no longer be manipulated.
 // animations - List of animation ids to seek.
-func (c *Animation) ReleaseAnimations(animations string) (*gcdmessage.ChromeResponse, error) {
+func (c *Animation) ReleaseAnimations(animations []string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["animations"] = animations
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.releaseAnimations", Params: paramRequest})

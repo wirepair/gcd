@@ -57,7 +57,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() (*gcdmessage.ChromeResponse, error
 {{if $element.ParamCalls}}
 // {{.Name | Title}} - {{$element.Description}}{{range $param := $element.Parameters}}
 // {{$param.Name}} - {{$param.Description}}{{ end }}
-func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) (*gcdmessage.ChromeResponse, error) {
+func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsTypeArray}}[]{{end}}{{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, {{len (.Parameters) }}){{range $param := $element.Parameters}}
 	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})
@@ -103,7 +103,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() ({{range $rets := .Returns}}{{if $
 {{if $element.ParamReturnCalls}}// {{.Name | Title}} - {{$element.Description}}{{range $param := $element.Parameters}}
 // {{$param.Name}} - {{$param.Description}}{{ end }}
 // Returns - {{range $return := .Returns}} {{$return.Name}} - {{$return.Description}}{{ end }}
-func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) ({{range $rets := .Returns}}{{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}}, {{end}}error) {
+func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsTypeArray}}[]{{end}}{{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) ({{range $rets := .Returns}}{{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}}, {{end}}error) {
 	paramRequest := make(map[string]interface{}, {{len (.Parameters) }}){{range $param := $element.Parameters}}
 	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})

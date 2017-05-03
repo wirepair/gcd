@@ -61,7 +61,7 @@ func (c *Log) Clear() (*gcdmessage.ChromeResponse, error) {
 
 // StartViolationsReport - start violation reporting.
 // config - Configuration for violations.
-func (c *Log) StartViolationsReport(config *LogViolationSetting) (*gcdmessage.ChromeResponse, error) {
+func (c *Log) StartViolationsReport(config []*LogViolationSetting) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["config"] = config
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.startViolationsReport", Params: paramRequest})

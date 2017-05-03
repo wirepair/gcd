@@ -86,7 +86,7 @@ func (c *Input) DispatchMouseEvent(theType string, x int, y int, modifiers int, 
 // touchPoints - Touch points.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // timestamp - Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time).
-func (c *Input) DispatchTouchEvent(theType string, touchPoints *InputTouchPoint, modifiers int, timestamp float64) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) DispatchTouchEvent(theType string, touchPoints []*InputTouchPoint, modifiers int, timestamp float64) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 4)
 	paramRequest["type"] = theType
 	paramRequest["touchPoints"] = touchPoints

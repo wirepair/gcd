@@ -6,6 +6,8 @@ Because I'm lazy and there are hundereds of different custom types and API metho
 The [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) program was created to generate types, event types and commands for gcd.
 
 # Changelog (2017)
+May: Fixed a bug with templating causing certain parameters that were slices to only show up as the base type.
+May: Changed templating where 'any' protocol.json field types from string to interface{} to allow caller to decide how to decode. 
 April: Updated to the latest protocol.json (version 1.2). Note this changes quite a few APIs.
 
 # Changelog (2016)
@@ -205,7 +207,7 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 ## Licensing
 The MIT License (MIT)
 
-Copyright (c) 2016 isaac dawson
+Copyright (c) 2017 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

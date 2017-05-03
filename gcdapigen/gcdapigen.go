@@ -101,9 +101,6 @@ func main() {
 	for _, protoDomain := range protocolApi.Domains {
 		domain := NewDomain(major, minor, protoDomain.Domain)
 		fmt.Printf("Creating api for domain: %s\n", protoDomain.Domain)
-		if debug && domain.Domain != "DOM" {
-			continue
-		}
 
 		// Do types first
 		if protoDomain.Types != nil && len(protoDomain.Types) > 0 {

@@ -115,7 +115,7 @@ func getGoType(props SharedProperties) string {
 
 	returnType := ""
 	switch protoType {
-	case "any", "string", "enum":
+	case "string", "enum":
 		returnType = "string"
 	case "integer":
 		returnType = "int"
@@ -123,6 +123,8 @@ func getGoType(props SharedProperties) string {
 		returnType = "float64"
 	case "object":
 		returnType = "map[string]interface{}" // default
+	case "any":
+		returnType = "interface{}"
 	case "boolean":
 		returnType = "bool"
 	}
@@ -160,7 +162,7 @@ func isSubType(protoProp *ProtoProperty) bool {
 func isPointerType(props PropSetter) bool {
 	goType := props.GetGoType()
 	switch goType {
-	case "int", "string", "bool", "float64", "map[string]interface{}":
+	case "int", "string", "bool", "float64", "map[string]interface{}", "interface{}":
 		return false
 	}
 	return true

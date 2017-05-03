@@ -154,7 +154,7 @@ type ProtoCommandReturns struct {
 	Description string     `json:"description,omitempty"`
 }
 
-// An event, asynchornous events that can come in once
+// An event, asynchronous events that can come in once
 // enabled.
 type ProtoEvent struct {
 	Name        string           `json:"name"`

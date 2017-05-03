@@ -89,7 +89,7 @@ func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
 // databaseId -
 // query -
 // Returns -  columnNames -  values -  sqlError -
-func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []string, *DatabaseError, error) {
+func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []interface{}, *DatabaseError, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["databaseId"] = databaseId
 	paramRequest["query"] = query
@@ -101,7 +101,7 @@ func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []stri
 	var chromeData struct {
 		Result struct {
 			ColumnNames []string
-			Values      []string
+			Values      []interface{}
 			SqlError    *DatabaseError
 		}
 	}

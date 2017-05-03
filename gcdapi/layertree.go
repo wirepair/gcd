@@ -150,7 +150,7 @@ func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
 // LoadSnapshot - Returns the snapshot identifier.
 // tiles - An array of tiles composing the snapshot.
 // Returns -  snapshotId - The id of the snapshot.
-func (c *LayerTree) LoadSnapshot(tiles *LayerTreePictureTile) (string, error) {
+func (c *LayerTree) LoadSnapshot(tiles []*LayerTreePictureTile) (string, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["tiles"] = tiles
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot", Params: paramRequest})

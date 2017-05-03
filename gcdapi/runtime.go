@@ -14,7 +14,7 @@ type RuntimeRemoteObject struct {
 	Type                string                `json:"type"`                          // Object type.
 	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for <code>object</code> type values only.
 	ClassName           string                `json:"className,omitempty"`           // Object class (constructor) name. Specified for <code>object</code> type values only.
-	Value               string                `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
+	Value               interface{}           `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
 	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have <code>value</code>, but gets this property. enum values: Infinity, NaN, -Infinity, -0
 	Description         string                `json:"description,omitempty"`         // String representation of the object.
 	ObjectId            string                `json:"objectId,omitempty"`            // Unique object identifier (for non-primitive values).
@@ -78,9 +78,9 @@ type RuntimeInternalPropertyDescriptor struct {
 
 // Represents function call argument. Either remote object id <code>objectId</code>, primitive <code>value</code>, unserializable primitive value or neither of (for undefined) them should be specified.
 type RuntimeCallArgument struct {
-	Value               string `json:"value,omitempty"`               // Primitive value.
-	UnserializableValue string `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified. enum values: Infinity, NaN, -Infinity, -0
-	ObjectId            string `json:"objectId,omitempty"`            // Remote object handle.
+	Value               interface{} `json:"value,omitempty"`               // Primitive value.
+	UnserializableValue string      `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified. enum values: Infinity, NaN, -Infinity, -0
+	ObjectId            string      `json:"objectId,omitempty"`            // Remote object handle.
 }
 
 // Description of an isolated world.
@@ -287,7 +287,7 @@ func (c *Runtime) AwaitPromise(promiseObjectId string, returnByValue bool, gener
 // userGesture - Whether execution should be treated as initiated by user in the UI.
 // awaitPromise - Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error.
 // Returns -  result - Call result. exceptionDetails - Exception details.
-func (c *Runtime) CallFunctionOn(objectId string, functionDeclaration string, arguments *RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) CallFunctionOn(objectId string, functionDeclaration string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	paramRequest := make(map[string]interface{}, 8)
 	paramRequest["objectId"] = objectId
 	paramRequest["functionDeclaration"] = functionDeclaration

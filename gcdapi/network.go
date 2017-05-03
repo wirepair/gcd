@@ -386,7 +386,7 @@ func (c *Network) GetResponseBody(requestId string) (string, bool, error) {
 
 // SetBlockedURLs - Blocks URLs from loading.
 // urls - URL patterns to block. Wildcards ('*') are allowed.
-func (c *Network) SetBlockedURLs(urls string) (*gcdmessage.ChromeResponse, error) {
+func (c *Network) SetBlockedURLs(urls []string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["urls"] = urls
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBlockedURLs", Params: paramRequest})
@@ -485,7 +485,7 @@ func (c *Network) ClearBrowserCookies() (*gcdmessage.ChromeResponse, error) {
 // GetCookies - Returns all browser cookies for the current URL. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
 // urls - The list of URLs for which applicable cookies will be fetched
 // Returns -  cookies - Array of cookie objects.
-func (c *Network) GetCookies(urls string) ([]*NetworkCookie, error) {
+func (c *Network) GetCookies(urls []string) ([]*NetworkCookie, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["urls"] = urls
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCookies", Params: paramRequest})

@@ -69,9 +69,9 @@ type DOMBoxModel struct {
 
 // CSS Shape Outside details.
 type DOMShapeOutsideInfo struct {
-	Bounds      []float64 `json:"bounds"`      // Shape bounds
-	Shape       []string  `json:"shape"`       // Shape coordinate details
-	MarginShape []string  `json:"marginShape"` // Margin shape bounds
+	Bounds      []float64     `json:"bounds"`      // Shape bounds
+	Shape       []interface{} `json:"shape"`       // Shape coordinate details
+	MarginShape []interface{} `json:"marginShape"` // Margin shape bounds
 }
 
 // Rectangle.
@@ -732,7 +732,7 @@ func (c *DOM) HighlightRect(x int, y int, width int, height int, color *DOMRGBA,
 // quad - Quad to highlight
 // color - The highlight fill color (default: transparent).
 // outlineColor - The highlight outline color (default: transparent).
-func (c *DOM) HighlightQuad(quad float64, color *DOMRGBA, outlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
+func (c *DOM) HighlightQuad(quad []float64, color *DOMRGBA, outlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["quad"] = quad
 	paramRequest["color"] = color
@@ -809,7 +809,7 @@ func (c *DOM) PushNodeByPathToFrontend(path string) (int, error) {
 // PushNodesByBackendIdsToFrontend - Requests that a batch of nodes is sent to the caller given their backend node ids.
 // backendNodeIds - The array of backend node ids.
 // Returns -  nodeIds - The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds.
-func (c *DOM) PushNodesByBackendIdsToFrontend(backendNodeIds int) ([]int, error) {
+func (c *DOM) PushNodesByBackendIdsToFrontend(backendNodeIds []int) ([]int, error) {
 	paramRequest := make(map[string]interface{}, 1)
 	paramRequest["backendNodeIds"] = backendNodeIds
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodesByBackendIdsToFrontend", Params: paramRequest})
@@ -1025,7 +1025,7 @@ func (c *DOM) Focus(nodeId int) (*gcdmessage.ChromeResponse, error) {
 // SetFileInputFiles - Sets files for the given file input element.
 // nodeId - Id of the file input node to set files for.
 // files - Array of file paths to set.
-func (c *DOM) SetFileInputFiles(nodeId int, files string) (*gcdmessage.ChromeResponse, error) {
+func (c *DOM) SetFileInputFiles(nodeId int, files []string) (*gcdmessage.ChromeResponse, error) {
 	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["nodeId"] = nodeId
 	paramRequest["files"] = files
