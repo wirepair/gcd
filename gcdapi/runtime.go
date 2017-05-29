@@ -125,7 +125,7 @@ type RuntimeStackTrace struct {
 type RuntimeExecutionContextCreatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Context *RuntimeExecutionContextDescription `json:"context"` // A newly created execution contex.
+		Context *RuntimeExecutionContextDescription `json:"context"` // A newly created execution context.
 	} `json:"Params,omitempty"`
 }
 

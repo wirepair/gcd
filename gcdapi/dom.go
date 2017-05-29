@@ -82,30 +82,6 @@ type DOMRect struct {
 	Height float64 `json:"height"` // Rectangle height
 }
 
-// Configuration data for the highlighting of page elements.
-type DOMHighlightConfig struct {
-	ShowInfo           bool     `json:"showInfo,omitempty"`           // Whether the node info tooltip should be shown (default: false).
-	ShowRulers         bool     `json:"showRulers,omitempty"`         // Whether the rulers should be shown (default: false).
-	ShowExtensionLines bool     `json:"showExtensionLines,omitempty"` // Whether the extension lines from node to the rulers should be shown (default: false).
-	DisplayAsMaterial  bool     `json:"displayAsMaterial,omitempty"`  //
-	ContentColor       *DOMRGBA `json:"contentColor,omitempty"`       // The content box highlight fill color (default: transparent).
-	PaddingColor       *DOMRGBA `json:"paddingColor,omitempty"`       // The padding highlight fill color (default: transparent).
-	BorderColor        *DOMRGBA `json:"borderColor,omitempty"`        // The border highlight fill color (default: transparent).
-	MarginColor        *DOMRGBA `json:"marginColor,omitempty"`        // The margin highlight fill color (default: transparent).
-	EventTargetColor   *DOMRGBA `json:"eventTargetColor,omitempty"`   // The event target element highlight fill color (default: transparent).
-	ShapeColor         *DOMRGBA `json:"shapeColor,omitempty"`         // The shape outside fill color (default: transparent).
-	ShapeMarginColor   *DOMRGBA `json:"shapeMarginColor,omitempty"`   // The shape margin fill color (default: transparent).
-	SelectorList       string   `json:"selectorList,omitempty"`       // Selectors to highlight relevant nodes.
-}
-
-// Fired when the node should be inspected. This happens after call to <code>setInspectMode</code>.
-type DOMInspectNodeRequestedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		BackendNodeId int `json:"backendNodeId"` // Id of the node to inspect.
-	} `json:"Params,omitempty"`
-}
-
 // Fired when backend wants to provide client with the missing DOM structure. This happens upon most of the calls requesting node ids.
 type DOMSetChildNodesEvent struct {
 	Method string `json:"method"`
@@ -221,14 +197,6 @@ type DOMDistributedNodesUpdatedEvent struct {
 	Params struct {
 		InsertionPointId int               `json:"insertionPointId"` // Insertion point where distrubuted nodes were updated.
 		DistributedNodes []*DOMBackendNode `json:"distributedNodes"` // Distributed nodes for given insertion point.
-	} `json:"Params,omitempty"`
-}
-
-//
-type DOMNodeHighlightRequestedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		NodeId int `json:"nodeId"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -700,75 +668,19 @@ func (c *DOM) RequestNode(objectId string) (int, error) {
 	return chromeData.Result.NodeId, nil
 }
 
-// SetInspectMode - Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection.
-// mode - Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, none
-// highlightConfig - A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>.
-func (c *DOM) SetInspectMode(mode string, highlightConfig *DOMHighlightConfig) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["mode"] = mode
-	paramRequest["highlightConfig"] = highlightConfig
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setInspectMode", Params: paramRequest})
+// Highlights given rectangle.
+func (c *DOM) HighlightRect() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightRect"})
 }
 
-// HighlightRect - Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
-// x - X coordinate
-// y - Y coordinate
-// width - Rectangle width
-// height - Rectangle height
-// color - The highlight fill color (default: transparent).
-// outlineColor - The highlight outline color (default: transparent).
-func (c *DOM) HighlightRect(x int, y int, width int, height int, color *DOMRGBA, outlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 6)
-	paramRequest["x"] = x
-	paramRequest["y"] = y
-	paramRequest["width"] = width
-	paramRequest["height"] = height
-	paramRequest["color"] = color
-	paramRequest["outlineColor"] = outlineColor
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightRect", Params: paramRequest})
+// Highlights DOM node.
+func (c *DOM) HighlightNode() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightNode"})
 }
 
-// HighlightQuad - Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
-// quad - Quad to highlight
-// color - The highlight fill color (default: transparent).
-// outlineColor - The highlight outline color (default: transparent).
-func (c *DOM) HighlightQuad(quad []float64, color *DOMRGBA, outlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["quad"] = quad
-	paramRequest["color"] = color
-	paramRequest["outlineColor"] = outlineColor
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightQuad", Params: paramRequest})
-}
-
-// HighlightNode - Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified.
-// highlightConfig - A descriptor for the highlight appearance.
-// nodeId - Identifier of the node to highlight.
-// backendNodeId - Identifier of the backend node to highlight.
-// objectId - JavaScript object id of the node to be highlighted.
-func (c *DOM) HighlightNode(highlightConfig *DOMHighlightConfig, nodeId int, backendNodeId int, objectId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 4)
-	paramRequest["highlightConfig"] = highlightConfig
-	paramRequest["nodeId"] = nodeId
-	paramRequest["backendNodeId"] = backendNodeId
-	paramRequest["objectId"] = objectId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightNode", Params: paramRequest})
-}
-
-// Hides DOM node highlight.
+// Hides any highlight.
 func (c *DOM) HideHighlight() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.hideHighlight"})
-}
-
-// HighlightFrame - Highlights owner element of the frame with given id.
-// frameId - Identifier of the frame to highlight.
-// contentColor - The content box highlight fill color (default: transparent).
-// contentOutlineColor - The content box highlight outline color (default: transparent).
-func (c *DOM) HighlightFrame(frameId string, contentColor *DOMRGBA, contentOutlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["frameId"] = frameId
-	paramRequest["contentColor"] = contentColor
-	paramRequest["contentOutlineColor"] = contentOutlineColor
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightFrame", Params: paramRequest})
 }
 
 // PushNodeByPathToFrontend - Requests that the node is sent to the caller given its path. // FIXME, use XPath
@@ -1139,39 +1051,4 @@ func (c *DOM) GetRelayoutBoundary(nodeId int) (int, error) {
 	}
 
 	return chromeData.Result.NodeId, nil
-}
-
-// GetHighlightObjectForTest - For testing.
-// nodeId - Id of the node to get highlight object for.
-// Returns -  highlight - Highlight data for the node.
-func (c *DOM) GetHighlightObjectForTest(nodeId int) (map[string]interface{}, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["nodeId"] = nodeId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getHighlightObjectForTest", Params: paramRequest})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Highlight map[string]interface{}
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.Highlight, nil
 }

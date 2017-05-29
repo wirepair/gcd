@@ -124,7 +124,7 @@ func TestTargetCrashed(t *testing.T) {
 	}
 
 	tab.Subscribe("Inspector.targetCrashed", targetCrashedFn)
-	_, err = tab.Page.Navigate("chrome://crash", "")
+	_, err = tab.Page.Navigate("chrome://crash", "", "typed")
 	if err == nil {
 		t.Fatalf("Navigation should have failed")
 	}
@@ -161,7 +161,7 @@ func TestEvents(t *testing.T) {
 		t.Fatalf("error sending enable: %s\n", err)
 	}
 
-	if _, err := target.Page.Navigate(testServerAddr+"console_log.html", ""); err != nil {
+	if _, err := target.Page.Navigate(testServerAddr+"console_log.html", "", "typed"); err != nil {
 		t.Fatalf("error attempting to navigate: %s\n", err)
 	}
 
@@ -214,7 +214,7 @@ func TestEvaluate(t *testing.T) {
 		close(doneCh)
 	})
 	target.Runtime.Enable()
-	target.Page.Navigate(testServerAddr, "")
+	target.Page.Navigate(testServerAddr, "", "typed")
 	<-doneCh
 }
 
@@ -280,7 +280,7 @@ func TestComplexReturn(t *testing.T) {
 		close(doneCh)
 	})
 
-	_, err = target.Page.Navigate(testServerAddr+"cookie.html", "")
+	_, err = target.Page.Navigate(testServerAddr+"cookie.html", "", "typed")
 	if err != nil {
 		t.Fatalf("error navigating to cookie page: %s\n", err)
 	}

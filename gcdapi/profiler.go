@@ -54,7 +54,7 @@ type ProfilerScriptCoverage struct {
 	Functions []*ProfilerFunctionCoverage `json:"functions"` // Functions contained in the script that has coverage data.
 }
 
-// Sent when new profile recodring is started using console.profile() call.
+// Sent when new profile recording is started using console.profile() call.
 type ProfilerConsoleProfileStartedEvent struct {
 	Method string `json:"method"`
 	Params struct {

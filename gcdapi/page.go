@@ -40,9 +40,11 @@ type PageFrameResourceTree struct {
 
 // Navigation history entry.
 type PageNavigationEntry struct {
-	Id    int    `json:"id"`    // Unique id of the navigation history entry.
-	Url   string `json:"url"`   // URL of the navigation history entry.
-	Title string `json:"title"` // Title of the navigation history entry.
+	Id             int    `json:"id"`             // Unique id of the navigation history entry.
+	Url            string `json:"url"`            // URL of the navigation history entry.
+	UserTypedURL   string `json:"userTypedURL"`   // URL that the user typed in the url bar.
+	Title          string `json:"title"`          // Title of the navigation history entry.
+	TransitionType string `json:"transitionType"` // Transition type. enum values: link, typed, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 }
 
 // Screencast frame metadata.
@@ -193,14 +195,6 @@ type PageScreencastVisibilityChangedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Fired when a color has been picked.
-type PageColorPickedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Color *DOMRGBA `json:"color"` // RGBA of the picked color.
-	} `json:"Params,omitempty"`
-}
-
 // Fired when a navigation is started if navigation throttles are enabled.  The navigation will be deferred until processNavigation is called.
 type PageNavigationRequestedEvent struct {
 	Method string `json:"method"`
@@ -295,11 +289,13 @@ func (c *Page) Reload(ignoreCache bool, scriptToEvaluateOnLoad string) (*gcdmess
 // Navigate - Navigates current page to the given URL.
 // url - URL to navigate the page to.
 // referrer - Referrer URL.
+// transitionType - Intended transition type. enum values: link, typed, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 // Returns -  frameId - Frame id that will be navigated.
-func (c *Page) Navigate(url string, referrer string) (string, error) {
-	paramRequest := make(map[string]interface{}, 2)
+func (c *Page) Navigate(url string, referrer string, transitionType string) (string, error) {
+	paramRequest := make(map[string]interface{}, 3)
 	paramRequest["url"] = url
 	paramRequest["referrer"] = referrer
+	paramRequest["transitionType"] = transitionType
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigate", Params: paramRequest})
 	if err != nil {
 		return "", err
@@ -624,7 +620,7 @@ func (c *Page) SetTouchEmulationEnabled(enabled bool, configuration string) (*gc
 // CaptureScreenshot - Capture page screenshot.
 // format - Image compression format (defaults to png).
 // quality - Compression quality from range [0..100] (jpeg only).
-// fromSurface - Capture the screenshot from the surface, rather than the view. Defaults to false.
+// fromSurface - Capture the screenshot from the surface, rather than the view. Defaults to true.
 // Returns -  data - Base64-encoded image data.
 func (c *Page) CaptureScreenshot(format string, quality int, fromSurface bool) (string, error) {
 	paramRequest := make(map[string]interface{}, 3)
@@ -660,10 +656,33 @@ func (c *Page) CaptureScreenshot(format string, quality int, fromSurface bool) (
 	return chromeData.Result.Data, nil
 }
 
-// PrintToPDF - Print page as pdf.
+// PrintToPDF - Print page as PDF.
+// landscape - Paper orientation. Defaults to false.
+// displayHeaderFooter - Display header and footer. Defaults to false.
+// printBackground - Print background graphics. Defaults to false.
+// scale - Scale of the webpage rendering. Defaults to 1.
+// paperWidth - Paper width in inches. Defaults to 8.5 inches.
+// paperHeight - Paper height in inches. Defaults to 11 inches.
+// marginTop - Top margin in inches. Defaults to 1cm (~0.4 inches).
+// marginBottom - Bottom margin in inches. Defaults to 1cm (~0.4 inches).
+// marginLeft - Left margin in inches. Defaults to 1cm (~0.4 inches).
+// marginRight - Right margin in inches. Defaults to 1cm (~0.4 inches).
+// pageRanges - Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
 // Returns -  data - Base64-encoded pdf data.
-func (c *Page) PrintToPDF() (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.printToPDF"})
+func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string) (string, error) {
+	paramRequest := make(map[string]interface{}, 11)
+	paramRequest["landscape"] = landscape
+	paramRequest["displayHeaderFooter"] = displayHeaderFooter
+	paramRequest["printBackground"] = printBackground
+	paramRequest["scale"] = scale
+	paramRequest["paperWidth"] = paperWidth
+	paramRequest["paperHeight"] = paperHeight
+	paramRequest["marginTop"] = marginTop
+	paramRequest["marginBottom"] = marginBottom
+	paramRequest["marginLeft"] = marginLeft
+	paramRequest["marginRight"] = marginRight
+	paramRequest["pageRanges"] = pageRanges
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.printToPDF", Params: paramRequest})
 	if err != nil {
 		return "", err
 	}
@@ -729,24 +748,6 @@ func (c *Page) HandleJavaScriptDialog(accept bool, promptText string) (*gcdmessa
 	paramRequest["accept"] = accept
 	paramRequest["promptText"] = promptText
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.handleJavaScriptDialog", Params: paramRequest})
-}
-
-// SetColorPickerEnabled - Shows / hides color picker
-// enabled - Shows / hides color picker
-func (c *Page) SetColorPickerEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["enabled"] = enabled
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setColorPickerEnabled", Params: paramRequest})
-}
-
-// ConfigureOverlay - Configures overlay.
-// suspended - Whether overlay should be suspended and not consume any resources.
-// message - Overlay message to display.
-func (c *Page) ConfigureOverlay(suspended bool, message string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["suspended"] = suspended
-	paramRequest["message"] = message
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.configureOverlay", Params: paramRequest})
 }
 
 // GetAppManifest -
@@ -838,4 +839,16 @@ func (c *Page) GetLayoutMetrics() (*PageLayoutViewport, *PageVisualViewport, *DO
 	}
 
 	return chromeData.Result.LayoutViewport, chromeData.Result.VisualViewport, chromeData.Result.ContentSize, nil
+}
+
+// CreateIsolatedWorld - Creates an isolated world for the given frame.
+// frameId - Id of the frame in which the isolated world should be created.
+// worldName - An optional name which is reported in the Execution Context.
+// grantUniveralAccess - Whether or not universal access should be granted to the isolated world. This is a powerful option, use with caution.
+func (c *Page) CreateIsolatedWorld(frameId string, worldName string, grantUniveralAccess bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 3)
+	paramRequest["frameId"] = frameId
+	paramRequest["worldName"] = worldName
+	paramRequest["grantUniveralAccess"] = grantUniveralAccess
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.createIsolatedWorld", Params: paramRequest})
 }

@@ -29,6 +29,14 @@ func NewInput(target gcdmessage.ChromeTargeter) *Input {
 	return c
 }
 
+// SetIgnoreInputEvents - Ignores input events (useful while auditing page).
+// ignore - Ignores input events processing when set to true.
+func (c *Input) SetIgnoreInputEvents(ignore bool) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 1)
+	paramRequest["ignore"] = ignore
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.setIgnoreInputEvents", Params: paramRequest})
+}
+
 // DispatchKeyEvent - Dispatches a key event to the page.
 // type - Type of the key event.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).

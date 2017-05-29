@@ -247,7 +247,7 @@ func (c *Debugger) RemoveBreakpoint(breakpointId string) (*gcdmessage.ChromeResp
 
 // GetPossibleBreakpoints - Returns possible locations for breakpoint. scriptId in start and end range locations should be the same.
 // start - Start of range to search possible breakpoint locations in.
-// end - End of range to search possible breakpoint locations in (excluding). When not specifed, end of scripts is used as end of range.
+// end - End of range to search possible breakpoint locations in (excluding). When not specified, end of scripts is used as end of range.
 // restrictToFunction - Only consider locations which are in the same (non-nested) function as start.
 // Returns -  locations - List of the possible breakpoint locations.
 func (c *Debugger) GetPossibleBreakpoints(start *DebuggerLocation, end *DebuggerLocation, restrictToFunction bool) ([]*DebuggerBreakLocation, error) {
@@ -286,9 +286,11 @@ func (c *Debugger) GetPossibleBreakpoints(start *DebuggerLocation, end *Debugger
 
 // ContinueToLocation - Continues execution until specific location is reached.
 // location - Location to continue to.
-func (c *Debugger) ContinueToLocation(location *DebuggerLocation) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
+// targetCallFrames -
+func (c *Debugger) ContinueToLocation(location *DebuggerLocation, targetCallFrames string) (*gcdmessage.ChromeResponse, error) {
+	paramRequest := make(map[string]interface{}, 2)
 	paramRequest["location"] = location
+	paramRequest["targetCallFrames"] = targetCallFrames
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.continueToLocation", Params: paramRequest})
 }
 

@@ -35,11 +35,11 @@ func NewSystemInfo(target gcdmessage.ChromeTargeter) *SystemInfo {
 }
 
 // GetInfo - Returns information about the system.
-// Returns -  gpu - Information about the GPUs on the system. modelName - A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported. modelVersion - A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported.
-func (c *SystemInfo) GetInfo() (*SystemInfoGPUInfo, string, string, error) {
+// Returns -  gpu - Information about the GPUs on the system. modelName - A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported. modelVersion - A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported. commandLine - The command line string used to launch the browser. Will be the empty string if not supported.
+func (c *SystemInfo) GetInfo() (*SystemInfoGPUInfo, string, string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "SystemInfo.getInfo"})
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", "", err
 	}
 
 	var chromeData struct {
@@ -47,23 +47,24 @@ func (c *SystemInfo) GetInfo() (*SystemInfoGPUInfo, string, string, error) {
 			Gpu          *SystemInfoGPUInfo
 			ModelName    string
 			ModelVersion string
+			CommandLine  string
 		}
 	}
 
 	if resp == nil {
-		return nil, "", "", &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, "", "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, "", "", err
+		return nil, "", "", "", err
 	}
 
-	return chromeData.Result.Gpu, chromeData.Result.ModelName, chromeData.Result.ModelVersion, nil
+	return chromeData.Result.Gpu, chromeData.Result.ModelName, chromeData.Result.ModelVersion, chromeData.Result.CommandLine, nil
 }

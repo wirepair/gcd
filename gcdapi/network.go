@@ -400,14 +400,6 @@ func (c *Network) ReplayXHR(requestId string) (*gcdmessage.ChromeResponse, error
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.replayXHR", Params: paramRequest})
 }
 
-// SetMonitoringXHREnabled - Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.
-// enabled - Monitoring enabled state.
-func (c *Network) SetMonitoringXHREnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["enabled"] = enabled
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setMonitoringXHREnabled", Params: paramRequest})
-}
-
 // CanClearBrowserCache - Tells whether clearing browser cache is supported.
 // Returns -  result - True if browser cache can be cleared.
 func (c *Network) CanClearBrowserCache() (bool, error) {
