@@ -55,12 +55,26 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() (*gcdmessage.ChromeResponse, error
 {{end}}
 
 {{if $element.ParamCalls}}
+type {{$api.Domain | Title}}{{.Name | Title}}Params struct {
+	{{- range $param := $element.Parameters}}
+	// {{$param.Description}}
+	{{$param.Name | Reserved | Title}} {{if $param.IsTypeArray}}[]{{end}}{{if $param.IsPointer}}*{{end}}{{$param.GoType}} `json:"{{$param.Name}}{{if $param.Optional}},omitempty{{end}}"`
+	{{- end}}
+}
+
+// {{.Name | Title}}WithParams - {{$element.Description}}
+func (c *{{$api.Domain}}) {{.Name | Title}}WithParams(v *{{$api.Domain | Title}}{{.Name | Title}}Params) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: v})
+}
+
 // {{.Name | Title}} - {{$element.Description}}{{range $param := $element.Parameters}}
 // {{$param.Name}} - {{$param.Description}}{{ end }}
 func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsTypeArray}}[]{{end}}{{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, {{len (.Parameters) }}){{range $param := $element.Parameters}}
-	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})
+	var v {{$api.Domain | Title}}{{.Name | Title}}Params
+	{{- range $param := $element.Parameters}}
+	v.{{$param.Name | Reserved | Title}} = {{$param.Name | Reserved}}
+	{{- end}}
+	return c.{{.Name | Title}}WithParams(&v)
 }
 {{end}}
 
@@ -100,13 +114,18 @@ func (c *{{$api.Domain}}) {{.Name | Title}}() ({{range $rets := .Returns}}{{if $
 
 {{ end }}
 
-{{if $element.ParamReturnCalls}}// {{.Name | Title}} - {{$element.Description}}{{range $param := $element.Parameters}}
-// {{$param.Name}} - {{$param.Description}}{{ end }}
+{{if $element.ParamReturnCalls}}
+type {{$api.Domain | Title}}{{.Name | Title}}Params struct {
+	{{- range $param := $element.Parameters}}
+	// {{$param.Description}}
+	{{$param.Name | Reserved | Title}} {{if $param.IsTypeArray}}[]{{end}}{{if $param.IsPointer}}*{{end}}{{$param.GoType}} `json:"{{$param.Name}}{{if $param.Optional}},omitempty{{end}}"`
+	{{- end}}
+}
+
+// {{.Name | Title}}WithParams - {{$element.Description}}
 // Returns - {{range $return := .Returns}} {{$return.Name}} - {{$return.Description}}{{ end }}
-func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsTypeArray}}[]{{end}}{{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) ({{range $rets := .Returns}}{{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}}, {{end}}error) {
-	paramRequest := make(map[string]interface{}, {{len (.Parameters) }}){{range $param := $element.Parameters}}
-	paramRequest["{{$param.Name}}"] = {{$param.Name | Reserved}}{{ end }}
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: paramRequest})
+func (c *{{$api.Domain}}) {{.Name | Title}}WithParams(v *{{$api.Domain | Title}}{{.Name | Title}}Params) ({{range $rets := .Returns}}{{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}}, {{end}}error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "{{$api.Domain}}.{{.Name}}", Params: v})
 	if err != nil {
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
 	}
@@ -133,6 +152,17 @@ func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameter
 	}
 
 	return {{range $rets := .Returns}}chromeData.Result.{{$rets.Name | Title | Reserved}}, {{end}}nil
+}
+
+// {{.Name | Title}} - {{$element.Description}}{{range $param := $element.Parameters}}
+// {{$param.Name}} - {{$param.Description}}{{ end }}
+// Returns - {{range $return := .Returns}} {{$return.Name}} - {{$return.Description}}{{ end }}
+func (c *{{$api.Domain}}) {{.Name | Title}}({{range $param := $element.Parameters}}{{$param.Name | Reserved}} {{if $param.IsTypeArray}}[]{{end}}{{if $param.IsPointer}}*{{end}}{{$param.GoType}}, {{end}}) ({{range $rets := .Returns}}{{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}}, {{end}}error) {
+	var v {{$api.Domain | Title}}{{.Name | Title}}Params
+	{{- range $param := $element.Parameters}}
+	v.{{$param.Name | Reserved | Title}} = {{$param.Name | Reserved}}
+	{{- end}}
+	return c.{{.Name | Title}}WithParams(&v)
 }
 
 {{ end }}
