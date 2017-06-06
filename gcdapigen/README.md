@@ -17,7 +17,7 @@ Download the latest [protocol.json](https://code.google.com/p/chromium/codesearc
 ```
 go build
 ./gcdapigen protocol.json
-cp -R output/ ../../gcdapi
+cp -R output/. ../gcdapi
 cd !$
 go build && go install
 ```
