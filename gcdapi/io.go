@@ -18,17 +18,19 @@ func NewIO(target gcdmessage.ChromeTargeter) *IO {
 	return c
 }
 
-// Read - Read a chunk of the stream
-// handle - Handle of the stream to read.
-// offset - Seek to the specified offset before reading (if not specificed, proceed with offset following the last read).
-// size - Maximum number of bytes to read (left upon the agent discretion if not specified).
+type IOReadParams struct {
+	// Handle of the stream to read.
+	Handle string `json:"handle"`
+	// Seek to the specified offset before reading (if not specificed, proceed with offset following the last read).
+	Offset int `json:"offset,omitempty"`
+	// Maximum number of bytes to read (left upon the agent discretion if not specified).
+	Size int `json:"size,omitempty"`
+}
+
+// ReadWithParams - Read a chunk of the stream
 // Returns -  data - Data that were read. eof - Set if the end-of-file condition occured while reading.
-func (c *IO) Read(handle string, offset int, size int) (string, bool, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["handle"] = handle
-	paramRequest["offset"] = offset
-	paramRequest["size"] = size
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: paramRequest})
+func (c *IO) ReadWithParams(v *IOReadParams) (string, bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: v})
 	if err != nil {
 		return "", false, err
 	}
@@ -58,10 +60,33 @@ func (c *IO) Read(handle string, offset int, size int) (string, bool, error) {
 	return chromeData.Result.Data, chromeData.Result.Eof, nil
 }
 
+// Read - Read a chunk of the stream
+// handle - Handle of the stream to read.
+// offset - Seek to the specified offset before reading (if not specificed, proceed with offset following the last read).
+// size - Maximum number of bytes to read (left upon the agent discretion if not specified).
+// Returns -  data - Data that were read. eof - Set if the end-of-file condition occured while reading.
+func (c *IO) Read(handle string, offset int, size int) (string, bool, error) {
+	var v IOReadParams
+	v.Handle = handle
+	v.Offset = offset
+	v.Size = size
+	return c.ReadWithParams(&v)
+}
+
+type IOCloseParams struct {
+	// Handle of the stream to close.
+	Handle string `json:"handle"`
+}
+
+// CloseWithParams - Close the stream, discard any temporary backing storage.
+func (c *IO) CloseWithParams(v *IOCloseParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: v})
+}
+
 // Close - Close the stream, discard any temporary backing storage.
 // handle - Handle of the stream to close.
 func (c *IO) Close(handle string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["handle"] = handle
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: paramRequest})
+	var v IOCloseParams
+	v.Handle = handle
+	return c.CloseWithParams(&v)
 }

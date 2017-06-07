@@ -82,13 +82,15 @@ func (c *IndexedDB) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.disable"})
 }
 
-// RequestDatabaseNames - Requests database names for given security origin.
-// securityOrigin - Security origin.
+type IndexedDBRequestDatabaseNamesParams struct {
+	// Security origin.
+	SecurityOrigin string `json:"securityOrigin"`
+}
+
+// RequestDatabaseNamesWithParams - Requests database names for given security origin.
 // Returns -  databaseNames - Database names for origin.
-func (c *IndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["securityOrigin"] = securityOrigin
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabaseNames", Params: paramRequest})
+func (c *IndexedDB) RequestDatabaseNamesWithParams(v *IndexedDBRequestDatabaseNamesParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabaseNames", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -117,15 +119,26 @@ func (c *IndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error
 	return chromeData.Result.DatabaseNames, nil
 }
 
-// RequestDatabase - Requests database with given name in given frame.
+// RequestDatabaseNames - Requests database names for given security origin.
 // securityOrigin - Security origin.
-// databaseName - Database name.
+// Returns -  databaseNames - Database names for origin.
+func (c *IndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error) {
+	var v IndexedDBRequestDatabaseNamesParams
+	v.SecurityOrigin = securityOrigin
+	return c.RequestDatabaseNamesWithParams(&v)
+}
+
+type IndexedDBRequestDatabaseParams struct {
+	// Security origin.
+	SecurityOrigin string `json:"securityOrigin"`
+	// Database name.
+	DatabaseName string `json:"databaseName"`
+}
+
+// RequestDatabaseWithParams - Requests database with given name in given frame.
 // Returns -  databaseWithObjectStores - Database with an array of object stores.
-func (c *IndexedDB) RequestDatabase(securityOrigin string, databaseName string) (*IndexedDBDatabaseWithObjectStores, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["securityOrigin"] = securityOrigin
-	paramRequest["databaseName"] = databaseName
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabase", Params: paramRequest})
+func (c *IndexedDB) RequestDatabaseWithParams(v *IndexedDBRequestDatabaseParams) (*IndexedDBDatabaseWithObjectStores, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabase", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -154,25 +167,38 @@ func (c *IndexedDB) RequestDatabase(securityOrigin string, databaseName string) 
 	return chromeData.Result.DatabaseWithObjectStores, nil
 }
 
-// RequestData - Requests data from object store or index.
+// RequestDatabase - Requests database with given name in given frame.
 // securityOrigin - Security origin.
 // databaseName - Database name.
-// objectStoreName - Object store name.
-// indexName - Index name, empty string for object store data requests.
-// skipCount - Number of records to skip.
-// pageSize - Number of records to fetch.
-// keyRange - Key range.
+// Returns -  databaseWithObjectStores - Database with an array of object stores.
+func (c *IndexedDB) RequestDatabase(securityOrigin string, databaseName string) (*IndexedDBDatabaseWithObjectStores, error) {
+	var v IndexedDBRequestDatabaseParams
+	v.SecurityOrigin = securityOrigin
+	v.DatabaseName = databaseName
+	return c.RequestDatabaseWithParams(&v)
+}
+
+type IndexedDBRequestDataParams struct {
+	// Security origin.
+	SecurityOrigin string `json:"securityOrigin"`
+	// Database name.
+	DatabaseName string `json:"databaseName"`
+	// Object store name.
+	ObjectStoreName string `json:"objectStoreName"`
+	// Index name, empty string for object store data requests.
+	IndexName string `json:"indexName"`
+	// Number of records to skip.
+	SkipCount int `json:"skipCount"`
+	// Number of records to fetch.
+	PageSize int `json:"pageSize"`
+	// Key range.
+	KeyRange *IndexedDBKeyRange `json:"keyRange,omitempty"`
+}
+
+// RequestDataWithParams - Requests data from object store or index.
 // Returns -  objectStoreDataEntries - Array of object store data entries. hasMore - If true, there are more entries to fetch in the given range.
-func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, objectStoreName string, indexName string, skipCount int, pageSize int, keyRange *IndexedDBKeyRange) ([]*IndexedDBDataEntry, bool, error) {
-	paramRequest := make(map[string]interface{}, 7)
-	paramRequest["securityOrigin"] = securityOrigin
-	paramRequest["databaseName"] = databaseName
-	paramRequest["objectStoreName"] = objectStoreName
-	paramRequest["indexName"] = indexName
-	paramRequest["skipCount"] = skipCount
-	paramRequest["pageSize"] = pageSize
-	paramRequest["keyRange"] = keyRange
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestData", Params: paramRequest})
+func (c *IndexedDB) RequestDataWithParams(v *IndexedDBRequestDataParams) ([]*IndexedDBDataEntry, bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestData", Params: v})
 	if err != nil {
 		return nil, false, err
 	}
@@ -202,24 +228,71 @@ func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, obje
 	return chromeData.Result.ObjectStoreDataEntries, chromeData.Result.HasMore, nil
 }
 
+// RequestData - Requests data from object store or index.
+// securityOrigin - Security origin.
+// databaseName - Database name.
+// objectStoreName - Object store name.
+// indexName - Index name, empty string for object store data requests.
+// skipCount - Number of records to skip.
+// pageSize - Number of records to fetch.
+// keyRange - Key range.
+// Returns -  objectStoreDataEntries - Array of object store data entries. hasMore - If true, there are more entries to fetch in the given range.
+func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, objectStoreName string, indexName string, skipCount int, pageSize int, keyRange *IndexedDBKeyRange) ([]*IndexedDBDataEntry, bool, error) {
+	var v IndexedDBRequestDataParams
+	v.SecurityOrigin = securityOrigin
+	v.DatabaseName = databaseName
+	v.ObjectStoreName = objectStoreName
+	v.IndexName = indexName
+	v.SkipCount = skipCount
+	v.PageSize = pageSize
+	v.KeyRange = keyRange
+	return c.RequestDataWithParams(&v)
+}
+
+type IndexedDBClearObjectStoreParams struct {
+	// Security origin.
+	SecurityOrigin string `json:"securityOrigin"`
+	// Database name.
+	DatabaseName string `json:"databaseName"`
+	// Object store name.
+	ObjectStoreName string `json:"objectStoreName"`
+}
+
+// ClearObjectStoreWithParams - Clears all entries from an object store.
+func (c *IndexedDB) ClearObjectStoreWithParams(v *IndexedDBClearObjectStoreParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.clearObjectStore", Params: v})
+}
+
 // ClearObjectStore - Clears all entries from an object store.
 // securityOrigin - Security origin.
 // databaseName - Database name.
 // objectStoreName - Object store name.
 func (c *IndexedDB) ClearObjectStore(securityOrigin string, databaseName string, objectStoreName string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["securityOrigin"] = securityOrigin
-	paramRequest["databaseName"] = databaseName
-	paramRequest["objectStoreName"] = objectStoreName
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.clearObjectStore", Params: paramRequest})
+	var v IndexedDBClearObjectStoreParams
+	v.SecurityOrigin = securityOrigin
+	v.DatabaseName = databaseName
+	v.ObjectStoreName = objectStoreName
+	return c.ClearObjectStoreWithParams(&v)
+}
+
+type IndexedDBDeleteDatabaseParams struct {
+	// Security origin.
+	SecurityOrigin string `json:"securityOrigin"`
+	// Database name.
+	DatabaseName string `json:"databaseName"`
+}
+
+// DeleteDatabaseWithParams - Deletes a database.
+func (c *IndexedDB) DeleteDatabaseWithParams(v *IndexedDBDeleteDatabaseParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.deleteDatabase", Params: v})
 }
 
 // DeleteDatabase - Deletes a database.
 // securityOrigin - Security origin.
 // databaseName - Database name.
 func (c *IndexedDB) DeleteDatabase(securityOrigin string, databaseName string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["securityOrigin"] = securityOrigin
-	paramRequest["databaseName"] = databaseName
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.deleteDatabase", Params: paramRequest})
+	var v IndexedDBDeleteDatabaseParams
+	v.SecurityOrigin = securityOrigin
+	v.DatabaseName = databaseName
+	return c.DeleteDatabaseWithParams(&v)
 }

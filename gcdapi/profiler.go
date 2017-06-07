@@ -94,12 +94,22 @@ func (c *Profiler) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disable"})
 }
 
+type ProfilerSetSamplingIntervalParams struct {
+	// New sampling interval in microseconds.
+	Interval int `json:"interval"`
+}
+
+// SetSamplingIntervalWithParams - Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
+func (c *Profiler) SetSamplingIntervalWithParams(v *ProfilerSetSamplingIntervalParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.setSamplingInterval", Params: v})
+}
+
 // SetSamplingInterval - Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
 // interval - New sampling interval in microseconds.
 func (c *Profiler) SetSamplingInterval(interval int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["interval"] = interval
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.setSamplingInterval", Params: paramRequest})
+	var v ProfilerSetSamplingIntervalParams
+	v.Interval = interval
+	return c.SetSamplingIntervalWithParams(&v)
 }
 
 //
@@ -139,12 +149,22 @@ func (c *Profiler) Stop() (*ProfilerProfile, error) {
 	return chromeData.Result.Profile, nil
 }
 
+type ProfilerStartPreciseCoverageParams struct {
+	// Collect accurate call counts beyond simple 'covered' or 'not covered'.
+	CallCount bool `json:"callCount,omitempty"`
+}
+
+// StartPreciseCoverageWithParams - Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code coverage may be incomplete. Enabling prevents running optimized code and resets execution counters.
+func (c *Profiler) StartPreciseCoverageWithParams(v *ProfilerStartPreciseCoverageParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startPreciseCoverage", Params: v})
+}
+
 // StartPreciseCoverage - Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code coverage may be incomplete. Enabling prevents running optimized code and resets execution counters.
 // callCount - Collect accurate call counts beyond simple 'covered' or 'not covered'.
 func (c *Profiler) StartPreciseCoverage(callCount bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["callCount"] = callCount
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startPreciseCoverage", Params: paramRequest})
+	var v ProfilerStartPreciseCoverageParams
+	v.CallCount = callCount
+	return c.StartPreciseCoverageWithParams(&v)
 }
 
 // Disable precise code coverage. Disabling releases unnecessary execution count records and allows executing optimized code.

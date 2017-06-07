@@ -50,13 +50,15 @@ func (c *Database) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.disable"})
 }
 
-// GetDatabaseTableNames -
-// databaseId -
+type DatabaseGetDatabaseTableNamesParams struct {
+	//
+	DatabaseId string `json:"databaseId"`
+}
+
+// GetDatabaseTableNamesWithParams -
 // Returns -  tableNames -
-func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["databaseId"] = databaseId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: paramRequest})
+func (c *Database) GetDatabaseTableNamesWithParams(v *DatabaseGetDatabaseTableNamesParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -85,15 +87,26 @@ func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
 	return chromeData.Result.TableNames, nil
 }
 
-// ExecuteSQL -
+// GetDatabaseTableNames -
 // databaseId -
-// query -
+// Returns -  tableNames -
+func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
+	var v DatabaseGetDatabaseTableNamesParams
+	v.DatabaseId = databaseId
+	return c.GetDatabaseTableNamesWithParams(&v)
+}
+
+type DatabaseExecuteSQLParams struct {
+	//
+	DatabaseId string `json:"databaseId"`
+	//
+	Query string `json:"query"`
+}
+
+// ExecuteSQLWithParams -
 // Returns -  columnNames -  values -  sqlError -
-func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []interface{}, *DatabaseError, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["databaseId"] = databaseId
-	paramRequest["query"] = query
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: paramRequest})
+func (c *Database) ExecuteSQLWithParams(v *DatabaseExecuteSQLParams) ([]string, []interface{}, *DatabaseError, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: v})
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -122,4 +135,15 @@ func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []inte
 	}
 
 	return chromeData.Result.ColumnNames, chromeData.Result.Values, chromeData.Result.SqlError, nil
+}
+
+// ExecuteSQL -
+// databaseId -
+// query -
+// Returns -  columnNames -  values -  sqlError -
+func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []interface{}, *DatabaseError, error) {
+	var v DatabaseExecuteSQLParams
+	v.DatabaseId = databaseId
+	v.Query = query
+	return c.ExecuteSQLWithParams(&v)
 }

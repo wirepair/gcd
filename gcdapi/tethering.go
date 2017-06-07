@@ -26,18 +26,38 @@ func NewTethering(target gcdmessage.ChromeTargeter) *Tethering {
 	return c
 }
 
+type TetheringBindParams struct {
+	// Port number to bind.
+	Port int `json:"port"`
+}
+
+// BindWithParams - Request browser port binding.
+func (c *Tethering) BindWithParams(v *TetheringBindParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.bind", Params: v})
+}
+
 // Bind - Request browser port binding.
 // port - Port number to bind.
 func (c *Tethering) Bind(port int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["port"] = port
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.bind", Params: paramRequest})
+	var v TetheringBindParams
+	v.Port = port
+	return c.BindWithParams(&v)
+}
+
+type TetheringUnbindParams struct {
+	// Port number to unbind.
+	Port int `json:"port"`
+}
+
+// UnbindWithParams - Request browser port unbinding.
+func (c *Tethering) UnbindWithParams(v *TetheringUnbindParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.unbind", Params: v})
 }
 
 // Unbind - Request browser port unbinding.
 // port - Port number to unbind.
 func (c *Tethering) Unbind(port int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["port"] = port
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.unbind", Params: paramRequest})
+	var v TetheringUnbindParams
+	v.Port = port
+	return c.UnbindWithParams(&v)
 }
