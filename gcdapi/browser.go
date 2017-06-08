@@ -27,13 +27,15 @@ func NewBrowser(target gcdmessage.ChromeTargeter) *Browser {
 	return c
 }
 
-// GetWindowForTarget - Get the browser window that contains the devtools target.
-// targetId - Devtools agent host id.
+type BrowserGetWindowForTargetParams struct {
+	// Devtools agent host id.
+	TargetId string `json:"targetId"`
+}
+
+// GetWindowForTargetWithParams - Get the browser window that contains the devtools target.
 // Returns -  windowId - Browser window id. bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
-func (c *Browser) GetWindowForTarget(targetId string) (int, *BrowserBounds, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["targetId"] = targetId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowForTarget", Params: paramRequest})
+func (c *Browser) GetWindowForTargetWithParams(v *BrowserGetWindowForTargetParams) (int, *BrowserBounds, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowForTarget", Params: v})
 	if err != nil {
 		return 0, nil, err
 	}
@@ -63,23 +65,46 @@ func (c *Browser) GetWindowForTarget(targetId string) (int, *BrowserBounds, erro
 	return chromeData.Result.WindowId, chromeData.Result.Bounds, nil
 }
 
+// GetWindowForTarget - Get the browser window that contains the devtools target.
+// targetId - Devtools agent host id.
+// Returns -  windowId - Browser window id. bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
+func (c *Browser) GetWindowForTarget(targetId string) (int, *BrowserBounds, error) {
+	var v BrowserGetWindowForTargetParams
+	v.TargetId = targetId
+	return c.GetWindowForTargetWithParams(&v)
+}
+
+type BrowserSetWindowBoundsParams struct {
+	// Browser window id.
+	WindowId int `json:"windowId"`
+	// New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
+	Bounds *BrowserBounds `json:"bounds"`
+}
+
+// SetWindowBoundsWithParams - Set position and/or size of the browser window.
+func (c *Browser) SetWindowBoundsWithParams(v *BrowserSetWindowBoundsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setWindowBounds", Params: v})
+}
+
 // SetWindowBounds - Set position and/or size of the browser window.
 // windowId - Browser window id.
 // bounds - New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
 func (c *Browser) SetWindowBounds(windowId int, bounds *BrowserBounds) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["windowId"] = windowId
-	paramRequest["bounds"] = bounds
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setWindowBounds", Params: paramRequest})
+	var v BrowserSetWindowBoundsParams
+	v.WindowId = windowId
+	v.Bounds = bounds
+	return c.SetWindowBoundsWithParams(&v)
 }
 
-// GetWindowBounds - Get position and size of the browser window.
-// windowId - Browser window id.
+type BrowserGetWindowBoundsParams struct {
+	// Browser window id.
+	WindowId int `json:"windowId"`
+}
+
+// GetWindowBoundsWithParams - Get position and size of the browser window.
 // Returns -  bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
-func (c *Browser) GetWindowBounds(windowId int) (*BrowserBounds, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["windowId"] = windowId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowBounds", Params: paramRequest})
+func (c *Browser) GetWindowBoundsWithParams(v *BrowserGetWindowBoundsParams) (*BrowserBounds, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowBounds", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -106,4 +131,13 @@ func (c *Browser) GetWindowBounds(windowId int) (*BrowserBounds, error) {
 	}
 
 	return chromeData.Result.Bounds, nil
+}
+
+// GetWindowBounds - Get position and size of the browser window.
+// windowId - Browser window id.
+// Returns -  bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
+func (c *Browser) GetWindowBounds(windowId int) (*BrowserBounds, error) {
+	var v BrowserGetWindowBoundsParams
+	v.WindowId = windowId
+	return c.GetWindowBoundsWithParams(&v)
 }

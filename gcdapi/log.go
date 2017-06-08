@@ -59,12 +59,22 @@ func (c *Log) Clear() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.clear"})
 }
 
+type LogStartViolationsReportParams struct {
+	// Configuration for violations.
+	Config []*LogViolationSetting `json:"config"`
+}
+
+// StartViolationsReportWithParams - start violation reporting.
+func (c *Log) StartViolationsReportWithParams(v *LogStartViolationsReportParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.startViolationsReport", Params: v})
+}
+
 // StartViolationsReport - start violation reporting.
 // config - Configuration for violations.
 func (c *Log) StartViolationsReport(config []*LogViolationSetting) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["config"] = config
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.startViolationsReport", Params: paramRequest})
+	var v LogStartViolationsReportParams
+	v.Config = config
+	return c.StartViolationsReportWithParams(&v)
 }
 
 // Stop violation reporting.

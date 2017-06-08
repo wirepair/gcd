@@ -77,13 +77,15 @@ func (c *LayerTree) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.disable"})
 }
 
-// CompositingReasons - Provides the reasons why the given layer was composited.
-// layerId - The id of the layer for which we want to get the reasons it was composited.
+type LayerTreeCompositingReasonsParams struct {
+	// The id of the layer for which we want to get the reasons it was composited.
+	LayerId string `json:"layerId"`
+}
+
+// CompositingReasonsWithParams - Provides the reasons why the given layer was composited.
 // Returns -  compositingReasons - A list of strings specifying reasons for the given layer to become composited.
-func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["layerId"] = layerId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons", Params: paramRequest})
+func (c *LayerTree) CompositingReasonsWithParams(v *LayerTreeCompositingReasonsParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -112,13 +114,70 @@ func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
 	return chromeData.Result.CompositingReasons, nil
 }
 
+// CompositingReasons - Provides the reasons why the given layer was composited.
+// layerId - The id of the layer for which we want to get the reasons it was composited.
+// Returns -  compositingReasons - A list of strings specifying reasons for the given layer to become composited.
+func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
+	var v LayerTreeCompositingReasonsParams
+	v.LayerId = layerId
+	return c.CompositingReasonsWithParams(&v)
+}
+
+type LayerTreeMakeSnapshotParams struct {
+	// The id of the layer.
+	LayerId string `json:"layerId"`
+}
+
+// MakeSnapshotWithParams - Returns the layer snapshot identifier.
+// Returns -  snapshotId - The id of the layer snapshot.
+func (c *LayerTree) MakeSnapshotWithParams(v *LayerTreeMakeSnapshotParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			SnapshotId string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.SnapshotId, nil
+}
+
 // MakeSnapshot - Returns the layer snapshot identifier.
 // layerId - The id of the layer.
 // Returns -  snapshotId - The id of the layer snapshot.
 func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["layerId"] = layerId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: paramRequest})
+	var v LayerTreeMakeSnapshotParams
+	v.LayerId = layerId
+	return c.MakeSnapshotWithParams(&v)
+}
+
+type LayerTreeLoadSnapshotParams struct {
+	// An array of tiles composing the snapshot.
+	Tiles []*LayerTreePictureTile `json:"tiles"`
+}
+
+// LoadSnapshotWithParams - Returns the snapshot identifier.
+// Returns -  snapshotId - The id of the snapshot.
+func (c *LayerTree) LoadSnapshotWithParams(v *LayerTreeLoadSnapshotParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -151,58 +210,44 @@ func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
 // tiles - An array of tiles composing the snapshot.
 // Returns -  snapshotId - The id of the snapshot.
 func (c *LayerTree) LoadSnapshot(tiles []*LayerTreePictureTile) (string, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["tiles"] = tiles
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot", Params: paramRequest})
-	if err != nil {
-		return "", err
-	}
+	var v LayerTreeLoadSnapshotParams
+	v.Tiles = tiles
+	return c.LoadSnapshotWithParams(&v)
+}
 
-	var chromeData struct {
-		Result struct {
-			SnapshotId string
-		}
-	}
+type LayerTreeReleaseSnapshotParams struct {
+	// The id of the layer snapshot.
+	SnapshotId string `json:"snapshotId"`
+}
 
-	if resp == nil {
-		return "", &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
-	}
-
-	return chromeData.Result.SnapshotId, nil
+// ReleaseSnapshotWithParams - Releases layer snapshot captured by the back-end.
+func (c *LayerTree) ReleaseSnapshotWithParams(v *LayerTreeReleaseSnapshotParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.releaseSnapshot", Params: v})
 }
 
 // ReleaseSnapshot - Releases layer snapshot captured by the back-end.
 // snapshotId - The id of the layer snapshot.
 func (c *LayerTree) ReleaseSnapshot(snapshotId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["snapshotId"] = snapshotId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.releaseSnapshot", Params: paramRequest})
+	var v LayerTreeReleaseSnapshotParams
+	v.SnapshotId = snapshotId
+	return c.ReleaseSnapshotWithParams(&v)
 }
 
-// ProfileSnapshot -
-// snapshotId - The id of the layer snapshot.
-// minRepeatCount - The maximum number of times to replay the snapshot (1, if not specified).
-// minDuration - The minimum duration (in seconds) to replay the snapshot.
-// clipRect - The clip rectangle to apply when replaying the snapshot.
+type LayerTreeProfileSnapshotParams struct {
+	// The id of the layer snapshot.
+	SnapshotId string `json:"snapshotId"`
+	// The maximum number of times to replay the snapshot (1, if not specified).
+	MinRepeatCount int `json:"minRepeatCount,omitempty"`
+	// The minimum duration (in seconds) to replay the snapshot.
+	MinDuration float64 `json:"minDuration,omitempty"`
+	// The clip rectangle to apply when replaying the snapshot.
+	ClipRect *DOMRect `json:"clipRect,omitempty"`
+}
+
+// ProfileSnapshotWithParams -
 // Returns -  timings - The array of paint profiles, one per run.
-func (c *LayerTree) ProfileSnapshot(snapshotId string, minRepeatCount int, minDuration float64, clipRect *DOMRect) ([]float64, error) {
-	paramRequest := make(map[string]interface{}, 4)
-	paramRequest["snapshotId"] = snapshotId
-	paramRequest["minRepeatCount"] = minRepeatCount
-	paramRequest["minDuration"] = minDuration
-	paramRequest["clipRect"] = clipRect
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot", Params: paramRequest})
+func (c *LayerTree) ProfileSnapshotWithParams(v *LayerTreeProfileSnapshotParams) ([]float64, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -231,19 +276,36 @@ func (c *LayerTree) ProfileSnapshot(snapshotId string, minRepeatCount int, minDu
 	return chromeData.Result.Timings, nil
 }
 
-// ReplaySnapshot - Replays the layer snapshot and returns the resulting bitmap.
+// ProfileSnapshot -
 // snapshotId - The id of the layer snapshot.
-// fromStep - The first step to replay from (replay from the very start if not specified).
-// toStep - The last step to replay to (replay till the end if not specified).
-// scale - The scale to apply while replaying (defaults to 1).
+// minRepeatCount - The maximum number of times to replay the snapshot (1, if not specified).
+// minDuration - The minimum duration (in seconds) to replay the snapshot.
+// clipRect - The clip rectangle to apply when replaying the snapshot.
+// Returns -  timings - The array of paint profiles, one per run.
+func (c *LayerTree) ProfileSnapshot(snapshotId string, minRepeatCount int, minDuration float64, clipRect *DOMRect) ([]float64, error) {
+	var v LayerTreeProfileSnapshotParams
+	v.SnapshotId = snapshotId
+	v.MinRepeatCount = minRepeatCount
+	v.MinDuration = minDuration
+	v.ClipRect = clipRect
+	return c.ProfileSnapshotWithParams(&v)
+}
+
+type LayerTreeReplaySnapshotParams struct {
+	// The id of the layer snapshot.
+	SnapshotId string `json:"snapshotId"`
+	// The first step to replay from (replay from the very start if not specified).
+	FromStep int `json:"fromStep,omitempty"`
+	// The last step to replay to (replay till the end if not specified).
+	ToStep int `json:"toStep,omitempty"`
+	// The scale to apply while replaying (defaults to 1).
+	Scale float64 `json:"scale,omitempty"`
+}
+
+// ReplaySnapshotWithParams - Replays the layer snapshot and returns the resulting bitmap.
 // Returns -  dataURL - A data: URL for resulting image.
-func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, scale float64) (string, error) {
-	paramRequest := make(map[string]interface{}, 4)
-	paramRequest["snapshotId"] = snapshotId
-	paramRequest["fromStep"] = fromStep
-	paramRequest["toStep"] = toStep
-	paramRequest["scale"] = scale
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.replaySnapshot", Params: paramRequest})
+func (c *LayerTree) ReplaySnapshotWithParams(v *LayerTreeReplaySnapshotParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.replaySnapshot", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -272,13 +334,30 @@ func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, 
 	return chromeData.Result.DataURL, nil
 }
 
-// SnapshotCommandLog - Replays the layer snapshot and returns canvas log.
+// ReplaySnapshot - Replays the layer snapshot and returns the resulting bitmap.
 // snapshotId - The id of the layer snapshot.
+// fromStep - The first step to replay from (replay from the very start if not specified).
+// toStep - The last step to replay to (replay till the end if not specified).
+// scale - The scale to apply while replaying (defaults to 1).
+// Returns -  dataURL - A data: URL for resulting image.
+func (c *LayerTree) ReplaySnapshot(snapshotId string, fromStep int, toStep int, scale float64) (string, error) {
+	var v LayerTreeReplaySnapshotParams
+	v.SnapshotId = snapshotId
+	v.FromStep = fromStep
+	v.ToStep = toStep
+	v.Scale = scale
+	return c.ReplaySnapshotWithParams(&v)
+}
+
+type LayerTreeSnapshotCommandLogParams struct {
+	// The id of the layer snapshot.
+	SnapshotId string `json:"snapshotId"`
+}
+
+// SnapshotCommandLogWithParams - Replays the layer snapshot and returns canvas log.
 // Returns -
-func (c *LayerTree) SnapshotCommandLog(snapshotId string) error {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["snapshotId"] = snapshotId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.snapshotCommandLog", Params: paramRequest})
+func (c *LayerTree) SnapshotCommandLogWithParams(v *LayerTreeSnapshotCommandLogParams) error {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.snapshotCommandLog", Params: v})
 	if err != nil {
 		return err
 	}
@@ -304,4 +383,13 @@ func (c *LayerTree) SnapshotCommandLog(snapshotId string) error {
 	}
 
 	return nil
+}
+
+// SnapshotCommandLog - Replays the layer snapshot and returns canvas log.
+// snapshotId - The id of the layer snapshot.
+// Returns -
+func (c *LayerTree) SnapshotCommandLog(snapshotId string) error {
+	var v LayerTreeSnapshotCommandLogParams
+	v.SnapshotId = snapshotId
+	return c.SnapshotCommandLogWithParams(&v)
 }

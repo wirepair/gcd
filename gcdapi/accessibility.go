@@ -66,15 +66,17 @@ func NewAccessibility(target gcdmessage.ChromeTargeter) *Accessibility {
 	return c
 }
 
-// GetPartialAXTree - Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
-// nodeId - ID of node to get the partial accessibility tree for.
-// fetchRelatives - Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+type AccessibilityGetPartialAXTreeParams struct {
+	// ID of node to get the partial accessibility tree for.
+	NodeId int `json:"nodeId"`
+	// Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+	FetchRelatives bool `json:"fetchRelatives,omitempty"`
+}
+
+// GetPartialAXTreeWithParams - Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
 // Returns -  nodes - The <code>Accessibility.AXNode</code> for this DOM node, if it exists, plus its ancestors, siblings and children, if requested.
-func (c *Accessibility) GetPartialAXTree(nodeId int, fetchRelatives bool) ([]*AccessibilityAXNode, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["nodeId"] = nodeId
-	paramRequest["fetchRelatives"] = fetchRelatives
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getPartialAXTree", Params: paramRequest})
+func (c *Accessibility) GetPartialAXTreeWithParams(v *AccessibilityGetPartialAXTreeParams) ([]*AccessibilityAXNode, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getPartialAXTree", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -101,4 +103,15 @@ func (c *Accessibility) GetPartialAXTree(nodeId int, fetchRelatives bool) ([]*Ac
 	}
 
 	return chromeData.Result.Nodes, nil
+}
+
+// GetPartialAXTree - Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
+// nodeId - ID of node to get the partial accessibility tree for.
+// fetchRelatives - Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+// Returns -  nodes - The <code>Accessibility.AXNode</code> for this DOM node, if it exists, plus its ancestors, siblings and children, if requested.
+func (c *Accessibility) GetPartialAXTree(nodeId int, fetchRelatives bool) ([]*AccessibilityAXNode, error) {
+	var v AccessibilityGetPartialAXTreeParams
+	v.NodeId = nodeId
+	v.FetchRelatives = fetchRelatives
+	return c.GetPartialAXTreeWithParams(&v)
 }

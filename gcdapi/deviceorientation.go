@@ -17,16 +17,30 @@ func NewDeviceOrientation(target gcdmessage.ChromeTargeter) *DeviceOrientation {
 	return c
 }
 
+type DeviceOrientationSetDeviceOrientationOverrideParams struct {
+	// Mock alpha
+	Alpha float64 `json:"alpha"`
+	// Mock beta
+	Beta float64 `json:"beta"`
+	// Mock gamma
+	Gamma float64 `json:"gamma"`
+}
+
+// SetDeviceOrientationOverrideWithParams - Overrides the Device Orientation.
+func (c *DeviceOrientation) SetDeviceOrientationOverrideWithParams(v *DeviceOrientationSetDeviceOrientationOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.setDeviceOrientationOverride", Params: v})
+}
+
 // SetDeviceOrientationOverride - Overrides the Device Orientation.
 // alpha - Mock alpha
 // beta - Mock beta
 // gamma - Mock gamma
 func (c *DeviceOrientation) SetDeviceOrientationOverride(alpha float64, beta float64, gamma float64) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["alpha"] = alpha
-	paramRequest["beta"] = beta
-	paramRequest["gamma"] = gamma
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.setDeviceOrientationOverride", Params: paramRequest})
+	var v DeviceOrientationSetDeviceOrientationOverrideParams
+	v.Alpha = alpha
+	v.Beta = beta
+	v.Gamma = gamma
+	return c.SetDeviceOrientationOverrideWithParams(&v)
 }
 
 // Clears the overridden Device Orientation.

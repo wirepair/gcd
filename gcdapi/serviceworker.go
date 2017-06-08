@@ -81,60 +81,144 @@ func (c *ServiceWorker) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.disable"})
 }
 
+type ServiceWorkerUnregisterParams struct {
+	//
+	ScopeURL string `json:"scopeURL"`
+}
+
+// UnregisterWithParams -
+func (c *ServiceWorker) UnregisterWithParams(v *ServiceWorkerUnregisterParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.unregister", Params: v})
+}
+
 // Unregister -
 // scopeURL -
 func (c *ServiceWorker) Unregister(scopeURL string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["scopeURL"] = scopeURL
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.unregister", Params: paramRequest})
+	var v ServiceWorkerUnregisterParams
+	v.ScopeURL = scopeURL
+	return c.UnregisterWithParams(&v)
+}
+
+type ServiceWorkerUpdateRegistrationParams struct {
+	//
+	ScopeURL string `json:"scopeURL"`
+}
+
+// UpdateRegistrationWithParams -
+func (c *ServiceWorker) UpdateRegistrationWithParams(v *ServiceWorkerUpdateRegistrationParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.updateRegistration", Params: v})
 }
 
 // UpdateRegistration -
 // scopeURL -
 func (c *ServiceWorker) UpdateRegistration(scopeURL string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["scopeURL"] = scopeURL
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.updateRegistration", Params: paramRequest})
+	var v ServiceWorkerUpdateRegistrationParams
+	v.ScopeURL = scopeURL
+	return c.UpdateRegistrationWithParams(&v)
+}
+
+type ServiceWorkerStartWorkerParams struct {
+	//
+	ScopeURL string `json:"scopeURL"`
+}
+
+// StartWorkerWithParams -
+func (c *ServiceWorker) StartWorkerWithParams(v *ServiceWorkerStartWorkerParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.startWorker", Params: v})
 }
 
 // StartWorker -
 // scopeURL -
 func (c *ServiceWorker) StartWorker(scopeURL string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["scopeURL"] = scopeURL
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.startWorker", Params: paramRequest})
+	var v ServiceWorkerStartWorkerParams
+	v.ScopeURL = scopeURL
+	return c.StartWorkerWithParams(&v)
+}
+
+type ServiceWorkerSkipWaitingParams struct {
+	//
+	ScopeURL string `json:"scopeURL"`
+}
+
+// SkipWaitingWithParams -
+func (c *ServiceWorker) SkipWaitingWithParams(v *ServiceWorkerSkipWaitingParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.skipWaiting", Params: v})
 }
 
 // SkipWaiting -
 // scopeURL -
 func (c *ServiceWorker) SkipWaiting(scopeURL string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["scopeURL"] = scopeURL
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.skipWaiting", Params: paramRequest})
+	var v ServiceWorkerSkipWaitingParams
+	v.ScopeURL = scopeURL
+	return c.SkipWaitingWithParams(&v)
+}
+
+type ServiceWorkerStopWorkerParams struct {
+	//
+	VersionId string `json:"versionId"`
+}
+
+// StopWorkerWithParams -
+func (c *ServiceWorker) StopWorkerWithParams(v *ServiceWorkerStopWorkerParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stopWorker", Params: v})
 }
 
 // StopWorker -
 // versionId -
 func (c *ServiceWorker) StopWorker(versionId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["versionId"] = versionId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stopWorker", Params: paramRequest})
+	var v ServiceWorkerStopWorkerParams
+	v.VersionId = versionId
+	return c.StopWorkerWithParams(&v)
+}
+
+type ServiceWorkerInspectWorkerParams struct {
+	//
+	VersionId string `json:"versionId"`
+}
+
+// InspectWorkerWithParams -
+func (c *ServiceWorker) InspectWorkerWithParams(v *ServiceWorkerInspectWorkerParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.inspectWorker", Params: v})
 }
 
 // InspectWorker -
 // versionId -
 func (c *ServiceWorker) InspectWorker(versionId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["versionId"] = versionId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.inspectWorker", Params: paramRequest})
+	var v ServiceWorkerInspectWorkerParams
+	v.VersionId = versionId
+	return c.InspectWorkerWithParams(&v)
+}
+
+type ServiceWorkerSetForceUpdateOnPageLoadParams struct {
+	//
+	ForceUpdateOnPageLoad bool `json:"forceUpdateOnPageLoad"`
+}
+
+// SetForceUpdateOnPageLoadWithParams -
+func (c *ServiceWorker) SetForceUpdateOnPageLoadWithParams(v *ServiceWorkerSetForceUpdateOnPageLoadParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.setForceUpdateOnPageLoad", Params: v})
 }
 
 // SetForceUpdateOnPageLoad -
 // forceUpdateOnPageLoad -
 func (c *ServiceWorker) SetForceUpdateOnPageLoad(forceUpdateOnPageLoad bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["forceUpdateOnPageLoad"] = forceUpdateOnPageLoad
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.setForceUpdateOnPageLoad", Params: paramRequest})
+	var v ServiceWorkerSetForceUpdateOnPageLoadParams
+	v.ForceUpdateOnPageLoad = forceUpdateOnPageLoad
+	return c.SetForceUpdateOnPageLoadWithParams(&v)
+}
+
+type ServiceWorkerDeliverPushMessageParams struct {
+	//
+	Origin string `json:"origin"`
+	//
+	RegistrationId string `json:"registrationId"`
+	//
+	Data string `json:"data"`
+}
+
+// DeliverPushMessageWithParams -
+func (c *ServiceWorker) DeliverPushMessageWithParams(v *ServiceWorkerDeliverPushMessageParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.deliverPushMessage", Params: v})
 }
 
 // DeliverPushMessage -
@@ -142,11 +226,27 @@ func (c *ServiceWorker) SetForceUpdateOnPageLoad(forceUpdateOnPageLoad bool) (*g
 // registrationId -
 // data -
 func (c *ServiceWorker) DeliverPushMessage(origin string, registrationId string, data string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["origin"] = origin
-	paramRequest["registrationId"] = registrationId
-	paramRequest["data"] = data
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.deliverPushMessage", Params: paramRequest})
+	var v ServiceWorkerDeliverPushMessageParams
+	v.Origin = origin
+	v.RegistrationId = registrationId
+	v.Data = data
+	return c.DeliverPushMessageWithParams(&v)
+}
+
+type ServiceWorkerDispatchSyncEventParams struct {
+	//
+	Origin string `json:"origin"`
+	//
+	RegistrationId string `json:"registrationId"`
+	//
+	Tag string `json:"tag"`
+	//
+	LastChance bool `json:"lastChance"`
+}
+
+// DispatchSyncEventWithParams -
+func (c *ServiceWorker) DispatchSyncEventWithParams(v *ServiceWorkerDispatchSyncEventParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.dispatchSyncEvent", Params: v})
 }
 
 // DispatchSyncEvent -
@@ -155,10 +255,10 @@ func (c *ServiceWorker) DeliverPushMessage(origin string, registrationId string,
 // tag -
 // lastChance -
 func (c *ServiceWorker) DispatchSyncEvent(origin string, registrationId string, tag string, lastChance bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 4)
-	paramRequest["origin"] = origin
-	paramRequest["registrationId"] = registrationId
-	paramRequest["tag"] = tag
-	paramRequest["lastChance"] = lastChance
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.dispatchSyncEvent", Params: paramRequest})
+	var v ServiceWorkerDispatchSyncEventParams
+	v.Origin = origin
+	v.RegistrationId = registrationId
+	v.Tag = tag
+	v.LastChance = lastChance
+	return c.DispatchSyncEventWithParams(&v)
 }

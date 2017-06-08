@@ -52,18 +52,38 @@ func (c *Memory) GetDOMCounters() (int, int, int, error) {
 	return chromeData.Result.Documents, chromeData.Result.Nodes, chromeData.Result.JsEventListeners, nil
 }
 
+type MemorySetPressureNotificationsSuppressedParams struct {
+	// If true, memory pressure notifications will be suppressed.
+	Suppressed bool `json:"suppressed"`
+}
+
+// SetPressureNotificationsSuppressedWithParams - Enable/disable suppressing memory pressure notifications in all processes.
+func (c *Memory) SetPressureNotificationsSuppressedWithParams(v *MemorySetPressureNotificationsSuppressedParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.setPressureNotificationsSuppressed", Params: v})
+}
+
 // SetPressureNotificationsSuppressed - Enable/disable suppressing memory pressure notifications in all processes.
 // suppressed - If true, memory pressure notifications will be suppressed.
 func (c *Memory) SetPressureNotificationsSuppressed(suppressed bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["suppressed"] = suppressed
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.setPressureNotificationsSuppressed", Params: paramRequest})
+	var v MemorySetPressureNotificationsSuppressedParams
+	v.Suppressed = suppressed
+	return c.SetPressureNotificationsSuppressedWithParams(&v)
+}
+
+type MemorySimulatePressureNotificationParams struct {
+	// Memory pressure level of the notification. enum values: moderate, critical
+	Level string `json:"level"`
+}
+
+// SimulatePressureNotificationWithParams - Simulate a memory pressure notification in all processes.
+func (c *Memory) SimulatePressureNotificationWithParams(v *MemorySimulatePressureNotificationParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.simulatePressureNotification", Params: v})
 }
 
 // SimulatePressureNotification - Simulate a memory pressure notification in all processes.
 // level - Memory pressure level of the notification. enum values: moderate, critical
 func (c *Memory) SimulatePressureNotification(level string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["level"] = level
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.simulatePressureNotification", Params: paramRequest})
+	var v MemorySimulatePressureNotificationParams
+	v.Level = level
+	return c.SimulatePressureNotificationWithParams(&v)
 }

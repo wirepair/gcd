@@ -48,6 +48,24 @@ func NewTracing(target gcdmessage.ChromeTargeter) *Tracing {
 	return c
 }
 
+type TracingStartParams struct {
+	// Category/tag filter
+	Categories string `json:"categories,omitempty"`
+	// Tracing options
+	Options string `json:"options,omitempty"`
+	// If set, the agent will issue bufferUsage events at this interval, specified in milliseconds
+	BufferUsageReportingInterval float64 `json:"bufferUsageReportingInterval,omitempty"`
+	// Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to <code>ReportEvents</code>).
+	TransferMode string `json:"transferMode,omitempty"`
+	//
+	TraceConfig *TracingTraceConfig `json:"traceConfig,omitempty"`
+}
+
+// StartWithParams - Start trace events collection.
+func (c *Tracing) StartWithParams(v *TracingStartParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.start", Params: v})
+}
+
 // Start - Start trace events collection.
 // categories - Category/tag filter
 // options - Tracing options
@@ -55,13 +73,13 @@ func NewTracing(target gcdmessage.ChromeTargeter) *Tracing {
 // transferMode - Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to <code>ReportEvents</code>).
 // traceConfig -
 func (c *Tracing) Start(categories string, options string, bufferUsageReportingInterval float64, transferMode string, traceConfig *TracingTraceConfig) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 5)
-	paramRequest["categories"] = categories
-	paramRequest["options"] = options
-	paramRequest["bufferUsageReportingInterval"] = bufferUsageReportingInterval
-	paramRequest["transferMode"] = transferMode
-	paramRequest["traceConfig"] = traceConfig
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.start", Params: paramRequest})
+	var v TracingStartParams
+	v.Categories = categories
+	v.Options = options
+	v.BufferUsageReportingInterval = bufferUsageReportingInterval
+	v.TransferMode = transferMode
+	v.TraceConfig = traceConfig
+	return c.StartWithParams(&v)
 }
 
 // Stop trace events collection.
@@ -134,10 +152,20 @@ func (c *Tracing) RequestMemoryDump() (string, bool, error) {
 	return chromeData.Result.DumpGuid, chromeData.Result.Success, nil
 }
 
+type TracingRecordClockSyncMarkerParams struct {
+	// The ID of this clock sync marker
+	SyncId string `json:"syncId"`
+}
+
+// RecordClockSyncMarkerWithParams - Record a clock sync marker in the trace.
+func (c *Tracing) RecordClockSyncMarkerWithParams(v *TracingRecordClockSyncMarkerParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.recordClockSyncMarker", Params: v})
+}
+
 // RecordClockSyncMarker - Record a clock sync marker in the trace.
 // syncId - The ID of this clock sync marker
 func (c *Tracing) RecordClockSyncMarker(syncId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["syncId"] = syncId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.recordClockSyncMarker", Params: paramRequest})
+	var v TracingRecordClockSyncMarkerParams
+	v.SyncId = syncId
+	return c.RecordClockSyncMarkerWithParams(&v)
 }

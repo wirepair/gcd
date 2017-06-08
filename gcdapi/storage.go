@@ -17,12 +17,24 @@ func NewStorage(target gcdmessage.ChromeTargeter) *Storage {
 	return c
 }
 
+type StorageClearDataForOriginParams struct {
+	// Security origin.
+	Origin string `json:"origin"`
+	// Comma separated origin names.
+	StorageTypes string `json:"storageTypes"`
+}
+
+// ClearDataForOriginWithParams - Clears storage for origin.
+func (c *Storage) ClearDataForOriginWithParams(v *StorageClearDataForOriginParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearDataForOrigin", Params: v})
+}
+
 // ClearDataForOrigin - Clears storage for origin.
 // origin - Security origin.
 // storageTypes - Comma separated origin names.
 func (c *Storage) ClearDataForOrigin(origin string, storageTypes string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["origin"] = origin
-	paramRequest["storageTypes"] = storageTypes
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearDataForOrigin", Params: paramRequest})
+	var v StorageClearDataForOriginParams
+	v.Origin = origin
+	v.StorageTypes = storageTypes
+	return c.ClearDataForOriginWithParams(&v)
 }

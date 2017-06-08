@@ -72,21 +72,33 @@ func (c *DOMStorage) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.disable"})
 }
 
+type DOMStorageClearParams struct {
+	//
+	StorageId *DOMStorageStorageId `json:"storageId"`
+}
+
+// ClearWithParams -
+func (c *DOMStorage) ClearWithParams(v *DOMStorageClearParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.clear", Params: v})
+}
+
 // Clear -
 // storageId -
 func (c *DOMStorage) Clear(storageId *DOMStorageStorageId) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["storageId"] = storageId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.clear", Params: paramRequest})
+	var v DOMStorageClearParams
+	v.StorageId = storageId
+	return c.ClearWithParams(&v)
 }
 
-// GetDOMStorageItems -
-// storageId -
+type DOMStorageGetDOMStorageItemsParams struct {
+	//
+	StorageId *DOMStorageStorageId `json:"storageId"`
+}
+
+// GetDOMStorageItemsWithParams -
 // Returns -  entries -
-func (c *DOMStorage) GetDOMStorageItems(storageId *DOMStorageStorageId) ([]string, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["storageId"] = storageId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems", Params: paramRequest})
+func (c *DOMStorage) GetDOMStorageItemsWithParams(v *DOMStorageGetDOMStorageItemsParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -115,24 +127,59 @@ func (c *DOMStorage) GetDOMStorageItems(storageId *DOMStorageStorageId) ([]strin
 	return chromeData.Result.Entries, nil
 }
 
+// GetDOMStorageItems -
+// storageId -
+// Returns -  entries -
+func (c *DOMStorage) GetDOMStorageItems(storageId *DOMStorageStorageId) ([]string, error) {
+	var v DOMStorageGetDOMStorageItemsParams
+	v.StorageId = storageId
+	return c.GetDOMStorageItemsWithParams(&v)
+}
+
+type DOMStorageSetDOMStorageItemParams struct {
+	//
+	StorageId *DOMStorageStorageId `json:"storageId"`
+	//
+	Key string `json:"key"`
+	//
+	Value string `json:"value"`
+}
+
+// SetDOMStorageItemWithParams -
+func (c *DOMStorage) SetDOMStorageItemWithParams(v *DOMStorageSetDOMStorageItemParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.setDOMStorageItem", Params: v})
+}
+
 // SetDOMStorageItem -
 // storageId -
 // key -
 // value -
 func (c *DOMStorage) SetDOMStorageItem(storageId *DOMStorageStorageId, key string, value string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 3)
-	paramRequest["storageId"] = storageId
-	paramRequest["key"] = key
-	paramRequest["value"] = value
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.setDOMStorageItem", Params: paramRequest})
+	var v DOMStorageSetDOMStorageItemParams
+	v.StorageId = storageId
+	v.Key = key
+	v.Value = value
+	return c.SetDOMStorageItemWithParams(&v)
+}
+
+type DOMStorageRemoveDOMStorageItemParams struct {
+	//
+	StorageId *DOMStorageStorageId `json:"storageId"`
+	//
+	Key string `json:"key"`
+}
+
+// RemoveDOMStorageItemWithParams -
+func (c *DOMStorage) RemoveDOMStorageItemWithParams(v *DOMStorageRemoveDOMStorageItemParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.removeDOMStorageItem", Params: v})
 }
 
 // RemoveDOMStorageItem -
 // storageId -
 // key -
 func (c *DOMStorage) RemoveDOMStorageItem(storageId *DOMStorageStorageId, key string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["storageId"] = storageId
-	paramRequest["key"] = key
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.removeDOMStorageItem", Params: paramRequest})
+	var v DOMStorageRemoveDOMStorageItemParams
+	v.StorageId = storageId
+	v.Key = key
+	return c.RemoveDOMStorageItemWithParams(&v)
 }

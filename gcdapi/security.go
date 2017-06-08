@@ -73,20 +73,42 @@ func (c *Security) ShowCertificateViewer() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.showCertificateViewer"})
 }
 
+type SecurityHandleCertificateErrorParams struct {
+	// The ID of the event.
+	EventId int `json:"eventId"`
+	// The action to take on the certificate error. enum values: continue, cancel
+	Action string `json:"action"`
+}
+
+// HandleCertificateErrorWithParams - Handles a certificate error that fired a certificateError event.
+func (c *Security) HandleCertificateErrorWithParams(v *SecurityHandleCertificateErrorParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.handleCertificateError", Params: v})
+}
+
 // HandleCertificateError - Handles a certificate error that fired a certificateError event.
 // eventId - The ID of the event.
 // action - The action to take on the certificate error. enum values: continue, cancel
 func (c *Security) HandleCertificateError(eventId int, action string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["eventId"] = eventId
-	paramRequest["action"] = action
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.handleCertificateError", Params: paramRequest})
+	var v SecurityHandleCertificateErrorParams
+	v.EventId = eventId
+	v.Action = action
+	return c.HandleCertificateErrorWithParams(&v)
+}
+
+type SecuritySetOverrideCertificateErrorsParams struct {
+	// If true, certificate errors will be overridden.
+	Override bool `json:"override"`
+}
+
+// SetOverrideCertificateErrorsWithParams - Enable/disable overriding certificate errors. If enabled, all certificate error events need to be handled by the DevTools client and should be answered with handleCertificateError commands.
+func (c *Security) SetOverrideCertificateErrorsWithParams(v *SecuritySetOverrideCertificateErrorsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.setOverrideCertificateErrors", Params: v})
 }
 
 // SetOverrideCertificateErrors - Enable/disable overriding certificate errors. If enabled, all certificate error events need to be handled by the DevTools client and should be answered with handleCertificateError commands.
 // override - If true, certificate errors will be overridden.
 func (c *Security) SetOverrideCertificateErrors(override bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["override"] = override
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.setOverrideCertificateErrors", Params: paramRequest})
+	var v SecuritySetOverrideCertificateErrorsParams
+	v.Override = override
+	return c.SetOverrideCertificateErrorsWithParams(&v)
 }

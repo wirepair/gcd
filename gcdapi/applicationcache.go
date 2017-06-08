@@ -96,13 +96,15 @@ func (c *ApplicationCache) Enable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.enable"})
 }
 
-// GetManifestForFrame - Returns manifest URL for document in the given frame.
-// frameId - Identifier of the frame containing document whose manifest is retrieved.
+type ApplicationCacheGetManifestForFrameParams struct {
+	// Identifier of the frame containing document whose manifest is retrieved.
+	FrameId string `json:"frameId"`
+}
+
+// GetManifestForFrameWithParams - Returns manifest URL for document in the given frame.
 // Returns -  manifestURL - Manifest URL for document in the given frame.
-func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["frameId"] = frameId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getManifestForFrame", Params: paramRequest})
+func (c *ApplicationCache) GetManifestForFrameWithParams(v *ApplicationCacheGetManifestForFrameParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getManifestForFrame", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -131,13 +133,24 @@ func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
 	return chromeData.Result.ManifestURL, nil
 }
 
-// GetApplicationCacheForFrame - Returns relevant application cache data for the document in given frame.
-// frameId - Identifier of the frame containing document whose application cache is retrieved.
+// GetManifestForFrame - Returns manifest URL for document in the given frame.
+// frameId - Identifier of the frame containing document whose manifest is retrieved.
+// Returns -  manifestURL - Manifest URL for document in the given frame.
+func (c *ApplicationCache) GetManifestForFrame(frameId string) (string, error) {
+	var v ApplicationCacheGetManifestForFrameParams
+	v.FrameId = frameId
+	return c.GetManifestForFrameWithParams(&v)
+}
+
+type ApplicationCacheGetApplicationCacheForFrameParams struct {
+	// Identifier of the frame containing document whose application cache is retrieved.
+	FrameId string `json:"frameId"`
+}
+
+// GetApplicationCacheForFrameWithParams - Returns relevant application cache data for the document in given frame.
 // Returns -  applicationCache - Relevant application cache data for the document in given frame.
-func (c *ApplicationCache) GetApplicationCacheForFrame(frameId string) (*ApplicationCacheApplicationCache, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["frameId"] = frameId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getApplicationCacheForFrame", Params: paramRequest})
+func (c *ApplicationCache) GetApplicationCacheForFrameWithParams(v *ApplicationCacheGetApplicationCacheForFrameParams) (*ApplicationCacheApplicationCache, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getApplicationCacheForFrame", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -164,4 +177,13 @@ func (c *ApplicationCache) GetApplicationCacheForFrame(frameId string) (*Applica
 	}
 
 	return chromeData.Result.ApplicationCache, nil
+}
+
+// GetApplicationCacheForFrame - Returns relevant application cache data for the document in given frame.
+// frameId - Identifier of the frame containing document whose application cache is retrieved.
+// Returns -  applicationCache - Relevant application cache data for the document in given frame.
+func (c *ApplicationCache) GetApplicationCacheForFrame(frameId string) (*ApplicationCacheApplicationCache, error) {
+	var v ApplicationCacheGetApplicationCacheForFrameParams
+	v.FrameId = frameId
+	return c.GetApplicationCacheForFrameWithParams(&v)
 }

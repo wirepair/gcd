@@ -317,14 +317,26 @@ func NewNetwork(target gcdmessage.ChromeTargeter) *Network {
 	return c
 }
 
+type NetworkEnableParams struct {
+	// Buffer size in bytes to use when preserving network payloads (XHRs, etc).
+	MaxTotalBufferSize int `json:"maxTotalBufferSize,omitempty"`
+	// Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
+	MaxResourceBufferSize int `json:"maxResourceBufferSize,omitempty"`
+}
+
+// EnableWithParams - Enables network tracking, network events will now be delivered to the client.
+func (c *Network) EnableWithParams(v *NetworkEnableParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.enable", Params: v})
+}
+
 // Enable - Enables network tracking, network events will now be delivered to the client.
 // maxTotalBufferSize - Buffer size in bytes to use when preserving network payloads (XHRs, etc).
 // maxResourceBufferSize - Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
 func (c *Network) Enable(maxTotalBufferSize int, maxResourceBufferSize int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["maxTotalBufferSize"] = maxTotalBufferSize
-	paramRequest["maxResourceBufferSize"] = maxResourceBufferSize
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.enable", Params: paramRequest})
+	var v NetworkEnableParams
+	v.MaxTotalBufferSize = maxTotalBufferSize
+	v.MaxResourceBufferSize = maxResourceBufferSize
+	return c.EnableWithParams(&v)
 }
 
 // Disables network tracking, prevents network events from being sent to the client.
@@ -332,29 +344,51 @@ func (c *Network) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.disable"})
 }
 
+type NetworkSetUserAgentOverrideParams struct {
+	// User agent to use.
+	UserAgent string `json:"userAgent"`
+}
+
+// SetUserAgentOverrideWithParams - Allows overriding user agent with the given string.
+func (c *Network) SetUserAgentOverrideWithParams(v *NetworkSetUserAgentOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setUserAgentOverride", Params: v})
+}
+
 // SetUserAgentOverride - Allows overriding user agent with the given string.
 // userAgent - User agent to use.
 func (c *Network) SetUserAgentOverride(userAgent string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["userAgent"] = userAgent
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setUserAgentOverride", Params: paramRequest})
+	var v NetworkSetUserAgentOverrideParams
+	v.UserAgent = userAgent
+	return c.SetUserAgentOverrideWithParams(&v)
+}
+
+type NetworkSetExtraHTTPHeadersParams struct {
+	// Map with extra HTTP headers.
+	Headers map[string]interface{} `json:"headers"`
+}
+
+// SetExtraHTTPHeadersWithParams - Specifies whether to always send extra HTTP headers with the requests from this page.
+func (c *Network) SetExtraHTTPHeadersWithParams(v *NetworkSetExtraHTTPHeadersParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setExtraHTTPHeaders", Params: v})
 }
 
 // SetExtraHTTPHeaders - Specifies whether to always send extra HTTP headers with the requests from this page.
 // headers - Map with extra HTTP headers.
 func (c *Network) SetExtraHTTPHeaders(headers map[string]interface{}) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["headers"] = headers
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setExtraHTTPHeaders", Params: paramRequest})
+	var v NetworkSetExtraHTTPHeadersParams
+	v.Headers = headers
+	return c.SetExtraHTTPHeadersWithParams(&v)
 }
 
-// GetResponseBody - Returns content served for the given request.
-// requestId - Identifier of the network request to get content for.
+type NetworkGetResponseBodyParams struct {
+	// Identifier of the network request to get content for.
+	RequestId string `json:"requestId"`
+}
+
+// GetResponseBodyWithParams - Returns content served for the given request.
 // Returns -  body - Response body. base64Encoded - True, if content was sent as base64.
-func (c *Network) GetResponseBody(requestId string) (string, bool, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["requestId"] = requestId
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getResponseBody", Params: paramRequest})
+func (c *Network) GetResponseBodyWithParams(v *NetworkGetResponseBodyParams) (string, bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getResponseBody", Params: v})
 	if err != nil {
 		return "", false, err
 	}
@@ -384,20 +418,49 @@ func (c *Network) GetResponseBody(requestId string) (string, bool, error) {
 	return chromeData.Result.Body, chromeData.Result.Base64Encoded, nil
 }
 
+// GetResponseBody - Returns content served for the given request.
+// requestId - Identifier of the network request to get content for.
+// Returns -  body - Response body. base64Encoded - True, if content was sent as base64.
+func (c *Network) GetResponseBody(requestId string) (string, bool, error) {
+	var v NetworkGetResponseBodyParams
+	v.RequestId = requestId
+	return c.GetResponseBodyWithParams(&v)
+}
+
+type NetworkSetBlockedURLsParams struct {
+	// URL patterns to block. Wildcards ('*') are allowed.
+	Urls []string `json:"urls"`
+}
+
+// SetBlockedURLsWithParams - Blocks URLs from loading.
+func (c *Network) SetBlockedURLsWithParams(v *NetworkSetBlockedURLsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBlockedURLs", Params: v})
+}
+
 // SetBlockedURLs - Blocks URLs from loading.
 // urls - URL patterns to block. Wildcards ('*') are allowed.
 func (c *Network) SetBlockedURLs(urls []string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["urls"] = urls
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBlockedURLs", Params: paramRequest})
+	var v NetworkSetBlockedURLsParams
+	v.Urls = urls
+	return c.SetBlockedURLsWithParams(&v)
+}
+
+type NetworkReplayXHRParams struct {
+	// Identifier of XHR to replay.
+	RequestId string `json:"requestId"`
+}
+
+// ReplayXHRWithParams - This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password.
+func (c *Network) ReplayXHRWithParams(v *NetworkReplayXHRParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.replayXHR", Params: v})
 }
 
 // ReplayXHR - This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password.
 // requestId - Identifier of XHR to replay.
 func (c *Network) ReplayXHR(requestId string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["requestId"] = requestId
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.replayXHR", Params: paramRequest})
+	var v NetworkReplayXHRParams
+	v.RequestId = requestId
+	return c.ReplayXHRWithParams(&v)
 }
 
 // CanClearBrowserCache - Tells whether clearing browser cache is supported.
@@ -474,13 +537,15 @@ func (c *Network) ClearBrowserCookies() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearBrowserCookies"})
 }
 
-// GetCookies - Returns all browser cookies for the current URL. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
-// urls - The list of URLs for which applicable cookies will be fetched
+type NetworkGetCookiesParams struct {
+	// The list of URLs for which applicable cookies will be fetched
+	Urls []string `json:"urls,omitempty"`
+}
+
+// GetCookiesWithParams - Returns all browser cookies for the current URL. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
 // Returns -  cookies - Array of cookie objects.
-func (c *Network) GetCookies(urls []string) ([]*NetworkCookie, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["urls"] = urls
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCookies", Params: paramRequest})
+func (c *Network) GetCookiesWithParams(v *NetworkGetCookiesParams) ([]*NetworkCookie, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCookies", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -507,6 +572,15 @@ func (c *Network) GetCookies(urls []string) ([]*NetworkCookie, error) {
 	}
 
 	return chromeData.Result.Cookies, nil
+}
+
+// GetCookies - Returns all browser cookies for the current URL. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
+// urls - The list of URLs for which applicable cookies will be fetched
+// Returns -  cookies - Array of cookie objects.
+func (c *Network) GetCookies(urls []string) ([]*NetworkCookie, error) {
+	var v NetworkGetCookiesParams
+	v.Urls = urls
+	return c.GetCookiesWithParams(&v)
 }
 
 // GetAllCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
@@ -541,39 +615,53 @@ func (c *Network) GetAllCookies() ([]*NetworkCookie, error) {
 	return chromeData.Result.Cookies, nil
 }
 
+type NetworkDeleteCookieParams struct {
+	// Name of the cookie to remove.
+	CookieName string `json:"cookieName"`
+	// URL to match cooke domain and path.
+	Url string `json:"url"`
+}
+
+// DeleteCookieWithParams - Deletes browser cookie with given name, domain and path.
+func (c *Network) DeleteCookieWithParams(v *NetworkDeleteCookieParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.deleteCookie", Params: v})
+}
+
 // DeleteCookie - Deletes browser cookie with given name, domain and path.
 // cookieName - Name of the cookie to remove.
 // url - URL to match cooke domain and path.
 func (c *Network) DeleteCookie(cookieName string, url string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["cookieName"] = cookieName
-	paramRequest["url"] = url
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.deleteCookie", Params: paramRequest})
+	var v NetworkDeleteCookieParams
+	v.CookieName = cookieName
+	v.Url = url
+	return c.DeleteCookieWithParams(&v)
 }
 
-// SetCookie - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
-// url - The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
-// name - The name of the cookie.
-// value - The value of the cookie.
-// domain - If omitted, the cookie becomes a host-only cookie.
-// path - Defaults to the path portion of the url parameter.
-// secure - Defaults ot false.
-// httpOnly - Defaults to false.
-// sameSite - Defaults to browser default behavior. enum values: Strict, Lax
-// expirationDate - If omitted, the cookie becomes a session cookie.
+type NetworkSetCookieParams struct {
+	// The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
+	Url string `json:"url"`
+	// The name of the cookie.
+	Name string `json:"name"`
+	// The value of the cookie.
+	Value string `json:"value"`
+	// If omitted, the cookie becomes a host-only cookie.
+	Domain string `json:"domain,omitempty"`
+	// Defaults to the path portion of the url parameter.
+	Path string `json:"path,omitempty"`
+	// Defaults ot false.
+	Secure bool `json:"secure,omitempty"`
+	// Defaults to false.
+	HttpOnly bool `json:"httpOnly,omitempty"`
+	// Defaults to browser default behavior. enum values: Strict, Lax
+	SameSite string `json:"sameSite,omitempty"`
+	// If omitted, the cookie becomes a session cookie.
+	ExpirationDate float64 `json:"expirationDate,omitempty"`
+}
+
+// SetCookieWithParams - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
 // Returns -  success - True if successfully set cookie.
-func (c *Network) SetCookie(url string, name string, value string, domain string, path string, secure bool, httpOnly bool, sameSite string, expirationDate float64) (bool, error) {
-	paramRequest := make(map[string]interface{}, 9)
-	paramRequest["url"] = url
-	paramRequest["name"] = name
-	paramRequest["value"] = value
-	paramRequest["domain"] = domain
-	paramRequest["path"] = path
-	paramRequest["secure"] = secure
-	paramRequest["httpOnly"] = httpOnly
-	paramRequest["sameSite"] = sameSite
-	paramRequest["expirationDate"] = expirationDate
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCookie", Params: paramRequest})
+func (c *Network) SetCookieWithParams(v *NetworkSetCookieParams) (bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCookie", Params: v})
 	if err != nil {
 		return false, err
 	}
@@ -600,6 +688,31 @@ func (c *Network) SetCookie(url string, name string, value string, domain string
 	}
 
 	return chromeData.Result.Success, nil
+}
+
+// SetCookie - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
+// url - The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
+// name - The name of the cookie.
+// value - The value of the cookie.
+// domain - If omitted, the cookie becomes a host-only cookie.
+// path - Defaults to the path portion of the url parameter.
+// secure - Defaults ot false.
+// httpOnly - Defaults to false.
+// sameSite - Defaults to browser default behavior. enum values: Strict, Lax
+// expirationDate - If omitted, the cookie becomes a session cookie.
+// Returns -  success - True if successfully set cookie.
+func (c *Network) SetCookie(url string, name string, value string, domain string, path string, secure bool, httpOnly bool, sameSite string, expirationDate float64) (bool, error) {
+	var v NetworkSetCookieParams
+	v.Url = url
+	v.Name = name
+	v.Value = value
+	v.Domain = domain
+	v.Path = path
+	v.Secure = secure
+	v.HttpOnly = httpOnly
+	v.SameSite = sameSite
+	v.ExpirationDate = expirationDate
+	return c.SetCookieWithParams(&v)
 }
 
 // CanEmulateNetworkConditions - Tells whether emulation of network conditions is supported.
@@ -634,6 +747,24 @@ func (c *Network) CanEmulateNetworkConditions() (bool, error) {
 	return chromeData.Result.Result, nil
 }
 
+type NetworkEmulateNetworkConditionsParams struct {
+	// True to emulate internet disconnection.
+	Offline bool `json:"offline"`
+	// Additional latency (ms).
+	Latency float64 `json:"latency"`
+	// Maximal aggregated download throughput.
+	DownloadThroughput float64 `json:"downloadThroughput"`
+	// Maximal aggregated upload throughput.
+	UploadThroughput float64 `json:"uploadThroughput"`
+	// Connection type if known. enum values: none, cellular2g, cellular3g, cellular4g, bluetooth, ethernet, wifi, wimax, other
+	ConnectionType string `json:"connectionType,omitempty"`
+}
+
+// EmulateNetworkConditionsWithParams - Activates emulation of network conditions.
+func (c *Network) EmulateNetworkConditionsWithParams(v *NetworkEmulateNetworkConditionsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.emulateNetworkConditions", Params: v})
+}
+
 // EmulateNetworkConditions - Activates emulation of network conditions.
 // offline - True to emulate internet disconnection.
 // latency - Additional latency (ms).
@@ -641,48 +772,82 @@ func (c *Network) CanEmulateNetworkConditions() (bool, error) {
 // uploadThroughput - Maximal aggregated upload throughput.
 // connectionType - Connection type if known. enum values: none, cellular2g, cellular3g, cellular4g, bluetooth, ethernet, wifi, wimax, other
 func (c *Network) EmulateNetworkConditions(offline bool, latency float64, downloadThroughput float64, uploadThroughput float64, connectionType string) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 5)
-	paramRequest["offline"] = offline
-	paramRequest["latency"] = latency
-	paramRequest["downloadThroughput"] = downloadThroughput
-	paramRequest["uploadThroughput"] = uploadThroughput
-	paramRequest["connectionType"] = connectionType
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.emulateNetworkConditions", Params: paramRequest})
+	var v NetworkEmulateNetworkConditionsParams
+	v.Offline = offline
+	v.Latency = latency
+	v.DownloadThroughput = downloadThroughput
+	v.UploadThroughput = uploadThroughput
+	v.ConnectionType = connectionType
+	return c.EmulateNetworkConditionsWithParams(&v)
+}
+
+type NetworkSetCacheDisabledParams struct {
+	// Cache disabled state.
+	CacheDisabled bool `json:"cacheDisabled"`
+}
+
+// SetCacheDisabledWithParams - Toggles ignoring cache for each request. If <code>true</code>, cache will not be used.
+func (c *Network) SetCacheDisabledWithParams(v *NetworkSetCacheDisabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCacheDisabled", Params: v})
 }
 
 // SetCacheDisabled - Toggles ignoring cache for each request. If <code>true</code>, cache will not be used.
 // cacheDisabled - Cache disabled state.
 func (c *Network) SetCacheDisabled(cacheDisabled bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["cacheDisabled"] = cacheDisabled
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCacheDisabled", Params: paramRequest})
+	var v NetworkSetCacheDisabledParams
+	v.CacheDisabled = cacheDisabled
+	return c.SetCacheDisabledWithParams(&v)
+}
+
+type NetworkSetBypassServiceWorkerParams struct {
+	// Bypass service worker and load from network.
+	Bypass bool `json:"bypass"`
+}
+
+// SetBypassServiceWorkerWithParams - Toggles ignoring of service worker for each request.
+func (c *Network) SetBypassServiceWorkerWithParams(v *NetworkSetBypassServiceWorkerParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBypassServiceWorker", Params: v})
 }
 
 // SetBypassServiceWorker - Toggles ignoring of service worker for each request.
 // bypass - Bypass service worker and load from network.
 func (c *Network) SetBypassServiceWorker(bypass bool) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["bypass"] = bypass
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBypassServiceWorker", Params: paramRequest})
+	var v NetworkSetBypassServiceWorkerParams
+	v.Bypass = bypass
+	return c.SetBypassServiceWorkerWithParams(&v)
+}
+
+type NetworkSetDataSizeLimitsForTestParams struct {
+	// Maximum total buffer size.
+	MaxTotalSize int `json:"maxTotalSize"`
+	// Maximum per-resource size.
+	MaxResourceSize int `json:"maxResourceSize"`
+}
+
+// SetDataSizeLimitsForTestWithParams - For testing.
+func (c *Network) SetDataSizeLimitsForTestWithParams(v *NetworkSetDataSizeLimitsForTestParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setDataSizeLimitsForTest", Params: v})
 }
 
 // SetDataSizeLimitsForTest - For testing.
 // maxTotalSize - Maximum total buffer size.
 // maxResourceSize - Maximum per-resource size.
 func (c *Network) SetDataSizeLimitsForTest(maxTotalSize int, maxResourceSize int) (*gcdmessage.ChromeResponse, error) {
-	paramRequest := make(map[string]interface{}, 2)
-	paramRequest["maxTotalSize"] = maxTotalSize
-	paramRequest["maxResourceSize"] = maxResourceSize
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setDataSizeLimitsForTest", Params: paramRequest})
+	var v NetworkSetDataSizeLimitsForTestParams
+	v.MaxTotalSize = maxTotalSize
+	v.MaxResourceSize = maxResourceSize
+	return c.SetDataSizeLimitsForTestWithParams(&v)
 }
 
-// GetCertificate - Returns the DER-encoded certificate.
-// origin - Origin to get certificate for.
+type NetworkGetCertificateParams struct {
+	// Origin to get certificate for.
+	Origin string `json:"origin"`
+}
+
+// GetCertificateWithParams - Returns the DER-encoded certificate.
 // Returns -  tableNames -
-func (c *Network) GetCertificate(origin string) ([]string, error) {
-	paramRequest := make(map[string]interface{}, 1)
-	paramRequest["origin"] = origin
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCertificate", Params: paramRequest})
+func (c *Network) GetCertificateWithParams(v *NetworkGetCertificateParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCertificate", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -709,4 +874,13 @@ func (c *Network) GetCertificate(origin string) ([]string, error) {
 	}
 
 	return chromeData.Result.TableNames, nil
+}
+
+// GetCertificate - Returns the DER-encoded certificate.
+// origin - Origin to get certificate for.
+// Returns -  tableNames -
+func (c *Network) GetCertificate(origin string) ([]string, error) {
+	var v NetworkGetCertificateParams
+	v.Origin = origin
+	return c.GetCertificateWithParams(&v)
 }
