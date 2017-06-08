@@ -6,10 +6,22 @@ Because I'm lazy and there are hundereds of different custom types and API metho
 The [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) program was created to generate types, event types and commands for gcd.
 
 # Changelog (2017)
-May: Updated to latest protocol.json
-May: Fixed a bug with templating causing certain parameters that were slices to only show up as the base type.
-May: Changed templating where 'any' protocol.json field types from string to interface{} to allow caller to decide how to decode. 
-April: Updated to the latest protocol.json (version 1.2). Note this changes quite a few APIs.
+- June: Due to the excellent efforts of [Ian L.](https://github.com/MrSaints) gcd can now issue requests ignoring fields. A non-breaking change was implemented allowing callers to use new methods (denoted by WithParams) to pass in structures, and choosing which fields to populate. Users can continue to use the old method passing individual arguments.
+Example:
+```Go
+networkParams := &gcdapi.NetworkEnableParams{
+	MaxTotalBufferSize:    -1,
+	MaxResourceBufferSize: -1,
+}
+
+if _, err := network.EnableWithParams(networkParams); err != nil {
+	log.Fatal("error enabling network")
+}
+```
+- May: Updated to latest protocol.json
+- May: Fixed a bug with templating causing certain parameters that were slices to only show up as the base type.
+- May: Changed templating where 'any' protocol.json field types from string to interface{} to allow caller to decide how to decode. 
+- April: Updated to the latest protocol.json (version 1.2). Note this changes quite a few APIs.
 
 # Changelog (2016)
 June: Updated to the latest protocol.json, gcdapigen will download the js_protocol and browser_protocol json files from chromium repositories. It will also fix them up and merge them into a single file and output it. 

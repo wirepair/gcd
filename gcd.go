@@ -35,7 +35,7 @@ import (
 	"time"
 )
 
-var GCDVERSION = "1.1"
+var GCDVERSION = "1.2"
 
 // When we get an error reading the body from the debugger api endpoint
 type GcdBodyReadErr struct {

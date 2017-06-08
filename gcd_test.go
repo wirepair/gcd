@@ -240,6 +240,34 @@ func TestSimpleReturn(t *testing.T) {
 	}
 }
 
+func TestSimpleReturnWithParams(t *testing.T) {
+	var ret bool
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+
+	target, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error getting new tab: %s\n", err)
+	}
+	network := target.Network
+
+	networkParams := &gcdapi.NetworkEnableParams{
+		MaxTotalBufferSize:    -1,
+		MaxResourceBufferSize: -1,
+	}
+
+	if _, err := network.EnableWithParams(networkParams); err != nil {
+		t.Fatalf("error enabling network")
+	}
+	ret, err = network.CanClearBrowserCache()
+	if err != nil {
+		t.Fatalf("error getting response to clearing browser cache: %s\n", err)
+	}
+	if !ret {
+		t.Fatalf("we should have got true for can clear browser cache\n")
+	}
+}
+
 // tests getting a complex object back from inside a fired event that we subscribed to.
 func TestComplexReturn(t *testing.T) {
 	testDefaultStartup(t)
