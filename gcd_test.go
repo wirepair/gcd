@@ -16,19 +16,19 @@ import (
 )
 
 var (
-	debugger       *Gcd
-	testListener   net.Listener
-	testPath       string
-	testDir        string
-	testPort       string
-	testServerAddr string
+	debugger                 *Gcd
+	testListener             net.Listener
+	testSkipNetworkIntercept bool
+	testPath                 string
+	testDir                  string
+	testPort                 string
+	testServerAddr           string
 )
 
 func init() {
 	switch runtime.GOOS {
 	case "windows":
 		flag.StringVar(&testPath, "chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "path to chrome")
-		//flag.StringVar(&testPath, "chrome", "C:\\Users\\isaac\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe", "path to chrome")
 		flag.StringVar(&testDir, "dir", "C:\\temp\\", "user directory")
 	case "darwin":
 		flag.StringVar(&testPath, "chrome", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "path to chrome")
@@ -37,8 +37,11 @@ func init() {
 		flag.StringVar(&testPath, "chrome", "/usr/bin/chromium-browser", "path to chrome")
 		flag.StringVar(&testDir, "dir", "/tmp/", "user directory")
 	}
-
 	flag.StringVar(&testPort, "port", "9222", "Debugger port")
+
+	// TODO: remove this once mainline chrome supports it.
+	flag.BoolVar(&testSkipNetworkIntercept, "intercept", true, "set to false to test network intercept, will fail if browser does not support yet.")
+
 }
 
 func TestMain(m *testing.M) {
@@ -52,7 +55,6 @@ func TestMain(m *testing.M) {
 
 func testCleanUp() {
 	testListener.Close()
-
 }
 
 func TestGetPages(t *testing.T) {
@@ -385,8 +387,7 @@ func TestLocalExtension(t *testing.T) {
 }
 
 func TestNetworkIntercept(t *testing.T) {
-	// TODO: test in osx to see if this just doesn't work in Windows yet.
-	if runtime.GOOS == "windows" {
+	if testSkipNetworkIntercept {
 		return
 	}
 
@@ -399,8 +400,10 @@ func TestNetworkIntercept(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
-	target.Debug(true)
-	target.DebugEvents(true)
+
+	//target.Debug(true)
+	//target.DebugEvents(true)
+
 	go testTimeoutListener(t, doneCh, 5, "timed out waiting for requestIntercepted")
 	network := target.Network
 
