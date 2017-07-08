@@ -164,6 +164,7 @@ type RuntimeConsoleAPICalledEvent struct {
 		ExecutionContextId int                    `json:"executionContextId"`   // Identifier of the context where the call was made.
 		Timestamp          float64                `json:"timestamp"`            // Call timestamp.
 		StackTrace         *RuntimeStackTrace     `json:"stackTrace,omitempty"` // Stack trace captured when the call was made.
+		Context            string                 `json:"context,omitempty"`    // Console context descriptor for calls on non-default console context (not console.*): 'anonymous#unique-logger-id' for call on unnamed context, 'name#unique-logger-id' for call on named context.
 	} `json:"Params,omitempty"`
 }
 

@@ -43,8 +43,9 @@ type ProfilerCoverageRange struct {
 
 // Coverage data for a JavaScript function.
 type ProfilerFunctionCoverage struct {
-	FunctionName string                   `json:"functionName"` // JavaScript function name.
-	Ranges       []*ProfilerCoverageRange `json:"ranges"`       // Source ranges inside the function with coverage data.
+	FunctionName    string                   `json:"functionName"`    // JavaScript function name.
+	Ranges          []*ProfilerCoverageRange `json:"ranges"`          // Source ranges inside the function with coverage data.
+	IsBlockCoverage bool                     `json:"isBlockCoverage"` // Whether coverage data for this function has block granularity.
 }
 
 // Coverage data for a JavaScript script.

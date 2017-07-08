@@ -175,20 +175,6 @@ type CSSInlineTextBox struct {
 	NumCharacters       int      `json:"numCharacters"`       // The number of characters in this post layout textbox substring.
 }
 
-// Details of an element in the DOM tree with a LayoutObject.
-type CSSLayoutTreeNode struct {
-	NodeId          int                 `json:"nodeId"`                    // The id of the related DOM node matching one from DOM.GetDocument.
-	BoundingBox     *DOMRect            `json:"boundingBox"`               // The absolute position bounding box.
-	LayoutText      string              `json:"layoutText,omitempty"`      // Contents of the LayoutText if any
-	InlineTextNodes []*CSSInlineTextBox `json:"inlineTextNodes,omitempty"` // The post layout inline text nodes, if any.
-	StyleIndex      int                 `json:"styleIndex,omitempty"`      // Index into the computedStyles array returned by getLayoutTreeAndStyles.
-}
-
-// A subset of the full ComputedStyle as defined by the request whitelist.
-type CSSComputedStyle struct {
-	Properties []*CSSCSSComputedStyleProperty `json:"properties"` //
-}
-
 // Fired whenever a stylesheet is changed as a result of the client operation.
 type CSSStyleSheetChangedEvent struct {
 	Method string `json:"method"`
@@ -996,53 +982,6 @@ func (c *CSS) GetBackgroundColors(nodeId int) ([]string, error) {
 	var v CSSGetBackgroundColorsParams
 	v.NodeId = nodeId
 	return c.GetBackgroundColorsWithParams(&v)
-}
-
-type CSSGetLayoutTreeAndStylesParams struct {
-	// Whitelist of computed styles to return.
-	ComputedStyleWhitelist []string `json:"computedStyleWhitelist"`
-}
-
-// GetLayoutTreeAndStylesWithParams - For the main document and any content documents, return the LayoutTreeNodes and a whitelisted subset of the computed style. It only returns pushed nodes, on way to pull all nodes is to call DOM.getDocument with a depth of -1.
-// Returns -  layoutTreeNodes -  computedStyles -
-func (c *CSS) GetLayoutTreeAndStylesWithParams(v *CSSGetLayoutTreeAndStylesParams) ([]*CSSLayoutTreeNode, []*CSSComputedStyle, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getLayoutTreeAndStyles", Params: v})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			LayoutTreeNodes []*CSSLayoutTreeNode
-			ComputedStyles  []*CSSComputedStyle
-		}
-	}
-
-	if resp == nil {
-		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, err
-	}
-
-	return chromeData.Result.LayoutTreeNodes, chromeData.Result.ComputedStyles, nil
-}
-
-// GetLayoutTreeAndStyles - For the main document and any content documents, return the LayoutTreeNodes and a whitelisted subset of the computed style. It only returns pushed nodes, on way to pull all nodes is to call DOM.getDocument with a depth of -1.
-// computedStyleWhitelist - Whitelist of computed styles to return.
-// Returns -  layoutTreeNodes -  computedStyles -
-func (c *CSS) GetLayoutTreeAndStyles(computedStyleWhitelist []string) ([]*CSSLayoutTreeNode, []*CSSComputedStyle, error) {
-	var v CSSGetLayoutTreeAndStylesParams
-	v.ComputedStyleWhitelist = computedStyleWhitelist
-	return c.GetLayoutTreeAndStylesWithParams(&v)
 }
 
 // Enables the selector recording.

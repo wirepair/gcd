@@ -11,8 +11,9 @@ import (
 
 // Data entry.
 type CacheStorageDataEntry struct {
-	Request  string `json:"request"`  // Request url spec.
-	Response string `json:"response"` // Response stataus text.
+	Request      string  `json:"request"`      // Request url spec.
+	Response     string  `json:"response"`     // Response status text.
+	ResponseTime float64 `json:"responseTime"` // Number of seconds since epoch.
 }
 
 // Cache identifier.

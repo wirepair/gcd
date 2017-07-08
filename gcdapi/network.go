@@ -35,7 +35,7 @@ type NetworkRequest struct {
 	Method           string                 `json:"method"`                     // HTTP request method.
 	Headers          map[string]interface{} `json:"headers"`                    // HTTP request headers.
 	PostData         string                 `json:"postData,omitempty"`         // HTTP POST request data.
-	MixedContentType string                 `json:"mixedContentType,omitempty"` // The mixed content status of the request, as defined in http://www.w3.org/TR/mixed-content/
+	MixedContentType string                 `json:"mixedContentType,omitempty"` // The mixed content type of the request. enum values: blockable, optionally-blockable, none
 	InitialPriority  string                 `json:"initialPriority"`            // Priority of the resource request at the time request is sent. enum values: VeryLow, Low, Medium, High, VeryHigh
 	ReferrerPolicy   string                 `json:"referrerPolicy"`             // The referrer policy of the request, as defined in https://www.w3.org/TR/referrer-policy/
 	IsLinkPreload    bool                   `json:"isLinkPreload,omitempty"`    // Whether is loaded via link preload.
@@ -126,8 +126,8 @@ type NetworkCachedResource struct {
 type NetworkInitiator struct {
 	Type       string             `json:"type"`                 // Type of this initiator.
 	Stack      *RuntimeStackTrace `json:"stack,omitempty"`      // Initiator JavaScript stack trace, set for Script only.
-	Url        string             `json:"url,omitempty"`        // Initiator URL, set for Parser type only.
-	LineNumber float64            `json:"lineNumber,omitempty"` // Initiator line number, set for Parser type only (0-based).
+	Url        string             `json:"url,omitempty"`        // Initiator URL, set for Parser type or for Script type (when script is importing module).
+	LineNumber float64            `json:"lineNumber,omitempty"` // Initiator line number, set for Parser type or for Script type (when script is importing module) (0-based).
 }
 
 // Cookie object
@@ -142,6 +142,21 @@ type NetworkCookie struct {
 	Secure   bool    `json:"secure"`             // True if cookie is secure.
 	Session  bool    `json:"session"`            // True in case of session cookie.
 	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax
+}
+
+// Authorization challenge for HTTP status code 401 or 407.
+type NetworkAuthChallenge struct {
+	Source string `json:"source,omitempty"` // Source of the authentication challenge.
+	Origin string `json:"origin"`           // Origin of the challenger.
+	Scheme string `json:"scheme"`           // The authentication scheme used, such as basic or digest
+	Realm  string `json:"realm"`            // The realm of the challenge. May be empty.
+}
+
+// Response to an AuthChallenge.
+type NetworkAuthChallengeResponse struct {
+	Response string `json:"response"`           // The decision on what to do in response to the authorization challenge.  Default means deferring to the default behavior of the net stack, which will likely either the Cancel authentication or display a popup dialog box.
+	Username string `json:"username,omitempty"` // The username to provide, possibly empty. Should only be set if response is ProvideCredentials.
+	Password string `json:"password,omitempty"` // The password to provide, possibly empty. Should only be set if response is ProvideCredentials.
 }
 
 // Fired when resource loading priority is changed
@@ -159,15 +174,15 @@ type NetworkRequestWillBeSentEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		RequestId        string            `json:"requestId"`                  // Request identifier.
-		FrameId          string            `json:"frameId"`                    // Frame identifier.
-		LoaderId         string            `json:"loaderId"`                   // Loader identifier.
+		LoaderId         string            `json:"loaderId"`                   // Loader identifier. Empty string if the request is fetched form worker.
 		DocumentURL      string            `json:"documentURL"`                // URL of the document this request is loaded for.
 		Request          *NetworkRequest   `json:"request"`                    // Request data.
 		Timestamp        float64           `json:"timestamp"`                  // Timestamp.
-		WallTime         float64           `json:"wallTime"`                   // UTC Timestamp.
+		WallTime         float64           `json:"wallTime"`                   // Timestamp.
 		Initiator        *NetworkInitiator `json:"initiator"`                  // Request initiator.
 		RedirectResponse *NetworkResponse  `json:"redirectResponse,omitempty"` // Redirect response data.
 		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+		FrameId          string            `json:"frameId,omitempty"`          // Frame identifier.
 	} `json:"Params,omitempty"`
 }
 
@@ -183,12 +198,12 @@ type NetworkRequestServedFromCacheEvent struct {
 type NetworkResponseReceivedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		RequestId string           `json:"requestId"` // Request identifier.
-		FrameId   string           `json:"frameId"`   // Frame identifier.
-		LoaderId  string           `json:"loaderId"`  // Loader identifier.
-		Timestamp float64          `json:"timestamp"` // Timestamp.
-		Type      string           `json:"type"`      // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
-		Response  *NetworkResponse `json:"response"`  // Response data.
+		RequestId string           `json:"requestId"`         // Request identifier.
+		LoaderId  string           `json:"loaderId"`          // Loader identifier. Empty string if the request is fetched form worker.
+		Timestamp float64          `json:"timestamp"`         // Timestamp.
+		Type      string           `json:"type"`              // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+		Response  *NetworkResponse `json:"response"`          // Response data.
+		FrameId   string           `json:"frameId,omitempty"` // Frame identifier.
 	} `json:"Params,omitempty"`
 }
 
@@ -305,6 +320,20 @@ type NetworkEventSourceMessageReceivedEvent struct {
 		EventName string  `json:"eventName"` // Message type.
 		EventId   string  `json:"eventId"`   // Message identifier.
 		Data      string  `json:"data"`      // Message content.
+	} `json:"Params,omitempty"`
+}
+
+// Details of an intercepted HTTP request, which must be either allowed, blocked, modified or mocked.
+type NetworkRequestInterceptedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		InterceptionId     string                 `json:"interceptionId"`               // Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
+		Request            *NetworkRequest        `json:"request"`                      //
+		ResourceType       string                 `json:"resourceType"`                 // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+		RedirectHeaders    map[string]interface{} `json:"redirectHeaders,omitempty"`    // HTTP response headers, only sent if a redirect was intercepted.
+		RedirectStatusCode int                    `json:"redirectStatusCode,omitempty"` // HTTP response code, only sent if a redirect was intercepted.
+		RedirectUrl        string                 `json:"redirectUrl,omitempty"`        // Redirect location, only sent if a redirect was intercepted.
+		AuthChallenge      *NetworkAuthChallenge  `json:"authChallenge,omitempty"`      // Details of the Authorization Challenge encountered. If this is set then continueInterceptedRequest must contain an authChallengeResponse.
 	} `json:"Params,omitempty"`
 }
 
@@ -883,4 +912,68 @@ func (c *Network) GetCertificate(origin string) ([]string, error) {
 	var v NetworkGetCertificateParams
 	v.Origin = origin
 	return c.GetCertificateWithParams(&v)
+}
+
+type NetworkSetRequestInterceptionEnabledParams struct {
+	// Whether or not HTTP requests should be intercepted and Network.requestIntercepted events sent.
+	Enabled bool `json:"enabled"`
+}
+
+// SetRequestInterceptionEnabledWithParams -
+func (c *Network) SetRequestInterceptionEnabledWithParams(v *NetworkSetRequestInterceptionEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setRequestInterceptionEnabled", Params: v})
+}
+
+// SetRequestInterceptionEnabled -
+// enabled - Whether or not HTTP requests should be intercepted and Network.requestIntercepted events sent.
+func (c *Network) SetRequestInterceptionEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v NetworkSetRequestInterceptionEnabledParams
+	v.Enabled = enabled
+	return c.SetRequestInterceptionEnabledWithParams(&v)
+}
+
+type NetworkContinueInterceptedRequestParams struct {
+	//
+	InterceptionId string `json:"interceptionId"`
+	// If set this causes the request to fail with the given reason. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
+	ErrorReason string `json:"errorReason,omitempty"`
+	// If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
+	RawResponse string `json:"rawResponse,omitempty"`
+	// If set the request url will be modified in a way that's not observable by page. Must not be set in response to an authChallenge.
+	Url string `json:"url,omitempty"`
+	// If set this allows the request method to be overridden. Must not be set in response to an authChallenge.
+	Method string `json:"method,omitempty"`
+	// If set this allows postData to be set. Must not be set in response to an authChallenge.
+	PostData string `json:"postData,omitempty"`
+	// If set this allows the request headers to be changed. Must not be set in response to an authChallenge.
+	Headers map[string]interface{} `json:"headers,omitempty"`
+	// Response to a requestIntercepted with an authChallenge. Must not be set otherwise.
+	AuthChallengeResponse *NetworkAuthChallengeResponse `json:"authChallengeResponse,omitempty"`
+}
+
+// ContinueInterceptedRequestWithParams - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId.
+func (c *Network) ContinueInterceptedRequestWithParams(v *NetworkContinueInterceptedRequestParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.continueInterceptedRequest", Params: v})
+}
+
+// ContinueInterceptedRequest - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId.
+// interceptionId -
+// errorReason - If set this causes the request to fail with the given reason. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
+// rawResponse - If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
+// url - If set the request url will be modified in a way that's not observable by page. Must not be set in response to an authChallenge.
+// method - If set this allows the request method to be overridden. Must not be set in response to an authChallenge.
+// postData - If set this allows postData to be set. Must not be set in response to an authChallenge.
+// headers - If set this allows the request headers to be changed. Must not be set in response to an authChallenge.
+// authChallengeResponse - Response to a requestIntercepted with an authChallenge. Must not be set otherwise.
+func (c *Network) ContinueInterceptedRequest(interceptionId string, errorReason string, rawResponse string, url string, method string, postData string, headers map[string]interface{}, authChallengeResponse *NetworkAuthChallengeResponse) (*gcdmessage.ChromeResponse, error) {
+	var v NetworkContinueInterceptedRequestParams
+	v.InterceptionId = interceptionId
+	v.ErrorReason = errorReason
+	v.RawResponse = rawResponse
+	v.Url = url
+	v.Method = method
+	v.PostData = postData
+	v.Headers = headers
+	v.AuthChallengeResponse = authChallengeResponse
+	return c.ContinueInterceptedRequestWithParams(&v)
 }

@@ -28,6 +28,7 @@ func init() {
 	switch runtime.GOOS {
 	case "windows":
 		flag.StringVar(&testPath, "chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "path to chrome")
+		//flag.StringVar(&testPath, "chrome", "C:\\Users\\isaac\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe", "path to chrome")
 		flag.StringVar(&testDir, "dir", "C:\\temp\\", "user directory")
 	case "darwin":
 		flag.StringVar(&testPath, "chrome", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "path to chrome")
@@ -383,6 +384,54 @@ func TestLocalExtension(t *testing.T) {
 	<-doneCh
 }
 
+func TestNetworkIntercept(t *testing.T) {
+	// TODO: test in osx to see if this just doesn't work in Windows yet.
+	if runtime.GOOS == "windows" {
+		return
+	}
+
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+
+	doneCh := make(chan struct{})
+
+	target, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error getting new tab: %s\n", err)
+	}
+	target.Debug(true)
+	target.DebugEvents(true)
+	go testTimeoutListener(t, doneCh, 5, "timed out waiting for requestIntercepted")
+	network := target.Network
+
+	networkParams := &gcdapi.NetworkEnableParams{
+		MaxTotalBufferSize:    -1,
+		MaxResourceBufferSize: -1,
+	}
+
+	if _, err := network.EnableWithParams(networkParams); err != nil {
+		t.Fatalf("error enabling network")
+	}
+
+	if _, err := network.SetRequestInterceptionEnabled(true); err != nil {
+		t.Fatalf("unable to set interception enabled: %s\n", err)
+	}
+
+	target.Subscribe("Network.requestIntercepted", func(target *ChromeTarget, payload []byte) {
+		fmt.Printf("requestIntercepted event fired %s\n", string(payload))
+		t.Logf("requestIntercepted event fired %s\n", string(payload))
+		close(doneCh)
+	})
+
+	params := &gcdapi.PageNavigateParams{Url: "http://www.example.com"}
+	_, err = target.Page.NavigateWithParams(params)
+	if err != nil {
+		t.Fatalf("error navigating: %s\n", err)
+	}
+
+	<-doneCh
+}
+
 // UTILITY FUNCTIONS
 func testExtensionStartup(t *testing.T) {
 	debugger = NewChromeDebugger()
@@ -418,7 +467,9 @@ func testTimeoutListener(t *testing.T, closeCh chan struct{}, seconds time.Durat
 			timeout.Stop()
 			return
 		case <-timeout.C:
+			close(closeCh)
 			t.Fatalf("timed out waiting for %s", message)
+			return
 		}
 	}
 }

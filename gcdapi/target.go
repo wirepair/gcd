@@ -15,6 +15,7 @@ type TargetTargetInfo struct {
 	Type     string `json:"type"`     //
 	Title    string `json:"title"`    //
 	Url      string `json:"url"`      //
+	Attached bool   `json:"attached"` // Whether the target has an attached client.
 }
 
 // No Description.
@@ -25,6 +26,14 @@ type TargetRemoteLocation struct {
 
 // Issued when a possible inspection target is created.
 type TargetTargetCreatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		TargetInfo *TargetTargetInfo `json:"targetInfo"` //
+	} `json:"Params,omitempty"`
+}
+
+// Issued when some information about a target has changed. This only happens between <code>targetCreated</code> and <code>targetDestroyed</code>.
+type TargetTargetInfoChangedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		TargetInfo *TargetTargetInfo `json:"targetInfo"` //
@@ -79,12 +88,12 @@ type TargetSetDiscoverTargetsParams struct {
 	Discover bool `json:"discover"`
 }
 
-// SetDiscoverTargetsWithParams - Controls whether to discover available targets and notify via <code>targetCreated/targetDestroyed</code> events.
+// SetDiscoverTargetsWithParams - Controls whether to discover available targets and notify via <code>targetCreated/targetInfoChanged/targetDestroyed</code> events.
 func (c *Target) SetDiscoverTargetsWithParams(v *TargetSetDiscoverTargetsParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setDiscoverTargets", Params: v})
 }
 
-// SetDiscoverTargets - Controls whether to discover available targets and notify via <code>targetCreated/targetDestroyed</code> events.
+// SetDiscoverTargets - Controls whether to discover available targets and notify via <code>targetCreated/targetInfoChanged/targetDestroyed</code> events.
 // discover - Whether to discover available targets.
 func (c *Target) SetDiscoverTargets(discover bool) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSetDiscoverTargetsParams

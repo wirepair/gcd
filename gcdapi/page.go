@@ -230,7 +230,7 @@ type PageAddScriptToEvaluateOnLoadParams struct {
 	ScriptSource string `json:"scriptSource"`
 }
 
-// AddScriptToEvaluateOnLoadWithParams -
+// AddScriptToEvaluateOnLoadWithParams - Deprecated, please use addScriptToEvaluateOnNewDocument instead.
 // Returns -  identifier - Identifier of the added script.
 func (c *Page) AddScriptToEvaluateOnLoadWithParams(v *PageAddScriptToEvaluateOnLoadParams) (string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.addScriptToEvaluateOnLoad", Params: v})
@@ -262,7 +262,7 @@ func (c *Page) AddScriptToEvaluateOnLoadWithParams(v *PageAddScriptToEvaluateOnL
 	return chromeData.Result.Identifier, nil
 }
 
-// AddScriptToEvaluateOnLoad -
+// AddScriptToEvaluateOnLoad - Deprecated, please use addScriptToEvaluateOnNewDocument instead.
 // scriptSource -
 // Returns -  identifier - Identifier of the added script.
 func (c *Page) AddScriptToEvaluateOnLoad(scriptSource string) (string, error) {
@@ -276,17 +276,81 @@ type PageRemoveScriptToEvaluateOnLoadParams struct {
 	Identifier string `json:"identifier"`
 }
 
-// RemoveScriptToEvaluateOnLoadWithParams -
+// RemoveScriptToEvaluateOnLoadWithParams - Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
 func (c *Page) RemoveScriptToEvaluateOnLoadWithParams(v *PageRemoveScriptToEvaluateOnLoadParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.removeScriptToEvaluateOnLoad", Params: v})
 }
 
-// RemoveScriptToEvaluateOnLoad -
+// RemoveScriptToEvaluateOnLoad - Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
 // identifier -
 func (c *Page) RemoveScriptToEvaluateOnLoad(identifier string) (*gcdmessage.ChromeResponse, error) {
 	var v PageRemoveScriptToEvaluateOnLoadParams
 	v.Identifier = identifier
 	return c.RemoveScriptToEvaluateOnLoadWithParams(&v)
+}
+
+type PageAddScriptToEvaluateOnNewDocumentParams struct {
+	//
+	Source string `json:"source"`
+}
+
+// AddScriptToEvaluateOnNewDocumentWithParams - Evaluates given script in every frame upon creation (before loading frame's scripts).
+// Returns -  identifier - Identifier of the added script.
+func (c *Page) AddScriptToEvaluateOnNewDocumentWithParams(v *PageAddScriptToEvaluateOnNewDocumentParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.addScriptToEvaluateOnNewDocument", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Identifier string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.Identifier, nil
+}
+
+// AddScriptToEvaluateOnNewDocument - Evaluates given script in every frame upon creation (before loading frame's scripts).
+// source -
+// Returns -  identifier - Identifier of the added script.
+func (c *Page) AddScriptToEvaluateOnNewDocument(source string) (string, error) {
+	var v PageAddScriptToEvaluateOnNewDocumentParams
+	v.Source = source
+	return c.AddScriptToEvaluateOnNewDocumentWithParams(&v)
+}
+
+type PageRemoveScriptToEvaluateOnNewDocumentParams struct {
+	//
+	Identifier string `json:"identifier"`
+}
+
+// RemoveScriptToEvaluateOnNewDocumentWithParams - Removes given script from the list.
+func (c *Page) RemoveScriptToEvaluateOnNewDocumentWithParams(v *PageRemoveScriptToEvaluateOnNewDocumentParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.removeScriptToEvaluateOnNewDocument", Params: v})
+}
+
+// RemoveScriptToEvaluateOnNewDocument - Removes given script from the list.
+// identifier -
+func (c *Page) RemoveScriptToEvaluateOnNewDocument(identifier string) (*gcdmessage.ChromeResponse, error) {
+	var v PageRemoveScriptToEvaluateOnNewDocumentParams
+	v.Identifier = identifier
+	return c.RemoveScriptToEvaluateOnNewDocumentWithParams(&v)
 }
 
 type PageSetAutoAttachToCreatedPagesParams struct {
@@ -1157,15 +1221,43 @@ type PageCreateIsolatedWorldParams struct {
 }
 
 // CreateIsolatedWorldWithParams - Creates an isolated world for the given frame.
-func (c *Page) CreateIsolatedWorldWithParams(v *PageCreateIsolatedWorldParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.createIsolatedWorld", Params: v})
+// Returns -  executionContextId - Execution context of the isolated world.
+func (c *Page) CreateIsolatedWorldWithParams(v *PageCreateIsolatedWorldParams) (int, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.createIsolatedWorld", Params: v})
+	if err != nil {
+		return 0, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ExecutionContextId int
+		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
+	}
+
+	return chromeData.Result.ExecutionContextId, nil
 }
 
 // CreateIsolatedWorld - Creates an isolated world for the given frame.
 // frameId - Id of the frame in which the isolated world should be created.
 // worldName - An optional name which is reported in the Execution Context.
 // grantUniveralAccess - Whether or not universal access should be granted to the isolated world. This is a powerful option, use with caution.
-func (c *Page) CreateIsolatedWorld(frameId string, worldName string, grantUniveralAccess bool) (*gcdmessage.ChromeResponse, error) {
+// Returns -  executionContextId - Execution context of the isolated world.
+func (c *Page) CreateIsolatedWorld(frameId string, worldName string, grantUniveralAccess bool) (int, error) {
 	var v PageCreateIsolatedWorldParams
 	v.FrameId = frameId
 	v.WorldName = worldName
