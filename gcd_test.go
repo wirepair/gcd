@@ -348,7 +348,55 @@ func TestConnectToInstance(t *testing.T) {
 	<-doneCh
 }
 
+func TestLocalExtension(t *testing.T) {
+	testExtensionStartup(t)
+	debugger.ConnectToInstance(debugger.host, debugger.port)
+	defer debugger.ExitProcess()
+
+	doneCh := make(chan struct{})
+
+	target, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error creating new tab")
+	}
+
+	if _, err := target.Page.Enable(); err != nil {
+		t.Fatalf("error enabling page: %s\n", err)
+	}
+
+	target.Subscribe("Page.loadEventFired", func(target *ChromeTarget, payload []byte) {
+		t.Logf("page load event fired\n")
+		close(doneCh)
+	})
+
+	if _, err := target.Network.Enable(-1, -1); err != nil {
+		t.Fatalf("error enabling network: %s\n", err)
+	}
+
+	params := &gcdapi.PageNavigateParams{Url: "http://www.google.com"}
+	_, err = target.Page.NavigateWithParams(params)
+	if err != nil {
+		t.Fatalf("error navigating: %s\n", err)
+	}
+
+	go testTimeoutListener(t, doneCh, 15, "timed out waiting for remote connection")
+	<-doneCh
+}
+
 // UTILITY FUNCTIONS
+func testExtensionStartup(t *testing.T) {
+	debugger = NewChromeDebugger()
+	sep := string(os.PathSeparator)
+
+	path, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("error getting working directory: %s\n", err)
+	}
+
+	extensionPath := "--load-extension=" + path + sep + "testdata" + sep + "extension" + sep
+	debugger.AddFlags([]string{extensionPath})
+	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
+}
 
 func testDefaultStartup(t *testing.T) {
 	debugger = NewChromeDebugger()
