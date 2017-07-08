@@ -6,6 +6,7 @@ Because I'm lazy and there are hundereds of different custom types and API metho
 The [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) program was created to generate types, event types and commands for gcd.
 
 # Changelog (2017)
+- July 8th: Updated to latest protocol.json which supports network interception. However it does not appear to work in most versions yet. (I could only get it working in the latest https://download-chromium.appspot.com/ download.) Also, going forward GCDVERSION will be Major.Year.Month.Day.Minor format.
 - June: Due to the excellent efforts of [Ian L.](https://github.com/MrSaints) gcd can now issue requests ignoring fields. A non-breaking change was implemented allowing callers to use new methods (denoted by WithParams) to pass in structures, and choosing which fields to populate. Users can continue to use the old method passing individual arguments.
 Example:
 ```Go
