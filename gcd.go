@@ -108,7 +108,8 @@ func (c *Gcd) AddEnvironmentVars(vars []string) {
 // exePath - the path to the executable
 // userDir - the user directory to start from so we get a fresh profile
 // port - The port to listen on.
-func (c *Gcd) StartProcess(exePath, userDir, port string) {
+// args - additional args to start chrome
+func (c *Gcd) StartProcess(exePath, userDir, port string, args ...string) {
 	c.port = port
 	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
 	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
@@ -120,6 +121,8 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 	c.flags = append(c.flags, "--no-first-run")
 	// bypass default browser check
 	c.flags = append(c.flags, "--no-default-browser-check")
+	// additional args by user
+	c.flags = append(c.flags, args...)
 
 	c.chromeCmd = exec.Command(exePath, c.flags...)
 	// add custom environment variables.
