@@ -23,6 +23,7 @@ type OverlayHighlightConfig struct {
 	ShapeColor         *DOMRGBA `json:"shapeColor,omitempty"`         // The shape outside fill color (default: transparent).
 	ShapeMarginColor   *DOMRGBA `json:"shapeMarginColor,omitempty"`   // The shape margin fill color (default: transparent).
 	SelectorList       string   `json:"selectorList,omitempty"`       // Selectors to highlight relevant nodes.
+	CssGridColor       *DOMRGBA `json:"cssGridColor,omitempty"`       // The grid layout color (default: transparent).
 }
 
 // Fired when the node should be highlighted. This happens after call to <code>setInspectMode</code>.
@@ -38,6 +39,14 @@ type OverlayInspectNodeRequestedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		BackendNodeId int `json:"backendNodeId"` // Id of the node to inspect.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when user asks to capture screenshot of some area on the page.
+type OverlayScreenshotRequestedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Viewport *PageViewport `json:"viewport"` // Viewport to capture, in CSS.
 	} `json:"Params,omitempty"`
 }
 

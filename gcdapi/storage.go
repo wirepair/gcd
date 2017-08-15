@@ -15,6 +15,23 @@ type StorageUsageForType struct {
 	Usage       float64 `json:"usage"`       // Storage usage (bytes).
 }
 
+// A cache has been added/deleted.
+type StorageCacheStorageListUpdatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Origin string `json:"origin"` // Origin to update.
+	} `json:"Params,omitempty"`
+}
+
+// A cache's contents have been modified.
+type StorageCacheStorageContentUpdatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Origin    string `json:"origin"`    // Origin to update.
+		CacheName string `json:"cacheName"` // Name of cache in origin.
+	} `json:"Params,omitempty"`
+}
+
 type Storage struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -92,4 +109,40 @@ func (c *Storage) GetUsageAndQuota(origin string) (float64, float64, []*StorageU
 	var v StorageGetUsageAndQuotaParams
 	v.Origin = origin
 	return c.GetUsageAndQuotaWithParams(&v)
+}
+
+type StorageTrackCacheStorageForOriginParams struct {
+	// Security origin.
+	Origin string `json:"origin"`
+}
+
+// TrackCacheStorageForOriginWithParams - Registers origin to be notified when an update occurs to its cache storage list.
+func (c *Storage) TrackCacheStorageForOriginWithParams(v *StorageTrackCacheStorageForOriginParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.trackCacheStorageForOrigin", Params: v})
+}
+
+// TrackCacheStorageForOrigin - Registers origin to be notified when an update occurs to its cache storage list.
+// origin - Security origin.
+func (c *Storage) TrackCacheStorageForOrigin(origin string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageTrackCacheStorageForOriginParams
+	v.Origin = origin
+	return c.TrackCacheStorageForOriginWithParams(&v)
+}
+
+type StorageUntrackCacheStorageForOriginParams struct {
+	// Security origin.
+	Origin string `json:"origin"`
+}
+
+// UntrackCacheStorageForOriginWithParams - Unregisters origin from receiving notifications for cache storage.
+func (c *Storage) UntrackCacheStorageForOriginWithParams(v *StorageUntrackCacheStorageForOriginParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.untrackCacheStorageForOrigin", Params: v})
+}
+
+// UntrackCacheStorageForOrigin - Unregisters origin from receiving notifications for cache storage.
+// origin - Security origin.
+func (c *Storage) UntrackCacheStorageForOrigin(origin string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageUntrackCacheStorageForOriginParams
+	v.Origin = origin
+	return c.UntrackCacheStorageForOriginWithParams(&v)
 }

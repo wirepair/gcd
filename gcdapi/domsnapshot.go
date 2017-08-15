@@ -14,6 +14,10 @@ type DOMSnapshotDOMNode struct {
 	NodeType              int                     `json:"nodeType"`                        // <code>Node</code>'s nodeType.
 	NodeName              string                  `json:"nodeName"`                        // <code>Node</code>'s nodeName.
 	NodeValue             string                  `json:"nodeValue"`                       // <code>Node</code>'s nodeValue.
+	TextValue             string                  `json:"textValue,omitempty"`             // Only set for textarea elements, contains the text value.
+	InputValue            string                  `json:"inputValue,omitempty"`            // Only set for input elements, contains the input's associated text value.
+	InputChecked          bool                    `json:"inputChecked,omitempty"`          // Only set for radio and checkbox input elements, indicates if the element has been checked
+	OptionSelected        bool                    `json:"optionSelected,omitempty"`        // Only set for option elements, indicates if the element has been selected
 	BackendNodeId         int                     `json:"backendNodeId"`                   // <code>Node</code>'s id, corresponds to DOM.Node.backendNodeId.
 	ChildNodeIndexes      []int                   `json:"childNodeIndexes,omitempty"`      // The indexes of the node's child nodes in the <code>domNodes</code> array returned by <code>getSnapshot</code>, if any.
 	Attributes            []*DOMSnapshotNameValue `json:"attributes,omitempty"`            // Attributes of an <code>Element</code> node.
@@ -22,9 +26,10 @@ type DOMSnapshotDOMNode struct {
 	DocumentURL           string                  `json:"documentURL,omitempty"`           // Document URL that <code>Document</code> or <code>FrameOwner</code> node points to.
 	BaseURL               string                  `json:"baseURL,omitempty"`               // Base URL that <code>Document</code> or <code>FrameOwner</code> node uses for URL completion.
 	ContentLanguage       string                  `json:"contentLanguage,omitempty"`       // Only set for documents, contains the document's content language.
+	DocumentEncoding      string                  `json:"documentEncoding,omitempty"`      // Only set for documents, contains the document's character set encoding.
 	PublicId              string                  `json:"publicId,omitempty"`              // <code>DocumentType</code> node's publicId.
 	SystemId              string                  `json:"systemId,omitempty"`              // <code>DocumentType</code> node's systemId.
-	FrameId               string                  `json:"frameId,omitempty"`               // Frame ID for frame owner elements.
+	FrameId               string                  `json:"frameId,omitempty"`               // Frame ID for frame owner elements and also for the document node.
 	ContentDocumentIndex  int                     `json:"contentDocumentIndex,omitempty"`  // The index of a frame owner element's content document in the <code>domNodes</code> array returned by <code>getSnapshot</code>, if any.
 	ImportedDocumentIndex int                     `json:"importedDocumentIndex,omitempty"` // Index of the imported document's node of a link element in the <code>domNodes</code> array returned by <code>getSnapshot</code>, if any.
 	TemplateContentIndex  int                     `json:"templateContentIndex,omitempty"`  // Index of the content node of a template element in the <code>domNodes</code> array returned by <code>getSnapshot</code>.

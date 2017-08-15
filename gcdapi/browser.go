@@ -74,6 +74,42 @@ func (c *Browser) GetWindowForTarget(targetId string) (int, *BrowserBounds, erro
 	return c.GetWindowForTargetWithParams(&v)
 }
 
+// GetVersion - Returns version information.
+// Returns -  protocolVersion - Protocol version. product - Product name. revision - Product revision. userAgent - User-Agent. jsVersion - V8 version.
+func (c *Browser) GetVersion() (string, string, string, string, string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getVersion"})
+	if err != nil {
+		return "", "", "", "", "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ProtocolVersion string
+			Product         string
+			Revision        string
+			UserAgent       string
+			JsVersion       string
+		}
+	}
+
+	if resp == nil {
+		return "", "", "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", "", "", "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", "", "", "", "", err
+	}
+
+	return chromeData.Result.ProtocolVersion, chromeData.Result.Product, chromeData.Result.Revision, chromeData.Result.UserAgent, chromeData.Result.JsVersion, nil
+}
+
 type BrowserSetWindowBoundsParams struct {
 	// Browser window id.
 	WindowId int `json:"windowId"`

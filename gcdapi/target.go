@@ -52,25 +52,28 @@ type TargetTargetDestroyedEvent struct {
 type TargetAttachedToTargetEvent struct {
 	Method string `json:"method"`
 	Params struct {
+		SessionId          string            `json:"sessionId"`          // Identifier assigned to the session used to send/receive messages.
 		TargetInfo         *TargetTargetInfo `json:"targetInfo"`         //
 		WaitingForDebugger bool              `json:"waitingForDebugger"` //
 	} `json:"Params,omitempty"`
 }
 
-// Issued when detached from target for any reason (including <code>detachFromTarget</code> command).
+// Issued when detached from target for any reason (including <code>detachFromTarget</code> command). Can be issued multiple times per target if multiple sessions have been attached to it.
 type TargetDetachedFromTargetEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		TargetId string `json:"targetId"` //
+		SessionId string `json:"sessionId"`          // Detached session identifier.
+		TargetId  string `json:"targetId,omitempty"` // Deprecated.
 	} `json:"Params,omitempty"`
 }
 
-// Notifies about new protocol message from attached target.
+// Notifies about a new protocol message received from the session (as reported in <code>attachedToTarget</code> event).
 type TargetReceivedMessageFromTargetEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		TargetId string `json:"targetId"` //
-		Message  string `json:"message"`  //
+		SessionId string `json:"sessionId"`          // Identifier of a session which sends a message.
+		Message   string `json:"message"`            //
+		TargetId  string `json:"targetId,omitempty"` // Deprecated.
 	} `json:"Params,omitempty"`
 }
 
@@ -161,23 +164,27 @@ func (c *Target) SetRemoteLocations(locations []*TargetRemoteLocation) (*gcdmess
 
 type TargetSendMessageToTargetParams struct {
 	//
-	TargetId string `json:"targetId"`
-	//
 	Message string `json:"message"`
+	// Identifier of the session.
+	SessionId string `json:"sessionId,omitempty"`
+	// Deprecated.
+	TargetId string `json:"targetId,omitempty"`
 }
 
-// SendMessageToTargetWithParams - Sends protocol message to the target with given id.
+// SendMessageToTargetWithParams - Sends protocol message over session with given id.
 func (c *Target) SendMessageToTargetWithParams(v *TargetSendMessageToTargetParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.sendMessageToTarget", Params: v})
 }
 
-// SendMessageToTarget - Sends protocol message to the target with given id.
-// targetId -
+// SendMessageToTarget - Sends protocol message over session with given id.
 // message -
-func (c *Target) SendMessageToTarget(targetId string, message string) (*gcdmessage.ChromeResponse, error) {
+// sessionId - Identifier of the session.
+// targetId - Deprecated.
+func (c *Target) SendMessageToTarget(message string, sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSendMessageToTargetParams
-	v.TargetId = targetId
 	v.Message = message
+	v.SessionId = sessionId
+	v.TargetId = targetId
 	return c.SendMessageToTargetWithParams(&v)
 }
 
@@ -297,60 +304,64 @@ type TargetAttachToTargetParams struct {
 }
 
 // AttachToTargetWithParams - Attaches to the target with given id.
-// Returns -  success - Whether attach succeeded.
-func (c *Target) AttachToTargetWithParams(v *TargetAttachToTargetParams) (bool, error) {
+// Returns -  sessionId - Id assigned to the session.
+func (c *Target) AttachToTargetWithParams(v *TargetAttachToTargetParams) (string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.attachToTarget", Params: v})
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Success bool
+			SessionId string
 		}
 	}
 
 	if resp == nil {
-		return false, &gcdmessage.ChromeEmptyResponseErr{}
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return false, err
+		return "", err
 	}
 
-	return chromeData.Result.Success, nil
+	return chromeData.Result.SessionId, nil
 }
 
 // AttachToTarget - Attaches to the target with given id.
 // targetId -
-// Returns -  success - Whether attach succeeded.
-func (c *Target) AttachToTarget(targetId string) (bool, error) {
+// Returns -  sessionId - Id assigned to the session.
+func (c *Target) AttachToTarget(targetId string) (string, error) {
 	var v TargetAttachToTargetParams
 	v.TargetId = targetId
 	return c.AttachToTargetWithParams(&v)
 }
 
 type TargetDetachFromTargetParams struct {
-	//
-	TargetId string `json:"targetId"`
+	// Session to detach.
+	SessionId string `json:"sessionId,omitempty"`
+	// Deprecated.
+	TargetId string `json:"targetId,omitempty"`
 }
 
-// DetachFromTargetWithParams - Detaches from the target with given id.
+// DetachFromTargetWithParams - Detaches session with given id.
 func (c *Target) DetachFromTargetWithParams(v *TargetDetachFromTargetParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.detachFromTarget", Params: v})
 }
 
-// DetachFromTarget - Detaches from the target with given id.
-// targetId -
-func (c *Target) DetachFromTarget(targetId string) (*gcdmessage.ChromeResponse, error) {
+// DetachFromTarget - Detaches session with given id.
+// sessionId - Session to detach.
+// targetId - Deprecated.
+func (c *Target) DetachFromTarget(sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
 	var v TargetDetachFromTargetParams
+	v.SessionId = sessionId
 	v.TargetId = targetId
 	return c.DetachFromTargetWithParams(&v)
 }

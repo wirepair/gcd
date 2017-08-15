@@ -23,6 +23,12 @@ type CacheStorageCache struct {
 	CacheName      string `json:"cacheName"`      // The name of the cache.
 }
 
+// Cached response
+type CacheStorageCachedResponse struct {
+	Headers map[string]interface{} `json:"headers"` // Response headers
+	Body    string                 `json:"body"`    // Entry content, base64-encoded.
+}
+
 type CacheStorage struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -171,4 +177,54 @@ func (c *CacheStorage) DeleteEntry(cacheId string, request string) (*gcdmessage.
 	v.CacheId = cacheId
 	v.Request = request
 	return c.DeleteEntryWithParams(&v)
+}
+
+type CacheStorageRequestCachedResponseParams struct {
+	// Id of cache that contains the enty.
+	CacheId string `json:"cacheId"`
+	// URL spec of the request.
+	RequestURL string `json:"requestURL"`
+}
+
+// RequestCachedResponseWithParams - Fetches cache entry.
+// Returns -  response - Response read from the cache.
+func (c *CacheStorage) RequestCachedResponseWithParams(v *CacheStorageRequestCachedResponseParams) (*CacheStorageCachedResponse, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCachedResponse", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Response *CacheStorageCachedResponse
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Response, nil
+}
+
+// RequestCachedResponse - Fetches cache entry.
+// cacheId - Id of cache that contains the enty.
+// requestURL - URL spec of the request.
+// Returns -  response - Response read from the cache.
+func (c *CacheStorage) RequestCachedResponse(cacheId string, requestURL string) (*CacheStorageCachedResponse, error) {
+	var v CacheStorageRequestCachedResponseParams
+	v.CacheId = cacheId
+	v.RequestURL = requestURL
+	return c.RequestCachedResponseWithParams(&v)
 }

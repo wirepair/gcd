@@ -10,11 +10,11 @@ import (
 
 // An explanation of an factor contributing to the security state.
 type SecuritySecurityStateExplanation struct {
-	SecurityState    string `json:"securityState"`    // Security state representing the severity of the factor being explained. enum values: unknown, neutral, insecure, warning, secure, info
-	Summary          string `json:"summary"`          // Short phrase describing the type of factor.
-	Description      string `json:"description"`      // Full text explanation of the factor.
-	HasCertificate   bool   `json:"hasCertificate"`   // True if the page has a certificate.
-	MixedContentType string `json:"mixedContentType"` // The type of mixed content described by the explanation. enum values: blockable, optionally-blockable, none
+	SecurityState    string   `json:"securityState"`    // Security state representing the severity of the factor being explained. enum values: unknown, neutral, insecure, warning, secure, info
+	Summary          string   `json:"summary"`          // Short phrase describing the type of factor.
+	Description      string   `json:"description"`      // Full text explanation of the factor.
+	MixedContentType string   `json:"mixedContentType"` // The type of mixed content described by the explanation. enum values: blockable, optionally-blockable, none
+	Certificate      []string `json:"certificate"`      // Page certificate.
 }
 
 // Information about insecure content on the page.
@@ -67,11 +67,6 @@ func (c *Security) Enable() (*gcdmessage.ChromeResponse, error) {
 // Disables tracking security state changes.
 func (c *Security) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.disable"})
-}
-
-// Displays native dialog with the certificate details.
-func (c *Security) ShowCertificateViewer() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.showCertificateViewer"})
 }
 
 type SecurityHandleCertificateErrorParams struct {

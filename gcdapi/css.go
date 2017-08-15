@@ -944,41 +944,44 @@ type CSSGetBackgroundColorsParams struct {
 }
 
 // GetBackgroundColorsWithParams -
-// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).
-func (c *CSS) GetBackgroundColorsWithParams(v *CSSGetBackgroundColorsParams) ([]string, error) {
+// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load). computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px'). computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100'). computedBodyFontSize - The computed font size for the document body, as a computed CSS value string (e.g. '16px').
+func (c *CSS) GetBackgroundColorsWithParams(v *CSSGetBackgroundColorsParams) ([]string, string, string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getBackgroundColors", Params: v})
 	if err != nil {
-		return nil, err
+		return nil, "", "", "", err
 	}
 
 	var chromeData struct {
 		Result struct {
-			BackgroundColors []string
+			BackgroundColors     []string
+			ComputedFontSize     string
+			ComputedFontWeight   string
+			ComputedBodyFontSize string
 		}
 	}
 
 	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, "", "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+		return nil, "", "", "", err
 	}
 
-	return chromeData.Result.BackgroundColors, nil
+	return chromeData.Result.BackgroundColors, chromeData.Result.ComputedFontSize, chromeData.Result.ComputedFontWeight, chromeData.Result.ComputedBodyFontSize, nil
 }
 
 // GetBackgroundColors -
 // nodeId - Id of the node to get background colors for.
-// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).
-func (c *CSS) GetBackgroundColors(nodeId int) ([]string, error) {
+// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load). computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px'). computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100'). computedBodyFontSize - The computed font size for the document body, as a computed CSS value string (e.g. '16px').
+func (c *CSS) GetBackgroundColors(nodeId int) ([]string, string, string, string, error) {
 	var v CSSGetBackgroundColorsParams
 	v.NodeId = nodeId
 	return c.GetBackgroundColorsWithParams(&v)

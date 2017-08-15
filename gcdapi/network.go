@@ -327,13 +327,14 @@ type NetworkEventSourceMessageReceivedEvent struct {
 type NetworkRequestInterceptedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		InterceptionId     string                 `json:"interceptionId"`               // Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
-		Request            *NetworkRequest        `json:"request"`                      //
-		ResourceType       string                 `json:"resourceType"`                 // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
-		RedirectHeaders    map[string]interface{} `json:"redirectHeaders,omitempty"`    // HTTP response headers, only sent if a redirect was intercepted.
-		RedirectStatusCode int                    `json:"redirectStatusCode,omitempty"` // HTTP response code, only sent if a redirect was intercepted.
-		RedirectUrl        string                 `json:"redirectUrl,omitempty"`        // Redirect location, only sent if a redirect was intercepted.
-		AuthChallenge      *NetworkAuthChallenge  `json:"authChallenge,omitempty"`      // Details of the Authorization Challenge encountered. If this is set then continueInterceptedRequest must contain an authChallengeResponse.
+		InterceptionId      string                 `json:"interceptionId"`               // Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
+		Request             *NetworkRequest        `json:"request"`                      //
+		ResourceType        string                 `json:"resourceType"`                 // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+		IsNavigationRequest bool                   `json:"isNavigationRequest"`          // Whether this is a navigation request, which can abort the navigation completely.
+		RedirectHeaders     map[string]interface{} `json:"redirectHeaders,omitempty"`    // HTTP response headers, only sent if a redirect was intercepted.
+		RedirectStatusCode  int                    `json:"redirectStatusCode,omitempty"` // HTTP response code, only sent if a redirect was intercepted.
+		RedirectUrl         string                 `json:"redirectUrl,omitempty"`        // Redirect location, only sent if a redirect was intercepted.
+		AuthChallenge       *NetworkAuthChallenge  `json:"authChallenge,omitempty"`      // Details of the Authorization Challenge encountered. If this is set then continueInterceptedRequest must contain an authChallengeResponse.
 	} `json:"Params,omitempty"`
 }
 
@@ -935,7 +936,7 @@ func (c *Network) SetRequestInterceptionEnabled(enabled bool) (*gcdmessage.Chrom
 type NetworkContinueInterceptedRequestParams struct {
 	//
 	InterceptionId string `json:"interceptionId"`
-	// If set this causes the request to fail with the given reason. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
+	// If set this causes the request to fail with the given reason. Passing <code>Aborted</code> for requests marked with <code>isNavigationRequest</code> also cancels the navigation. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
 	ErrorReason string `json:"errorReason,omitempty"`
 	// If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
 	RawResponse string `json:"rawResponse,omitempty"`
@@ -958,7 +959,7 @@ func (c *Network) ContinueInterceptedRequestWithParams(v *NetworkContinueInterce
 
 // ContinueInterceptedRequest - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId.
 // interceptionId -
-// errorReason - If set this causes the request to fail with the given reason. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
+// errorReason - If set this causes the request to fail with the given reason. Passing <code>Aborted</code> for requests marked with <code>isNavigationRequest</code> also cancels the navigation. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
 // rawResponse - If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
 // url - If set the request url will be modified in a way that's not observable by page. Must not be set in response to an authChallenge.
 // method - If set this allows the request method to be overridden. Must not be set in response to an authChallenge.

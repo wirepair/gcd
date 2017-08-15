@@ -116,10 +116,10 @@ func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float6
 type InputDispatchMouseEventParams struct {
 	// Type of the mouse event.
 	TheType string `json:"type"`
-	// X coordinate of the event relative to the main frame's viewport.
-	X int `json:"x"`
-	// Y coordinate of the event relative to the main frame's viewport. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
-	Y int `json:"y"`
+	// X coordinate of the event relative to the main frame's viewport in CSS pixels.
+	X float64 `json:"x"`
+	// Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+	Y float64 `json:"y"`
 	// Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 	Modifiers int `json:"modifiers,omitempty"`
 	// Time at which the event occurred.
@@ -137,13 +137,13 @@ func (c *Input) DispatchMouseEventWithParams(v *InputDispatchMouseEventParams) (
 
 // DispatchMouseEvent - Dispatches a mouse event to the page.
 // type - Type of the mouse event.
-// x - X coordinate of the event relative to the main frame's viewport.
-// y - Y coordinate of the event relative to the main frame's viewport. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+// x - X coordinate of the event relative to the main frame's viewport in CSS pixels.
+// y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // timestamp - Time at which the event occurred.
 // button - Mouse button (default: "none").
 // clickCount - Number of times the mouse button was clicked (default: 0).
-func (c *Input) DispatchMouseEvent(theType string, x int, y int, modifiers int, timestamp float64, button string, clickCount int) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) DispatchMouseEvent(theType string, x float64, y float64, modifiers int, timestamp float64, button string, clickCount int) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchMouseEventParams
 	v.TheType = theType
 	v.X = x
@@ -237,9 +237,9 @@ func (c *Input) EmulateTouchFromMouseEvent(theType string, x int, y int, timesta
 
 type InputSynthesizePinchGestureParams struct {
 	// X coordinate of the start of the gesture in CSS pixels.
-	X int `json:"x"`
+	X float64 `json:"x"`
 	// Y coordinate of the start of the gesture in CSS pixels.
-	Y int `json:"y"`
+	Y float64 `json:"y"`
 	// Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out).
 	ScaleFactor float64 `json:"scaleFactor"`
 	// Relative pointer speed in pixels per second (default: 800).
@@ -259,7 +259,7 @@ func (c *Input) SynthesizePinchGestureWithParams(v *InputSynthesizePinchGestureP
 // scaleFactor - Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out).
 // relativeSpeed - Relative pointer speed in pixels per second (default: 800).
 // gestureSourceType - Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type). enum values: default, touch, mouse
-func (c *Input) SynthesizePinchGesture(x int, y int, scaleFactor float64, relativeSpeed int, gestureSourceType string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) SynthesizePinchGesture(x float64, y float64, scaleFactor float64, relativeSpeed int, gestureSourceType string) (*gcdmessage.ChromeResponse, error) {
 	var v InputSynthesizePinchGestureParams
 	v.X = x
 	v.Y = y
@@ -271,17 +271,17 @@ func (c *Input) SynthesizePinchGesture(x int, y int, scaleFactor float64, relati
 
 type InputSynthesizeScrollGestureParams struct {
 	// X coordinate of the start of the gesture in CSS pixels.
-	X int `json:"x"`
+	X float64 `json:"x"`
 	// Y coordinate of the start of the gesture in CSS pixels.
-	Y int `json:"y"`
+	Y float64 `json:"y"`
 	// The distance to scroll along the X axis (positive to scroll left).
-	XDistance int `json:"xDistance,omitempty"`
+	XDistance float64 `json:"xDistance,omitempty"`
 	// The distance to scroll along the Y axis (positive to scroll up).
-	YDistance int `json:"yDistance,omitempty"`
+	YDistance float64 `json:"yDistance,omitempty"`
 	// The number of additional pixels to scroll back along the X axis, in addition to the given distance.
-	XOverscroll int `json:"xOverscroll,omitempty"`
+	XOverscroll float64 `json:"xOverscroll,omitempty"`
 	// The number of additional pixels to scroll back along the Y axis, in addition to the given distance.
-	YOverscroll int `json:"yOverscroll,omitempty"`
+	YOverscroll float64 `json:"yOverscroll,omitempty"`
 	// Prevent fling (default: true).
 	PreventFling bool `json:"preventFling,omitempty"`
 	// Swipe speed in pixels per second (default: 800).
@@ -314,7 +314,7 @@ func (c *Input) SynthesizeScrollGestureWithParams(v *InputSynthesizeScrollGestur
 // repeatCount - The number of times to repeat the gesture (default: 0).
 // repeatDelayMs - The number of milliseconds delay between each repeat. (default: 250).
 // interactionMarkerName - The name of the interaction markers to generate, if not empty (default: "").
-func (c *Input) SynthesizeScrollGesture(x int, y int, xDistance int, yDistance int, xOverscroll int, yOverscroll int, preventFling bool, speed int, gestureSourceType string, repeatCount int, repeatDelayMs int, interactionMarkerName string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) SynthesizeScrollGesture(x float64, y float64, xDistance float64, yDistance float64, xOverscroll float64, yOverscroll float64, preventFling bool, speed int, gestureSourceType string, repeatCount int, repeatDelayMs int, interactionMarkerName string) (*gcdmessage.ChromeResponse, error) {
 	var v InputSynthesizeScrollGestureParams
 	v.X = x
 	v.Y = y
@@ -333,9 +333,9 @@ func (c *Input) SynthesizeScrollGesture(x int, y int, xDistance int, yDistance i
 
 type InputSynthesizeTapGestureParams struct {
 	// X coordinate of the start of the gesture in CSS pixels.
-	X int `json:"x"`
+	X float64 `json:"x"`
 	// Y coordinate of the start of the gesture in CSS pixels.
-	Y int `json:"y"`
+	Y float64 `json:"y"`
 	// Duration between touchdown and touchup events in ms (default: 50).
 	Duration int `json:"duration,omitempty"`
 	// Number of times to perform the tap (e.g. 2 for double tap, default: 1).
@@ -355,7 +355,7 @@ func (c *Input) SynthesizeTapGestureWithParams(v *InputSynthesizeTapGestureParam
 // duration - Duration between touchdown and touchup events in ms (default: 50).
 // tapCount - Number of times to perform the tap (e.g. 2 for double tap, default: 1).
 // gestureSourceType - Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type). enum values: default, touch, mouse
-func (c *Input) SynthesizeTapGesture(x int, y int, duration int, tapCount int, gestureSourceType string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) SynthesizeTapGesture(x float64, y float64, duration int, tapCount int, gestureSourceType string) (*gcdmessage.ChromeResponse, error) {
 	var v InputSynthesizeTapGestureParams
 	v.X = x
 	v.Y = y

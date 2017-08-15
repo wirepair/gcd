@@ -1019,12 +1019,14 @@ func (c *DOM) SetInspectedNode(nodeId int) (*gcdmessage.ChromeResponse, error) {
 
 type DOMResolveNodeParams struct {
 	// Id of the node to resolve.
-	NodeId int `json:"nodeId"`
+	NodeId int `json:"nodeId,omitempty"`
+	// Backend identifier of the node to resolve.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
 	// Symbolic group name that can be used to release multiple objects.
 	ObjectGroup string `json:"objectGroup,omitempty"`
 }
 
-// ResolveNodeWithParams - Resolves JavaScript node object for given node id.
+// ResolveNodeWithParams - Resolves the JavaScript node object for a given NodeId or BackendNodeId.
 // Returns -  object - JavaScript object wrapper for given node.
 func (c *DOM) ResolveNodeWithParams(v *DOMResolveNodeParams) (*RuntimeRemoteObject, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.resolveNode", Params: v})
@@ -1056,13 +1058,15 @@ func (c *DOM) ResolveNodeWithParams(v *DOMResolveNodeParams) (*RuntimeRemoteObje
 	return chromeData.Result.Object, nil
 }
 
-// ResolveNode - Resolves JavaScript node object for given node id.
+// ResolveNode - Resolves the JavaScript node object for a given NodeId or BackendNodeId.
 // nodeId - Id of the node to resolve.
+// backendNodeId - Backend identifier of the node to resolve.
 // objectGroup - Symbolic group name that can be used to release multiple objects.
 // Returns -  object - JavaScript object wrapper for given node.
-func (c *DOM) ResolveNode(nodeId int, objectGroup string) (*RuntimeRemoteObject, error) {
+func (c *DOM) ResolveNode(nodeId int, backendNodeId int, objectGroup string) (*RuntimeRemoteObject, error) {
 	var v DOMResolveNodeParams
 	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
 	v.ObjectGroup = objectGroup
 	return c.ResolveNodeWithParams(&v)
 }
@@ -1237,8 +1241,12 @@ func (c *DOM) MarkUndoableState() (*gcdmessage.ChromeResponse, error) {
 }
 
 type DOMFocusParams struct {
-	// Id of the node to focus.
-	NodeId int `json:"nodeId"`
+	// Identifier of the node.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId,omitempty"`
 }
 
 // FocusWithParams - Focuses the given element.
@@ -1247,18 +1255,26 @@ func (c *DOM) FocusWithParams(v *DOMFocusParams) (*gcdmessage.ChromeResponse, er
 }
 
 // Focus - Focuses the given element.
-// nodeId - Id of the node to focus.
-func (c *DOM) Focus(nodeId int) (*gcdmessage.ChromeResponse, error) {
+// nodeId - Identifier of the node.
+// backendNodeId - Identifier of the backend node.
+// objectId - JavaScript object id of the node wrapper.
+func (c *DOM) Focus(nodeId int, backendNodeId int, objectId string) (*gcdmessage.ChromeResponse, error) {
 	var v DOMFocusParams
 	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
 	return c.FocusWithParams(&v)
 }
 
 type DOMSetFileInputFilesParams struct {
-	// Id of the file input node to set files for.
-	NodeId int `json:"nodeId"`
 	// Array of file paths to set.
 	Files []string `json:"files"`
+	// Identifier of the node.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId,omitempty"`
 }
 
 // SetFileInputFilesWithParams - Sets files for the given file input element.
@@ -1267,18 +1283,26 @@ func (c *DOM) SetFileInputFilesWithParams(v *DOMSetFileInputFilesParams) (*gcdme
 }
 
 // SetFileInputFiles - Sets files for the given file input element.
-// nodeId - Id of the file input node to set files for.
 // files - Array of file paths to set.
-func (c *DOM) SetFileInputFiles(nodeId int, files []string) (*gcdmessage.ChromeResponse, error) {
+// nodeId - Identifier of the node.
+// backendNodeId - Identifier of the backend node.
+// objectId - JavaScript object id of the node wrapper.
+func (c *DOM) SetFileInputFiles(files []string, nodeId int, backendNodeId int, objectId string) (*gcdmessage.ChromeResponse, error) {
 	var v DOMSetFileInputFilesParams
-	v.NodeId = nodeId
 	v.Files = files
+	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
 	return c.SetFileInputFilesWithParams(&v)
 }
 
 type DOMGetBoxModelParams struct {
-	// Id of the node to get box model for.
-	NodeId int `json:"nodeId"`
+	// Identifier of the node.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId,omitempty"`
 }
 
 // GetBoxModelWithParams - Returns boxes for the currently selected nodes.
@@ -1314,11 +1338,15 @@ func (c *DOM) GetBoxModelWithParams(v *DOMGetBoxModelParams) (*DOMBoxModel, erro
 }
 
 // GetBoxModel - Returns boxes for the currently selected nodes.
-// nodeId - Id of the node to get box model for.
+// nodeId - Identifier of the node.
+// backendNodeId - Identifier of the backend node.
+// objectId - JavaScript object id of the node wrapper.
 // Returns -  model - Box model for the node.
-func (c *DOM) GetBoxModel(nodeId int) (*DOMBoxModel, error) {
+func (c *DOM) GetBoxModel(nodeId int, backendNodeId int, objectId string) (*DOMBoxModel, error) {
 	var v DOMGetBoxModelParams
 	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
 	return c.GetBoxModelWithParams(&v)
 }
 

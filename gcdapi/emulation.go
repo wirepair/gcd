@@ -33,14 +33,8 @@ type EmulationSetDeviceMetricsOverrideParams struct {
 	DeviceScaleFactor float64 `json:"deviceScaleFactor"`
 	// Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
 	Mobile bool `json:"mobile"`
-	// Whether a view that exceeds the available browser window area should be scaled down to fit.
-	FitWindow bool `json:"fitWindow"`
 	// Scale to apply to resulting view image. Ignored in |fitWindow| mode.
 	Scale float64 `json:"scale,omitempty"`
-	// Not used.
-	OffsetX float64 `json:"offsetX,omitempty"`
-	// Not used.
-	OffsetY float64 `json:"offsetY,omitempty"`
 	// Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 	ScreenWidth int `json:"screenWidth,omitempty"`
 	// Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
@@ -49,6 +43,8 @@ type EmulationSetDeviceMetricsOverrideParams struct {
 	PositionX int `json:"positionX,omitempty"`
 	// Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 	PositionY int `json:"positionY,omitempty"`
+	// Do not set visible view size, rely upon explicit setVisibleSize call.
+	DontSetVisibleSize bool `json:"dontSetVisibleSize,omitempty"`
 	// Screen orientation override.
 	ScreenOrientation *EmulationScreenOrientation `json:"screenOrientation,omitempty"`
 }
@@ -63,29 +59,25 @@ func (c *Emulation) SetDeviceMetricsOverrideWithParams(v *EmulationSetDeviceMetr
 // height - Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
 // deviceScaleFactor - Overriding device scale factor value. 0 disables the override.
 // mobile - Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
-// fitWindow - Whether a view that exceeds the available browser window area should be scaled down to fit.
 // scale - Scale to apply to resulting view image. Ignored in |fitWindow| mode.
-// offsetX - Not used.
-// offsetY - Not used.
 // screenWidth - Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // screenHeight - Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionX - Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionY - Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+// dontSetVisibleSize - Do not set visible view size, rely upon explicit setVisibleSize call.
 // screenOrientation - Screen orientation override.
-func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, fitWindow bool, scale float64, offsetX float64, offsetY float64, screenWidth int, screenHeight int, positionX int, positionY int, screenOrientation *EmulationScreenOrientation) (*gcdmessage.ChromeResponse, error) {
+func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, scale float64, screenWidth int, screenHeight int, positionX int, positionY int, dontSetVisibleSize bool, screenOrientation *EmulationScreenOrientation) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetDeviceMetricsOverrideParams
 	v.Width = width
 	v.Height = height
 	v.DeviceScaleFactor = deviceScaleFactor
 	v.Mobile = mobile
-	v.FitWindow = fitWindow
 	v.Scale = scale
-	v.OffsetX = offsetX
-	v.OffsetY = offsetY
 	v.ScreenWidth = screenWidth
 	v.ScreenHeight = screenHeight
 	v.PositionX = positionX
 	v.PositionY = positionY
+	v.DontSetVisibleSize = dontSetVisibleSize
 	v.ScreenOrientation = screenOrientation
 	return c.SetDeviceMetricsOverrideWithParams(&v)
 }
@@ -93,37 +85,6 @@ func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleF
 // Clears the overriden device metrics.
 func (c *Emulation) ClearDeviceMetricsOverride() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDeviceMetricsOverride"})
-}
-
-type EmulationForceViewportParams struct {
-	// X coordinate of top-left corner of the area (CSS pixels).
-	X float64 `json:"x"`
-	// Y coordinate of top-left corner of the area (CSS pixels).
-	Y float64 `json:"y"`
-	// Scale to apply to the area (relative to a page scale of 1.0).
-	Scale float64 `json:"scale"`
-}
-
-// ForceViewportWithParams - Overrides the visible area of the page. The change is hidden from the page, i.e. the observable scroll position and page scale does not change. In effect, the command moves the specified area of the page into the top-left corner of the frame.
-func (c *Emulation) ForceViewportWithParams(v *EmulationForceViewportParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.forceViewport", Params: v})
-}
-
-// ForceViewport - Overrides the visible area of the page. The change is hidden from the page, i.e. the observable scroll position and page scale does not change. In effect, the command moves the specified area of the page into the top-left corner of the frame.
-// x - X coordinate of top-left corner of the area (CSS pixels).
-// y - Y coordinate of top-left corner of the area (CSS pixels).
-// scale - Scale to apply to the area (relative to a page scale of 1.0).
-func (c *Emulation) ForceViewport(x float64, y float64, scale float64) (*gcdmessage.ChromeResponse, error) {
-	var v EmulationForceViewportParams
-	v.X = x
-	v.Y = y
-	v.Scale = scale
-	return c.ForceViewportWithParams(&v)
-}
-
-// Resets the visible area of the page to the original viewport, undoing any effects of the <code>forceViewport</code> command.
-func (c *Emulation) ResetViewport() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetViewport"})
 }
 
 // Requests that page scale factor is reset to initial values.
@@ -223,23 +184,45 @@ func (c *Emulation) ClearGeolocationOverride() (*gcdmessage.ChromeResponse, erro
 type EmulationSetTouchEmulationEnabledParams struct {
 	// Whether the touch event emulation should be enabled.
 	Enabled bool `json:"enabled"`
-	// Touch/gesture events configuration. Default: current platform.
-	Configuration string `json:"configuration,omitempty"`
+	// Maximum touch points supported. Defaults to one.
+	MaxTouchPoints int `json:"maxTouchPoints,omitempty"`
 }
 
-// SetTouchEmulationEnabledWithParams - Toggles mouse event-based touch event emulation.
+// SetTouchEmulationEnabledWithParams - Enables touch on platforms which do not support them.
 func (c *Emulation) SetTouchEmulationEnabledWithParams(v *EmulationSetTouchEmulationEnabledParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setTouchEmulationEnabled", Params: v})
 }
 
-// SetTouchEmulationEnabled - Toggles mouse event-based touch event emulation.
+// SetTouchEmulationEnabled - Enables touch on platforms which do not support them.
 // enabled - Whether the touch event emulation should be enabled.
-// configuration - Touch/gesture events configuration. Default: current platform.
-func (c *Emulation) SetTouchEmulationEnabled(enabled bool, configuration string) (*gcdmessage.ChromeResponse, error) {
+// maxTouchPoints - Maximum touch points supported. Defaults to one.
+func (c *Emulation) SetTouchEmulationEnabled(enabled bool, maxTouchPoints int) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetTouchEmulationEnabledParams
 	v.Enabled = enabled
-	v.Configuration = configuration
+	v.MaxTouchPoints = maxTouchPoints
 	return c.SetTouchEmulationEnabledWithParams(&v)
+}
+
+type EmulationSetEmitTouchEventsForMouseParams struct {
+	// Whether touch emulation based on mouse input should be enabled.
+	Enabled bool `json:"enabled"`
+	// Touch/gesture events configuration. Default: current platform.
+	Configuration string `json:"configuration,omitempty"`
+}
+
+// SetEmitTouchEventsForMouseWithParams -
+func (c *Emulation) SetEmitTouchEventsForMouseWithParams(v *EmulationSetEmitTouchEventsForMouseParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmitTouchEventsForMouse", Params: v})
+}
+
+// SetEmitTouchEventsForMouse -
+// enabled - Whether touch emulation based on mouse input should be enabled.
+// configuration - Touch/gesture events configuration. Default: current platform.
+func (c *Emulation) SetEmitTouchEventsForMouse(enabled bool, configuration string) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetEmitTouchEventsForMouseParams
+	v.Enabled = enabled
+	v.Configuration = configuration
+	return c.SetEmitTouchEventsForMouseWithParams(&v)
 }
 
 type EmulationSetEmulatedMediaParams struct {

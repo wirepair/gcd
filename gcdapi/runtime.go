@@ -203,7 +203,7 @@ type RuntimeEvaluateParams struct {
 	GeneratePreview bool `json:"generatePreview,omitempty"`
 	// Whether execution should be treated as initiated by user in the UI.
 	UserGesture bool `json:"userGesture,omitempty"`
-	// Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error.
+	// Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
 	AwaitPromise bool `json:"awaitPromise,omitempty"`
 }
 
@@ -249,7 +249,7 @@ func (c *Runtime) EvaluateWithParams(v *RuntimeEvaluateParams) (*RuntimeRemoteOb
 // returnByValue - Whether the result is expected to be a JSON object that should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
-// awaitPromise - Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error.
+// awaitPromise - Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
 func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
@@ -335,7 +335,7 @@ type RuntimeCallFunctionOnParams struct {
 	GeneratePreview bool `json:"generatePreview,omitempty"`
 	// Whether execution should be treated as initiated by user in the UI.
 	UserGesture bool `json:"userGesture,omitempty"`
-	// Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error.
+	// Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
 	AwaitPromise bool `json:"awaitPromise,omitempty"`
 }
 
@@ -380,7 +380,7 @@ func (c *Runtime) CallFunctionOnWithParams(v *RuntimeCallFunctionOnParams) (*Run
 // returnByValue - Whether the result is expected to be a JSON object which should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
-// awaitPromise - Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error.
+// awaitPromise - Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
 // Returns -  result - Call result. exceptionDetails - Exception details.
 func (c *Runtime) CallFunctionOn(objectId string, functionDeclaration string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeCallFunctionOnParams
@@ -603,7 +603,7 @@ type RuntimeRunScriptParams struct {
 	ReturnByValue bool `json:"returnByValue,omitempty"`
 	// Whether preview should be generated for the result.
 	GeneratePreview bool `json:"generatePreview,omitempty"`
-	// Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error.
+	// Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
 	AwaitPromise bool `json:"awaitPromise,omitempty"`
 }
 
@@ -648,7 +648,7 @@ func (c *Runtime) RunScriptWithParams(v *RuntimeRunScriptParams) (*RuntimeRemote
 // includeCommandLineAPI - Determines whether Command Line API should be available during the evaluation.
 // returnByValue - Whether the result is expected to be a JSON object which should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
-// awaitPromise - Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error.
+// awaitPromise - Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
 // Returns -  result - Run result. exceptionDetails - Exception details.
 func (c *Runtime) RunScript(scriptId string, executionContextId int, objectGroup string, silent bool, includeCommandLineAPI bool, returnByValue bool, generatePreview bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeRunScriptParams

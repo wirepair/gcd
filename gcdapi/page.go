@@ -11,13 +11,14 @@ import (
 
 // Information about the Frame on the page.
 type PageFrame struct {
-	Id             string `json:"id"`                 // Frame unique identifier.
-	ParentId       string `json:"parentId,omitempty"` // Parent frame identifier.
-	LoaderId       string `json:"loaderId"`           // Identifier of the loader associated with this frame.
-	Name           string `json:"name,omitempty"`     // Frame's name as specified in the tag.
-	Url            string `json:"url"`                // Frame document's URL.
-	SecurityOrigin string `json:"securityOrigin"`     // Frame document's security origin.
-	MimeType       string `json:"mimeType"`           // Frame document's mimeType as determined by the browser.
+	Id             string `json:"id"`                       // Frame unique identifier.
+	ParentId       string `json:"parentId,omitempty"`       // Parent frame identifier.
+	LoaderId       string `json:"loaderId"`                 // Identifier of the loader associated with this frame.
+	Name           string `json:"name,omitempty"`           // Frame's name as specified in the tag.
+	Url            string `json:"url"`                      // Frame document's URL.
+	SecurityOrigin string `json:"securityOrigin"`           // Frame document's security origin.
+	MimeType       string `json:"mimeType"`                 // Frame document's mimeType as determined by the browser.
+	UnreachableUrl string `json:"unreachableUrl,omitempty"` // If the frame failed to load, this contains the URL that could not be loaded.
 }
 
 // Information about the Resource on the page.
@@ -85,6 +86,15 @@ type PageVisualViewport struct {
 	Scale        float64 `json:"scale"`        // Scale relative to the ideal viewport (size at width=device-width).
 }
 
+// Viewport for capturing screenshot.
+type PageViewport struct {
+	X      float64 `json:"x"`      // X offset in CSS pixels.
+	Y      float64 `json:"y"`      // Y offset in CSS pixels
+	Width  float64 `json:"width"`  // Rectangle width in CSS pixels
+	Height float64 `json:"height"` // Rectangle height in CSS pixels
+	Scale  float64 `json:"scale"`  // Page scale factor.
+}
+
 //
 type PageDomContentEventFiredEvent struct {
 	Method string `json:"method"`
@@ -149,6 +159,8 @@ type PageFrameScheduledNavigationEvent struct {
 	Params struct {
 		FrameId string  `json:"frameId"` // Id of the frame that has scheduled a navigation.
 		Delay   float64 `json:"delay"`   // Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start.
+		Reason  string  `json:"reason"`  // The reason for the navigation.
+		Url     string  `json:"url"`     // The destination URL for the scheduled navigation.
 	} `json:"Params,omitempty"`
 }
 
@@ -164,8 +176,10 @@ type PageFrameClearedScheduledNavigationEvent struct {
 type PageJavascriptDialogOpeningEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Message string `json:"message"` // Message that will be displayed by the dialog.
-		Type    string `json:"type"`    // Dialog type. enum values: alert, confirm, prompt, beforeunload
+		Url           string `json:"url"`                     // Frame url.
+		Message       string `json:"message"`                 // Message that will be displayed by the dialog.
+		Type          string `json:"type"`                    // Dialog type. enum values: alert, confirm, prompt, beforeunload
+		DefaultPrompt string `json:"defaultPrompt,omitempty"` // Default dialog prompt.
 	} `json:"Params,omitempty"`
 }
 
@@ -173,7 +187,8 @@ type PageJavascriptDialogOpeningEvent struct {
 type PageJavascriptDialogClosedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Result bool `json:"result"` // Whether dialog was confirmed.
+		Result    bool   `json:"result"`    // Whether dialog was confirmed.
+		UserInput string `json:"userInput"` // User input in case of prompt.
 	} `json:"Params,omitempty"`
 }
 
@@ -192,17 +207,6 @@ type PageScreencastVisibilityChangedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Visible bool `json:"visible"` // True if the page is visible.
-	} `json:"Params,omitempty"`
-}
-
-// Fired when a navigation is started if navigation throttles are enabled.  The navigation will be deferred until processNavigation is called.
-type PageNavigationRequestedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		IsInMainFrame bool   `json:"isInMainFrame"` // Whether the navigation is taking place in the main frame or in a subframe.
-		IsRedirect    bool   `json:"isRedirect"`    // Whether the navigation has encountered a server redirect or not.
-		NavigationId  int    `json:"navigationId"`  //
-		Url           string `json:"url"`           // URL of requested navigation.
 	} `json:"Params,omitempty"`
 }
 
@@ -391,6 +395,24 @@ func (c *Page) Reload(ignoreCache bool, scriptToEvaluateOnLoad string) (*gcdmess
 	v.IgnoreCache = ignoreCache
 	v.ScriptToEvaluateOnLoad = scriptToEvaluateOnLoad
 	return c.ReloadWithParams(&v)
+}
+
+type PageSetAdBlockingEnabledParams struct {
+	// Whether to block ads.
+	Enabled bool `json:"enabled"`
+}
+
+// SetAdBlockingEnabledWithParams - Enable Chrome's experimental ad filter on all sites.
+func (c *Page) SetAdBlockingEnabledWithParams(v *PageSetAdBlockingEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setAdBlockingEnabled", Params: v})
+}
+
+// SetAdBlockingEnabled - Enable Chrome's experimental ad filter on all sites.
+// enabled - Whether to block ads.
+func (c *Page) SetAdBlockingEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetAdBlockingEnabledParams
+	v.Enabled = enabled
+	return c.SetAdBlockingEnabledWithParams(&v)
 }
 
 type PageNavigateParams struct {
@@ -733,14 +755,8 @@ type PageSetDeviceMetricsOverrideParams struct {
 	DeviceScaleFactor float64 `json:"deviceScaleFactor"`
 	// Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
 	Mobile bool `json:"mobile"`
-	// Whether a view that exceeds the available browser window area should be scaled down to fit.
-	FitWindow bool `json:"fitWindow"`
 	// Scale to apply to resulting view image. Ignored in |fitWindow| mode.
 	Scale float64 `json:"scale,omitempty"`
-	// X offset to shift resulting view image by. Ignored in |fitWindow| mode.
-	OffsetX float64 `json:"offsetX,omitempty"`
-	// Y offset to shift resulting view image by. Ignored in |fitWindow| mode.
-	OffsetY float64 `json:"offsetY,omitempty"`
 	// Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 	ScreenWidth int `json:"screenWidth,omitempty"`
 	// Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
@@ -749,6 +765,8 @@ type PageSetDeviceMetricsOverrideParams struct {
 	PositionX int `json:"positionX,omitempty"`
 	// Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 	PositionY int `json:"positionY,omitempty"`
+	// Do not set visible view size, rely upon explicit setVisibleSize call.
+	DontSetVisibleSize bool `json:"dontSetVisibleSize,omitempty"`
 	// Screen orientation override.
 	ScreenOrientation *EmulationScreenOrientation `json:"screenOrientation,omitempty"`
 }
@@ -763,29 +781,25 @@ func (c *Page) SetDeviceMetricsOverrideWithParams(v *PageSetDeviceMetricsOverrid
 // height - Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
 // deviceScaleFactor - Overriding device scale factor value. 0 disables the override.
 // mobile - Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
-// fitWindow - Whether a view that exceeds the available browser window area should be scaled down to fit.
 // scale - Scale to apply to resulting view image. Ignored in |fitWindow| mode.
-// offsetX - X offset to shift resulting view image by. Ignored in |fitWindow| mode.
-// offsetY - Y offset to shift resulting view image by. Ignored in |fitWindow| mode.
 // screenWidth - Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // screenHeight - Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionX - Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
 // positionY - Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+// dontSetVisibleSize - Do not set visible view size, rely upon explicit setVisibleSize call.
 // screenOrientation - Screen orientation override.
-func (c *Page) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, fitWindow bool, scale float64, offsetX float64, offsetY float64, screenWidth int, screenHeight int, positionX int, positionY int, screenOrientation *EmulationScreenOrientation) (*gcdmessage.ChromeResponse, error) {
+func (c *Page) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, scale float64, screenWidth int, screenHeight int, positionX int, positionY int, dontSetVisibleSize bool, screenOrientation *EmulationScreenOrientation) (*gcdmessage.ChromeResponse, error) {
 	var v PageSetDeviceMetricsOverrideParams
 	v.Width = width
 	v.Height = height
 	v.DeviceScaleFactor = deviceScaleFactor
 	v.Mobile = mobile
-	v.FitWindow = fitWindow
 	v.Scale = scale
-	v.OffsetX = offsetX
-	v.OffsetY = offsetY
 	v.ScreenWidth = screenWidth
 	v.ScreenHeight = screenHeight
 	v.PositionX = positionX
 	v.PositionY = positionY
+	v.DontSetVisibleSize = dontSetVisibleSize
 	v.ScreenOrientation = screenOrientation
 	return c.SetDeviceMetricsOverrideWithParams(&v)
 }
@@ -884,6 +898,8 @@ type PageCaptureScreenshotParams struct {
 	Format string `json:"format,omitempty"`
 	// Compression quality from range [0..100] (jpeg only).
 	Quality int `json:"quality,omitempty"`
+	// Capture the screenshot of a given region only.
+	Clip *PageViewport `json:"clip,omitempty"`
 	// Capture the screenshot from the surface, rather than the view. Defaults to true.
 	FromSurface bool `json:"fromSurface,omitempty"`
 }
@@ -923,12 +939,14 @@ func (c *Page) CaptureScreenshotWithParams(v *PageCaptureScreenshotParams) (stri
 // CaptureScreenshot - Capture page screenshot.
 // format - Image compression format (defaults to png).
 // quality - Compression quality from range [0..100] (jpeg only).
+// clip - Capture the screenshot of a given region only.
 // fromSurface - Capture the screenshot from the surface, rather than the view. Defaults to true.
 // Returns -  data - Base64-encoded image data.
-func (c *Page) CaptureScreenshot(format string, quality int, fromSurface bool) (string, error) {
+func (c *Page) CaptureScreenshot(format string, quality int, clip *PageViewport, fromSurface bool) (string, error) {
 	var v PageCaptureScreenshotParams
 	v.Format = format
 	v.Quality = quality
+	v.Clip = clip
 	v.FromSurface = fromSurface
 	return c.CaptureScreenshotWithParams(&v)
 }
@@ -956,6 +974,8 @@ type PagePrintToPDFParams struct {
 	MarginRight float64 `json:"marginRight,omitempty"`
 	// Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
 	PageRanges string `json:"pageRanges,omitempty"`
+	// Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
+	IgnoreInvalidPageRanges bool `json:"ignoreInvalidPageRanges,omitempty"`
 }
 
 // PrintToPDFWithParams - Print page as PDF.
@@ -1002,8 +1022,9 @@ func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, error) {
 // marginLeft - Left margin in inches. Defaults to 1cm (~0.4 inches).
 // marginRight - Right margin in inches. Defaults to 1cm (~0.4 inches).
 // pageRanges - Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
+// ignoreInvalidPageRanges - Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
 // Returns -  data - Base64-encoded pdf data.
-func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string) (string, error) {
+func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool) (string, error) {
 	var v PagePrintToPDFParams
 	v.Landscape = landscape
 	v.DisplayHeaderFooter = displayHeaderFooter
@@ -1016,6 +1037,7 @@ func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackgro
 	v.MarginLeft = marginLeft
 	v.MarginRight = marginRight
 	v.PageRanges = pageRanges
+	v.IgnoreInvalidPageRanges = ignoreInvalidPageRanges
 	return c.PrintToPDFWithParams(&v)
 }
 
@@ -1137,46 +1159,6 @@ func (c *Page) RequestAppBanner() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.requestAppBanner"})
 }
 
-type PageSetControlNavigationsParams struct {
-	//
-	Enabled bool `json:"enabled"`
-}
-
-// SetControlNavigationsWithParams - Toggles navigation throttling which allows programatic control over navigation and redirect response.
-func (c *Page) SetControlNavigationsWithParams(v *PageSetControlNavigationsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setControlNavigations", Params: v})
-}
-
-// SetControlNavigations - Toggles navigation throttling which allows programatic control over navigation and redirect response.
-// enabled -
-func (c *Page) SetControlNavigations(enabled bool) (*gcdmessage.ChromeResponse, error) {
-	var v PageSetControlNavigationsParams
-	v.Enabled = enabled
-	return c.SetControlNavigationsWithParams(&v)
-}
-
-type PageProcessNavigationParams struct {
-	//  enum values: Proceed, Cancel, CancelAndIgnore
-	Response string `json:"response"`
-	//
-	NavigationId int `json:"navigationId"`
-}
-
-// ProcessNavigationWithParams - Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation.
-func (c *Page) ProcessNavigationWithParams(v *PageProcessNavigationParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.processNavigation", Params: v})
-}
-
-// ProcessNavigation - Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation.
-// response -  enum values: Proceed, Cancel, CancelAndIgnore
-// navigationId -
-func (c *Page) ProcessNavigation(response string, navigationId int) (*gcdmessage.ChromeResponse, error) {
-	var v PageProcessNavigationParams
-	v.Response = response
-	v.NavigationId = navigationId
-	return c.ProcessNavigationWithParams(&v)
-}
-
 // GetLayoutMetrics - Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
 // Returns -  layoutViewport - Metrics relating to the layout viewport. visualViewport - Metrics relating to the visual viewport. contentSize - Size of scrollable area.
 func (c *Page) GetLayoutMetrics() (*PageLayoutViewport, *PageVisualViewport, *DOMRect, error) {
@@ -1263,4 +1245,9 @@ func (c *Page) CreateIsolatedWorld(frameId string, worldName string, grantUniver
 	v.WorldName = worldName
 	v.GrantUniveralAccess = grantUniveralAccess
 	return c.CreateIsolatedWorldWithParams(&v)
+}
+
+// Brings page to front (activates tab).
+func (c *Page) BringToFront() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.bringToFront"})
 }
