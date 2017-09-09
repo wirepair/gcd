@@ -656,8 +656,12 @@ func (c *DOM) RemoveAttribute(nodeId int, name string) (*gcdmessage.ChromeRespon
 }
 
 type DOMGetOuterHTMLParams struct {
-	// Id of the node to get markup for.
-	NodeId int `json:"nodeId"`
+	// Identifier of the node.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId,omitempty"`
 }
 
 // GetOuterHTMLWithParams - Returns node's HTML markup.
@@ -693,11 +697,15 @@ func (c *DOM) GetOuterHTMLWithParams(v *DOMGetOuterHTMLParams) (string, error) {
 }
 
 // GetOuterHTML - Returns node's HTML markup.
-// nodeId - Id of the node to get markup for.
+// nodeId - Identifier of the node.
+// backendNodeId - Identifier of the backend node.
+// objectId - JavaScript object id of the node wrapper.
 // Returns -  outerHTML - Outer HTML markup.
-func (c *DOM) GetOuterHTML(nodeId int) (string, error) {
+func (c *DOM) GetOuterHTML(nodeId int, backendNodeId int, objectId string) (string, error) {
 	var v DOMGetOuterHTMLParams
 	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
 	return c.GetOuterHTMLWithParams(&v)
 }
 
@@ -1448,4 +1456,66 @@ func (c *DOM) GetRelayoutBoundary(nodeId int) (int, error) {
 	var v DOMGetRelayoutBoundaryParams
 	v.NodeId = nodeId
 	return c.GetRelayoutBoundaryWithParams(&v)
+}
+
+type DOMDescribeNodeParams struct {
+	// Identifier of the node.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId,omitempty"`
+	// The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+	Depth int `json:"depth,omitempty"`
+	// Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
+	Pierce bool `json:"pierce,omitempty"`
+}
+
+// DescribeNodeWithParams - Describes node given its id, does not require domain to be enabled. Does not start tracking any objects, can be used for automation.
+// Returns -  node - Node description.
+func (c *DOM) DescribeNodeWithParams(v *DOMDescribeNodeParams) (*DOMNode, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.describeNode", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Node *DOMNode
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Node, nil
+}
+
+// DescribeNode - Describes node given its id, does not require domain to be enabled. Does not start tracking any objects, can be used for automation.
+// nodeId - Identifier of the node.
+// backendNodeId - Identifier of the backend node.
+// objectId - JavaScript object id of the node wrapper.
+// depth - The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+// pierce - Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
+// Returns -  node - Node description.
+func (c *DOM) DescribeNode(nodeId int, backendNodeId int, objectId string, depth int, pierce bool) (*DOMNode, error) {
+	var v DOMDescribeNodeParams
+	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
+	v.Depth = depth
+	v.Pierce = pierce
+	return c.DescribeNodeWithParams(&v)
 }

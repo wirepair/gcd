@@ -78,7 +78,7 @@ type RuntimeInternalPropertyDescriptor struct {
 
 // Represents function call argument. Either remote object id <code>objectId</code>, primitive <code>value</code>, unserializable primitive value or neither of (for undefined) them should be specified.
 type RuntimeCallArgument struct {
-	Value               interface{} `json:"value,omitempty"`               // Primitive value.
+	Value               interface{} `json:"value,omitempty"`               // Primitive value or serializable javascript object.
 	UnserializableValue string      `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified. enum values: Infinity, NaN, -Infinity, -0
 	ObjectId            string      `json:"objectId,omitempty"`            // Remote object handle.
 }
@@ -661,4 +661,50 @@ func (c *Runtime) RunScript(scriptId string, executionContextId int, objectGroup
 	v.GeneratePreview = generatePreview
 	v.AwaitPromise = awaitPromise
 	return c.RunScriptWithParams(&v)
+}
+
+type RuntimeQueryObjectsParams struct {
+	// Identifier of the prototype to return objects for.
+	PrototypeObjectId string `json:"prototypeObjectId"`
+}
+
+// QueryObjectsWithParams -
+// Returns -  objects - Array with objects.
+func (c *Runtime) QueryObjectsWithParams(v *RuntimeQueryObjectsParams) (*RuntimeRemoteObject, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.queryObjects", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Objects *RuntimeRemoteObject
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Objects, nil
+}
+
+// QueryObjects -
+// prototypeObjectId - Identifier of the prototype to return objects for.
+// Returns -  objects - Array with objects.
+func (c *Runtime) QueryObjects(prototypeObjectId string) (*RuntimeRemoteObject, error) {
+	var v RuntimeQueryObjectsParams
+	v.PrototypeObjectId = prototypeObjectId
+	return c.QueryObjectsWithParams(&v)
 }

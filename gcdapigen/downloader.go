@@ -28,15 +28,83 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 )
 
+const (
+	revisionOS          = "win" // doesn't really matter
+	revisionEndpoint    = "https://omahaproxy.appspot.com/all.json"
+	browserProtocolFile = "https://chromium.googlesource.com/chromium/src/+/%s/third_party/WebKit/Source/core/inspector/browser_protocol.json?format=text"
+	jsProtocolFile      = "https://chromium.googlesource.com/v8/v8/+/%s/src/inspector/js_protocol.json?format=text"
+)
+
+type ChromiumRevision []struct {
+	Os       string `json:"os"`
+	Versions []struct {
+		BranchCommit       string `json:"branch_commit"`
+		BranchBasePosition string `json:"branch_base_position"`
+		SkiaCommit         string `json:"skia_commit"`
+		V8Version          string `json:"v8_version"`
+		PreviousVersion    string `json:"previous_version"`
+		V8Commit           string `json:"v8_commit"`
+		TrueBranch         string `json:"true_branch"`
+		PreviousReldate    string `json:"previous_reldate"`
+		BranchBaseCommit   string `json:"branch_base_commit"`
+		Version            string `json:"version"`
+		CurrentReldate     string `json:"current_reldate"`
+		CurrentVersion     string `json:"current_version"`
+		Os                 string `json:"os"`
+		Channel            string `json:"channel"`
+		ChromiumCommit     string `json:"chromium_commit"`
+	} `json:"versions"`
+}
+
+type RevisionInfo struct {
+	Channel  string
+	Version  string
+	Branch   string
+	JsBranch string
+}
+
+func getApiRevision(channel string) *RevisionInfo {
+	versionInfo := getRevisionData(channel)
+	if versionInfo == nil {
+		log.Fatalf("Error finding version information from %s", revisionEndpoint)
+	}
+	download(fmt.Sprintf(browserProtocolFile, versionInfo.Branch), fmt.Sprintf(jsProtocolFile, versionInfo.JsBranch))
+	return versionInfo
+}
+
+func getRevisionData(channel string) *RevisionInfo {
+	var revision ChromiumRevision
+	revisionData := getRemoteFile(revisionEndpoint)
+
+	if err := json.Unmarshal(revisionData, &revision); err != nil {
+		log.Fatalf("Error getting revision information: %s\n", err)
+	}
+
+	for _, revisions := range revision {
+		if revisions.Os != revisionOS {
+			continue
+		}
+
+		for _, versions := range revisions.Versions {
+			if versions.Channel != channel {
+				continue
+			}
+			return &RevisionInfo{Channel: versions.Channel, Branch: versions.BranchCommit, JsBranch: versions.V8Commit, Version: versions.Version}
+		}
+	}
+	return nil
+}
+
 func download(browserFile, jsFile string) {
-	browserData := fixBrokenBool(getProtocolFile(browserFile))
-	jsData := fixBrokenBool(getProtocolFile(jsFile))
+	browserData := fixBrokenBool(decodeProtocol(getRemoteFile(browserFile)))
+	jsData := fixBrokenBool(decodeProtocol(getRemoteFile(jsFile)))
 
 	api := &ProtoDebuggerApi{}
 	copyApi := &ProtoDebuggerApi{}
@@ -61,9 +129,10 @@ func download(browserFile, jsFile string) {
 	writeFile(merged)
 }
 
-func getProtocolFile(fileName string) []byte {
+func getRemoteFile(fileName string) []byte {
 	var data []byte
 
+	log.Printf("requesting: %s\n", fileName)
 	resp, err := http.Get(fileName)
 	if err != nil {
 		log.Fatalf("error requesting %s\n", fileName)
@@ -74,7 +143,7 @@ func getProtocolFile(fileName string) []byte {
 		log.Fatalf("error reading data from response: %s\n", err)
 	}
 
-	return decodeProtocol(data)
+	return data
 }
 
 // because google's git viewer is broken, downloading ?format=json, we have to
@@ -88,7 +157,7 @@ func decodeProtocol(data []byte) []byte {
 }
 
 func fixBrokenBool(data []byte) []byte {
-	return bytes.Replace(data, []byte("\"hidden\": \"true\""), []byte("\"hidden\": true"), 1)
+	return bytes.Replace(data, []byte("\"true\""), []byte("true"), -1)
 }
 
 func writeFile(protocolData []byte) {

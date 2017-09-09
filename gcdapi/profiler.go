@@ -153,6 +153,8 @@ func (c *Profiler) Stop() (*ProfilerProfile, error) {
 type ProfilerStartPreciseCoverageParams struct {
 	// Collect accurate call counts beyond simple 'covered' or 'not covered'.
 	CallCount bool `json:"callCount,omitempty"`
+	// Collect block-based coverage.
+	Detailed bool `json:"detailed,omitempty"`
 }
 
 // StartPreciseCoverageWithParams - Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code coverage may be incomplete. Enabling prevents running optimized code and resets execution counters.
@@ -162,9 +164,11 @@ func (c *Profiler) StartPreciseCoverageWithParams(v *ProfilerStartPreciseCoverag
 
 // StartPreciseCoverage - Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code coverage may be incomplete. Enabling prevents running optimized code and resets execution counters.
 // callCount - Collect accurate call counts beyond simple 'covered' or 'not covered'.
-func (c *Profiler) StartPreciseCoverage(callCount bool) (*gcdmessage.ChromeResponse, error) {
+// detailed - Collect block-based coverage.
+func (c *Profiler) StartPreciseCoverage(callCount bool, detailed bool) (*gcdmessage.ChromeResponse, error) {
 	var v ProfilerStartPreciseCoverageParams
 	v.CallCount = callCount
+	v.Detailed = detailed
 	return c.StartPreciseCoverageWithParams(&v)
 }
 

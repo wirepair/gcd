@@ -52,6 +52,11 @@ func (c *Memory) GetDOMCounters() (int, int, int, error) {
 	return chromeData.Result.Documents, chromeData.Result.Nodes, chromeData.Result.JsEventListeners, nil
 }
 
+//
+func (c *Memory) PrepareForLeakDetection() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.prepareForLeakDetection"})
+}
+
 type MemorySetPressureNotificationsSuppressedParams struct {
 	// If true, memory pressure notifications will be suppressed.
 	Suppressed bool `json:"suppressed"`

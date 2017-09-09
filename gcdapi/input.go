@@ -10,9 +10,8 @@ import (
 
 // No Description.
 type InputTouchPoint struct {
-	State         string  `json:"state"`                   // State of the touch point.
-	X             int     `json:"x"`                       // X coordinate of the event relative to the main frame's viewport.
-	Y             int     `json:"y"`                       // Y coordinate of the event relative to the main frame's viewport. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+	X             int     `json:"x"`                       // X coordinate of the event relative to the main frame's viewport in CSS pixels.
+	Y             int     `json:"y"`                       // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
 	RadiusX       int     `json:"radiusX,omitempty"`       // X radius of the touch area (default: 1).
 	RadiusY       int     `json:"radiusY,omitempty"`       // Y radius of the touch area (default: 1).
 	RotationAngle float64 `json:"rotationAngle,omitempty"` // Rotation angle (default: 0.0).
@@ -128,6 +127,10 @@ type InputDispatchMouseEventParams struct {
 	Button string `json:"button,omitempty"`
 	// Number of times the mouse button was clicked (default: 0).
 	ClickCount int `json:"clickCount,omitempty"`
+	// X delta in CSS pixels for mouse wheel event (default: 0).
+	DeltaX float64 `json:"deltaX,omitempty"`
+	// Y delta in CSS pixels for mouse wheel event (default: 0).
+	DeltaY float64 `json:"deltaY,omitempty"`
 }
 
 // DispatchMouseEventWithParams - Dispatches a mouse event to the page.
@@ -143,7 +146,9 @@ func (c *Input) DispatchMouseEventWithParams(v *InputDispatchMouseEventParams) (
 // timestamp - Time at which the event occurred.
 // button - Mouse button (default: "none").
 // clickCount - Number of times the mouse button was clicked (default: 0).
-func (c *Input) DispatchMouseEvent(theType string, x float64, y float64, modifiers int, timestamp float64, button string, clickCount int) (*gcdmessage.ChromeResponse, error) {
+// deltaX - X delta in CSS pixels for mouse wheel event (default: 0).
+// deltaY - Y delta in CSS pixels for mouse wheel event (default: 0).
+func (c *Input) DispatchMouseEvent(theType string, x float64, y float64, modifiers int, timestamp float64, button string, clickCount int, deltaX float64, deltaY float64) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchMouseEventParams
 	v.TheType = theType
 	v.X = x
@@ -152,13 +157,15 @@ func (c *Input) DispatchMouseEvent(theType string, x float64, y float64, modifie
 	v.Timestamp = timestamp
 	v.Button = button
 	v.ClickCount = clickCount
+	v.DeltaX = deltaX
+	v.DeltaY = deltaY
 	return c.DispatchMouseEventWithParams(&v)
 }
 
 type InputDispatchTouchEventParams struct {
-	// Type of the touch event.
+	// Type of the touch event. TouchEnd and TouchCancel must not contain any touch points, while TouchStart and TouchMove must contains at least one.
 	TheType string `json:"type"`
-	// Touch points.
+	// Active touch points on the touch device. One event per any changed point (compared to previous touch event in a sequence) is generated, emulating pressing/moving/releasing points one by one.
 	TouchPoints []*InputTouchPoint `json:"touchPoints"`
 	// Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 	Modifiers int `json:"modifiers,omitempty"`
@@ -172,8 +179,8 @@ func (c *Input) DispatchTouchEventWithParams(v *InputDispatchTouchEventParams) (
 }
 
 // DispatchTouchEvent - Dispatches a touch event to the page.
-// type - Type of the touch event.
-// touchPoints - Touch points.
+// type - Type of the touch event. TouchEnd and TouchCancel must not contain any touch points, while TouchStart and TouchMove must contains at least one.
+// touchPoints - Active touch points on the touch device. One event per any changed point (compared to previous touch event in a sequence) is generated, emulating pressing/moving/releasing points one by one.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // timestamp - Time at which the event occurred.
 func (c *Input) DispatchTouchEvent(theType string, touchPoints []*InputTouchPoint, modifiers int, timestamp float64) (*gcdmessage.ChromeResponse, error) {

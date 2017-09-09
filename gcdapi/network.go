@@ -88,7 +88,7 @@ type NetworkResponse struct {
 	EncodedDataLength  float64                 `json:"encodedDataLength"`            // Total number of bytes received for this request so far.
 	Timing             *NetworkResourceTiming  `json:"timing,omitempty"`             // Timing information for the given request.
 	Protocol           string                  `json:"protocol,omitempty"`           // Protocol used to fetch this request.
-	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, warning, secure, info
+	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, secure, info
 	SecurityDetails    *NetworkSecurityDetails `json:"securityDetails,omitempty"`    // Security details for the request.
 }
 
@@ -142,6 +142,19 @@ type NetworkCookie struct {
 	Secure   bool    `json:"secure"`             // True if cookie is secure.
 	Session  bool    `json:"session"`            // True in case of session cookie.
 	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax
+}
+
+// Cookie parameter object
+type NetworkCookieParam struct {
+	Name     string  `json:"name"`               // Cookie name.
+	Value    string  `json:"value"`              // Cookie value.
+	Url      string  `json:"url,omitempty"`      // The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
+	Domain   string  `json:"domain,omitempty"`   // Cookie domain.
+	Path     string  `json:"path,omitempty"`     // Cookie path.
+	Secure   bool    `json:"secure,omitempty"`   // True if cookie is secure.
+	HttpOnly bool    `json:"httpOnly,omitempty"` // True if cookie is http-only.
+	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax
+	Expires  float64 `json:"expires,omitempty"`  // Cookie expiration date, session cookie if not set
 }
 
 // Authorization challenge for HTTP status code 401 or 407.
@@ -645,47 +658,55 @@ func (c *Network) GetAllCookies() ([]*NetworkCookie, error) {
 	return chromeData.Result.Cookies, nil
 }
 
-type NetworkDeleteCookieParams struct {
-	// Name of the cookie to remove.
-	CookieName string `json:"cookieName"`
-	// URL to match cooke domain and path.
-	Url string `json:"url"`
+type NetworkDeleteCookiesParams struct {
+	// Name of the cookies to remove.
+	Name string `json:"name"`
+	// If specified, deletes all the cookies with the given name where domain and path match provided URL.
+	Url string `json:"url,omitempty"`
+	// If specified, deletes only cookies with the exact domain.
+	Domain string `json:"domain,omitempty"`
+	// If specified, deletes only cookies with the exact path.
+	Path string `json:"path,omitempty"`
 }
 
-// DeleteCookieWithParams - Deletes browser cookie with given name, domain and path.
-func (c *Network) DeleteCookieWithParams(v *NetworkDeleteCookieParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.deleteCookie", Params: v})
+// DeleteCookiesWithParams - Deletes browser cookies with matching name and url or domain/path pair.
+func (c *Network) DeleteCookiesWithParams(v *NetworkDeleteCookiesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.deleteCookies", Params: v})
 }
 
-// DeleteCookie - Deletes browser cookie with given name, domain and path.
-// cookieName - Name of the cookie to remove.
-// url - URL to match cooke domain and path.
-func (c *Network) DeleteCookie(cookieName string, url string) (*gcdmessage.ChromeResponse, error) {
-	var v NetworkDeleteCookieParams
-	v.CookieName = cookieName
+// DeleteCookies - Deletes browser cookies with matching name and url or domain/path pair.
+// name - Name of the cookies to remove.
+// url - If specified, deletes all the cookies with the given name where domain and path match provided URL.
+// domain - If specified, deletes only cookies with the exact domain.
+// path - If specified, deletes only cookies with the exact path.
+func (c *Network) DeleteCookies(name string, url string, domain string, path string) (*gcdmessage.ChromeResponse, error) {
+	var v NetworkDeleteCookiesParams
+	v.Name = name
 	v.Url = url
-	return c.DeleteCookieWithParams(&v)
+	v.Domain = domain
+	v.Path = path
+	return c.DeleteCookiesWithParams(&v)
 }
 
 type NetworkSetCookieParams struct {
-	// The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
-	Url string `json:"url"`
-	// The name of the cookie.
+	// Cookie name.
 	Name string `json:"name"`
-	// The value of the cookie.
+	// Cookie value.
 	Value string `json:"value"`
-	// If omitted, the cookie becomes a host-only cookie.
+	// The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
+	Url string `json:"url,omitempty"`
+	// Cookie domain.
 	Domain string `json:"domain,omitempty"`
-	// Defaults to the path portion of the url parameter.
+	// Cookie path.
 	Path string `json:"path,omitempty"`
-	// Defaults ot false.
+	// True if cookie is secure.
 	Secure bool `json:"secure,omitempty"`
-	// Defaults to false.
+	// True if cookie is http-only.
 	HttpOnly bool `json:"httpOnly,omitempty"`
-	// Defaults to browser default behavior. enum values: Strict, Lax
+	// Cookie SameSite type. enum values: Strict, Lax
 	SameSite string `json:"sameSite,omitempty"`
-	// If omitted, the cookie becomes a session cookie.
-	ExpirationDate float64 `json:"expirationDate,omitempty"`
+	// Cookie expiration date, session cookie if not set
+	Expires float64 `json:"expires,omitempty"`
 }
 
 // SetCookieWithParams - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
@@ -721,28 +742,46 @@ func (c *Network) SetCookieWithParams(v *NetworkSetCookieParams) (bool, error) {
 }
 
 // SetCookie - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
+// name - Cookie name.
+// value - Cookie value.
 // url - The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
-// name - The name of the cookie.
-// value - The value of the cookie.
-// domain - If omitted, the cookie becomes a host-only cookie.
-// path - Defaults to the path portion of the url parameter.
-// secure - Defaults ot false.
-// httpOnly - Defaults to false.
-// sameSite - Defaults to browser default behavior. enum values: Strict, Lax
-// expirationDate - If omitted, the cookie becomes a session cookie.
+// domain - Cookie domain.
+// path - Cookie path.
+// secure - True if cookie is secure.
+// httpOnly - True if cookie is http-only.
+// sameSite - Cookie SameSite type. enum values: Strict, Lax
+// expires - Cookie expiration date, session cookie if not set
 // Returns -  success - True if successfully set cookie.
-func (c *Network) SetCookie(url string, name string, value string, domain string, path string, secure bool, httpOnly bool, sameSite string, expirationDate float64) (bool, error) {
+func (c *Network) SetCookie(name string, value string, url string, domain string, path string, secure bool, httpOnly bool, sameSite string, expires float64) (bool, error) {
 	var v NetworkSetCookieParams
-	v.Url = url
 	v.Name = name
 	v.Value = value
+	v.Url = url
 	v.Domain = domain
 	v.Path = path
 	v.Secure = secure
 	v.HttpOnly = httpOnly
 	v.SameSite = sameSite
-	v.ExpirationDate = expirationDate
+	v.Expires = expires
 	return c.SetCookieWithParams(&v)
+}
+
+type NetworkSetCookiesParams struct {
+	// Cookies to be set.
+	Cookies []*NetworkCookieParam `json:"cookies"`
+}
+
+// SetCookiesWithParams - Sets given cookies.
+func (c *Network) SetCookiesWithParams(v *NetworkSetCookiesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCookies", Params: v})
+}
+
+// SetCookies - Sets given cookies.
+// cookies - Cookies to be set.
+func (c *Network) SetCookies(cookies []*NetworkCookieParam) (*gcdmessage.ChromeResponse, error) {
+	var v NetworkSetCookiesParams
+	v.Cookies = cookies
+	return c.SetCookiesWithParams(&v)
 }
 
 // CanEmulateNetworkConditions - Tells whether emulation of network conditions is supported.
@@ -916,20 +955,24 @@ func (c *Network) GetCertificate(origin string) ([]string, error) {
 }
 
 type NetworkSetRequestInterceptionEnabledParams struct {
-	// Whether or not HTTP requests should be intercepted and Network.requestIntercepted events sent.
+	// Whether requests should be intercepted. If patterns is not set, matches all and resets any previously set patterns. Other parameters are ignored if false.
 	Enabled bool `json:"enabled"`
+	// URLs matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call. Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. If omitted equivalent to ['*'] (intercept all).
+	Patterns []string `json:"patterns,omitempty"`
 }
 
-// SetRequestInterceptionEnabledWithParams -
+// SetRequestInterceptionEnabledWithParams - Sets the requests to intercept that match a the provided patterns.
 func (c *Network) SetRequestInterceptionEnabledWithParams(v *NetworkSetRequestInterceptionEnabledParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setRequestInterceptionEnabled", Params: v})
 }
 
-// SetRequestInterceptionEnabled -
-// enabled - Whether or not HTTP requests should be intercepted and Network.requestIntercepted events sent.
-func (c *Network) SetRequestInterceptionEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
+// SetRequestInterceptionEnabled - Sets the requests to intercept that match a the provided patterns.
+// enabled - Whether requests should be intercepted. If patterns is not set, matches all and resets any previously set patterns. Other parameters are ignored if false.
+// patterns - URLs matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call. Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. If omitted equivalent to ['*'] (intercept all).
+func (c *Network) SetRequestInterceptionEnabled(enabled bool, patterns []string) (*gcdmessage.ChromeResponse, error) {
 	var v NetworkSetRequestInterceptionEnabledParams
 	v.Enabled = enabled
+	v.Patterns = patterns
 	return c.SetRequestInterceptionEnabledWithParams(&v)
 }
 

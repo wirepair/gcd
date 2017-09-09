@@ -11,9 +11,13 @@ import (
 
 // Data entry.
 type CacheStorageDataEntry struct {
-	Request      string  `json:"request"`      // Request url spec.
-	Response     string  `json:"response"`     // Response status text.
-	ResponseTime float64 `json:"responseTime"` // Number of seconds since epoch.
+	RequestURL         string                `json:"requestURL"`         // Request URL.
+	RequestMethod      string                `json:"requestMethod"`      // Request method.
+	RequestHeaders     []*CacheStorageHeader `json:"requestHeaders"`     // Request headers
+	ResponseTime       float64               `json:"responseTime"`       // Number of seconds since epoch.
+	ResponseStatus     int                   `json:"responseStatus"`     // HTTP response status code.
+	ResponseStatusText string                `json:"responseStatusText"` // HTTP response status text.
+	ResponseHeaders    []*CacheStorageHeader `json:"responseHeaders"`    // Response headers
 }
 
 // Cache identifier.
@@ -23,10 +27,15 @@ type CacheStorageCache struct {
 	CacheName      string `json:"cacheName"`      // The name of the cache.
 }
 
+// No Description.
+type CacheStorageHeader struct {
+	Name  string `json:"name"`  //
+	Value string `json:"value"` //
+}
+
 // Cached response
 type CacheStorageCachedResponse struct {
-	Headers map[string]interface{} `json:"headers"` // Response headers
-	Body    string                 `json:"body"`    // Entry content, base64-encoded.
+	Body string `json:"body"` // Entry content, base64-encoded.
 }
 
 type CacheStorage struct {

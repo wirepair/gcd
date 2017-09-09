@@ -48,21 +48,25 @@ type GlobalReference struct {
 var globalRefs map[string]*GlobalReference
 
 const (
-	debug               = false
-	outputDir           = "output"
-	prefix              = "chrome_"
-	templateFile        = "api_template.txt"
-	browserProtocolFile = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/inspector/browser_protocol.json?format=text"
-	jsProtocolFile      = "https://chromium.googlesource.com/v8/v8/+/master/src/inspector/js_protocol.json?format=text"
+	debug        = false
+	outputDir    = "output"
+	prefix       = "chrome_"
+	templateFile = "api_template.txt"
+	versionData  = `package gcdapi
+const CHROME_CHANNEL = "%s"
+const CHROME_VERSION = "%s"`
 )
 
 var file string
+var channel string
 var update bool
 var templates *template.Template // for code generation
 var funcMap template.FuncMap     // helper funcs
+var revisionInfo *RevisionInfo
 
 func init() {
 	flag.BoolVar(&update, "update", false, "download and merge js_protocol.json and browser_protocol.json into protocol.json")
+	flag.StringVar(&channel, "channel", "dev", "choose the channel for updating protocol file")
 	flag.StringVar(&file, "file", "protocol.json", "open remote debugger protocol file, if -update the filename to write to.")
 	funcMap := template.FuncMap{
 		"Title":    strings.Title,
@@ -80,8 +84,7 @@ func main() {
 	flag.Parse()
 
 	if update {
-		download(browserProtocolFile, jsProtocolFile)
-		return
+		revisionInfo = getApiRevision(channel)
 	}
 
 	protocolData := openFile()
@@ -121,9 +124,19 @@ func main() {
 		domain.WriteDomain()
 	}
 
-	//for k, v := range globalRefs {
-	//	fmt.Printf("ref: %s value: %#v\n", k, v)
-	//}
+	if revisionInfo != nil {
+		writeVersionFile()
+	}
+}
+
+func writeVersionFile() {
+	versionFile := outputDir + string(os.PathSeparator) + "version.go"
+	wr, err := os.Create(versionFile)
+	if err != nil {
+		log.Fatalf("error creating version output file: %s\n", err)
+	}
+	wr.WriteString(fmt.Sprintf(versionData, revisionInfo.Channel, revisionInfo.Version))
+	wr.Close()
 }
 
 func openFile() []byte {

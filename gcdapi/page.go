@@ -111,6 +111,15 @@ type PageLoadEventFiredEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+// Fired for top level page lifecycle events such as navigation, load, paint, etc.
+type PageLifecycleEventEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Name      string  `json:"name"`      //
+		Timestamp float64 `json:"timestamp"` //
+	} `json:"Params,omitempty"`
+}
+
 // Fired when frame has been attached to its parent.
 type PageFrameAttachedEvent struct {
 	Method string `json:"method"`
@@ -1250,4 +1259,26 @@ func (c *Page) CreateIsolatedWorld(frameId string, worldName string, grantUniver
 // Brings page to front (activates tab).
 func (c *Page) BringToFront() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.bringToFront"})
+}
+
+type PageSetDownloadBehaviorParams struct {
+	// Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny).
+	Behavior string `json:"behavior"`
+	// The default path to save downloaded files to. This is requred if behavior is set to 'allow'
+	DownloadPath string `json:"downloadPath,omitempty"`
+}
+
+// SetDownloadBehaviorWithParams - Set the behavior when downloading a file.
+func (c *Page) SetDownloadBehaviorWithParams(v *PageSetDownloadBehaviorParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setDownloadBehavior", Params: v})
+}
+
+// SetDownloadBehavior - Set the behavior when downloading a file.
+// behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny).
+// downloadPath - The default path to save downloaded files to. This is requred if behavior is set to 'allow'
+func (c *Page) SetDownloadBehavior(behavior string, downloadPath string) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetDownloadBehaviorParams
+	v.Behavior = behavior
+	v.DownloadPath = downloadPath
+	return c.SetDownloadBehaviorWithParams(&v)
 }

@@ -91,6 +91,7 @@ type ChromeTarget struct {
 	Overlay           *gcdapi.Overlay
 	Page              *gcdapi.Page
 	Profiler          *gcdapi.Profiler
+	Performance       *gcdapi.Performance // if stable channel you'll need to uncomment
 	Runtime           *gcdapi.Runtime
 	Schema            *gcdapi.Schema
 	Security          *gcdapi.Security
@@ -167,6 +168,8 @@ func (c *ChromeTarget) Init() {
 	c.TargetApi = gcdapi.NewTarget(c)
 	c.Tracing = gcdapi.NewTracing(c)
 	c.Tethering = gcdapi.NewTethering(c)
+	// if stable channel you'll need to comment this out
+	c.Performance = gcdapi.NewPerformance(c)
 }
 
 // clean up this target

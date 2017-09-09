@@ -415,8 +415,9 @@ func TestNetworkIntercept(t *testing.T) {
 	if _, err := network.EnableWithParams(networkParams); err != nil {
 		t.Fatalf("error enabling network")
 	}
+	interceptParams := &gcdapi.NetworkSetRequestInterceptionEnabledParams{Enabled: true}
 
-	if _, err := network.SetRequestInterceptionEnabled(true); err != nil {
+	if _, err := network.SetRequestInterceptionEnabledWithParams(interceptParams); err != nil {
 		t.Fatalf("unable to set interception enabled: %s\n", err)
 	}
 

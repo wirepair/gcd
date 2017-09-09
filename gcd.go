@@ -27,6 +27,7 @@ package gcd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/wirepair/gcd/gcdapi"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -35,7 +36,7 @@ import (
 	"time"
 )
 
-var GCDVERSION = "1.2017.8.15.0"
+var GCDVERSION = "1.2017.9.9.0"
 
 // When we get an error reading the body from the debugger api endpoint
 type GcdBodyReadErr struct {
@@ -70,6 +71,7 @@ type Gcd struct {
 	apiEndpoint       string
 	flags             []string
 	env               []string
+	chomeApiVersion   string
 }
 
 // Give it a friendly name.
@@ -229,6 +231,10 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
 	return openChromeTarget(c.addr, tabTarget)
+}
+
+func (c *Gcd) GetRevision() string {
+	return gcdapi.CHROME_VERSION
 }
 
 // Closes the tab

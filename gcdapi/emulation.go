@@ -15,6 +15,14 @@ type EmulationScreenOrientation struct {
 	Angle int    `json:"angle"` // Orientation angle.
 }
 
+// Notification sent after the virtual time has paused.
+type EmulationVirtualTimePausedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		VirtualTimeElapsed int `json:"virtualTimeElapsed"` // The amount of virtual time that has elapsed in milliseconds since virtual time was first enabled.
+	} `json:"Params,omitempty"`
+}
+
 type Emulation struct {
 	target gcdmessage.ChromeTargeter
 }
