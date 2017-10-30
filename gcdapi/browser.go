@@ -27,6 +27,11 @@ func NewBrowser(target gcdmessage.ChromeTargeter) *Browser {
 	return c
 }
 
+// Close browser gracefully.
+func (c *Browser) Close() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.close"})
+}
+
 type BrowserGetWindowForTargetParams struct {
 	// Devtools agent host id.
 	TargetId string `json:"targetId"`

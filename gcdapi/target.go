@@ -11,11 +11,12 @@ import (
 
 // No Description.
 type TargetTargetInfo struct {
-	TargetId string `json:"targetId"` //
-	Type     string `json:"type"`     //
-	Title    string `json:"title"`    //
-	Url      string `json:"url"`      //
-	Attached bool   `json:"attached"` // Whether the target has an attached client.
+	TargetId string `json:"targetId"`           //
+	Type     string `json:"type"`               //
+	Title    string `json:"title"`              //
+	Url      string `json:"url"`                //
+	Attached bool   `json:"attached"`           // Whether the target has an attached client.
+	OpenerId string `json:"openerId,omitempty"` // Opener target Id
 }
 
 // No Description.
@@ -453,6 +454,8 @@ type TargetCreateTargetParams struct {
 	Height int `json:"height,omitempty"`
 	// The browser context to create the page in (headless chrome only).
 	BrowserContextId string `json:"browserContextId,omitempty"`
+	// Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
+	EnableBeginFrameControl bool `json:"enableBeginFrameControl,omitempty"`
 }
 
 // CreateTargetWithParams - Creates a new page.
@@ -492,13 +495,15 @@ func (c *Target) CreateTargetWithParams(v *TargetCreateTargetParams) (string, er
 // width - Frame width in DIP (headless chrome only).
 // height - Frame height in DIP (headless chrome only).
 // browserContextId - The browser context to create the page in (headless chrome only).
+// enableBeginFrameControl - Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
 // Returns -  targetId - The id of the page opened.
-func (c *Target) CreateTarget(url string, width int, height int, browserContextId string) (string, error) {
+func (c *Target) CreateTarget(url string, width int, height int, browserContextId string, enableBeginFrameControl bool) (string, error) {
 	var v TargetCreateTargetParams
 	v.Url = url
 	v.Width = width
 	v.Height = height
 	v.BrowserContextId = browserContextId
+	v.EnableBeginFrameControl = enableBeginFrameControl
 	return c.CreateTargetWithParams(&v)
 }
 

@@ -171,6 +171,11 @@ func (c *ServiceWorker) StopWorker(versionId string) (*gcdmessage.ChromeResponse
 	return c.StopWorkerWithParams(&v)
 }
 
+//
+func (c *ServiceWorker) StopAllWorkers() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stopAllWorkers"})
+}
+
 type ServiceWorkerInspectWorkerParams struct {
 	//
 	VersionId string `json:"versionId"`

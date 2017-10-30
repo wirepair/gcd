@@ -10,10 +10,10 @@ import (
 
 // No Description.
 type InputTouchPoint struct {
-	X             int     `json:"x"`                       // X coordinate of the event relative to the main frame's viewport in CSS pixels.
-	Y             int     `json:"y"`                       // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
-	RadiusX       int     `json:"radiusX,omitempty"`       // X radius of the touch area (default: 1).
-	RadiusY       int     `json:"radiusY,omitempty"`       // Y radius of the touch area (default: 1).
+	X             float64 `json:"x"`                       // X coordinate of the event relative to the main frame's viewport in CSS pixels.
+	Y             float64 `json:"y"`                       // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+	RadiusX       float64 `json:"radiusX,omitempty"`       // X radius of the touch area (default: 1.0).
+	RadiusY       float64 `json:"radiusY,omitempty"`       // Y radius of the touch area (default: 1.0).
 	RotationAngle float64 `json:"rotationAngle,omitempty"` // Rotation angle (default: 0.0).
 	Force         float64 `json:"force,omitempty"`         // Force (default: 1.0).
 	Id            float64 `json:"id,omitempty"`            // Identifier used to track touch sources between events, must be unique within an event.
@@ -73,6 +73,8 @@ type InputDispatchKeyEventParams struct {
 	IsKeypad bool `json:"isKeypad,omitempty"`
 	// Whether the event was a system key event (default: false).
 	IsSystemKey bool `json:"isSystemKey,omitempty"`
+	// Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default: 0).
+	Location int `json:"location,omitempty"`
 }
 
 // DispatchKeyEventWithParams - Dispatches a key event to the page.
@@ -94,7 +96,8 @@ func (c *Input) DispatchKeyEventWithParams(v *InputDispatchKeyEventParams) (*gcd
 // autoRepeat - Whether the event was generated from auto repeat (default: false).
 // isKeypad - Whether the event was generated from the keypad (default: false).
 // isSystemKey - Whether the event was a system key event (default: false).
-func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float64, text string, unmodifiedText string, keyIdentifier string, code string, key string, windowsVirtualKeyCode int, nativeVirtualKeyCode int, autoRepeat bool, isKeypad bool, isSystemKey bool) (*gcdmessage.ChromeResponse, error) {
+// location - Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default: 0).
+func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float64, text string, unmodifiedText string, keyIdentifier string, code string, key string, windowsVirtualKeyCode int, nativeVirtualKeyCode int, autoRepeat bool, isKeypad bool, isSystemKey bool, location int) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchKeyEventParams
 	v.TheType = theType
 	v.Modifiers = modifiers
@@ -109,6 +112,7 @@ func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float6
 	v.AutoRepeat = autoRepeat
 	v.IsKeypad = isKeypad
 	v.IsSystemKey = isSystemKey
+	v.Location = location
 	return c.DispatchKeyEventWithParams(&v)
 }
 

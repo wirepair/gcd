@@ -15,6 +15,14 @@ type EmulationScreenOrientation struct {
 	Angle int    `json:"angle"` // Orientation angle.
 }
 
+// Notification sent after the virtual time has advanced.
+type EmulationVirtualTimeAdvancedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		VirtualTimeElapsed int `json:"virtualTimeElapsed"` // The amount of virtual time that has elapsed in milliseconds since virtual time was first enabled.
+	} `json:"Params,omitempty"`
+}
+
 // Notification sent after the virtual time has paused.
 type EmulationVirtualTimePausedEvent struct {
 	Method string `json:"method"`
@@ -41,20 +49,22 @@ type EmulationSetDeviceMetricsOverrideParams struct {
 	DeviceScaleFactor float64 `json:"deviceScaleFactor"`
 	// Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
 	Mobile bool `json:"mobile"`
-	// Scale to apply to resulting view image. Ignored in |fitWindow| mode.
+	// Scale to apply to resulting view image.
 	Scale float64 `json:"scale,omitempty"`
-	// Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+	// Overriding screen width value in pixels (minimum 0, maximum 10000000).
 	ScreenWidth int `json:"screenWidth,omitempty"`
-	// Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+	// Overriding screen height value in pixels (minimum 0, maximum 10000000).
 	ScreenHeight int `json:"screenHeight,omitempty"`
-	// Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+	// Overriding view X position on screen in pixels (minimum 0, maximum 10000000).
 	PositionX int `json:"positionX,omitempty"`
-	// Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+	// Overriding view Y position on screen in pixels (minimum 0, maximum 10000000).
 	PositionY int `json:"positionY,omitempty"`
 	// Do not set visible view size, rely upon explicit setVisibleSize call.
 	DontSetVisibleSize bool `json:"dontSetVisibleSize,omitempty"`
 	// Screen orientation override.
 	ScreenOrientation *EmulationScreenOrientation `json:"screenOrientation,omitempty"`
+	// If set, the visible area of the page will be overridden to this viewport. This viewport change is not observed by the page, e.g. viewport-relative elements do not change positions.
+	Viewport *PageViewport `json:"viewport,omitempty"`
 }
 
 // SetDeviceMetricsOverrideWithParams - Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results).
@@ -67,14 +77,15 @@ func (c *Emulation) SetDeviceMetricsOverrideWithParams(v *EmulationSetDeviceMetr
 // height - Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
 // deviceScaleFactor - Overriding device scale factor value. 0 disables the override.
 // mobile - Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
-// scale - Scale to apply to resulting view image. Ignored in |fitWindow| mode.
-// screenWidth - Overriding screen width value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
-// screenHeight - Overriding screen height value in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
-// positionX - Overriding view X position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
-// positionY - Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|.
+// scale - Scale to apply to resulting view image.
+// screenWidth - Overriding screen width value in pixels (minimum 0, maximum 10000000).
+// screenHeight - Overriding screen height value in pixels (minimum 0, maximum 10000000).
+// positionX - Overriding view X position on screen in pixels (minimum 0, maximum 10000000).
+// positionY - Overriding view Y position on screen in pixels (minimum 0, maximum 10000000).
 // dontSetVisibleSize - Do not set visible view size, rely upon explicit setVisibleSize call.
 // screenOrientation - Screen orientation override.
-func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, scale float64, screenWidth int, screenHeight int, positionX int, positionY int, dontSetVisibleSize bool, screenOrientation *EmulationScreenOrientation) (*gcdmessage.ChromeResponse, error) {
+// viewport - If set, the visible area of the page will be overridden to this viewport. This viewport change is not observed by the page, e.g. viewport-relative elements do not change positions.
+func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleFactor float64, mobile bool, scale float64, screenWidth int, screenHeight int, positionX int, positionY int, dontSetVisibleSize bool, screenOrientation *EmulationScreenOrientation, viewport *PageViewport) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetDeviceMetricsOverrideParams
 	v.Width = width
 	v.Height = height
@@ -87,6 +98,7 @@ func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleF
 	v.PositionY = positionY
 	v.DontSetVisibleSize = dontSetVisibleSize
 	v.ScreenOrientation = screenOrientation
+	v.Viewport = viewport
 	return c.SetDeviceMetricsOverrideWithParams(&v)
 }
 
@@ -306,6 +318,8 @@ type EmulationSetVirtualTimePolicyParams struct {
 	Policy string `json:"policy"`
 	// If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
 	Budget int `json:"budget,omitempty"`
+	// If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
+	MaxVirtualTimeTaskStarvationCount int `json:"maxVirtualTimeTaskStarvationCount,omitempty"`
 }
 
 // SetVirtualTimePolicyWithParams - Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.
@@ -316,11 +330,31 @@ func (c *Emulation) SetVirtualTimePolicyWithParams(v *EmulationSetVirtualTimePol
 // SetVirtualTimePolicy - Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.
 // policy -  enum values: advance, pause, pauseIfNetworkFetchesPending
 // budget - If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
-func (c *Emulation) SetVirtualTimePolicy(policy string, budget int) (*gcdmessage.ChromeResponse, error) {
+// maxVirtualTimeTaskStarvationCount - If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
+func (c *Emulation) SetVirtualTimePolicy(policy string, budget int, maxVirtualTimeTaskStarvationCount int) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetVirtualTimePolicyParams
 	v.Policy = policy
 	v.Budget = budget
+	v.MaxVirtualTimeTaskStarvationCount = maxVirtualTimeTaskStarvationCount
 	return c.SetVirtualTimePolicyWithParams(&v)
+}
+
+type EmulationSetNavigatorOverridesParams struct {
+	// The platform navigator.platform should return.
+	Platform string `json:"platform"`
+}
+
+// SetNavigatorOverridesWithParams - Overrides value returned by the javascript navigator object.
+func (c *Emulation) SetNavigatorOverridesWithParams(v *EmulationSetNavigatorOverridesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setNavigatorOverrides", Params: v})
+}
+
+// SetNavigatorOverrides - Overrides value returned by the javascript navigator object.
+// platform - The platform navigator.platform should return.
+func (c *Emulation) SetNavigatorOverrides(platform string) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetNavigatorOverridesParams
+	v.Platform = platform
+	return c.SetNavigatorOverridesWithParams(&v)
 }
 
 type EmulationSetDefaultBackgroundColorOverrideParams struct {

@@ -55,6 +55,24 @@ type ProfilerScriptCoverage struct {
 	Functions []*ProfilerFunctionCoverage `json:"functions"` // Functions contained in the script that has coverage data.
 }
 
+// Describes a type collected during runtime.
+type ProfilerTypeObject struct {
+	Name string `json:"name"` // Name of a type collected with type profiling.
+}
+
+// Source offset and types for a parameter or return value.
+type ProfilerTypeProfileEntry struct {
+	Offset int                   `json:"offset"` // Source offset of the parameter or end of function for return values.
+	Types  []*ProfilerTypeObject `json:"types"`  // The types for this parameter or return value.
+}
+
+// Type profile data collected during runtime for a JavaScript script.
+type ProfilerScriptTypeProfile struct {
+	ScriptId string                      `json:"scriptId"` // JavaScript script id.
+	Url      string                      `json:"url"`      // JavaScript script name or url.
+	Entries  []*ProfilerTypeProfileEntry `json:"entries"`  // Type profile entries for parameters and return values of the functions in the script.
+}
+
 // Sent when new profile recording is started using console.profile() call.
 type ProfilerConsoleProfileStartedEvent struct {
 	Method string `json:"method"`
@@ -220,6 +238,48 @@ func (c *Profiler) GetBestEffortCoverage() ([]*ProfilerScriptCoverage, error) {
 	var chromeData struct {
 		Result struct {
 			Result []*ProfilerScriptCoverage
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Result, nil
+}
+
+// Enable type profile.
+func (c *Profiler) StartTypeProfile() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startTypeProfile"})
+}
+
+// Disable type profile. Disabling releases type profile data collected so far.
+func (c *Profiler) StopTypeProfile() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stopTypeProfile"})
+}
+
+// TakeTypeProfile - Collect type profile.
+// Returns -  result - Type profile for all scripts since startTypeProfile() was turned on.
+func (c *Profiler) TakeTypeProfile() ([]*ProfilerScriptTypeProfile, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takeTypeProfile"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Result []*ProfilerScriptTypeProfile
 		}
 	}
 

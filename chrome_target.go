@@ -64,43 +64,44 @@ type ChromeTarget struct {
 	conn            *websocket.Conn                        // the connection to the chrome debugger service for this tab/process
 
 	// Chrome Debugger Domains
-	Accessibility     *gcdapi.Accessibility
-	Animation         *gcdapi.Animation
-	ApplicationCache  *gcdapi.ApplicationCache // application cache API
-	Browser           *gcdapi.Browser
-	CacheStorage      *gcdapi.CacheStorage
-	Console           *gcdapi.Console           // console API
-	CSS               *gcdapi.CSS               // CSS API
-	Database          *gcdapi.Database          // Database API
-	Debugger          *gcdapi.Debugger          // JS Debugger API
-	DeviceOrientation *gcdapi.DeviceOrientation // Device Orientation API
-	DOMDebugger       *gcdapi.DOMDebugger       // DOM Debugger API
-	DOM               *gcdapi.DOM               // DOM API
-	DOMSnapshot       *gcdapi.DOMSnapshot
-	DOMStorage        *gcdapi.DOMStorage // DOM Storage API
-	Emulation         *gcdapi.Emulation
-	HeapProfiler      *gcdapi.HeapProfiler // HeapProfiler API
-	IndexedDB         *gcdapi.IndexedDB    // IndexedDB API
-	Input             *gcdapi.Input        // Why am i doing this, it's obvious what they are, I quit.
-	Inspector         *gcdapi.Inspector
-	IO                *gcdapi.IO
-	LayerTree         *gcdapi.LayerTree
-	Log               *gcdapi.Log
-	Memory            *gcdapi.Memory
-	Network           *gcdapi.Network
-	Overlay           *gcdapi.Overlay
-	Page              *gcdapi.Page
-	Profiler          *gcdapi.Profiler
-	Performance       *gcdapi.Performance // if stable channel you'll need to uncomment
-	Runtime           *gcdapi.Runtime
-	Schema            *gcdapi.Schema
-	Security          *gcdapi.Security
-	ServiceWorker     *gcdapi.ServiceWorker
-	Storage           *gcdapi.Storage
-	SystemInfo        *gcdapi.SystemInfo
-	TargetApi         *gcdapi.Target // buh name collision
-	Tracing           *gcdapi.Tracing
-	Tethering         *gcdapi.Tethering
+	Accessibility        *gcdapi.Accessibility
+	Animation            *gcdapi.Animation
+	ApplicationCache     *gcdapi.ApplicationCache // application cache API
+	Browser              *gcdapi.Browser
+	CacheStorage         *gcdapi.CacheStorage
+	Console              *gcdapi.Console           // console API
+	CSS                  *gcdapi.CSS               // CSS API
+	Database             *gcdapi.Database          // Database API
+	Debugger             *gcdapi.Debugger          // JS Debugger API
+	DeviceOrientation    *gcdapi.DeviceOrientation // Device Orientation API
+	DOMDebugger          *gcdapi.DOMDebugger       // DOM Debugger API
+	DOM                  *gcdapi.DOM               // DOM API
+	DOMSnapshot          *gcdapi.DOMSnapshot
+	DOMStorage           *gcdapi.DOMStorage // DOM Storage API
+	Emulation            *gcdapi.Emulation
+	HeadlessExperimental *gcdapi.HeadlessExperimental
+	HeapProfiler         *gcdapi.HeapProfiler // HeapProfiler API
+	IndexedDB            *gcdapi.IndexedDB    // IndexedDB API
+	Input                *gcdapi.Input        // Why am i doing this, it's obvious what they are, I quit.
+	Inspector            *gcdapi.Inspector
+	IO                   *gcdapi.IO
+	LayerTree            *gcdapi.LayerTree
+	Log                  *gcdapi.Log
+	Memory               *gcdapi.Memory
+	Network              *gcdapi.Network
+	Overlay              *gcdapi.Overlay
+	Page                 *gcdapi.Page
+	Profiler             *gcdapi.Profiler
+	Performance          *gcdapi.Performance // if stable channel you'll need to uncomment
+	Runtime              *gcdapi.Runtime
+	Schema               *gcdapi.Schema
+	Security             *gcdapi.Security
+	ServiceWorker        *gcdapi.ServiceWorker
+	Storage              *gcdapi.Storage
+	SystemInfo           *gcdapi.SystemInfo
+	TargetApi            *gcdapi.Target // buh name collision
+	Tracing              *gcdapi.Tracing
+	Tethering            *gcdapi.Tethering
 
 	Target      *TargetInfo              // The target information see, TargetInfo
 	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
@@ -168,6 +169,7 @@ func (c *ChromeTarget) Init() {
 	c.TargetApi = gcdapi.NewTarget(c)
 	c.Tracing = gcdapi.NewTracing(c)
 	c.Tethering = gcdapi.NewTethering(c)
+	c.HeadlessExperimental = gcdapi.NewHeadlessExperimental(c)
 	// if stable channel you'll need to comment this out
 	c.Performance = gcdapi.NewPerformance(c)
 }

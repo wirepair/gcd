@@ -28,6 +28,7 @@ type DebuggerCallFrame struct {
 	FunctionName     string               `json:"functionName"`               // Name of the JavaScript function called on this call frame.
 	FunctionLocation *DebuggerLocation    `json:"functionLocation,omitempty"` // Location in the source code.
 	Location         *DebuggerLocation    `json:"location"`                   // Location in the source code.
+	Url              string               `json:"url"`                        // JavaScript script name or url.
 	ScopeChain       []*DebuggerScope     `json:"scopeChain"`                 // Scope chain for this call frame.
 	This             *RuntimeRemoteObject `json:"this"`                       // <code>this</code> object for this call frame.
 	ReturnValue      *RuntimeRemoteObject `json:"returnValue,omitempty"`      // The value being returned, if the function is at return point.
@@ -182,6 +183,8 @@ type DebuggerSetBreakpointByUrlParams struct {
 	Url string `json:"url,omitempty"`
 	// Regex pattern for the URLs of the resources to set breakpoints on. Either <code>url</code> or <code>urlRegex</code> must be specified.
 	UrlRegex string `json:"urlRegex,omitempty"`
+	// Script hash of the resources to set breakpoint on.
+	ScriptHash string `json:"scriptHash,omitempty"`
 	// Offset in the line to set breakpoint at.
 	ColumnNumber int `json:"columnNumber,omitempty"`
 	// Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
@@ -225,14 +228,16 @@ func (c *Debugger) SetBreakpointByUrlWithParams(v *DebuggerSetBreakpointByUrlPar
 // lineNumber - Line number to set breakpoint at.
 // url - URL of the resources to set breakpoint on.
 // urlRegex - Regex pattern for the URLs of the resources to set breakpoints on. Either <code>url</code> or <code>urlRegex</code> must be specified.
+// scriptHash - Script hash of the resources to set breakpoint on.
 // columnNumber - Offset in the line to set breakpoint at.
 // condition - Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
 // Returns -  breakpointId - Id of the created breakpoint for further reference. locations - List of the locations this breakpoint resolved into upon addition.
-func (c *Debugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex string, columnNumber int, condition string) (string, []*DebuggerLocation, error) {
+func (c *Debugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex string, scriptHash string, columnNumber int, condition string) (string, []*DebuggerLocation, error) {
 	var v DebuggerSetBreakpointByUrlParams
 	v.LineNumber = lineNumber
 	v.Url = url
 	v.UrlRegex = urlRegex
+	v.ScriptHash = scriptHash
 	v.ColumnNumber = columnNumber
 	v.Condition = condition
 	return c.SetBreakpointByUrlWithParams(&v)

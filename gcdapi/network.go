@@ -72,7 +72,7 @@ type NetworkSecurityDetails struct {
 // HTTP response data.
 type NetworkResponse struct {
 	Url                string                  `json:"url"`                          // Response URL. This URL can be different from CachedResource.url in case of redirect.
-	Status             float64                 `json:"status"`                       // HTTP response status code.
+	Status             int                     `json:"status"`                       // HTTP response status code.
 	StatusText         string                  `json:"statusText"`                   // HTTP response status text.
 	Headers            map[string]interface{}  `json:"headers"`                      // HTTP response headers.
 	HeadersText        string                  `json:"headersText,omitempty"`        // HTTP response headers text.
@@ -99,7 +99,7 @@ type NetworkWebSocketRequest struct {
 
 // WebSocket response data.
 type NetworkWebSocketResponse struct {
-	Status             float64                `json:"status"`                       // HTTP response status code.
+	Status             int                    `json:"status"`                       // HTTP response status code.
 	StatusText         string                 `json:"statusText"`                   // HTTP response status text.
 	Headers            map[string]interface{} `json:"headers"`                      // HTTP response headers.
 	HeadersText        string                 `json:"headersText,omitempty"`        // HTTP response headers text.
@@ -170,6 +170,12 @@ type NetworkAuthChallengeResponse struct {
 	Response string `json:"response"`           // The decision on what to do in response to the authorization challenge.  Default means deferring to the default behavior of the net stack, which will likely either the Cancel authentication or display a popup dialog box.
 	Username string `json:"username,omitempty"` // The username to provide, possibly empty. Should only be set if response is ProvideCredentials.
 	Password string `json:"password,omitempty"` // The password to provide, possibly empty. Should only be set if response is ProvideCredentials.
+}
+
+// Request pattern for interception.
+type NetworkRequestPattern struct {
+	UrlPattern   string `json:"urlPattern,omitempty"`   // Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to "*".
+	ResourceType string `json:"resourceType,omitempty"` // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
 }
 
 // Fired when resource loading priority is changed
@@ -342,6 +348,7 @@ type NetworkRequestInterceptedEvent struct {
 	Params struct {
 		InterceptionId      string                 `json:"interceptionId"`               // Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
 		Request             *NetworkRequest        `json:"request"`                      //
+		FrameId             string                 `json:"frameId"`                      // The id of the frame that initiated the request.
 		ResourceType        string                 `json:"resourceType"`                 // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
 		IsNavigationRequest bool                   `json:"isNavigationRequest"`          // Whether this is a navigation request, which can abort the navigation completely.
 		RedirectHeaders     map[string]interface{} `json:"redirectHeaders,omitempty"`    // HTTP response headers, only sent if a redirect was intercepted.
@@ -819,11 +826,11 @@ func (c *Network) CanEmulateNetworkConditions() (bool, error) {
 type NetworkEmulateNetworkConditionsParams struct {
 	// True to emulate internet disconnection.
 	Offline bool `json:"offline"`
-	// Additional latency (ms).
+	// Minimum latency from request sent to response headers received (ms).
 	Latency float64 `json:"latency"`
-	// Maximal aggregated download throughput.
+	// Maximal aggregated download throughput (bytes/sec). -1 disables download throttling.
 	DownloadThroughput float64 `json:"downloadThroughput"`
-	// Maximal aggregated upload throughput.
+	// Maximal aggregated upload throughput (bytes/sec).  -1 disables upload throttling.
 	UploadThroughput float64 `json:"uploadThroughput"`
 	// Connection type if known. enum values: none, cellular2g, cellular3g, cellular4g, bluetooth, ethernet, wifi, wimax, other
 	ConnectionType string `json:"connectionType,omitempty"`
@@ -836,9 +843,9 @@ func (c *Network) EmulateNetworkConditionsWithParams(v *NetworkEmulateNetworkCon
 
 // EmulateNetworkConditions - Activates emulation of network conditions.
 // offline - True to emulate internet disconnection.
-// latency - Additional latency (ms).
-// downloadThroughput - Maximal aggregated download throughput.
-// uploadThroughput - Maximal aggregated upload throughput.
+// latency - Minimum latency from request sent to response headers received (ms).
+// downloadThroughput - Maximal aggregated download throughput (bytes/sec). -1 disables download throttling.
+// uploadThroughput - Maximal aggregated upload throughput (bytes/sec).  -1 disables upload throttling.
 // connectionType - Connection type if known. enum values: none, cellular2g, cellular3g, cellular4g, bluetooth, ethernet, wifi, wimax, other
 func (c *Network) EmulateNetworkConditions(offline bool, latency float64, downloadThroughput float64, uploadThroughput float64, connectionType string) (*gcdmessage.ChromeResponse, error) {
 	var v NetworkEmulateNetworkConditionsParams
@@ -954,26 +961,22 @@ func (c *Network) GetCertificate(origin string) ([]string, error) {
 	return c.GetCertificateWithParams(&v)
 }
 
-type NetworkSetRequestInterceptionEnabledParams struct {
-	// Whether requests should be intercepted. If patterns is not set, matches all and resets any previously set patterns. Other parameters are ignored if false.
-	Enabled bool `json:"enabled"`
-	// URLs matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call. Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. If omitted equivalent to ['*'] (intercept all).
-	Patterns []string `json:"patterns,omitempty"`
+type NetworkSetRequestInterceptionParams struct {
+	// Requests matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call.
+	Patterns []*NetworkRequestPattern `json:"patterns"`
 }
 
-// SetRequestInterceptionEnabledWithParams - Sets the requests to intercept that match a the provided patterns.
-func (c *Network) SetRequestInterceptionEnabledWithParams(v *NetworkSetRequestInterceptionEnabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setRequestInterceptionEnabled", Params: v})
+// SetRequestInterceptionWithParams - Sets the requests to intercept that match a the provided patterns and optionally resource types.
+func (c *Network) SetRequestInterceptionWithParams(v *NetworkSetRequestInterceptionParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setRequestInterception", Params: v})
 }
 
-// SetRequestInterceptionEnabled - Sets the requests to intercept that match a the provided patterns.
-// enabled - Whether requests should be intercepted. If patterns is not set, matches all and resets any previously set patterns. Other parameters are ignored if false.
-// patterns - URLs matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call. Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. If omitted equivalent to ['*'] (intercept all).
-func (c *Network) SetRequestInterceptionEnabled(enabled bool, patterns []string) (*gcdmessage.ChromeResponse, error) {
-	var v NetworkSetRequestInterceptionEnabledParams
-	v.Enabled = enabled
+// SetRequestInterception - Sets the requests to intercept that match a the provided patterns and optionally resource types.
+// patterns - Requests matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call.
+func (c *Network) SetRequestInterception(patterns []*NetworkRequestPattern) (*gcdmessage.ChromeResponse, error) {
+	var v NetworkSetRequestInterceptionParams
 	v.Patterns = patterns
-	return c.SetRequestInterceptionEnabledWithParams(&v)
+	return c.SetRequestInterceptionWithParams(&v)
 }
 
 type NetworkContinueInterceptedRequestParams struct {

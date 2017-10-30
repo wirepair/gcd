@@ -151,7 +151,7 @@ type RuntimeExceptionRevokedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Reason      string `json:"reason"`      // Reason describing why exception was revoked.
-		ExceptionId int    `json:"exceptionId"` // The id of revoked exception, as reported in <code>exceptionUnhandled</code>.
+		ExceptionId int    `json:"exceptionId"` // The id of revoked exception, as reported in <code>exceptionThrown</code>.
 	} `json:"Params,omitempty"`
 }
 
@@ -321,10 +321,10 @@ func (c *Runtime) AwaitPromise(promiseObjectId string, returnByValue bool, gener
 }
 
 type RuntimeCallFunctionOnParams struct {
-	// Identifier of the object to call function on.
-	ObjectId string `json:"objectId"`
 	// Declaration of the function to call.
 	FunctionDeclaration string `json:"functionDeclaration"`
+	// Identifier of the object to call function on. Either objectId or executionContextId should be specified.
+	ObjectId string `json:"objectId,omitempty"`
 	// Call arguments. All call arguments must belong to the same JavaScript world as the target object.
 	Arguments []*RuntimeCallArgument `json:"arguments,omitempty"`
 	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.
@@ -337,6 +337,10 @@ type RuntimeCallFunctionOnParams struct {
 	UserGesture bool `json:"userGesture,omitempty"`
 	// Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
 	AwaitPromise bool `json:"awaitPromise,omitempty"`
+	// Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
+	ExecutionContextId int `json:"executionContextId,omitempty"`
+	// Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
+	ObjectGroup string `json:"objectGroup,omitempty"`
 }
 
 // CallFunctionOnWithParams - Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
@@ -373,25 +377,29 @@ func (c *Runtime) CallFunctionOnWithParams(v *RuntimeCallFunctionOnParams) (*Run
 }
 
 // CallFunctionOn - Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
-// objectId - Identifier of the object to call function on.
 // functionDeclaration - Declaration of the function to call.
+// objectId - Identifier of the object to call function on. Either objectId or executionContextId should be specified.
 // arguments - Call arguments. All call arguments must belong to the same JavaScript world as the target object.
 // silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.
 // returnByValue - Whether the result is expected to be a JSON object which should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
 // awaitPromise - Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
+// executionContextId - Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
+// objectGroup - Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
 // Returns -  result - Call result. exceptionDetails - Exception details.
-func (c *Runtime) CallFunctionOn(objectId string, functionDeclaration string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) CallFunctionOn(functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeCallFunctionOnParams
-	v.ObjectId = objectId
 	v.FunctionDeclaration = functionDeclaration
+	v.ObjectId = objectId
 	v.Arguments = arguments
 	v.Silent = silent
 	v.ReturnByValue = returnByValue
 	v.GeneratePreview = generatePreview
 	v.UserGesture = userGesture
 	v.AwaitPromise = awaitPromise
+	v.ExecutionContextId = executionContextId
+	v.ObjectGroup = objectGroup
 	return c.CallFunctionOnWithParams(&v)
 }
 
@@ -707,4 +715,50 @@ func (c *Runtime) QueryObjects(prototypeObjectId string) (*RuntimeRemoteObject, 
 	var v RuntimeQueryObjectsParams
 	v.PrototypeObjectId = prototypeObjectId
 	return c.QueryObjectsWithParams(&v)
+}
+
+type RuntimeGlobalLexicalScopeNamesParams struct {
+	// Specifies in which execution context to lookup global scope variables.
+	ExecutionContextId int `json:"executionContextId,omitempty"`
+}
+
+// GlobalLexicalScopeNamesWithParams - Returns all let, const and class variables from global scope.
+// Returns -  names -
+func (c *Runtime) GlobalLexicalScopeNamesWithParams(v *RuntimeGlobalLexicalScopeNamesParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.globalLexicalScopeNames", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Names []string
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Names, nil
+}
+
+// GlobalLexicalScopeNames - Returns all let, const and class variables from global scope.
+// executionContextId - Specifies in which execution context to lookup global scope variables.
+// Returns -  names -
+func (c *Runtime) GlobalLexicalScopeNames(executionContextId int) ([]string, error) {
+	var v RuntimeGlobalLexicalScopeNamesParams
+	v.ExecutionContextId = executionContextId
+	return c.GlobalLexicalScopeNamesWithParams(&v)
 }

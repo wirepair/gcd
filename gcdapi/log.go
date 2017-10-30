@@ -10,15 +10,16 @@ import (
 
 // Log entry.
 type LogLogEntry struct {
-	Source           string             `json:"source"`                     // Log entry source.
-	Level            string             `json:"level"`                      // Log entry severity.
-	Text             string             `json:"text"`                       // Logged text.
-	Timestamp        float64            `json:"timestamp"`                  // Timestamp when this entry was added.
-	Url              string             `json:"url,omitempty"`              // URL of the resource if known.
-	LineNumber       int                `json:"lineNumber,omitempty"`       // Line number in the resource.
-	StackTrace       *RuntimeStackTrace `json:"stackTrace,omitempty"`       // JavaScript stack trace.
-	NetworkRequestId string             `json:"networkRequestId,omitempty"` // Identifier of the network request associated with this entry.
-	WorkerId         string             `json:"workerId,omitempty"`         // Identifier of the worker associated with this entry.
+	Source           string                 `json:"source"`                     // Log entry source.
+	Level            string                 `json:"level"`                      // Log entry severity.
+	Text             string                 `json:"text"`                       // Logged text.
+	Timestamp        float64                `json:"timestamp"`                  // Timestamp when this entry was added.
+	Url              string                 `json:"url,omitempty"`              // URL of the resource if known.
+	LineNumber       int                    `json:"lineNumber,omitempty"`       // Line number in the resource.
+	StackTrace       *RuntimeStackTrace     `json:"stackTrace,omitempty"`       // JavaScript stack trace.
+	NetworkRequestId string                 `json:"networkRequestId,omitempty"` // Identifier of the network request associated with this entry.
+	WorkerId         string                 `json:"workerId,omitempty"`         // Identifier of the worker associated with this entry.
+	Args             []*RuntimeRemoteObject `json:"args,omitempty"`             // Call arguments.
 }
 
 // Violation configuration setting.

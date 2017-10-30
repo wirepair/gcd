@@ -415,9 +415,11 @@ func TestNetworkIntercept(t *testing.T) {
 	if _, err := network.EnableWithParams(networkParams); err != nil {
 		t.Fatalf("error enabling network")
 	}
-	interceptParams := &gcdapi.NetworkSetRequestInterceptionEnabledParams{Enabled: true}
+	patterns := make([]*gcdapi.NetworkRequestPattern, 1)
+	patterns[0] = &gcdapi.NetworkRequestPattern{UrlPattern: "*", ResourceType: "Document"}
+	interceptParams := &gcdapi.NetworkSetRequestInterceptionParams{Patterns: patterns}
 
-	if _, err := network.SetRequestInterceptionEnabledWithParams(interceptParams); err != nil {
+	if _, err := network.SetRequestInterceptionWithParams(interceptParams); err != nil {
 		t.Fatalf("unable to set interception enabled: %s\n", err)
 	}
 

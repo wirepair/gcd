@@ -791,7 +791,7 @@ type DOMGetSearchResultsParams struct {
 	ToIndex int `json:"toIndex"`
 }
 
-// GetSearchResultsWithParams - Returns search results from given <code>fromIndex</code> to given <code>toIndex</code> from the sarch with the given identifier.
+// GetSearchResultsWithParams - Returns search results from given <code>fromIndex</code> to given <code>toIndex</code> from the search with the given identifier.
 // Returns -  nodeIds - Ids of the search result nodes.
 func (c *DOM) GetSearchResultsWithParams(v *DOMGetSearchResultsParams) ([]int, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getSearchResults", Params: v})
@@ -823,7 +823,7 @@ func (c *DOM) GetSearchResultsWithParams(v *DOMGetSearchResultsParams) ([]int, e
 	return chromeData.Result.NodeIds, nil
 }
 
-// GetSearchResults - Returns search results from given <code>fromIndex</code> to given <code>toIndex</code> from the sarch with the given identifier.
+// GetSearchResults - Returns search results from given <code>fromIndex</code> to given <code>toIndex</code> from the search with the given identifier.
 // searchId - Unique search session identifier.
 // fromIndex - Start index of the search result to be returned.
 // toIndex - End index of the search result to be returned.

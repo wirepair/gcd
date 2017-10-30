@@ -5,33 +5,8 @@ Because I'm lazy and there are hundereds of different custom types and API metho
 
 The [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) program was created to generate types, event types and commands for gcd.
 
-# Changelog (2017)
-- September 9th: Updated to latest protocol files.
-	We now download specific channels protocol files. By default we download the 'dev' channel. You can override this if you wish in gcdapigen by passing gcdapigen -update -channel {canary,stable,...}. To see what version gcd is bound to, check the gcdapi/version.go file, or call gcd.GetRevision(). Current is 62.0.3202.9.
-- August 15th: Updated to the latest protocol.json
-- July 8th: Updated to latest protocol.json which supports network interception. However it does not appear to work in most versions yet. (I could only get it working in the latest https://download-chromium.appspot.com/ download.) Also, going forward GCDVERSION will be Major.Year.Month.Day.Minor format.
-- June: Due to the excellent efforts of [Ian L.](https://github.com/MrSaints) gcd can now issue requests ignoring fields. A non-breaking change was implemented allowing callers to use new methods (denoted by WithParams) to pass in structures, and choosing which fields to populate. Users can continue to use the old method passing individual arguments.
-Example:
-```Go
-networkParams := &gcdapi.NetworkEnableParams{
-	MaxTotalBufferSize:    -1,
-	MaxResourceBufferSize: -1,
-}
-
-if _, err := network.EnableWithParams(networkParams); err != nil {
-	log.Fatal("error enabling network")
-}
-```
-- May: Updated to latest protocol.json
-- May: Fixed a bug with templating causing certain parameters that were slices to only show up as the base type.
-- May: Changed templating where 'any' protocol.json field types from string to interface{} to allow caller to decide how to decode. 
-- April: Updated to the latest protocol.json (version 1.2). Note this changes quite a few APIs.
-
-# Changelog (2016)
-June: Updated to the latest protocol.json, gcdapigen will download the js_protocol and browser_protocol json files from chromium repositories. It will also fix them up and merge them into a single file and output it. 
-Note that several API endpoints have been removed and method calls have changed since the last update.
-
-February: I created a new library for actual automation purposes. If you want something with more functionality and more usability I suggest checking out [autogcd](https://github.com/wirepair/autogcd).
+# Changelog 
+See the [CHANGELOG](https://github.com/wirepair/gcd/tree/master/CHANGELOG.md).
 
 ## Dependencies
 gcd requires the [gcdapi](https://github.com/wirepair/gcd/tree/master/gcdapi) and [gcdmessage](https://github.com/wirepair/gcd/tree/master/gcdmessage) packages. gcdapi is the auto-generated API. gcdmessage is the glue between gcd and gcdapi so we can keep the packages clean. 
@@ -70,6 +45,7 @@ package main
 
 import (
 	"github.com/wirepair/gcd"
+	"github.com/wirepair/gcd/gcdapi"
 	"log"
 	"sync"
 )
@@ -82,25 +58,28 @@ func main() {
 	// set port 9222 as the debug port
 	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
 	defer debugger.ExitProcess()          // exit when done
-	targets, err := debugger.GetTargets() // get the 'targets' or tabs/background processes
+	target, err := debugger.NewTab()
 	if err != nil {
 		log.Fatalf("error getting targets: %s\n", err)
 	}
-	target := targets[0] // take the first one
 
 	//subscribe to page load
 	target.Subscribe("Page.loadEventFired", func(targ *gcd.ChromeTarget, v []byte) {
 		wg.Done() // page loaded, we can exit now
 		// if you wanted to inspect the full response data, you could do that here
 	})
+
 	// get the Page API and enable it
 	if _, err := target.Page.Enable(); err != nil {
 		log.Fatalf("error getting page: %s\n", err)
 	}
-	ret, err := target.Page.Navigate("http://www.veracode.com", "") // navigate
+
+	navigateParams := &gcdapi.PageNavigateParams{Url: "http://www.veracode.com"}
+	_, err := target.Page.NavigateWithParams(navigateParams)
 	if err != nil {
-		log.Fatalf("Error navigating: %s\n", err)
+		log.Fatalf("error: %s\n", err)
 	}
+
 	log.Printf("ret: %#v\n", ret)
 	wg.Wait() // wait for page load
 }
@@ -139,11 +118,14 @@ package main
 
 import (
 	"encoding/base64"
+	"flag"
 	"fmt"
 	"github.com/wirepair/gcd"
+	"github.com/wirepair/gcd/gcdapi"
 	"log"
 	"net/url"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -155,11 +137,34 @@ const (
 var debugger *gcd.Gcd
 var wg sync.WaitGroup
 
+var path string
+var dir string
+var port string
+
+func init() {
+	switch runtime.GOOS {
+	case "windows":
+		flag.StringVar(&path, "chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "path to chrome")
+		flag.StringVar(&dir, "dir", "C:\\temp\\", "user directory")
+	case "darwin":
+		flag.StringVar(&path, "chrome", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "path to chrome")
+		flag.StringVar(&dir, "dir", "/tmp/", "user directory")
+	case "linux":
+		flag.StringVar(&path, "chrome", "/usr/bin/chromium-browser", "path to chrome")
+		flag.StringVar(&dir, "dir", "/tmp/", "user directory")
+	}
+
+	flag.StringVar(&port, "port", "9222", "Debugger port")
+}
+
 func main() {
 	var err error
 	urls := []string{"http://www.google.com", "http://www.veracode.com", "http://www.microsoft.com", "http://bbc.co.uk", "http://www.reddit.com/r/golang"}
+
+	flag.Parse()
+
 	debugger = gcd.NewChromeDebugger()
-	debugger.StartProcess("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "C:\\tmp\\", "9222")
+	debugger.StartProcess(path, dir, port)
 	defer debugger.ExitProcess()
 	targets := make([]*gcd.ChromeTarget, numTabs)
 
@@ -172,7 +177,12 @@ func main() {
 		page := targets[i].Page
 		page.Enable()
 		targets[i].Subscribe("Page.loadEventFired", PageLoaded)
-		page.Navigate(urls[i])
+		// navigate
+		navigateParams := &gcdapi.PageNavigateParams{Url: urls[i]}
+		_, err := page.NavigateWithParams(navigateParams)
+		if err != nil {
+			log.Fatalf("error: %s\n", err)
+		}
 	}
 	wg.Wait()
 	for i := 0; i < numTabs; i++ {
@@ -192,6 +202,7 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 		fmt.Errorf("error getting doc: %s\n", err)
 		return
 	}
+
 	debugger.ActivateTab(target)
 	time.Sleep(1 * time.Second) // give it a sec to paint
 	u, urlErr := url.Parse(doc.DocumentURL)
@@ -199,17 +210,21 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 		fmt.Errorf("error parsing url: %s\n", urlErr)
 		return
 	}
+
 	fmt.Printf("Taking screen shot of: %s\n", u.Host)
-	img, errCap := page.CaptureScreenshot("png", 0, false)
+	screenShotParams := &gcdapi.PageCaptureScreenshotParams{Format: "png", FromSurface: true}
+	img, errCap := page.CaptureScreenshotWithParams(screenShotParams)
 	if errCap != nil {
 		fmt.Errorf("error getting doc: %s\n", errCap)
 		return
 	}
+
 	imgBytes, errDecode := base64.StdEncoding.DecodeString(img)
 	if errDecode != nil {
 		fmt.Errorf("error decoding image: %s\n", errDecode)
 		return
 	}
+
 	f, errFile := os.Create(u.Host + ".png")
 	defer f.Close()
 	if errFile != nil {

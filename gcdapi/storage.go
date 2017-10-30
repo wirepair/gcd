@@ -32,6 +32,24 @@ type StorageCacheStorageContentUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+// The origin's IndexedDB database list has been modified.
+type StorageIndexedDBListUpdatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Origin string `json:"origin"` // Origin to update.
+	} `json:"Params,omitempty"`
+}
+
+// The origin's IndexedDB object store has been modified.
+type StorageIndexedDBContentUpdatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Origin          string `json:"origin"`          // Origin to update.
+		DatabaseName    string `json:"databaseName"`    // Database to update.
+		ObjectStoreName string `json:"objectStoreName"` // ObjectStore to update.
+	} `json:"Params,omitempty"`
+}
+
 type Storage struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -145,4 +163,40 @@ func (c *Storage) UntrackCacheStorageForOrigin(origin string) (*gcdmessage.Chrom
 	var v StorageUntrackCacheStorageForOriginParams
 	v.Origin = origin
 	return c.UntrackCacheStorageForOriginWithParams(&v)
+}
+
+type StorageTrackIndexedDBForOriginParams struct {
+	// Security origin.
+	Origin string `json:"origin"`
+}
+
+// TrackIndexedDBForOriginWithParams - Registers origin to be notified when an update occurs to its IndexedDB.
+func (c *Storage) TrackIndexedDBForOriginWithParams(v *StorageTrackIndexedDBForOriginParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.trackIndexedDBForOrigin", Params: v})
+}
+
+// TrackIndexedDBForOrigin - Registers origin to be notified when an update occurs to its IndexedDB.
+// origin - Security origin.
+func (c *Storage) TrackIndexedDBForOrigin(origin string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageTrackIndexedDBForOriginParams
+	v.Origin = origin
+	return c.TrackIndexedDBForOriginWithParams(&v)
+}
+
+type StorageUntrackIndexedDBForOriginParams struct {
+	// Security origin.
+	Origin string `json:"origin"`
+}
+
+// UntrackIndexedDBForOriginWithParams - Unregisters origin from receiving notifications for IndexedDB.
+func (c *Storage) UntrackIndexedDBForOriginWithParams(v *StorageUntrackIndexedDBForOriginParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.untrackIndexedDBForOrigin", Params: v})
+}
+
+// UntrackIndexedDBForOrigin - Unregisters origin from receiving notifications for IndexedDB.
+// origin - Security origin.
+func (c *Storage) UntrackIndexedDBForOrigin(origin string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageUntrackIndexedDBForOriginParams
+	v.Origin = origin
+	return c.UntrackIndexedDBForOriginWithParams(&v)
 }
