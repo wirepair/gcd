@@ -204,7 +204,7 @@ func TestEvaluate(t *testing.T) {
 		userGestures := true
 		rro, exception, err := target.Runtime.Evaluate(scriptSource, objectGroup, includeCommandLineAPI, silent, contextId, returnByValue, generatePreview, userGestures, awaitPromise)
 		if err != nil {
-			t.Fatalf("error evaulating: %s %s\n", err, exception)
+			t.Fatalf("error evaluating: %s %s\n", err, exception)
 		}
 
 		if val, ok := rro.Value.(string); ok {

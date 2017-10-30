@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/wirepair/gcd)](https://goreportcard.com/report/github.com/wirepair/gcd)
+
 # Google Chrome Debugger (GCD)
 This is primarly an auto-generated client library for communicating with a Google Chrome Browser over their [remote client debugger protocol](https://developer.chrome.com/devtools/docs/debugger-protocol). Note that their documentation is partially incorrect and does not contain a lot of the API calls that are actually available.
 
@@ -199,7 +201,7 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 	page := target.Page
 	doc, err := dom.GetDocument(-1, true)
 	if err != nil {
-		fmt.Errorf("error getting doc: %s\n", err)
+		fmt.Printf("error getting doc: %s\n", err)
 		return
 	}
 
@@ -207,7 +209,7 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 	time.Sleep(1 * time.Second) // give it a sec to paint
 	u, urlErr := url.Parse(doc.DocumentURL)
 	if urlErr != nil {
-		fmt.Errorf("error parsing url: %s\n", urlErr)
+		fmt.Printf("error parsing url: %s\n", urlErr)
 		return
 	}
 
@@ -215,20 +217,20 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 	screenShotParams := &gcdapi.PageCaptureScreenshotParams{Format: "png", FromSurface: true}
 	img, errCap := page.CaptureScreenshotWithParams(screenShotParams)
 	if errCap != nil {
-		fmt.Errorf("error getting doc: %s\n", errCap)
+		fmt.Printf("error getting doc: %s\n", errCap)
 		return
 	}
 
 	imgBytes, errDecode := base64.StdEncoding.DecodeString(img)
 	if errDecode != nil {
-		fmt.Errorf("error decoding image: %s\n", errDecode)
+		fmt.Printf("error decoding image: %s\n", errDecode)
 		return
 	}
 
 	f, errFile := os.Create(u.Host + ".png")
 	defer f.Close()
 	if errFile != nil {
-		fmt.Errorf("error creating image file: %s\n", errFile)
+		fmt.Printf("error creating image file: %s\n", errFile)
 		return
 	}
 	f.Write(imgBytes)

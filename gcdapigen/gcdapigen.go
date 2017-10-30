@@ -53,7 +53,10 @@ const (
 	prefix       = "chrome_"
 	templateFile = "api_template.txt"
 	versionData  = `package gcdapi
-const CHROME_CHANNEL = "%s"
+
+// Chrome Channel information
+const CHROME_CHANNEL = "%s" 
+// Chrome Version information
 const CHROME_VERSION = "%s"`
 )
 

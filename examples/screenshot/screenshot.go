@@ -60,7 +60,7 @@ func main() {
 		}
 		page := targets[i].Page
 		page.Enable()
-		targets[i].Subscribe("Page.loadEventFired", PageLoaded)
+		targets[i].Subscribe("Page.loadEventFired", pageLoaded)
 		// navigate
 		navigateParams := &gcdapi.PageNavigateParams{Url: urls[i]}
 		_, err := page.NavigateWithParams(navigateParams)
@@ -70,20 +70,20 @@ func main() {
 	}
 	wg.Wait()
 	for i := 0; i < numTabs; i++ {
-		TakeScreenShot(targets[i])
+		takeScreenShot(targets[i])
 	}
 }
 
-func PageLoaded(target *gcd.ChromeTarget, event []byte) {
+func pageLoaded(target *gcd.ChromeTarget, event []byte) {
 	wg.Done()
 }
 
-func TakeScreenShot(target *gcd.ChromeTarget) {
+func takeScreenShot(target *gcd.ChromeTarget) {
 	dom := target.DOM
 	page := target.Page
 	doc, err := dom.GetDocument(-1, true)
 	if err != nil {
-		fmt.Errorf("error getting doc: %s\n", err)
+		fmt.Printf("error getting doc: %s\n", err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 	time.Sleep(1 * time.Second) // give it a sec to paint
 	u, urlErr := url.Parse(doc.DocumentURL)
 	if urlErr != nil {
-		fmt.Errorf("error parsing url: %s\n", urlErr)
+		fmt.Printf("error parsing url: %s\n", urlErr)
 		return
 	}
 
@@ -99,20 +99,20 @@ func TakeScreenShot(target *gcd.ChromeTarget) {
 	screenShotParams := &gcdapi.PageCaptureScreenshotParams{Format: "png", FromSurface: true}
 	img, errCap := page.CaptureScreenshotWithParams(screenShotParams)
 	if errCap != nil {
-		fmt.Errorf("error getting doc: %s\n", errCap)
+		fmt.Printf("error getting doc: %s\n", errCap)
 		return
 	}
 
 	imgBytes, errDecode := base64.StdEncoding.DecodeString(img)
 	if errDecode != nil {
-		fmt.Errorf("error decoding image: %s\n", errDecode)
+		fmt.Printf("error decoding image: %s\n", errDecode)
 		return
 	}
 
 	f, errFile := os.Create(u.Host + ".png")
 	defer f.Close()
 	if errFile != nil {
-		fmt.Errorf("error creating image file: %s\n", errFile)
+		fmt.Printf("error creating image file: %s\n", errFile)
 		return
 	}
 	f.Write(imgBytes)

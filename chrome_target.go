@@ -120,12 +120,12 @@ func openChromeTarget(addr string, target *TargetInfo) (*ChromeTarget, error) {
 		return nil, err
 	}
 	replier := make(map[int64]chan *gcdmessage.Message)
-	var replyLock sync.RWMutex
-	var eventLock sync.RWMutex
+	//var replyLock sync.RWMutex
+	//var eventLock sync.RWMutex
 	eventer := make(map[string]func(*ChromeTarget, []byte))
 	sendCh := make(chan *gcdmessage.Message)
 	doneCh := make(chan struct{})
-	chromeTarget := &ChromeTarget{conn: conn, eventLock: eventLock, replyLock: replyLock, Target: target, sendCh: sendCh, replyDispatcher: replier, eventDispatcher: eventer, doneCh: doneCh, sendId: 0}
+	chromeTarget := &ChromeTarget{conn: conn, Target: target, sendCh: sendCh, replyDispatcher: replier, eventDispatcher: eventer, doneCh: doneCh, sendId: 0}
 	chromeTarget.apiTimeout = 120 * time.Second // default 120 seconds to wait for chrome to respond to us
 	chromeTarget.Init()
 	chromeTarget.listen()
@@ -189,7 +189,7 @@ func (c *ChromeTarget) shutdown() {
 }
 
 // A timeout for how long we should wait before giving up gcdmessages.
-// In the highly unusuable (but it has occurred) event that chrome
+// In the highly unusable (but it has occurred) event that chrome
 // does not respond to one of our messages, we should be able to return
 // from gcdmessage functions.
 func (c *ChromeTarget) SetApiTimeout(timeout time.Duration) {
@@ -211,7 +211,7 @@ func (c *ChromeTarget) Subscribe(method string, callback func(*ChromeTarget, []b
 	c.eventLock.Unlock()
 }
 
-// Unsubscribes the handler for no longer recieving events.
+// Unsubscribes the handler for no longer receiving events.
 func (c *ChromeTarget) Unsubscribe(method string) {
 	c.eventLock.Lock()
 	delete(c.eventDispatcher, method)
