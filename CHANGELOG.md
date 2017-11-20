@@ -1,4 +1,5 @@
 # Changelog (2017)
+- November 20th: Updated to latest protocol. Current is 64.0.3269.3. Updated tests and examples to work with latest API changes.
 - October 30th: Updated to latest protocol. Current is 64.0.3251.0. Updated examples to work with latest API changes.
 - September 9th: Updated to latest protocol files.
     We now download specific channels protocol files. By default we download the 'dev' channel. You can override this if you wish in gcdapigen by passing gcdapigen -update -channel {canary,stable,...}. To see what version gcd is bound to, check the gcdapi/version.go file, or call gcd.GetRevision(). Current is 62.0.3202.9.

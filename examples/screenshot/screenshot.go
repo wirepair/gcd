@@ -4,14 +4,15 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
-	"github.com/wirepair/gcd"
-	"github.com/wirepair/gcd/gcdapi"
 	"log"
 	"net/url"
 	"os"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/wirepair/gcd"
+	"github.com/wirepair/gcd/gcdapi"
 )
 
 const (
@@ -63,7 +64,7 @@ func main() {
 		targets[i].Subscribe("Page.loadEventFired", pageLoaded)
 		// navigate
 		navigateParams := &gcdapi.PageNavigateParams{Url: urls[i]}
-		_, err := page.NavigateWithParams(navigateParams)
+		_, _, err := page.NavigateWithParams(navigateParams)
 		if err != nil {
 			log.Fatalf("error: %s\n", err)
 		}

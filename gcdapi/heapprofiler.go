@@ -297,3 +297,35 @@ func (c *HeapProfiler) StopSampling() (*HeapProfilerSamplingHeapProfile, error) 
 
 	return chromeData.Result.Profile, nil
 }
+
+// GetSamplingProfile -
+// Returns -  profile - Return the sampling profile being collected.
+func (c *HeapProfiler) GetSamplingProfile() (*HeapProfilerSamplingHeapProfile, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.getSamplingProfile"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Profile *HeapProfilerSamplingHeapProfile
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Profile, nil
+}

@@ -113,11 +113,12 @@ type DebuggerBreakpointResolvedEvent struct {
 type DebuggerPausedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		CallFrames      []*DebuggerCallFrame   `json:"callFrames"`                // Call stack the virtual machine stopped on.
-		Reason          string                 `json:"reason"`                    // Pause reason.
-		Data            map[string]interface{} `json:"data,omitempty"`            // Object containing break-specific auxiliary properties.
-		HitBreakpoints  []string               `json:"hitBreakpoints,omitempty"`  // Hit breakpoints IDs
-		AsyncStackTrace *RuntimeStackTrace     `json:"asyncStackTrace,omitempty"` // Async stack trace, if any.
+		CallFrames           []*DebuggerCallFrame   `json:"callFrames"`                     // Call stack the virtual machine stopped on.
+		Reason               string                 `json:"reason"`                         // Pause reason.
+		Data                 map[string]interface{} `json:"data,omitempty"`                 // Object containing break-specific auxiliary properties.
+		HitBreakpoints       []string               `json:"hitBreakpoints,omitempty"`       // Hit breakpoints IDs
+		AsyncStackTrace      *RuntimeStackTrace     `json:"asyncStackTrace,omitempty"`      // Async stack trace, if any.
+		ScheduledAsyncTaskId string                 `json:"scheduledAsyncTaskId,omitempty"` // Scheduled async task id.
 	} `json:"Params,omitempty"`
 }
 
@@ -388,14 +389,45 @@ func (c *Debugger) ContinueToLocation(location *DebuggerLocation, targetCallFram
 	return c.ContinueToLocationWithParams(&v)
 }
 
+type DebuggerPauseOnAsyncTaskParams struct {
+	// Debugger will pause when given async task is started.
+	AsyncTaskId string `json:"asyncTaskId"`
+}
+
+// PauseOnAsyncTaskWithParams -
+func (c *Debugger) PauseOnAsyncTaskWithParams(v *DebuggerPauseOnAsyncTaskParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.pauseOnAsyncTask", Params: v})
+}
+
+// PauseOnAsyncTask -
+// asyncTaskId - Debugger will pause when given async task is started.
+func (c *Debugger) PauseOnAsyncTask(asyncTaskId string) (*gcdmessage.ChromeResponse, error) {
+	var v DebuggerPauseOnAsyncTaskParams
+	v.AsyncTaskId = asyncTaskId
+	return c.PauseOnAsyncTaskWithParams(&v)
+}
+
 // Steps over the statement.
 func (c *Debugger) StepOver() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOver"})
 }
 
-// Steps into the function call.
-func (c *Debugger) StepInto() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepInto"})
+type DebuggerStepIntoParams struct {
+	// Debugger will issue additional Debugger.paused notification if any async task is scheduled before next pause.
+	BreakOnAsyncCall bool `json:"breakOnAsyncCall,omitempty"`
+}
+
+// StepIntoWithParams - Steps into the function call.
+func (c *Debugger) StepIntoWithParams(v *DebuggerStepIntoParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepInto", Params: v})
+}
+
+// StepInto - Steps into the function call.
+// breakOnAsyncCall - Debugger will issue additional Debugger.paused notification if any async task is scheduled before next pause.
+func (c *Debugger) StepInto(breakOnAsyncCall bool) (*gcdmessage.ChromeResponse, error) {
+	var v DebuggerStepIntoParams
+	v.BreakOnAsyncCall = breakOnAsyncCall
+	return c.StepIntoWithParams(&v)
 }
 
 // Steps out of the function call.
@@ -408,7 +440,7 @@ func (c *Debugger) Pause() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.pause"})
 }
 
-// Steps into next scheduled async task if any is scheduled before next pause. Returns success when async task is actually scheduled, returns error if no task were scheduled or another scheduleStepIntoAsync was called.
+// This method is deprecated - use Debugger.stepInto with breakOnAsyncCall and Debugger.pauseOnAsyncTask instead. Steps into next scheduled async task if any is scheduled before next pause. Returns success when async task is actually scheduled, returns error if no task were scheduled or another scheduleStepIntoAsync was called.
 func (c *Debugger) ScheduleStepIntoAsync() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.scheduleStepIntoAsync"})
 }
@@ -747,6 +779,24 @@ func (c *Debugger) SetVariableValue(scopeNumber int, variableName string, newVal
 	v.NewValue = newValue
 	v.CallFrameId = callFrameId
 	return c.SetVariableValueWithParams(&v)
+}
+
+type DebuggerSetReturnValueParams struct {
+	// New return value.
+	NewValue *RuntimeCallArgument `json:"newValue"`
+}
+
+// SetReturnValueWithParams - Changes return value in top frame. Available only at return break position.
+func (c *Debugger) SetReturnValueWithParams(v *DebuggerSetReturnValueParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setReturnValue", Params: v})
+}
+
+// SetReturnValue - Changes return value in top frame. Available only at return break position.
+// newValue - New return value.
+func (c *Debugger) SetReturnValue(newValue *RuntimeCallArgument) (*gcdmessage.ChromeResponse, error) {
+	var v DebuggerSetReturnValueParams
+	v.NewValue = newValue
+	return c.SetReturnValueWithParams(&v)
 }
 
 type DebuggerSetAsyncCallStackDepthParams struct {

@@ -168,13 +168,6 @@ type CSSStyleDeclarationEdit struct {
 	Text         string          `json:"text"`         // New style text.
 }
 
-// Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.
-type CSSInlineTextBox struct {
-	BoundingBox         *DOMRect `json:"boundingBox"`         // The absolute position bounding box.
-	StartCharacterIndex int      `json:"startCharacterIndex"` // The starting index in characters, for this post layout textbox substring.
-	NumCharacters       int      `json:"numCharacters"`       // The number of characters in this post layout textbox substring.
-}
-
 // Fired whenever a stylesheet is changed as a result of the client operation.
 type CSSStyleSheetChangedEvent struct {
 	Method string `json:"method"`

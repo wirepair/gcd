@@ -1313,7 +1313,7 @@ type DOMGetBoxModelParams struct {
 	ObjectId string `json:"objectId,omitempty"`
 }
 
-// GetBoxModelWithParams - Returns boxes for the currently selected nodes.
+// GetBoxModelWithParams - Returns boxes for the given node.
 // Returns -  model - Box model for the node.
 func (c *DOM) GetBoxModelWithParams(v *DOMGetBoxModelParams) (*DOMBoxModel, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getBoxModel", Params: v})
@@ -1345,7 +1345,7 @@ func (c *DOM) GetBoxModelWithParams(v *DOMGetBoxModelParams) (*DOMBoxModel, erro
 	return chromeData.Result.Model, nil
 }
 
-// GetBoxModel - Returns boxes for the currently selected nodes.
+// GetBoxModel - Returns boxes for the given node.
 // nodeId - Identifier of the node.
 // backendNodeId - Identifier of the backend node.
 // objectId - JavaScript object id of the node wrapper.

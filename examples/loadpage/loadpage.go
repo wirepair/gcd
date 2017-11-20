@@ -2,11 +2,12 @@ package main
 
 import (
 	"flag"
-	"github.com/wirepair/gcd"
-	"github.com/wirepair/gcd/gcdapi"
 	"log"
 	"runtime"
 	"sync"
+
+	"github.com/wirepair/gcd"
+	"github.com/wirepair/gcd/gcdapi"
 )
 
 var path string
@@ -61,7 +62,7 @@ func main() {
 	}
 
 	navigateParams := &gcdapi.PageNavigateParams{Url: "http://www.veracode.com"}
-	ret, err := target.Page.NavigateWithParams(navigateParams) // navigate
+	_, ret, err := target.Page.NavigateWithParams(navigateParams) // navigate
 	if err != nil {
 		log.Fatalf("Error navigating: %s\n", err)
 	}

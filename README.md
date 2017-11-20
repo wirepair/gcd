@@ -77,7 +77,7 @@ func main() {
 	}
 
 	navigateParams := &gcdapi.PageNavigateParams{Url: "http://www.veracode.com"}
-	_, err := target.Page.NavigateWithParams(navigateParams)
+	_, _, err := target.Page.NavigateWithParams(navigateParams)
 	if err != nil {
 		log.Fatalf("error: %s\n", err)
 	}
@@ -181,7 +181,7 @@ func main() {
 		targets[i].Subscribe("Page.loadEventFired", PageLoaded)
 		// navigate
 		navigateParams := &gcdapi.PageNavigateParams{Url: urls[i]}
-		_, err := page.NavigateWithParams(navigateParams)
+		_, _, err := page.NavigateWithParams(navigateParams)
 		if err != nil {
 			log.Fatalf("error: %s\n", err)
 		}

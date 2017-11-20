@@ -39,6 +39,12 @@ type PageFrameResourceTree struct {
 	Resources   []*PageFrameResource     `json:"resources"`             // Information about frame resources.
 }
 
+// Information about the Frame hierarchy.
+type PageFrameTree struct {
+	Frame       *PageFrame       `json:"frame"`                 // Frame information for this tree item.
+	ChildFrames []*PageFrameTree `json:"childFrames,omitempty"` // Child frames.
+}
+
 // Navigation history entry.
 type PageNavigationEntry struct {
 	Id             int    `json:"id"`             // Unique id of the navigation history entry.
@@ -116,6 +122,7 @@ type PageLifecycleEventEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId   string  `json:"frameId"`   // Id of the frame.
+		LoaderId  string  `json:"loaderId"`  // Loader identifier. Empty string if the request is fetched from worker.
 		Name      string  `json:"name"`      //
 		Timestamp float64 `json:"timestamp"` //
 	} `json:"Params,omitempty"`
@@ -220,14 +227,14 @@ type PageScreencastVisibilityChangedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Fired when window.open() was called
+// Fired when a new window is going to be opened, via window.open(), link click, form submission, etc.
 type PageWindowOpenEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Url            string `json:"url"`            // The URL for the new window.
-		WindowName     string `json:"windowName"`     // Window name passed to window.open().
-		WindowFeatures string `json:"windowFeatures"` // Window features passed to window.open().
-		UserGesture    bool   `json:"userGesture"`    // Whether or not window.open() was triggered by user gesture.
+		Url            string   `json:"url"`            // The URL for the new window.
+		WindowName     string   `json:"windowName"`     // Window name.
+		WindowFeatures []string `json:"windowFeatures"` // An array of enabled window features.
+		UserGesture    bool     `json:"userGesture"`    // Whether or not it was triggered by user gesture.
 	} `json:"Params,omitempty"`
 }
 
@@ -396,6 +403,24 @@ func (c *Page) SetAutoAttachToCreatedPages(autoAttach bool) (*gcdmessage.ChromeR
 	return c.SetAutoAttachToCreatedPagesWithParams(&v)
 }
 
+type PageSetLifecycleEventsEnabledParams struct {
+	// If true, starts emitting lifecycle events.
+	Enabled bool `json:"enabled"`
+}
+
+// SetLifecycleEventsEnabledWithParams - Controls whether page will emit lifecycle events.
+func (c *Page) SetLifecycleEventsEnabledWithParams(v *PageSetLifecycleEventsEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setLifecycleEventsEnabled", Params: v})
+}
+
+// SetLifecycleEventsEnabled - Controls whether page will emit lifecycle events.
+// enabled - If true, starts emitting lifecycle events.
+func (c *Page) SetLifecycleEventsEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetLifecycleEventsEnabledParams
+	v.Enabled = enabled
+	return c.SetLifecycleEventsEnabledWithParams(&v)
+}
+
 type PageReloadParams struct {
 	// If true, browser cache is ignored (as if the user pressed Shift+refresh).
 	IgnoreCache bool `json:"ignoreCache,omitempty"`
@@ -446,43 +471,44 @@ type PageNavigateParams struct {
 }
 
 // NavigateWithParams - Navigates current page to the given URL.
-// Returns -  frameId - Frame id that will be navigated.
-func (c *Page) NavigateWithParams(v *PageNavigateParams) (string, error) {
+// Returns -  frameId - Frame id that has navigated (or failed to navigate) errorText - User friendly error message, present if and only if navigation has failed.
+func (c *Page) NavigateWithParams(v *PageNavigateParams) (string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigate", Params: v})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var chromeData struct {
 		Result struct {
-			FrameId string
+			FrameId   string
+			ErrorText string
 		}
 	}
 
 	if resp == nil {
-		return "", &gcdmessage.ChromeEmptyResponseErr{}
+		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return chromeData.Result.FrameId, nil
+	return chromeData.Result.FrameId, chromeData.Result.ErrorText, nil
 }
 
 // Navigate - Navigates current page to the given URL.
 // url - URL to navigate the page to.
 // referrer - Referrer URL.
 // transitionType - Intended transition type. enum values: link, typed, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
-// Returns -  frameId - Frame id that will be navigated.
-func (c *Page) Navigate(url string, referrer string, transitionType string) (string, error) {
+// Returns -  frameId - Frame id that has navigated (or failed to navigate) errorText - User friendly error message, present if and only if navigation has failed.
+func (c *Page) Navigate(url string, referrer string, transitionType string) (string, string, error) {
 	var v PageNavigateParams
 	v.Url = url
 	v.Referrer = referrer
@@ -611,6 +637,38 @@ func (c *Page) GetResourceTree() (*PageFrameResourceTree, error) {
 	var chromeData struct {
 		Result struct {
 			FrameTree *PageFrameResourceTree
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.FrameTree, nil
+}
+
+// GetFrameTree - Returns present frame tree structure.
+// Returns -  frameTree - Present frame tree structure.
+func (c *Page) GetFrameTree() (*PageFrameTree, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getFrameTree"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			FrameTree *PageFrameTree
 		}
 	}
 

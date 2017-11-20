@@ -193,7 +193,7 @@ type NetworkRequestWillBeSentEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		RequestId        string            `json:"requestId"`                  // Request identifier.
-		LoaderId         string            `json:"loaderId"`                   // Loader identifier. Empty string if the request is fetched form worker.
+		LoaderId         string            `json:"loaderId"`                   // Loader identifier. Empty string if the request is fetched from worker.
 		DocumentURL      string            `json:"documentURL"`                // URL of the document this request is loaded for.
 		Request          *NetworkRequest   `json:"request"`                    // Request data.
 		Timestamp        float64           `json:"timestamp"`                  // Timestamp.
@@ -218,7 +218,7 @@ type NetworkResponseReceivedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		RequestId string           `json:"requestId"`         // Request identifier.
-		LoaderId  string           `json:"loaderId"`          // Loader identifier. Empty string if the request is fetched form worker.
+		LoaderId  string           `json:"loaderId"`          // Loader identifier. Empty string if the request is fetched from worker.
 		Timestamp float64          `json:"timestamp"`         // Timestamp.
 		Type      string           `json:"type"`              // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
 		Response  *NetworkResponse `json:"response"`          // Response data.
