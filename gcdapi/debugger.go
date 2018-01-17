@@ -6,6 +6,7 @@ package gcdapi
 
 import (
 	"encoding/json"
+
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
