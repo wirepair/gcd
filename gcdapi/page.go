@@ -6,7 +6,6 @@ package gcdapi
 
 import (
 	"encoding/json"
-
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -361,7 +360,7 @@ type PageCaptureScreenshotParams struct {
 func (c *Page) CaptureScreenshotWithParams(v *PageCaptureScreenshotParams) (string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.captureScreenshot", Params: v})
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	var chromeData struct {
@@ -371,18 +370,18 @@ func (c *Page) CaptureScreenshotWithParams(v *PageCaptureScreenshotParams) (stri
 	}
 
 	if resp == nil {
-		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	return chromeData.Result.Data, nil
