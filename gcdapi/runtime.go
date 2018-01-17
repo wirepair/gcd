@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Runtime functionality.
-// API Version: 1.2
+// API Version: 1.3
 
 package gcdapi
 
@@ -12,13 +12,13 @@ import (
 // Mirror object referencing original JavaScript object.
 type RuntimeRemoteObject struct {
 	Type                string                `json:"type"`                          // Object type.
-	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for <code>object</code> type values only.
-	ClassName           string                `json:"className,omitempty"`           // Object class (constructor) name. Specified for <code>object</code> type values only.
+	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only.
+	ClassName           string                `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
 	Value               interface{}           `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
-	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have <code>value</code>, but gets this property. enum values: Infinity, NaN, -Infinity, -0
+	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property. enum values: Infinity, NaN, -Infinity, -0
 	Description         string                `json:"description,omitempty"`         // String representation of the object.
 	ObjectId            string                `json:"objectId,omitempty"`            // Unique object identifier (for non-primitive values).
-	Preview             *RuntimeObjectPreview `json:"preview,omitempty"`             // Preview containing abbreviated property values. Specified for <code>object</code> type values only.
+	Preview             *RuntimeObjectPreview `json:"preview,omitempty"`             // Preview containing abbreviated property values. Specified for `object` type values only.
 	CustomPreview       *RuntimeCustomPreview `json:"customPreview,omitempty"`       //
 }
 
@@ -34,11 +34,11 @@ type RuntimeCustomPreview struct {
 // Object containing abbreviated remote object value.
 type RuntimeObjectPreview struct {
 	Type        string                    `json:"type"`                  // Object type.
-	Subtype     string                    `json:"subtype,omitempty"`     // Object subtype hint. Specified for <code>object</code> type values only.
+	Subtype     string                    `json:"subtype,omitempty"`     // Object subtype hint. Specified for `object` type values only.
 	Description string                    `json:"description,omitempty"` // String representation of the object.
 	Overflow    bool                      `json:"overflow"`              // True iff some of the properties or entries of the original object did not fit.
 	Properties  []*RuntimePropertyPreview `json:"properties"`            // List of the properties.
-	Entries     []*RuntimeEntryPreview    `json:"entries,omitempty"`     // List of the entries. Specified for <code>map</code> and <code>set</code> subtype values only.
+	Entries     []*RuntimeEntryPreview    `json:"entries,omitempty"`     // List of the entries. Specified for `map` and `set` subtype values only.
 }
 
 // No Description.
@@ -47,7 +47,7 @@ type RuntimePropertyPreview struct {
 	Type         string                `json:"type"`                   // Object type. Accessor means that the property itself is an accessor property.
 	Value        string                `json:"value,omitempty"`        // User-friendly property value string.
 	ValuePreview *RuntimeObjectPreview `json:"valuePreview,omitempty"` // Nested value preview.
-	Subtype      string                `json:"subtype,omitempty"`      // Object subtype hint. Specified for <code>object</code> type values only.
+	Subtype      string                `json:"subtype,omitempty"`      // Object subtype hint. Specified for `object` type values only.
 }
 
 // No Description.
@@ -61,13 +61,13 @@ type RuntimePropertyDescriptor struct {
 	Name         string               `json:"name"`                // Property name or symbol description.
 	Value        *RuntimeRemoteObject `json:"value,omitempty"`     // The value associated with the property.
 	Writable     bool                 `json:"writable,omitempty"`  // True if the value associated with the property may be changed (data descriptors only).
-	Get          *RuntimeRemoteObject `json:"get,omitempty"`       // A function which serves as a getter for the property, or <code>undefined</code> if there is no getter (accessor descriptors only).
-	Set          *RuntimeRemoteObject `json:"set,omitempty"`       // A function which serves as a setter for the property, or <code>undefined</code> if there is no setter (accessor descriptors only).
+	Get          *RuntimeRemoteObject `json:"get,omitempty"`       // A function which serves as a getter for the property, or `undefined` if there is no getter (accessor descriptors only).
+	Set          *RuntimeRemoteObject `json:"set,omitempty"`       // A function which serves as a setter for the property, or `undefined` if there is no setter (accessor descriptors only).
 	Configurable bool                 `json:"configurable"`        // True if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.
 	Enumerable   bool                 `json:"enumerable"`          // True if this property shows up during enumeration of the properties on the corresponding object.
 	WasThrown    bool                 `json:"wasThrown,omitempty"` // True if the result was thrown during the evaluation.
 	IsOwn        bool                 `json:"isOwn,omitempty"`     // True if the property is owned for the object.
-	Symbol       *RuntimeRemoteObject `json:"symbol,omitempty"`    // Property symbol object, if the property is of the <code>symbol</code> type.
+	Symbol       *RuntimeRemoteObject `json:"symbol,omitempty"`    // Property symbol object, if the property is of the `symbol` type.
 }
 
 // Object internal property descriptor. This property isn't normally visible in JavaScript code.
@@ -76,7 +76,7 @@ type RuntimeInternalPropertyDescriptor struct {
 	Value *RuntimeRemoteObject `json:"value,omitempty"` // The value associated with the property.
 }
 
-// Represents function call argument. Either remote object id <code>objectId</code>, primitive <code>value</code>, unserializable primitive value or neither of (for undefined) them should be specified.
+// Represents function call argument. Either remote object id `objectId`, primitive `value`, unserializable primitive value or neither of (for undefined) them should be specified.
 type RuntimeCallArgument struct {
 	Value               interface{} `json:"value,omitempty"`               // Primitive value or serializable javascript object.
 	UnserializableValue string      `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified. enum values: Infinity, NaN, -Infinity, -0
@@ -115,10 +115,47 @@ type RuntimeCallFrame struct {
 
 // Call frames for assertions or error messages.
 type RuntimeStackTrace struct {
-	Description          string              `json:"description,omitempty"`          // String label of this stack trace. For async traces this may be a name of the function that initiated the async call.
-	CallFrames           []*RuntimeCallFrame `json:"callFrames"`                     // JavaScript function name.
-	Parent               *RuntimeStackTrace  `json:"parent,omitempty"`               // Asynchronous JavaScript stack trace that preceded this stack, if available.
-	PromiseCreationFrame *RuntimeCallFrame   `json:"promiseCreationFrame,omitempty"` // Creation frame of the Promise which produced the next synchronous trace when resolved, if available.
+	Description string               `json:"description,omitempty"` // String label of this stack trace. For async traces this may be a name of the function that initiated the async call.
+	CallFrames  []*RuntimeCallFrame  `json:"callFrames"`            // JavaScript function name.
+	Parent      *RuntimeStackTrace   `json:"parent,omitempty"`      // Asynchronous JavaScript stack trace that preceded this stack, if available.
+	ParentId    *RuntimeStackTraceId `json:"parentId,omitempty"`    // Asynchronous JavaScript stack trace that preceded this stack, if available.
+}
+
+// If `debuggerId` is set stack trace comes from another debugger and can be resolved there. This allows to track cross-debugger calls. See `Runtime.StackTrace` and `Debugger.paused` for usages.
+type RuntimeStackTraceId struct {
+	Id         string `json:"id"`                   //
+	DebuggerId string `json:"debuggerId,omitempty"` //
+}
+
+// Issued when console API was called.
+type RuntimeConsoleAPICalledEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Type               string                 `json:"type"`                 // Type of the call.
+		Args               []*RuntimeRemoteObject `json:"args"`                 // Call arguments.
+		ExecutionContextId int                    `json:"executionContextId"`   // Identifier of the context where the call was made.
+		Timestamp          float64                `json:"timestamp"`            // Call timestamp.
+		StackTrace         *RuntimeStackTrace     `json:"stackTrace,omitempty"` // Stack trace captured when the call was made.
+		Context            string                 `json:"context,omitempty"`    // Console context descriptor for calls on non-default console context (not console.*): 'anonymous#unique-logger-id' for call on unnamed context, 'name#unique-logger-id' for call on named context.
+	} `json:"Params,omitempty"`
+}
+
+// Issued when unhandled exception was revoked.
+type RuntimeExceptionRevokedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Reason      string `json:"reason"`      // Reason describing why exception was revoked.
+		ExceptionId int    `json:"exceptionId"` // The id of revoked exception, as reported in `exceptionThrown`.
+	} `json:"Params,omitempty"`
+}
+
+// Issued when exception was thrown and unhandled.
+type RuntimeExceptionThrownEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Timestamp        float64                  `json:"timestamp"`        // Timestamp of the exception.
+		ExceptionDetails *RuntimeExceptionDetails `json:"exceptionDetails"` //
+	} `json:"Params,omitempty"`
 }
 
 // Issued when new execution context is created.
@@ -134,37 +171,6 @@ type RuntimeExecutionContextDestroyedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		ExecutionContextId int `json:"executionContextId"` // Id of the destroyed context
-	} `json:"Params,omitempty"`
-}
-
-// Issued when exception was thrown and unhandled.
-type RuntimeExceptionThrownEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Timestamp        float64                  `json:"timestamp"`        // Timestamp of the exception.
-		ExceptionDetails *RuntimeExceptionDetails `json:"exceptionDetails"` //
-	} `json:"Params,omitempty"`
-}
-
-// Issued when unhandled exception was revoked.
-type RuntimeExceptionRevokedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Reason      string `json:"reason"`      // Reason describing why exception was revoked.
-		ExceptionId int    `json:"exceptionId"` // The id of revoked exception, as reported in <code>exceptionThrown</code>.
-	} `json:"Params,omitempty"`
-}
-
-// Issued when console API was called.
-type RuntimeConsoleAPICalledEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Type               string                 `json:"type"`                 // Type of the call.
-		Args               []*RuntimeRemoteObject `json:"args"`                 // Call arguments.
-		ExecutionContextId int                    `json:"executionContextId"`   // Identifier of the context where the call was made.
-		Timestamp          float64                `json:"timestamp"`            // Call timestamp.
-		StackTrace         *RuntimeStackTrace     `json:"stackTrace,omitempty"` // Stack trace captured when the call was made.
-		Context            string                 `json:"context,omitempty"`    // Console context descriptor for calls on non-default console context (not console.*): 'anonymous#unique-logger-id' for call on unnamed context, 'name#unique-logger-id' for call on named context.
 	} `json:"Params,omitempty"`
 }
 
@@ -184,85 +190,6 @@ type Runtime struct {
 func NewRuntime(target gcdmessage.ChromeTargeter) *Runtime {
 	c := &Runtime{target: target}
 	return c
-}
-
-type RuntimeEvaluateParams struct {
-	// Expression to evaluate.
-	Expression string `json:"expression"`
-	// Symbolic group name that can be used to release multiple objects.
-	ObjectGroup string `json:"objectGroup,omitempty"`
-	// Determines whether Command Line API should be available during the evaluation.
-	IncludeCommandLineAPI bool `json:"includeCommandLineAPI,omitempty"`
-	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.
-	Silent bool `json:"silent,omitempty"`
-	// Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
-	ContextId int `json:"contextId,omitempty"`
-	// Whether the result is expected to be a JSON object that should be sent by value.
-	ReturnByValue bool `json:"returnByValue,omitempty"`
-	// Whether preview should be generated for the result.
-	GeneratePreview bool `json:"generatePreview,omitempty"`
-	// Whether execution should be treated as initiated by user in the UI.
-	UserGesture bool `json:"userGesture,omitempty"`
-	// Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
-	AwaitPromise bool `json:"awaitPromise,omitempty"`
-}
-
-// EvaluateWithParams - Evaluates expression on global object.
-// Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) EvaluateWithParams(v *RuntimeEvaluateParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.evaluate", Params: v})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Result           *RuntimeRemoteObject
-			ExceptionDetails *RuntimeExceptionDetails
-		}
-	}
-
-	if resp == nil {
-		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, err
-	}
-
-	return chromeData.Result.Result, chromeData.Result.ExceptionDetails, nil
-}
-
-// Evaluate - Evaluates expression on global object.
-// expression - Expression to evaluate.
-// objectGroup - Symbolic group name that can be used to release multiple objects.
-// includeCommandLineAPI - Determines whether Command Line API should be available during the evaluation.
-// silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.
-// contextId - Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
-// returnByValue - Whether the result is expected to be a JSON object that should be sent by value.
-// generatePreview - Whether preview should be generated for the result.
-// userGesture - Whether execution should be treated as initiated by user in the UI.
-// awaitPromise - Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
-// Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	var v RuntimeEvaluateParams
-	v.Expression = expression
-	v.ObjectGroup = objectGroup
-	v.IncludeCommandLineAPI = includeCommandLineAPI
-	v.Silent = silent
-	v.ContextId = contextId
-	v.ReturnByValue = returnByValue
-	v.GeneratePreview = generatePreview
-	v.UserGesture = userGesture
-	v.AwaitPromise = awaitPromise
-	return c.EvaluateWithParams(&v)
 }
 
 type RuntimeAwaitPromiseParams struct {
@@ -327,7 +254,7 @@ type RuntimeCallFunctionOnParams struct {
 	ObjectId string `json:"objectId,omitempty"`
 	// Call arguments. All call arguments must belong to the same JavaScript world as the target object.
 	Arguments []*RuntimeCallArgument `json:"arguments,omitempty"`
-	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.
+	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
 	Silent bool `json:"silent,omitempty"`
 	// Whether the result is expected to be a JSON object which should be sent by value.
 	ReturnByValue bool `json:"returnByValue,omitempty"`
@@ -335,7 +262,7 @@ type RuntimeCallFunctionOnParams struct {
 	GeneratePreview bool `json:"generatePreview,omitempty"`
 	// Whether execution should be treated as initiated by user in the UI.
 	UserGesture bool `json:"userGesture,omitempty"`
-	// Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
+	// Whether execution should `await` for resulting value and return once awaited promise is resolved.
 	AwaitPromise bool `json:"awaitPromise,omitempty"`
 	// Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
 	ExecutionContextId int `json:"executionContextId,omitempty"`
@@ -380,11 +307,11 @@ func (c *Runtime) CallFunctionOnWithParams(v *RuntimeCallFunctionOnParams) (*Run
 // functionDeclaration - Declaration of the function to call.
 // objectId - Identifier of the object to call function on. Either objectId or executionContextId should be specified.
 // arguments - Call arguments. All call arguments must belong to the same JavaScript world as the target object.
-// silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.
+// silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
 // returnByValue - Whether the result is expected to be a JSON object which should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
-// awaitPromise - Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
+// awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
 // executionContextId - Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
 // objectGroup - Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
 // Returns -  result - Call result. exceptionDetails - Exception details.
@@ -401,6 +328,159 @@ func (c *Runtime) CallFunctionOn(functionDeclaration string, objectId string, ar
 	v.ExecutionContextId = executionContextId
 	v.ObjectGroup = objectGroup
 	return c.CallFunctionOnWithParams(&v)
+}
+
+type RuntimeCompileScriptParams struct {
+	// Expression to compile.
+	Expression string `json:"expression"`
+	// Source url to be set for the script.
+	SourceURL string `json:"sourceURL"`
+	// Specifies whether the compiled script should be persisted.
+	PersistScript bool `json:"persistScript"`
+	// Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+	ExecutionContextId int `json:"executionContextId,omitempty"`
+}
+
+// CompileScriptWithParams - Compiles expression.
+// Returns -  scriptId - Id of the script. exceptionDetails - Exception details.
+func (c *Runtime) CompileScriptWithParams(v *RuntimeCompileScriptParams) (string, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.compileScript", Params: v})
+	if err != nil {
+		return "", nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ScriptId         string
+			ExceptionDetails *RuntimeExceptionDetails
+		}
+	}
+
+	if resp == nil {
+		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", nil, err
+	}
+
+	return chromeData.Result.ScriptId, chromeData.Result.ExceptionDetails, nil
+}
+
+// CompileScript - Compiles expression.
+// expression - Expression to compile.
+// sourceURL - Source url to be set for the script.
+// persistScript - Specifies whether the compiled script should be persisted.
+// executionContextId - Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+// Returns -  scriptId - Id of the script. exceptionDetails - Exception details.
+func (c *Runtime) CompileScript(expression string, sourceURL string, persistScript bool, executionContextId int) (string, *RuntimeExceptionDetails, error) {
+	var v RuntimeCompileScriptParams
+	v.Expression = expression
+	v.SourceURL = sourceURL
+	v.PersistScript = persistScript
+	v.ExecutionContextId = executionContextId
+	return c.CompileScriptWithParams(&v)
+}
+
+// Disables reporting of execution contexts creation.
+func (c *Runtime) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.disable"})
+}
+
+// Discards collected exceptions and console API calls.
+func (c *Runtime) DiscardConsoleEntries() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.discardConsoleEntries"})
+}
+
+// Enables reporting of execution contexts creation by means of `executionContextCreated` event. When the reporting gets enabled the event will be sent immediately for each existing execution context.
+func (c *Runtime) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.enable"})
+}
+
+type RuntimeEvaluateParams struct {
+	// Expression to evaluate.
+	Expression string `json:"expression"`
+	// Symbolic group name that can be used to release multiple objects.
+	ObjectGroup string `json:"objectGroup,omitempty"`
+	// Determines whether Command Line API should be available during the evaluation.
+	IncludeCommandLineAPI bool `json:"includeCommandLineAPI,omitempty"`
+	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
+	Silent bool `json:"silent,omitempty"`
+	// Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+	ContextId int `json:"contextId,omitempty"`
+	// Whether the result is expected to be a JSON object that should be sent by value.
+	ReturnByValue bool `json:"returnByValue,omitempty"`
+	// Whether preview should be generated for the result.
+	GeneratePreview bool `json:"generatePreview,omitempty"`
+	// Whether execution should be treated as initiated by user in the UI.
+	UserGesture bool `json:"userGesture,omitempty"`
+	// Whether execution should `await` for resulting value and return once awaited promise is resolved.
+	AwaitPromise bool `json:"awaitPromise,omitempty"`
+}
+
+// EvaluateWithParams - Evaluates expression on global object.
+// Returns -  result - Evaluation result. exceptionDetails - Exception details.
+func (c *Runtime) EvaluateWithParams(v *RuntimeEvaluateParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.evaluate", Params: v})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Result           *RuntimeRemoteObject
+			ExceptionDetails *RuntimeExceptionDetails
+		}
+	}
+
+	if resp == nil {
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, nil, err
+	}
+
+	return chromeData.Result.Result, chromeData.Result.ExceptionDetails, nil
+}
+
+// Evaluate - Evaluates expression on global object.
+// expression - Expression to evaluate.
+// objectGroup - Symbolic group name that can be used to release multiple objects.
+// includeCommandLineAPI - Determines whether Command Line API should be available during the evaluation.
+// silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
+// contextId - Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+// returnByValue - Whether the result is expected to be a JSON object that should be sent by value.
+// generatePreview - Whether preview should be generated for the result.
+// userGesture - Whether execution should be treated as initiated by user in the UI.
+// awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
+// Returns -  result - Evaluation result. exceptionDetails - Exception details.
+func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	var v RuntimeEvaluateParams
+	v.Expression = expression
+	v.ObjectGroup = objectGroup
+	v.IncludeCommandLineAPI = includeCommandLineAPI
+	v.Silent = silent
+	v.ContextId = contextId
+	v.ReturnByValue = returnByValue
+	v.GeneratePreview = generatePreview
+	v.UserGesture = userGesture
+	v.AwaitPromise = awaitPromise
+	return c.EvaluateWithParams(&v)
 }
 
 type RuntimeGetPropertiesParams struct {
@@ -463,212 +543,50 @@ func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPro
 	return c.GetPropertiesWithParams(&v)
 }
 
-type RuntimeReleaseObjectParams struct {
-	// Identifier of the object to release.
-	ObjectId string `json:"objectId"`
-}
-
-// ReleaseObjectWithParams - Releases remote object with given id.
-func (c *Runtime) ReleaseObjectWithParams(v *RuntimeReleaseObjectParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObject", Params: v})
-}
-
-// ReleaseObject - Releases remote object with given id.
-// objectId - Identifier of the object to release.
-func (c *Runtime) ReleaseObject(objectId string) (*gcdmessage.ChromeResponse, error) {
-	var v RuntimeReleaseObjectParams
-	v.ObjectId = objectId
-	return c.ReleaseObjectWithParams(&v)
-}
-
-type RuntimeReleaseObjectGroupParams struct {
-	// Symbolic object group name.
-	ObjectGroup string `json:"objectGroup"`
-}
-
-// ReleaseObjectGroupWithParams - Releases all remote objects that belong to a given group.
-func (c *Runtime) ReleaseObjectGroupWithParams(v *RuntimeReleaseObjectGroupParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObjectGroup", Params: v})
-}
-
-// ReleaseObjectGroup - Releases all remote objects that belong to a given group.
-// objectGroup - Symbolic object group name.
-func (c *Runtime) ReleaseObjectGroup(objectGroup string) (*gcdmessage.ChromeResponse, error) {
-	var v RuntimeReleaseObjectGroupParams
-	v.ObjectGroup = objectGroup
-	return c.ReleaseObjectGroupWithParams(&v)
-}
-
-// Tells inspected instance to run if it was waiting for debugger to attach.
-func (c *Runtime) RunIfWaitingForDebugger() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.runIfWaitingForDebugger"})
-}
-
-// Enables reporting of execution contexts creation by means of <code>executionContextCreated</code> event. When the reporting gets enabled the event will be sent immediately for each existing execution context.
-func (c *Runtime) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.enable"})
-}
-
-// Disables reporting of execution contexts creation.
-func (c *Runtime) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.disable"})
-}
-
-// Discards collected exceptions and console API calls.
-func (c *Runtime) DiscardConsoleEntries() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.discardConsoleEntries"})
-}
-
-type RuntimeSetCustomObjectFormatterEnabledParams struct {
-	//
-	Enabled bool `json:"enabled"`
-}
-
-// SetCustomObjectFormatterEnabledWithParams -
-func (c *Runtime) SetCustomObjectFormatterEnabledWithParams(v *RuntimeSetCustomObjectFormatterEnabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setCustomObjectFormatterEnabled", Params: v})
-}
-
-// SetCustomObjectFormatterEnabled -
-// enabled -
-func (c *Runtime) SetCustomObjectFormatterEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
-	var v RuntimeSetCustomObjectFormatterEnabledParams
-	v.Enabled = enabled
-	return c.SetCustomObjectFormatterEnabledWithParams(&v)
-}
-
-type RuntimeCompileScriptParams struct {
-	// Expression to compile.
-	Expression string `json:"expression"`
-	// Source url to be set for the script.
-	SourceURL string `json:"sourceURL"`
-	// Specifies whether the compiled script should be persisted.
-	PersistScript bool `json:"persistScript"`
-	// Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+type RuntimeGlobalLexicalScopeNamesParams struct {
+	// Specifies in which execution context to lookup global scope variables.
 	ExecutionContextId int `json:"executionContextId,omitempty"`
 }
 
-// CompileScriptWithParams - Compiles expression.
-// Returns -  scriptId - Id of the script. exceptionDetails - Exception details.
-func (c *Runtime) CompileScriptWithParams(v *RuntimeCompileScriptParams) (string, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.compileScript", Params: v})
+// GlobalLexicalScopeNamesWithParams - Returns all let, const and class variables from global scope.
+// Returns -  names -
+func (c *Runtime) GlobalLexicalScopeNamesWithParams(v *RuntimeGlobalLexicalScopeNamesParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.globalLexicalScopeNames", Params: v})
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			ScriptId         string
-			ExceptionDetails *RuntimeExceptionDetails
+			Names []string
 		}
 	}
 
 	if resp == nil {
-		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
-	return chromeData.Result.ScriptId, chromeData.Result.ExceptionDetails, nil
+	return chromeData.Result.Names, nil
 }
 
-// CompileScript - Compiles expression.
-// expression - Expression to compile.
-// sourceURL - Source url to be set for the script.
-// persistScript - Specifies whether the compiled script should be persisted.
-// executionContextId - Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
-// Returns -  scriptId - Id of the script. exceptionDetails - Exception details.
-func (c *Runtime) CompileScript(expression string, sourceURL string, persistScript bool, executionContextId int) (string, *RuntimeExceptionDetails, error) {
-	var v RuntimeCompileScriptParams
-	v.Expression = expression
-	v.SourceURL = sourceURL
-	v.PersistScript = persistScript
+// GlobalLexicalScopeNames - Returns all let, const and class variables from global scope.
+// executionContextId - Specifies in which execution context to lookup global scope variables.
+// Returns -  names -
+func (c *Runtime) GlobalLexicalScopeNames(executionContextId int) ([]string, error) {
+	var v RuntimeGlobalLexicalScopeNamesParams
 	v.ExecutionContextId = executionContextId
-	return c.CompileScriptWithParams(&v)
-}
-
-type RuntimeRunScriptParams struct {
-	// Id of the script to run.
-	ScriptId string `json:"scriptId"`
-	// Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
-	ExecutionContextId int `json:"executionContextId,omitempty"`
-	// Symbolic group name that can be used to release multiple objects.
-	ObjectGroup string `json:"objectGroup,omitempty"`
-	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.
-	Silent bool `json:"silent,omitempty"`
-	// Determines whether Command Line API should be available during the evaluation.
-	IncludeCommandLineAPI bool `json:"includeCommandLineAPI,omitempty"`
-	// Whether the result is expected to be a JSON object which should be sent by value.
-	ReturnByValue bool `json:"returnByValue,omitempty"`
-	// Whether preview should be generated for the result.
-	GeneratePreview bool `json:"generatePreview,omitempty"`
-	// Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
-	AwaitPromise bool `json:"awaitPromise,omitempty"`
-}
-
-// RunScriptWithParams - Runs script with given id in a given context.
-// Returns -  result - Run result. exceptionDetails - Exception details.
-func (c *Runtime) RunScriptWithParams(v *RuntimeRunScriptParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.runScript", Params: v})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Result           *RuntimeRemoteObject
-			ExceptionDetails *RuntimeExceptionDetails
-		}
-	}
-
-	if resp == nil {
-		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, err
-	}
-
-	return chromeData.Result.Result, chromeData.Result.ExceptionDetails, nil
-}
-
-// RunScript - Runs script with given id in a given context.
-// scriptId - Id of the script to run.
-// executionContextId - Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
-// objectGroup - Symbolic group name that can be used to release multiple objects.
-// silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.
-// includeCommandLineAPI - Determines whether Command Line API should be available during the evaluation.
-// returnByValue - Whether the result is expected to be a JSON object which should be sent by value.
-// generatePreview - Whether preview should be generated for the result.
-// awaitPromise - Whether execution should <code>await</code> for resulting value and return once awaited promise is resolved.
-// Returns -  result - Run result. exceptionDetails - Exception details.
-func (c *Runtime) RunScript(scriptId string, executionContextId int, objectGroup string, silent bool, includeCommandLineAPI bool, returnByValue bool, generatePreview bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	var v RuntimeRunScriptParams
-	v.ScriptId = scriptId
-	v.ExecutionContextId = executionContextId
-	v.ObjectGroup = objectGroup
-	v.Silent = silent
-	v.IncludeCommandLineAPI = includeCommandLineAPI
-	v.ReturnByValue = returnByValue
-	v.GeneratePreview = generatePreview
-	v.AwaitPromise = awaitPromise
-	return c.RunScriptWithParams(&v)
+	return c.GlobalLexicalScopeNamesWithParams(&v)
 }
 
 type RuntimeQueryObjectsParams struct {
@@ -717,48 +635,136 @@ func (c *Runtime) QueryObjects(prototypeObjectId string) (*RuntimeRemoteObject, 
 	return c.QueryObjectsWithParams(&v)
 }
 
-type RuntimeGlobalLexicalScopeNamesParams struct {
-	// Specifies in which execution context to lookup global scope variables.
-	ExecutionContextId int `json:"executionContextId,omitempty"`
+type RuntimeReleaseObjectParams struct {
+	// Identifier of the object to release.
+	ObjectId string `json:"objectId"`
 }
 
-// GlobalLexicalScopeNamesWithParams - Returns all let, const and class variables from global scope.
-// Returns -  names -
-func (c *Runtime) GlobalLexicalScopeNamesWithParams(v *RuntimeGlobalLexicalScopeNamesParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.globalLexicalScopeNames", Params: v})
+// ReleaseObjectWithParams - Releases remote object with given id.
+func (c *Runtime) ReleaseObjectWithParams(v *RuntimeReleaseObjectParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObject", Params: v})
+}
+
+// ReleaseObject - Releases remote object with given id.
+// objectId - Identifier of the object to release.
+func (c *Runtime) ReleaseObject(objectId string) (*gcdmessage.ChromeResponse, error) {
+	var v RuntimeReleaseObjectParams
+	v.ObjectId = objectId
+	return c.ReleaseObjectWithParams(&v)
+}
+
+type RuntimeReleaseObjectGroupParams struct {
+	// Symbolic object group name.
+	ObjectGroup string `json:"objectGroup"`
+}
+
+// ReleaseObjectGroupWithParams - Releases all remote objects that belong to a given group.
+func (c *Runtime) ReleaseObjectGroupWithParams(v *RuntimeReleaseObjectGroupParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObjectGroup", Params: v})
+}
+
+// ReleaseObjectGroup - Releases all remote objects that belong to a given group.
+// objectGroup - Symbolic object group name.
+func (c *Runtime) ReleaseObjectGroup(objectGroup string) (*gcdmessage.ChromeResponse, error) {
+	var v RuntimeReleaseObjectGroupParams
+	v.ObjectGroup = objectGroup
+	return c.ReleaseObjectGroupWithParams(&v)
+}
+
+// Tells inspected instance to run if it was waiting for debugger to attach.
+func (c *Runtime) RunIfWaitingForDebugger() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.runIfWaitingForDebugger"})
+}
+
+type RuntimeRunScriptParams struct {
+	// Id of the script to run.
+	ScriptId string `json:"scriptId"`
+	// Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+	ExecutionContextId int `json:"executionContextId,omitempty"`
+	// Symbolic group name that can be used to release multiple objects.
+	ObjectGroup string `json:"objectGroup,omitempty"`
+	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
+	Silent bool `json:"silent,omitempty"`
+	// Determines whether Command Line API should be available during the evaluation.
+	IncludeCommandLineAPI bool `json:"includeCommandLineAPI,omitempty"`
+	// Whether the result is expected to be a JSON object which should be sent by value.
+	ReturnByValue bool `json:"returnByValue,omitempty"`
+	// Whether preview should be generated for the result.
+	GeneratePreview bool `json:"generatePreview,omitempty"`
+	// Whether execution should `await` for resulting value and return once awaited promise is resolved.
+	AwaitPromise bool `json:"awaitPromise,omitempty"`
+}
+
+// RunScriptWithParams - Runs script with given id in a given context.
+// Returns -  result - Run result. exceptionDetails - Exception details.
+func (c *Runtime) RunScriptWithParams(v *RuntimeRunScriptParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.runScript", Params: v})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Names []string
+			Result           *RuntimeRemoteObject
+			ExceptionDetails *RuntimeExceptionDetails
 		}
 	}
 
 	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return chromeData.Result.Names, nil
+	return chromeData.Result.Result, chromeData.Result.ExceptionDetails, nil
 }
 
-// GlobalLexicalScopeNames - Returns all let, const and class variables from global scope.
-// executionContextId - Specifies in which execution context to lookup global scope variables.
-// Returns -  names -
-func (c *Runtime) GlobalLexicalScopeNames(executionContextId int) ([]string, error) {
-	var v RuntimeGlobalLexicalScopeNamesParams
+// RunScript - Runs script with given id in a given context.
+// scriptId - Id of the script to run.
+// executionContextId - Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+// objectGroup - Symbolic group name that can be used to release multiple objects.
+// silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
+// includeCommandLineAPI - Determines whether Command Line API should be available during the evaluation.
+// returnByValue - Whether the result is expected to be a JSON object which should be sent by value.
+// generatePreview - Whether preview should be generated for the result.
+// awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
+// Returns -  result - Run result. exceptionDetails - Exception details.
+func (c *Runtime) RunScript(scriptId string, executionContextId int, objectGroup string, silent bool, includeCommandLineAPI bool, returnByValue bool, generatePreview bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	var v RuntimeRunScriptParams
+	v.ScriptId = scriptId
 	v.ExecutionContextId = executionContextId
-	return c.GlobalLexicalScopeNamesWithParams(&v)
+	v.ObjectGroup = objectGroup
+	v.Silent = silent
+	v.IncludeCommandLineAPI = includeCommandLineAPI
+	v.ReturnByValue = returnByValue
+	v.GeneratePreview = generatePreview
+	v.AwaitPromise = awaitPromise
+	return c.RunScriptWithParams(&v)
+}
+
+type RuntimeSetCustomObjectFormatterEnabledParams struct {
+	//
+	Enabled bool `json:"enabled"`
+}
+
+// SetCustomObjectFormatterEnabledWithParams -
+func (c *Runtime) SetCustomObjectFormatterEnabledWithParams(v *RuntimeSetCustomObjectFormatterEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setCustomObjectFormatterEnabled", Params: v})
+}
+
+// SetCustomObjectFormatterEnabled -
+// enabled -
+func (c *Runtime) SetCustomObjectFormatterEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v RuntimeSetCustomObjectFormatterEnabledParams
+	v.Enabled = enabled
+	return c.SetCustomObjectFormatterEnabledWithParams(&v)
 }

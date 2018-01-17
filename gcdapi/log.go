@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Log functionality.
-// API Version: 1.2
+// API Version: 1.3
 
 package gcdapi
 
@@ -45,9 +45,9 @@ func NewLog(target gcdmessage.ChromeTargeter) *Log {
 	return c
 }
 
-// Enables log domain, sends the entries collected so far to the client by means of the <code>entryAdded</code> notification.
-func (c *Log) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.enable"})
+// Clears the log.
+func (c *Log) Clear() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.clear"})
 }
 
 // Disables log domain, prevents further log entries from being reported to the client.
@@ -55,9 +55,9 @@ func (c *Log) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.disable"})
 }
 
-// Clears the log.
-func (c *Log) Clear() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.clear"})
+// Enables log domain, sends the entries collected so far to the client by means of the `entryAdded` notification.
+func (c *Log) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.enable"})
 }
 
 type LogStartViolationsReportParams struct {

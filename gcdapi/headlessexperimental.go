@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains HeadlessExperimental functionality.
-// API Version: 1.2
+// API Version: 1.3
 
 package gcdapi
 
@@ -30,16 +30,6 @@ type HeadlessExperimental struct {
 func NewHeadlessExperimental(target gcdmessage.ChromeTargeter) *HeadlessExperimental {
 	c := &HeadlessExperimental{target: target}
 	return c
-}
-
-// Enables headless events for the target.
-func (c *HeadlessExperimental) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.enable"})
-}
-
-// Disables headless events for the target.
-func (c *HeadlessExperimental) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.disable"})
 }
 
 type HeadlessExperimentalBeginFrameParams struct {
@@ -100,4 +90,14 @@ func (c *HeadlessExperimental) BeginFrame(frameTime float64, deadline float64, i
 	v.Interval = interval
 	v.Screenshot = screenshot
 	return c.BeginFrameWithParams(&v)
+}
+
+// Disables headless events for the target.
+func (c *HeadlessExperimental) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.disable"})
+}
+
+// Enables headless events for the target.
+func (c *HeadlessExperimental) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.enable"})
 }

@@ -4,14 +4,15 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
-	"github.com/wirepair/gcd"
-	"github.com/wirepair/gcd/gcdapi"
 	"log"
 	"net/url"
 	"os"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/wirepair/gcd"
+	"github.com/wirepair/gcd/gcdapi"
 )
 
 const (
@@ -49,7 +50,9 @@ func main() {
 
 	debugger = gcd.NewChromeDebugger()
 	debugger.StartProcess(path, dir, port)
-	defer debugger.ExitProcess()
+	defer func() {
+		log.Printf("%s\n", debugger.ExitProcess())
+	}()
 	targets := make([]*gcd.ChromeTarget, numTabs)
 
 	for i := 0; i < numTabs; i++ {
@@ -63,7 +66,7 @@ func main() {
 		targets[i].Subscribe("Page.loadEventFired", pageLoaded)
 		// navigate
 		navigateParams := &gcdapi.PageNavigateParams{Url: urls[i]}
-		_, err := page.NavigateWithParams(navigateParams)
+		_, _, _, err := page.NavigateWithParams(navigateParams)
 		if err != nil {
 			log.Fatalf("error: %s\n", err)
 		}
@@ -75,6 +78,7 @@ func main() {
 }
 
 func pageLoaded(target *gcd.ChromeTarget, event []byte) {
+	target.Unsubscribe("Page.loadEventFired")
 	wg.Done()
 }
 
@@ -116,4 +120,5 @@ func takeScreenShot(target *gcd.ChromeTarget) {
 		return
 	}
 	f.Write(imgBytes)
+	debugger.CloseTab(target)
 }

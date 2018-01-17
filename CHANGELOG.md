@@ -1,3 +1,6 @@
+# Changelog (2018)
+- January 17th: Updated to latest protocol. Removed examples from README.md because API changes too often, added a link to examples instead which I ensure work after update. Fixed \n in descriptions of protocol.json files causing template generation errors. Current is 65.0.3322.3. Updated examples to work with latest API changes.
+
 # Changelog (2017)
 - October 30th: Updated to latest protocol. Current is 64.0.3251.0. Updated examples to work with latest API changes.
 - September 9th: Updated to latest protocol files.

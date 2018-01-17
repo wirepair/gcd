@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains CacheStorage functionality.
-// API Version: 1.2
+// API Version: 1.3
 
 package gcdapi
 
@@ -47,6 +47,46 @@ func NewCacheStorage(target gcdmessage.ChromeTargeter) *CacheStorage {
 	return c
 }
 
+type CacheStorageDeleteCacheParams struct {
+	// Id of cache for deletion.
+	CacheId string `json:"cacheId"`
+}
+
+// DeleteCacheWithParams - Deletes a cache.
+func (c *CacheStorage) DeleteCacheWithParams(v *CacheStorageDeleteCacheParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteCache", Params: v})
+}
+
+// DeleteCache - Deletes a cache.
+// cacheId - Id of cache for deletion.
+func (c *CacheStorage) DeleteCache(cacheId string) (*gcdmessage.ChromeResponse, error) {
+	var v CacheStorageDeleteCacheParams
+	v.CacheId = cacheId
+	return c.DeleteCacheWithParams(&v)
+}
+
+type CacheStorageDeleteEntryParams struct {
+	// Id of cache where the entry will be deleted.
+	CacheId string `json:"cacheId"`
+	// URL spec of the request.
+	Request string `json:"request"`
+}
+
+// DeleteEntryWithParams - Deletes a cache entry.
+func (c *CacheStorage) DeleteEntryWithParams(v *CacheStorageDeleteEntryParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteEntry", Params: v})
+}
+
+// DeleteEntry - Deletes a cache entry.
+// cacheId - Id of cache where the entry will be deleted.
+// request - URL spec of the request.
+func (c *CacheStorage) DeleteEntry(cacheId string, request string) (*gcdmessage.ChromeResponse, error) {
+	var v CacheStorageDeleteEntryParams
+	v.CacheId = cacheId
+	v.Request = request
+	return c.DeleteEntryWithParams(&v)
+}
+
 type CacheStorageRequestCacheNamesParams struct {
 	// Security origin.
 	SecurityOrigin string `json:"securityOrigin"`
@@ -91,6 +131,56 @@ func (c *CacheStorage) RequestCacheNames(securityOrigin string) ([]*CacheStorage
 	var v CacheStorageRequestCacheNamesParams
 	v.SecurityOrigin = securityOrigin
 	return c.RequestCacheNamesWithParams(&v)
+}
+
+type CacheStorageRequestCachedResponseParams struct {
+	// Id of cache that contains the enty.
+	CacheId string `json:"cacheId"`
+	// URL spec of the request.
+	RequestURL string `json:"requestURL"`
+}
+
+// RequestCachedResponseWithParams - Fetches cache entry.
+// Returns -  response - Response read from the cache.
+func (c *CacheStorage) RequestCachedResponseWithParams(v *CacheStorageRequestCachedResponseParams) (*CacheStorageCachedResponse, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCachedResponse", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Response *CacheStorageCachedResponse
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Response, nil
+}
+
+// RequestCachedResponse - Fetches cache entry.
+// cacheId - Id of cache that contains the enty.
+// requestURL - URL spec of the request.
+// Returns -  response - Response read from the cache.
+func (c *CacheStorage) RequestCachedResponse(cacheId string, requestURL string) (*CacheStorageCachedResponse, error) {
+	var v CacheStorageRequestCachedResponseParams
+	v.CacheId = cacheId
+	v.RequestURL = requestURL
+	return c.RequestCachedResponseWithParams(&v)
 }
 
 type CacheStorageRequestEntriesParams struct {
@@ -146,94 +236,4 @@ func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize in
 	v.SkipCount = skipCount
 	v.PageSize = pageSize
 	return c.RequestEntriesWithParams(&v)
-}
-
-type CacheStorageDeleteCacheParams struct {
-	// Id of cache for deletion.
-	CacheId string `json:"cacheId"`
-}
-
-// DeleteCacheWithParams - Deletes a cache.
-func (c *CacheStorage) DeleteCacheWithParams(v *CacheStorageDeleteCacheParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteCache", Params: v})
-}
-
-// DeleteCache - Deletes a cache.
-// cacheId - Id of cache for deletion.
-func (c *CacheStorage) DeleteCache(cacheId string) (*gcdmessage.ChromeResponse, error) {
-	var v CacheStorageDeleteCacheParams
-	v.CacheId = cacheId
-	return c.DeleteCacheWithParams(&v)
-}
-
-type CacheStorageDeleteEntryParams struct {
-	// Id of cache where the entry will be deleted.
-	CacheId string `json:"cacheId"`
-	// URL spec of the request.
-	Request string `json:"request"`
-}
-
-// DeleteEntryWithParams - Deletes a cache entry.
-func (c *CacheStorage) DeleteEntryWithParams(v *CacheStorageDeleteEntryParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteEntry", Params: v})
-}
-
-// DeleteEntry - Deletes a cache entry.
-// cacheId - Id of cache where the entry will be deleted.
-// request - URL spec of the request.
-func (c *CacheStorage) DeleteEntry(cacheId string, request string) (*gcdmessage.ChromeResponse, error) {
-	var v CacheStorageDeleteEntryParams
-	v.CacheId = cacheId
-	v.Request = request
-	return c.DeleteEntryWithParams(&v)
-}
-
-type CacheStorageRequestCachedResponseParams struct {
-	// Id of cache that contains the enty.
-	CacheId string `json:"cacheId"`
-	// URL spec of the request.
-	RequestURL string `json:"requestURL"`
-}
-
-// RequestCachedResponseWithParams - Fetches cache entry.
-// Returns -  response - Response read from the cache.
-func (c *CacheStorage) RequestCachedResponseWithParams(v *CacheStorageRequestCachedResponseParams) (*CacheStorageCachedResponse, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCachedResponse", Params: v})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Response *CacheStorageCachedResponse
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.Response, nil
-}
-
-// RequestCachedResponse - Fetches cache entry.
-// cacheId - Id of cache that contains the enty.
-// requestURL - URL spec of the request.
-// Returns -  response - Response read from the cache.
-func (c *CacheStorage) RequestCachedResponse(cacheId string, requestURL string) (*CacheStorageCachedResponse, error) {
-	var v CacheStorageRequestCachedResponseParams
-	v.CacheId = cacheId
-	v.RequestURL = requestURL
-	return c.RequestCachedResponseWithParams(&v)
 }

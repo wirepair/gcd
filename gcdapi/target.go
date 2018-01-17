@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Target functionality.
-// API Version: 1.2
+// API Version: 1.3
 
 package gcdapi
 
@@ -25,16 +25,37 @@ type TargetRemoteLocation struct {
 	Port int    `json:"port"` //
 }
 
-// Issued when a possible inspection target is created.
-type TargetTargetCreatedEvent struct {
+// Issued when attached to target because of auto-attach or `attachToTarget` command.
+type TargetAttachedToTargetEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		TargetInfo *TargetTargetInfo `json:"targetInfo"` //
+		SessionId          string            `json:"sessionId"`          // Identifier assigned to the session used to send/receive messages.
+		TargetInfo         *TargetTargetInfo `json:"targetInfo"`         //
+		WaitingForDebugger bool              `json:"waitingForDebugger"` //
 	} `json:"Params,omitempty"`
 }
 
-// Issued when some information about a target has changed. This only happens between <code>targetCreated</code> and <code>targetDestroyed</code>.
-type TargetTargetInfoChangedEvent struct {
+// Issued when detached from target for any reason (including `detachFromTarget` command). Can be issued multiple times per target if multiple sessions have been attached to it.
+type TargetDetachedFromTargetEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		SessionId string `json:"sessionId"`          // Detached session identifier.
+		TargetId  string `json:"targetId,omitempty"` // Deprecated.
+	} `json:"Params,omitempty"`
+}
+
+// Notifies about a new protocol message received from the session (as reported in `attachedToTarget` event).
+type TargetReceivedMessageFromTargetEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		SessionId string `json:"sessionId"`          // Identifier of a session which sends a message.
+		Message   string `json:"message"`            //
+		TargetId  string `json:"targetId,omitempty"` // Deprecated.
+	} `json:"Params,omitempty"`
+}
+
+// Issued when a possible inspection target is created.
+type TargetTargetCreatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		TargetInfo *TargetTargetInfo `json:"targetInfo"` //
@@ -49,32 +70,11 @@ type TargetTargetDestroyedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Issued when attached to target because of auto-attach or <code>attachToTarget</code> command.
-type TargetAttachedToTargetEvent struct {
+// Issued when some information about a target has changed. This only happens between `targetCreated` and `targetDestroyed`.
+type TargetTargetInfoChangedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		SessionId          string            `json:"sessionId"`          // Identifier assigned to the session used to send/receive messages.
-		TargetInfo         *TargetTargetInfo `json:"targetInfo"`         //
-		WaitingForDebugger bool              `json:"waitingForDebugger"` //
-	} `json:"Params,omitempty"`
-}
-
-// Issued when detached from target for any reason (including <code>detachFromTarget</code> command). Can be issued multiple times per target if multiple sessions have been attached to it.
-type TargetDetachedFromTargetEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		SessionId string `json:"sessionId"`          // Detached session identifier.
-		TargetId  string `json:"targetId,omitempty"` // Deprecated.
-	} `json:"Params,omitempty"`
-}
-
-// Notifies about a new protocol message received from the session (as reported in <code>attachedToTarget</code> event).
-type TargetReceivedMessageFromTargetEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		SessionId string `json:"sessionId"`          // Identifier of a session which sends a message.
-		Message   string `json:"message"`            //
-		TargetId  string `json:"targetId,omitempty"` // Deprecated.
+		TargetInfo *TargetTargetInfo `json:"targetInfo"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -85,154 +85,6 @@ type Target struct {
 func NewTarget(target gcdmessage.ChromeTargeter) *Target {
 	c := &Target{target: target}
 	return c
-}
-
-type TargetSetDiscoverTargetsParams struct {
-	// Whether to discover available targets.
-	Discover bool `json:"discover"`
-}
-
-// SetDiscoverTargetsWithParams - Controls whether to discover available targets and notify via <code>targetCreated/targetInfoChanged/targetDestroyed</code> events.
-func (c *Target) SetDiscoverTargetsWithParams(v *TargetSetDiscoverTargetsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setDiscoverTargets", Params: v})
-}
-
-// SetDiscoverTargets - Controls whether to discover available targets and notify via <code>targetCreated/targetInfoChanged/targetDestroyed</code> events.
-// discover - Whether to discover available targets.
-func (c *Target) SetDiscoverTargets(discover bool) (*gcdmessage.ChromeResponse, error) {
-	var v TargetSetDiscoverTargetsParams
-	v.Discover = discover
-	return c.SetDiscoverTargetsWithParams(&v)
-}
-
-type TargetSetAutoAttachParams struct {
-	// Whether to auto-attach to related targets.
-	AutoAttach bool `json:"autoAttach"`
-	// Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run paused targets.
-	WaitForDebuggerOnStart bool `json:"waitForDebuggerOnStart"`
-}
-
-// SetAutoAttachWithParams - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
-func (c *Target) SetAutoAttachWithParams(v *TargetSetAutoAttachParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setAutoAttach", Params: v})
-}
-
-// SetAutoAttach - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
-// autoAttach - Whether to auto-attach to related targets.
-// waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run paused targets.
-func (c *Target) SetAutoAttach(autoAttach bool, waitForDebuggerOnStart bool) (*gcdmessage.ChromeResponse, error) {
-	var v TargetSetAutoAttachParams
-	v.AutoAttach = autoAttach
-	v.WaitForDebuggerOnStart = waitForDebuggerOnStart
-	return c.SetAutoAttachWithParams(&v)
-}
-
-type TargetSetAttachToFramesParams struct {
-	// Whether to attach to frames.
-	Value bool `json:"value"`
-}
-
-// SetAttachToFramesWithParams -
-func (c *Target) SetAttachToFramesWithParams(v *TargetSetAttachToFramesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setAttachToFrames", Params: v})
-}
-
-// SetAttachToFrames -
-// value - Whether to attach to frames.
-func (c *Target) SetAttachToFrames(value bool) (*gcdmessage.ChromeResponse, error) {
-	var v TargetSetAttachToFramesParams
-	v.Value = value
-	return c.SetAttachToFramesWithParams(&v)
-}
-
-type TargetSetRemoteLocationsParams struct {
-	// List of remote locations.
-	Locations []*TargetRemoteLocation `json:"locations"`
-}
-
-// SetRemoteLocationsWithParams - Enables target discovery for the specified locations, when <code>setDiscoverTargets</code> was set to <code>true</code>.
-func (c *Target) SetRemoteLocationsWithParams(v *TargetSetRemoteLocationsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setRemoteLocations", Params: v})
-}
-
-// SetRemoteLocations - Enables target discovery for the specified locations, when <code>setDiscoverTargets</code> was set to <code>true</code>.
-// locations - List of remote locations.
-func (c *Target) SetRemoteLocations(locations []*TargetRemoteLocation) (*gcdmessage.ChromeResponse, error) {
-	var v TargetSetRemoteLocationsParams
-	v.Locations = locations
-	return c.SetRemoteLocationsWithParams(&v)
-}
-
-type TargetSendMessageToTargetParams struct {
-	//
-	Message string `json:"message"`
-	// Identifier of the session.
-	SessionId string `json:"sessionId,omitempty"`
-	// Deprecated.
-	TargetId string `json:"targetId,omitempty"`
-}
-
-// SendMessageToTargetWithParams - Sends protocol message over session with given id.
-func (c *Target) SendMessageToTargetWithParams(v *TargetSendMessageToTargetParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.sendMessageToTarget", Params: v})
-}
-
-// SendMessageToTarget - Sends protocol message over session with given id.
-// message -
-// sessionId - Identifier of the session.
-// targetId - Deprecated.
-func (c *Target) SendMessageToTarget(message string, sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
-	var v TargetSendMessageToTargetParams
-	v.Message = message
-	v.SessionId = sessionId
-	v.TargetId = targetId
-	return c.SendMessageToTargetWithParams(&v)
-}
-
-type TargetGetTargetInfoParams struct {
-	//
-	TargetId string `json:"targetId"`
-}
-
-// GetTargetInfoWithParams - Returns information about a target.
-// Returns -  targetInfo -
-func (c *Target) GetTargetInfoWithParams(v *TargetGetTargetInfoParams) (*TargetTargetInfo, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getTargetInfo", Params: v})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			TargetInfo *TargetTargetInfo
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.TargetInfo, nil
-}
-
-// GetTargetInfo - Returns information about a target.
-// targetId -
-// Returns -  targetInfo -
-func (c *Target) GetTargetInfo(targetId string) (*TargetTargetInfo, error) {
-	var v TargetGetTargetInfoParams
-	v.TargetId = targetId
-	return c.GetTargetInfoWithParams(&v)
 }
 
 type TargetActivateTargetParams struct {
@@ -251,52 +103,6 @@ func (c *Target) ActivateTarget(targetId string) (*gcdmessage.ChromeResponse, er
 	var v TargetActivateTargetParams
 	v.TargetId = targetId
 	return c.ActivateTargetWithParams(&v)
-}
-
-type TargetCloseTargetParams struct {
-	//
-	TargetId string `json:"targetId"`
-}
-
-// CloseTargetWithParams - Closes the target. If the target is a page that gets closed too.
-// Returns -  success -
-func (c *Target) CloseTargetWithParams(v *TargetCloseTargetParams) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.closeTarget", Params: v})
-	if err != nil {
-		return false, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Success bool
-		}
-	}
-
-	if resp == nil {
-		return false, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return false, err
-	}
-
-	return chromeData.Result.Success, nil
-}
-
-// CloseTarget - Closes the target. If the target is a page that gets closed too.
-// targetId -
-// Returns -  success -
-func (c *Target) CloseTarget(targetId string) (bool, error) {
-	var v TargetCloseTargetParams
-	v.TargetId = targetId
-	return c.CloseTargetWithParams(&v)
 }
 
 type TargetAttachToTargetParams struct {
@@ -345,26 +151,50 @@ func (c *Target) AttachToTarget(targetId string) (string, error) {
 	return c.AttachToTargetWithParams(&v)
 }
 
-type TargetDetachFromTargetParams struct {
-	// Session to detach.
-	SessionId string `json:"sessionId,omitempty"`
-	// Deprecated.
-	TargetId string `json:"targetId,omitempty"`
+type TargetCloseTargetParams struct {
+	//
+	TargetId string `json:"targetId"`
 }
 
-// DetachFromTargetWithParams - Detaches session with given id.
-func (c *Target) DetachFromTargetWithParams(v *TargetDetachFromTargetParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.detachFromTarget", Params: v})
+// CloseTargetWithParams - Closes the target. If the target is a page that gets closed too.
+// Returns -  success -
+func (c *Target) CloseTargetWithParams(v *TargetCloseTargetParams) (bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.closeTarget", Params: v})
+	if err != nil {
+		return false, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Success bool
+		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return false, err
+	}
+
+	return chromeData.Result.Success, nil
 }
 
-// DetachFromTarget - Detaches session with given id.
-// sessionId - Session to detach.
-// targetId - Deprecated.
-func (c *Target) DetachFromTarget(sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
-	var v TargetDetachFromTargetParams
-	v.SessionId = sessionId
+// CloseTarget - Closes the target. If the target is a page that gets closed too.
+// targetId -
+// Returns -  success -
+func (c *Target) CloseTarget(targetId string) (bool, error) {
+	var v TargetCloseTargetParams
 	v.TargetId = targetId
-	return c.DetachFromTargetWithParams(&v)
+	return c.CloseTargetWithParams(&v)
 }
 
 // CreateBrowserContext - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
@@ -397,52 +227,6 @@ func (c *Target) CreateBrowserContext() (string, error) {
 	}
 
 	return chromeData.Result.BrowserContextId, nil
-}
-
-type TargetDisposeBrowserContextParams struct {
-	//
-	BrowserContextId string `json:"browserContextId"`
-}
-
-// DisposeBrowserContextWithParams - Deletes a BrowserContext, will fail of any open page uses it.
-// Returns -  success -
-func (c *Target) DisposeBrowserContextWithParams(v *TargetDisposeBrowserContextParams) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.disposeBrowserContext", Params: v})
-	if err != nil {
-		return false, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Success bool
-		}
-	}
-
-	if resp == nil {
-		return false, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return false, err
-	}
-
-	return chromeData.Result.Success, nil
-}
-
-// DisposeBrowserContext - Deletes a BrowserContext, will fail of any open page uses it.
-// browserContextId -
-// Returns -  success -
-func (c *Target) DisposeBrowserContext(browserContextId string) (bool, error) {
-	var v TargetDisposeBrowserContextParams
-	v.BrowserContextId = browserContextId
-	return c.DisposeBrowserContextWithParams(&v)
 }
 
 type TargetCreateTargetParams struct {
@@ -507,6 +291,120 @@ func (c *Target) CreateTarget(url string, width int, height int, browserContextI
 	return c.CreateTargetWithParams(&v)
 }
 
+type TargetDetachFromTargetParams struct {
+	// Session to detach.
+	SessionId string `json:"sessionId,omitempty"`
+	// Deprecated.
+	TargetId string `json:"targetId,omitempty"`
+}
+
+// DetachFromTargetWithParams - Detaches session with given id.
+func (c *Target) DetachFromTargetWithParams(v *TargetDetachFromTargetParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.detachFromTarget", Params: v})
+}
+
+// DetachFromTarget - Detaches session with given id.
+// sessionId - Session to detach.
+// targetId - Deprecated.
+func (c *Target) DetachFromTarget(sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
+	var v TargetDetachFromTargetParams
+	v.SessionId = sessionId
+	v.TargetId = targetId
+	return c.DetachFromTargetWithParams(&v)
+}
+
+type TargetDisposeBrowserContextParams struct {
+	//
+	BrowserContextId string `json:"browserContextId"`
+}
+
+// DisposeBrowserContextWithParams - Deletes a BrowserContext, will fail of any open page uses it.
+// Returns -  success -
+func (c *Target) DisposeBrowserContextWithParams(v *TargetDisposeBrowserContextParams) (bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.disposeBrowserContext", Params: v})
+	if err != nil {
+		return false, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Success bool
+		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return false, err
+	}
+
+	return chromeData.Result.Success, nil
+}
+
+// DisposeBrowserContext - Deletes a BrowserContext, will fail of any open page uses it.
+// browserContextId -
+// Returns -  success -
+func (c *Target) DisposeBrowserContext(browserContextId string) (bool, error) {
+	var v TargetDisposeBrowserContextParams
+	v.BrowserContextId = browserContextId
+	return c.DisposeBrowserContextWithParams(&v)
+}
+
+type TargetGetTargetInfoParams struct {
+	//
+	TargetId string `json:"targetId"`
+}
+
+// GetTargetInfoWithParams - Returns information about a target.
+// Returns -  targetInfo -
+func (c *Target) GetTargetInfoWithParams(v *TargetGetTargetInfoParams) (*TargetTargetInfo, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getTargetInfo", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			TargetInfo *TargetTargetInfo
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.TargetInfo, nil
+}
+
+// GetTargetInfo - Returns information about a target.
+// targetId -
+// Returns -  targetInfo -
+func (c *Target) GetTargetInfo(targetId string) (*TargetTargetInfo, error) {
+	var v TargetGetTargetInfoParams
+	v.TargetId = targetId
+	return c.GetTargetInfoWithParams(&v)
+}
+
 // GetTargets - Retrieves a list of available targets.
 // Returns -  targetInfos - The list of targets.
 func (c *Target) GetTargets() ([]*TargetTargetInfo, error) {
@@ -537,4 +435,106 @@ func (c *Target) GetTargets() ([]*TargetTargetInfo, error) {
 	}
 
 	return chromeData.Result.TargetInfos, nil
+}
+
+type TargetSendMessageToTargetParams struct {
+	//
+	Message string `json:"message"`
+	// Identifier of the session.
+	SessionId string `json:"sessionId,omitempty"`
+	// Deprecated.
+	TargetId string `json:"targetId,omitempty"`
+}
+
+// SendMessageToTargetWithParams - Sends protocol message over session with given id.
+func (c *Target) SendMessageToTargetWithParams(v *TargetSendMessageToTargetParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.sendMessageToTarget", Params: v})
+}
+
+// SendMessageToTarget - Sends protocol message over session with given id.
+// message -
+// sessionId - Identifier of the session.
+// targetId - Deprecated.
+func (c *Target) SendMessageToTarget(message string, sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
+	var v TargetSendMessageToTargetParams
+	v.Message = message
+	v.SessionId = sessionId
+	v.TargetId = targetId
+	return c.SendMessageToTargetWithParams(&v)
+}
+
+type TargetSetAttachToFramesParams struct {
+	// Whether to attach to frames.
+	Value bool `json:"value"`
+}
+
+// SetAttachToFramesWithParams -
+func (c *Target) SetAttachToFramesWithParams(v *TargetSetAttachToFramesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setAttachToFrames", Params: v})
+}
+
+// SetAttachToFrames -
+// value - Whether to attach to frames.
+func (c *Target) SetAttachToFrames(value bool) (*gcdmessage.ChromeResponse, error) {
+	var v TargetSetAttachToFramesParams
+	v.Value = value
+	return c.SetAttachToFramesWithParams(&v)
+}
+
+type TargetSetAutoAttachParams struct {
+	// Whether to auto-attach to related targets.
+	AutoAttach bool `json:"autoAttach"`
+	// Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
+	WaitForDebuggerOnStart bool `json:"waitForDebuggerOnStart"`
+}
+
+// SetAutoAttachWithParams - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
+func (c *Target) SetAutoAttachWithParams(v *TargetSetAutoAttachParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setAutoAttach", Params: v})
+}
+
+// SetAutoAttach - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
+// autoAttach - Whether to auto-attach to related targets.
+// waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
+func (c *Target) SetAutoAttach(autoAttach bool, waitForDebuggerOnStart bool) (*gcdmessage.ChromeResponse, error) {
+	var v TargetSetAutoAttachParams
+	v.AutoAttach = autoAttach
+	v.WaitForDebuggerOnStart = waitForDebuggerOnStart
+	return c.SetAutoAttachWithParams(&v)
+}
+
+type TargetSetDiscoverTargetsParams struct {
+	// Whether to discover available targets.
+	Discover bool `json:"discover"`
+}
+
+// SetDiscoverTargetsWithParams - Controls whether to discover available targets and notify via `targetCreated/targetInfoChanged/targetDestroyed` events.
+func (c *Target) SetDiscoverTargetsWithParams(v *TargetSetDiscoverTargetsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setDiscoverTargets", Params: v})
+}
+
+// SetDiscoverTargets - Controls whether to discover available targets and notify via `targetCreated/targetInfoChanged/targetDestroyed` events.
+// discover - Whether to discover available targets.
+func (c *Target) SetDiscoverTargets(discover bool) (*gcdmessage.ChromeResponse, error) {
+	var v TargetSetDiscoverTargetsParams
+	v.Discover = discover
+	return c.SetDiscoverTargetsWithParams(&v)
+}
+
+type TargetSetRemoteLocationsParams struct {
+	// List of remote locations.
+	Locations []*TargetRemoteLocation `json:"locations"`
+}
+
+// SetRemoteLocationsWithParams - Enables target discovery for the specified locations, when `setDiscoverTargets` was set to `true`.
+func (c *Target) SetRemoteLocationsWithParams(v *TargetSetRemoteLocationsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setRemoteLocations", Params: v})
+}
+
+// SetRemoteLocations - Enables target discovery for the specified locations, when `setDiscoverTargets` was set to `true`.
+// locations - List of remote locations.
+func (c *Target) SetRemoteLocations(locations []*TargetRemoteLocation) (*gcdmessage.ChromeResponse, error) {
+	var v TargetSetRemoteLocationsParams
+	v.Locations = locations
+	return c.SetRemoteLocationsWithParams(&v)
 }

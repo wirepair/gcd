@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains Security functionality.
-// API Version: 1.2
+// API Version: 1.3
 
 package gcdapi
 
@@ -11,6 +11,7 @@ import (
 // An explanation of an factor contributing to the security state.
 type SecuritySecurityStateExplanation struct {
 	SecurityState    string   `json:"securityState"`    // Security state representing the severity of the factor being explained. enum values: unknown, neutral, insecure, secure, info
+	Title            string   `json:"title"`            // Title describing the type of factor.
 	Summary          string   `json:"summary"`          // Short phrase describing the type of factor.
 	Description      string   `json:"description"`      // Full text explanation of the factor.
 	MixedContentType string   `json:"mixedContentType"` // The type of mixed content described by the explanation. enum values: blockable, optionally-blockable, none
@@ -28,6 +29,16 @@ type SecurityInsecureContentStatus struct {
 	DisplayedInsecureContentStyle  string `json:"displayedInsecureContentStyle"`  // Security state representing a page that displayed insecure content. enum values: unknown, neutral, insecure, secure, info
 }
 
+// There is a certificate error. If overriding certificate errors is enabled, then it should be handled with the handleCertificateError command. Note: this event does not fire if the certificate error has been allowed internally. Only one client per target should override certificate errors at the same time.
+type SecurityCertificateErrorEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		EventId    int    `json:"eventId"`    // The ID of the event.
+		ErrorType  string `json:"errorType"`  // The type of the error.
+		RequestURL string `json:"requestURL"` // The url that was requested.
+	} `json:"Params,omitempty"`
+}
+
 // The security state of the page changed.
 type SecuritySecurityStateChangedEvent struct {
 	Method string `json:"method"`
@@ -40,16 +51,6 @@ type SecuritySecurityStateChangedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// There is a certificate error. If overriding certificate errors is enabled, then it should be handled with the handleCertificateError command. Note: this event does not fire if the certificate error has been allowed internally.
-type SecurityCertificateErrorEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		EventId    int    `json:"eventId"`    // The ID of the event.
-		ErrorType  string `json:"errorType"`  // The type of the error.
-		RequestURL string `json:"requestURL"` // The url that was requested.
-	} `json:"Params,omitempty"`
-}
-
 type Security struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -59,14 +60,32 @@ func NewSecurity(target gcdmessage.ChromeTargeter) *Security {
 	return c
 }
 
+// Disables tracking security state changes.
+func (c *Security) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.disable"})
+}
+
 // Enables tracking security state changes.
 func (c *Security) Enable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.enable"})
 }
 
-// Disables tracking security state changes.
-func (c *Security) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.disable"})
+type SecuritySetIgnoreCertificateErrorsParams struct {
+	// If true, all certificate errors will be ignored.
+	Ignore bool `json:"ignore"`
+}
+
+// SetIgnoreCertificateErrorsWithParams - Enable/disable whether all certificate errors should be ignored.
+func (c *Security) SetIgnoreCertificateErrorsWithParams(v *SecuritySetIgnoreCertificateErrorsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.setIgnoreCertificateErrors", Params: v})
+}
+
+// SetIgnoreCertificateErrors - Enable/disable whether all certificate errors should be ignored.
+// ignore - If true, all certificate errors will be ignored.
+func (c *Security) SetIgnoreCertificateErrors(ignore bool) (*gcdmessage.ChromeResponse, error) {
+	var v SecuritySetIgnoreCertificateErrorsParams
+	v.Ignore = ignore
+	return c.SetIgnoreCertificateErrorsWithParams(&v)
 }
 
 type SecurityHandleCertificateErrorParams struct {

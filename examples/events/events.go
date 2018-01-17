@@ -9,14 +9,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/wirepair/gcd"
-	"github.com/wirepair/gcd/gcdapi"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/wirepair/gcd"
+	"github.com/wirepair/gcd/gcdapi"
 )
 
 var (
@@ -49,7 +50,7 @@ func main() {
 
 	// navigate
 	navigateParams := &gcdapi.PageNavigateParams{Url: testServerAddr + "top.html"}
-	_, err := target.Page.NavigateWithParams(navigateParams)
+	_, _, _, err := target.Page.NavigateWithParams(navigateParams)
 	if err != nil {
 		log.Fatalf("error: %s\n", err)
 	}

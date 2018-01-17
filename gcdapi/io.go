@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains IO functionality.
-// API Version: 1.2
+// API Version: 1.3
 
 package gcdapi
 
@@ -16,6 +16,24 @@ type IO struct {
 func NewIO(target gcdmessage.ChromeTargeter) *IO {
 	c := &IO{target: target}
 	return c
+}
+
+type IOCloseParams struct {
+	// Handle of the stream to close.
+	Handle string `json:"handle"`
+}
+
+// CloseWithParams - Close the stream, discard any temporary backing storage.
+func (c *IO) CloseWithParams(v *IOCloseParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: v})
+}
+
+// Close - Close the stream, discard any temporary backing storage.
+// handle - Handle of the stream to close.
+func (c *IO) Close(handle string) (*gcdmessage.ChromeResponse, error) {
+	var v IOCloseParams
+	v.Handle = handle
+	return c.CloseWithParams(&v)
 }
 
 type IOReadParams struct {
@@ -72,24 +90,6 @@ func (c *IO) Read(handle string, offset int, size int) (bool, string, bool, erro
 	v.Offset = offset
 	v.Size = size
 	return c.ReadWithParams(&v)
-}
-
-type IOCloseParams struct {
-	// Handle of the stream to close.
-	Handle string `json:"handle"`
-}
-
-// CloseWithParams - Close the stream, discard any temporary backing storage.
-func (c *IO) CloseWithParams(v *IOCloseParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: v})
-}
-
-// Close - Close the stream, discard any temporary backing storage.
-// handle - Handle of the stream to close.
-func (c *IO) Close(handle string) (*gcdmessage.ChromeResponse, error) {
-	var v IOCloseParams
-	v.Handle = handle
-	return c.CloseWithParams(&v)
 }
 
 type IOResolveBlobParams struct {

@@ -27,16 +27,17 @@ package gcd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wirepair/gcd/gcdapi"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "1.2017.9.9.0"
+var GCDVERSION = "1.2018.1.17.0"
 
 // When we get an error reading the body from the debugger api endpoint
 type GcdBodyReadErr struct {

@@ -166,6 +166,7 @@ func writeFile(protocolData []byte) {
 	if err != nil {
 		log.Fatalf("error opening file %s for writing: %s\n", file, err)
 	}
+	protocolData = bytes.Replace(protocolData, []byte("\\n"), []byte(" "), -1) // remove newlines
 	f.Write(protocolData)
 	f.Sync()
 	f.Close()

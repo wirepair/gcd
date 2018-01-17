@@ -1,6 +1,6 @@
 // AUTO-GENERATED Chrome Remote Debugger Protocol API Client
 // This file contains LayerTree functionality.
-// API Version: 1.2
+// API Version: 1.3
 
 package gcdapi
 
@@ -51,19 +51,19 @@ type LayerTreeLayer struct {
 }
 
 //
-type LayerTreeLayerTreeDidChangeEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the comspositing mode.
-	} `json:"Params,omitempty"`
-}
-
-//
 type LayerTreeLayerPaintedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		LayerId string   `json:"layerId"` // The id of the painted layer.
 		Clip    *DOMRect `json:"clip"`    // Clip rectangle.
+	} `json:"Params,omitempty"`
+}
+
+//
+type LayerTreeLayerTreeDidChangeEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the comspositing mode.
 	} `json:"Params,omitempty"`
 }
 
@@ -74,16 +74,6 @@ type LayerTree struct {
 func NewLayerTree(target gcdmessage.ChromeTargeter) *LayerTree {
 	c := &LayerTree{target: target}
 	return c
-}
-
-// Enables compositing tree inspection.
-func (c *LayerTree) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.enable"})
-}
-
-// Disables compositing tree inspection.
-func (c *LayerTree) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.disable"})
 }
 
 type LayerTreeCompositingReasonsParams struct {
@@ -132,50 +122,14 @@ func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
 	return c.CompositingReasonsWithParams(&v)
 }
 
-type LayerTreeMakeSnapshotParams struct {
-	// The id of the layer.
-	LayerId string `json:"layerId"`
+// Disables compositing tree inspection.
+func (c *LayerTree) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.disable"})
 }
 
-// MakeSnapshotWithParams - Returns the layer snapshot identifier.
-// Returns -  snapshotId - The id of the layer snapshot.
-func (c *LayerTree) MakeSnapshotWithParams(v *LayerTreeMakeSnapshotParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: v})
-	if err != nil {
-		return "", err
-	}
-
-	var chromeData struct {
-		Result struct {
-			SnapshotId string
-		}
-	}
-
-	if resp == nil {
-		return "", &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
-	}
-
-	return chromeData.Result.SnapshotId, nil
-}
-
-// MakeSnapshot - Returns the layer snapshot identifier.
-// layerId - The id of the layer.
-// Returns -  snapshotId - The id of the layer snapshot.
-func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
-	var v LayerTreeMakeSnapshotParams
-	v.LayerId = layerId
-	return c.MakeSnapshotWithParams(&v)
+// Enables compositing tree inspection.
+func (c *LayerTree) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.enable"})
 }
 
 type LayerTreeLoadSnapshotParams struct {
@@ -224,22 +178,50 @@ func (c *LayerTree) LoadSnapshot(tiles []*LayerTreePictureTile) (string, error) 
 	return c.LoadSnapshotWithParams(&v)
 }
 
-type LayerTreeReleaseSnapshotParams struct {
-	// The id of the layer snapshot.
-	SnapshotId string `json:"snapshotId"`
+type LayerTreeMakeSnapshotParams struct {
+	// The id of the layer.
+	LayerId string `json:"layerId"`
 }
 
-// ReleaseSnapshotWithParams - Releases layer snapshot captured by the back-end.
-func (c *LayerTree) ReleaseSnapshotWithParams(v *LayerTreeReleaseSnapshotParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.releaseSnapshot", Params: v})
+// MakeSnapshotWithParams - Returns the layer snapshot identifier.
+// Returns -  snapshotId - The id of the layer snapshot.
+func (c *LayerTree) MakeSnapshotWithParams(v *LayerTreeMakeSnapshotParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			SnapshotId string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.SnapshotId, nil
 }
 
-// ReleaseSnapshot - Releases layer snapshot captured by the back-end.
-// snapshotId - The id of the layer snapshot.
-func (c *LayerTree) ReleaseSnapshot(snapshotId string) (*gcdmessage.ChromeResponse, error) {
-	var v LayerTreeReleaseSnapshotParams
-	v.SnapshotId = snapshotId
-	return c.ReleaseSnapshotWithParams(&v)
+// MakeSnapshot - Returns the layer snapshot identifier.
+// layerId - The id of the layer.
+// Returns -  snapshotId - The id of the layer snapshot.
+func (c *LayerTree) MakeSnapshot(layerId string) (string, error) {
+	var v LayerTreeMakeSnapshotParams
+	v.LayerId = layerId
+	return c.MakeSnapshotWithParams(&v)
 }
 
 type LayerTreeProfileSnapshotParams struct {
@@ -298,6 +280,24 @@ func (c *LayerTree) ProfileSnapshot(snapshotId string, minRepeatCount int, minDu
 	v.MinDuration = minDuration
 	v.ClipRect = clipRect
 	return c.ProfileSnapshotWithParams(&v)
+}
+
+type LayerTreeReleaseSnapshotParams struct {
+	// The id of the layer snapshot.
+	SnapshotId string `json:"snapshotId"`
+}
+
+// ReleaseSnapshotWithParams - Releases layer snapshot captured by the back-end.
+func (c *LayerTree) ReleaseSnapshotWithParams(v *LayerTreeReleaseSnapshotParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.releaseSnapshot", Params: v})
+}
+
+// ReleaseSnapshot - Releases layer snapshot captured by the back-end.
+// snapshotId - The id of the layer snapshot.
+func (c *LayerTree) ReleaseSnapshot(snapshotId string) (*gcdmessage.ChromeResponse, error) {
+	var v LayerTreeReleaseSnapshotParams
+	v.SnapshotId = snapshotId
+	return c.ReleaseSnapshotWithParams(&v)
 }
 
 type LayerTreeReplaySnapshotParams struct {
