@@ -26,19 +26,20 @@ package gcd
 
 import (
 	"encoding/json"
-	"github.com/wirepair/gcd/gcdapi"
-	"github.com/wirepair/gcd/gcdmessage"
-	"golang.org/x/net/websocket"
 	"io"
 	"log"
 	"net"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/wirepair/gcd/gcdapi"
+	"github.com/wirepair/gcd/gcdmessage"
+	"golang.org/x/net/websocket"
 )
 
-// Defines the 'tab' or target for this chrome instance, can be multiple and background processes
-// are included (not just visual tabs)
+// TargetInfo defines the 'tab' or target for this chrome instance,
+// can be multiple and background processes are included (not just visual tabs)
 type TargetInfo struct {
 	Description          string `json:"description"`
 	DevtoolsFrontendUrl  string `json:"devtoolsFrontendUrl"`
@@ -50,7 +51,7 @@ type TargetInfo struct {
 	WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
 }
 
-// Our Chrome Target (Tab/Process). Messages are returned to callers via non-buffered channels. Helpfully,
+// ChromeTarget (Tab/Process). Messages are returned to callers via non-buffered channels. Helpfully,
 // the remote debugger service uses id's so we can correlate which request should match which response.
 // We use a map to store the id of the request which contains a reference to a gcdmessage.Message that holds the
 // reply channel for the ChromeTarget to return the response to.
@@ -113,7 +114,7 @@ type ChromeTarget struct {
 	stopped     bool                     // we are/have shutdown
 }
 
-// Creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
+// openChromeTarget creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
 func openChromeTarget(addr string, target *TargetInfo) (*ChromeTarget, error) {
 	conn, err := wsConnection(addr, target.WebSocketDebuggerUrl)
 	if err != nil {
@@ -132,7 +133,7 @@ func openChromeTarget(addr string, target *TargetInfo) (*ChromeTarget, error) {
 	return chromeTarget, nil
 }
 
-// Initialize all api objects
+// Init all api objects
 func (c *ChromeTarget) Init() {
 	c.Accessibility = gcdapi.NewAccessibility(c)
 	c.Animation = gcdapi.NewAnimation(c)
@@ -188,7 +189,7 @@ func (c *ChromeTarget) shutdown() {
 	c.conn.Close()
 }
 
-// A timeout for how long we should wait before giving up gcdmessages.
+// SetApiTimeout for how long we should wait before giving up gcdmessages.
 // In the highly unusable (but it has occurred) event that chrome
 // does not respond to one of our messages, we should be able to return
 // from gcdmessage functions.
@@ -196,14 +197,14 @@ func (c *ChromeTarget) SetApiTimeout(timeout time.Duration) {
 	c.apiTimeout = timeout
 }
 
-// Used by gcdmessage.SendCustomReturn and gcdmessage.SendDefaultRequest
+// GetApiTimeout used by gcdmessage.SendCustomReturn and gcdmessage.SendDefaultRequest
 // to timeout an API call if chrome hasn't responded to us in apiTimeout
 // time.
 func (c *ChromeTarget) GetApiTimeout() time.Duration {
 	return c.apiTimeout
 }
 
-/// Subscribes Events, you must know the method name, such as Page.loadFiredEvent, and bind a function
+// Subscribe Events, you must know the method name, such as Page.loadFiredEvent, and bind a function
 // which takes a ChromeTarget (us) and the raw JSON byte data for that event.
 func (c *ChromeTarget) Subscribe(method string, callback func(*ChromeTarget, []byte)) {
 	c.eventLock.Lock()
@@ -211,18 +212,19 @@ func (c *ChromeTarget) Subscribe(method string, callback func(*ChromeTarget, []b
 	c.eventLock.Unlock()
 }
 
-// Unsubscribes the handler for no longer receiving events.
+// Unsubscribe the handler for no longer receiving events.
 func (c *ChromeTarget) Unsubscribe(method string) {
 	c.eventLock.Lock()
 	delete(c.eventDispatcher, method)
 	c.eventLock.Unlock()
 }
 
-// Whether to print out raw JSON event data when not Subscribed.
+// DebugEvents to print out raw JSON event data when not Subscribed.
 func (c *ChromeTarget) DebugEvents(debug bool) {
 	c.debugEvents = debug
 }
 
+// Debug for printing various debug information
 func (c *ChromeTarget) Debug(debug bool) {
 	c.debug = debug
 }
@@ -375,17 +377,17 @@ func wsConnection(addr, url string) (*websocket.Conn, error) {
 
 // gcdmessage.ChromeTargeter interface methods
 
-// Increments the Id so we can synchronize our request/responses internally
+// GetId increments the Id so we can synchronize our request/responses internally
 func (c *ChromeTarget) GetId() int64 {
 	return atomic.AddInt64(&c.sendId, 1)
 }
 
-// The channel used for API components to send back to use
+// GetSendCh the channel used for API components to send back to use
 func (c *ChromeTarget) GetSendCh() chan *gcdmessage.Message {
 	return c.sendCh
 }
 
-// The channel used to signal any pending SendDefaultRequest and SendCustomReturn
+// GetDoneCh channel used to signal any pending SendDefaultRequest and SendCustomReturn
 // that we are exiting so we don't block goroutines from exiting.
 func (c *ChromeTarget) GetDoneCh() chan struct{} {
 	return c.doneCh

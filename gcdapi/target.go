@@ -463,24 +463,6 @@ func (c *Target) SendMessageToTarget(message string, sessionId string, targetId 
 	return c.SendMessageToTargetWithParams(&v)
 }
 
-type TargetSetAttachToFramesParams struct {
-	// Whether to attach to frames.
-	Value bool `json:"value"`
-}
-
-// SetAttachToFramesWithParams -
-func (c *Target) SetAttachToFramesWithParams(v *TargetSetAttachToFramesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setAttachToFrames", Params: v})
-}
-
-// SetAttachToFrames -
-// value - Whether to attach to frames.
-func (c *Target) SetAttachToFrames(value bool) (*gcdmessage.ChromeResponse, error) {
-	var v TargetSetAttachToFramesParams
-	v.Value = value
-	return c.SetAttachToFramesWithParams(&v)
-}
-
 type TargetSetAutoAttachParams struct {
 	// Whether to auto-attach to related targets.
 	AutoAttach bool `json:"autoAttach"`

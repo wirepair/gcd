@@ -185,10 +185,10 @@ type InputEmulateTouchFromMouseEventParams struct {
 	X int `json:"x"`
 	// Y coordinate of the mouse pointer in DIP.
 	Y int `json:"y"`
-	// Time at which the event occurred.
-	Timestamp float64 `json:"timestamp"`
 	// Mouse button.
 	Button string `json:"button"`
+	// Time at which the event occurred (default: current time).
+	Timestamp float64 `json:"timestamp,omitempty"`
 	// X delta in DIP for mouse wheel event (default: 0).
 	DeltaX float64 `json:"deltaX,omitempty"`
 	// Y delta in DIP for mouse wheel event (default: 0).
@@ -208,19 +208,19 @@ func (c *Input) EmulateTouchFromMouseEventWithParams(v *InputEmulateTouchFromMou
 // type - Type of the mouse event.
 // x - X coordinate of the mouse pointer in DIP.
 // y - Y coordinate of the mouse pointer in DIP.
-// timestamp - Time at which the event occurred.
 // button - Mouse button.
+// timestamp - Time at which the event occurred (default: current time).
 // deltaX - X delta in DIP for mouse wheel event (default: 0).
 // deltaY - Y delta in DIP for mouse wheel event (default: 0).
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // clickCount - Number of times the mouse button was clicked (default: 0).
-func (c *Input) EmulateTouchFromMouseEvent(theType string, x int, y int, timestamp float64, button string, deltaX float64, deltaY float64, modifiers int, clickCount int) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) EmulateTouchFromMouseEvent(theType string, x int, y int, button string, timestamp float64, deltaX float64, deltaY float64, modifiers int, clickCount int) (*gcdmessage.ChromeResponse, error) {
 	var v InputEmulateTouchFromMouseEventParams
 	v.TheType = theType
 	v.X = x
 	v.Y = y
-	v.Timestamp = timestamp
 	v.Button = button
+	v.Timestamp = timestamp
 	v.DeltaX = deltaX
 	v.DeltaY = deltaY
 	v.Modifiers = modifiers

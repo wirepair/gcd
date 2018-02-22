@@ -128,7 +128,8 @@ func TestTargetCrashed(t *testing.T) {
 
 	tab.Subscribe("Inspector.targetCrashed", targetCrashedFn)
 
-	_, _, _, err = tab.Page.Navigate("chrome://crash", "", "typed")
+	navParams := &gcdapi.PageNavigateParams{Url: "chrome://crash", TransitionType: "typed"}
+	_, _, _, err = tab.Page.NavigateWithParams(navParams)
 	if err == nil {
 		t.Fatalf("Navigation should have failed")
 	}
@@ -165,7 +166,8 @@ func TestEvents(t *testing.T) {
 		t.Fatalf("error sending enable: %s\n", err)
 	}
 
-	if _, _, _, err := target.Page.Navigate(testServerAddr+"console_log.html", "", "typed"); err != nil {
+	navParams := &gcdapi.PageNavigateParams{Url: testServerAddr + "console_log.html", TransitionType: "typed"}
+	if _, _, _, err := target.Page.NavigateWithParams(navParams); err != nil {
 		t.Fatalf("error attempting to navigate: %s\n", err)
 	}
 
@@ -218,7 +220,9 @@ func TestEvaluate(t *testing.T) {
 		close(doneCh)
 	})
 	target.Runtime.Enable()
-	target.Page.Navigate(testServerAddr, "", "typed")
+
+	navParams := &gcdapi.PageNavigateParams{Url: testServerAddr, TransitionType: "typed"}
+	target.Page.NavigateWithParams(navParams)
 	<-doneCh
 }
 
@@ -312,7 +316,8 @@ func TestComplexReturn(t *testing.T) {
 		close(doneCh)
 	})
 
-	_, _, _, err = target.Page.Navigate(testServerAddr+"cookie.html", "", "typed")
+	navParams := &gcdapi.PageNavigateParams{Url: testServerAddr + "cookie.html", TransitionType: "typed"}
+	_, _, _, err = target.Page.NavigateWithParams(navParams)
 	if err != nil {
 		t.Fatalf("error navigating to cookie page: %s\n", err)
 	}
@@ -401,9 +406,6 @@ func TestNetworkIntercept(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
-
-	//target.Debug(true)
-	//target.DebugEvents(true)
 
 	go testTimeoutListener(t, doneCh, 5, "timed out waiting for requestIntercepted")
 	network := target.Network

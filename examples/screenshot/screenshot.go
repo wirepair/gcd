@@ -50,9 +50,8 @@ func main() {
 
 	debugger = gcd.NewChromeDebugger()
 	debugger.StartProcess(path, dir, port)
-	defer func() {
-		log.Printf("%s\n", debugger.ExitProcess())
-	}()
+	defer debugger.ExitProcess()
+
 	targets := make([]*gcd.ChromeTarget, numTabs)
 
 	for i := 0; i < numTabs; i++ {

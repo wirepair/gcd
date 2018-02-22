@@ -985,7 +985,7 @@ func (c *CSS) StartRuleUsageTracking() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.startRuleUsageTracking"})
 }
 
-// StopRuleUsageTracking - The list of rules with an indication of whether these were used
+// StopRuleUsageTracking - Stop tracking rule usage and return the list of rules that were used since last call to `takeCoverageDelta` (or since start of coverage instrumentation)
 // Returns -  ruleUsage -
 func (c *CSS) StopRuleUsageTracking() ([]*CSSRuleUsage, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.stopRuleUsageTracking"})

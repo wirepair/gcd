@@ -36,6 +36,7 @@ type DOMSnapshotDOMNode struct {
 	PseudoType            string                      `json:"pseudoType,omitempty"`            // Type of a pseudo element node. enum values: first-line, first-letter, before, after, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
 	IsClickable           bool                        `json:"isClickable,omitempty"`           // Whether this DOM node responds to mouse clicks. This includes nodes that have had click event listeners attached via JavaScript as well as anchor tags that naturally navigate when clicked.
 	EventListeners        []*DOMDebuggerEventListener `json:"eventListeners,omitempty"`        // Details of the node's event listeners, if any.
+	CurrentSourceURL      string                      `json:"currentSourceURL,omitempty"`      // The selected url for nodes with a srcset attribute.
 }
 
 // Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.

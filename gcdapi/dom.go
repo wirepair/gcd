@@ -1519,3 +1519,49 @@ func (c *DOM) SetOuterHTML(nodeId int, outerHTML string) (*gcdmessage.ChromeResp
 func (c *DOM) Undo() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.undo"})
 }
+
+type DOMGetFrameOwnerParams struct {
+	//
+	FrameId string `json:"frameId"`
+}
+
+// GetFrameOwnerWithParams - Returns iframe node that owns iframe with the given domain.
+// Returns -  nodeId -
+func (c *DOM) GetFrameOwnerWithParams(v *DOMGetFrameOwnerParams) (int, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFrameOwner", Params: v})
+	if err != nil {
+		return 0, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			NodeId int
+		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
+	}
+
+	return chromeData.Result.NodeId, nil
+}
+
+// GetFrameOwner - Returns iframe node that owns iframe with the given domain.
+// frameId -
+// Returns -  nodeId -
+func (c *DOM) GetFrameOwner(frameId string) (int, error) {
+	var v DOMGetFrameOwnerParams
+	v.FrameId = frameId
+	return c.GetFrameOwnerWithParams(&v)
+}

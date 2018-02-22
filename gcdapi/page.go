@@ -780,6 +780,8 @@ type PageNavigateParams struct {
 	Referrer string `json:"referrer,omitempty"`
 	// Intended transition type. enum values: link, typed, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 	TransitionType string `json:"transitionType,omitempty"`
+	// Frame id to navigate, if not specified navigates the top frame.
+	FrameId string `json:"frameId,omitempty"`
 }
 
 // NavigateWithParams - Navigates current page to the given URL.
@@ -820,12 +822,14 @@ func (c *Page) NavigateWithParams(v *PageNavigateParams) (string, string, string
 // url - URL to navigate the page to.
 // referrer - Referrer URL.
 // transitionType - Intended transition type. enum values: link, typed, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
+// frameId - Frame id to navigate, if not specified navigates the top frame.
 // Returns -  frameId - Frame id that has navigated (or failed to navigate) loaderId - Loader identifier. errorText - User friendly error message, present if and only if navigation has failed.
-func (c *Page) Navigate(url string, referrer string, transitionType string) (string, string, string, error) {
+func (c *Page) Navigate(url string, referrer string, transitionType string, frameId string) (string, string, string, error) {
 	var v PageNavigateParams
 	v.Url = url
 	v.Referrer = referrer
 	v.TransitionType = transitionType
+	v.FrameId = frameId
 	return c.NavigateWithParams(&v)
 }
 
@@ -876,6 +880,8 @@ type PagePrintToPDFParams struct {
 	HeaderTemplate string `json:"headerTemplate,omitempty"`
 	// HTML template for the print footer. Should use the same format as the `headerTemplate`.
 	FooterTemplate string `json:"footerTemplate,omitempty"`
+	// Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
+	PreferCSSPageSize bool `json:"preferCSSPageSize,omitempty"`
 }
 
 // PrintToPDFWithParams - Print page as PDF.
@@ -925,8 +931,9 @@ func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, error) {
 // ignoreInvalidPageRanges - Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
 // headerTemplate - HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - date - formatted print date - title - document title - url - document location - pageNumber - current page number - totalPages - total pages in the document  For example, <span class=title></span> would generate span containing the title.
 // footerTemplate - HTML template for the print footer. Should use the same format as the `headerTemplate`.
+// preferCSSPageSize - Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
 // Returns -  data - Base64-encoded pdf data.
-func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool, headerTemplate string, footerTemplate string) (string, error) {
+func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool, headerTemplate string, footerTemplate string, preferCSSPageSize bool) (string, error) {
 	var v PagePrintToPDFParams
 	v.Landscape = landscape
 	v.DisplayHeaderFooter = displayHeaderFooter
@@ -942,6 +949,7 @@ func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackgro
 	v.IgnoreInvalidPageRanges = ignoreInvalidPageRanges
 	v.HeaderTemplate = headerTemplate
 	v.FooterTemplate = footerTemplate
+	v.PreferCSSPageSize = preferCSSPageSize
 	return c.PrintToPDFWithParams(&v)
 }
 
