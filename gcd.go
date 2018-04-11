@@ -111,7 +111,7 @@ func (c *Gcd) AddEnvironmentVars(vars []string) {
 // exePath - the path to the executable
 // userDir - the user directory to start from so we get a fresh profile
 // port - The port to listen on.
-func (c *Gcd) StartProcess(exePath, userDir, port string) {
+func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 	c.port = port
 	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
 	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
@@ -144,8 +144,15 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) {
 			c.terminatedHandler(closeMessage)
 		}
 	}()
-	go c.probeDebugPort()
+
+	var err error
+	err = nil
+	go func(){
+		err = c.probeDebugPort()
+	}()
 	<-c.readyCh
+
+	return err
 }
 
 // ExitProcess kills the process
@@ -156,13 +163,20 @@ func (c *Gcd) ExitProcess() error {
 // ConnectToInstance connects to a running chrome instance without starting a local process
 // Host - The host destination.
 // Port - The port to listen on.
-func (c *Gcd) ConnectToInstance(host string, port string) {
+func (c *Gcd) ConnectToInstance(host string, port string) error {
 	c.host = host
 	c.port = port
 	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
 	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
-	go c.probeDebugPort()
+
+	var err error
+	err = nil
+	go func(){
+		err = c.probeDebugPort()
+	}()
 	<-c.readyCh
+
+	return err
 }
 
 // GetTargets primary tabs/processes to work with. Each will have their own references
@@ -263,7 +277,7 @@ func (c *Gcd) ActivateTab(target *ChromeTarget) error {
 }
 
 // probes the debugger report and signals when it's available.
-func (c *Gcd) probeDebugPort() {
+func (c *Gcd) probeDebugPort() error {
 	ticker := time.NewTicker(time.Millisecond * 100)
 	timeoutTicker := time.NewTicker(time.Second * c.timeout)
 
@@ -281,9 +295,9 @@ func (c *Gcd) probeDebugPort() {
 			}
 			defer resp.Body.Close()
 			c.readyCh <- struct{}{}
-			return
+			return nil
 		case <-timeoutTicker.C:
-			log.Fatalf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
+			return fmt.Errorf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
 		}
 	}
 }
