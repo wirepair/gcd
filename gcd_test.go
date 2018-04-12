@@ -126,14 +126,11 @@ func TestTargetCrashed(t *testing.T) {
 		t.Fatalf("error creating new tab")
 	}
 
+	tab.Inspector.Enable()
 	tab.Subscribe("Inspector.targetCrashed", targetCrashedFn)
 
 	navParams := &gcdapi.PageNavigateParams{Url: "chrome://crash", TransitionType: "typed"}
-	_, _, _, err = tab.Page.NavigateWithParams(navParams)
-	if err == nil {
-		t.Fatalf("Navigation should have failed")
-	}
-
+	tab.Page.NavigateWithParams(navParams)
 	<-doneCh
 }
 
