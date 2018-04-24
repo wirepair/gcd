@@ -1,4 +1,5 @@
 # Changelog (2018)
+- April 24th: Updated to latest gcd / protocol.json file for 66.0.3359.117 for *stable* branch. Please note there was a change to protocol files again, more details: https://github.com/wirepair/gcd/issues/21.
 - Feburary 22nd: Updated to latest gcd / protocol.json file for 66.0.3346.8. Added dep init/dep ensure to repository for package management.
 - January 17th: Updated to latest protocol. Removed examples from README.md because API changes too often, added a link to examples instead which I ensure work after update. Fixed \n in descriptions of protocol.json files causing template generation errors. Current is 65.0.3322.3. Updated examples to work with latest API changes.
 
