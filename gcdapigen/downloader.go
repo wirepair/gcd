@@ -28,7 +28,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -36,10 +35,11 @@ import (
 )
 
 const (
-	revisionOS          = "win" // doesn't really matter
-	revisionEndpoint    = "https://omahaproxy.appspot.com/all.json"
-	browserProtocolFile = "https://chromium.googlesource.com/chromium/src/+/%s/third_party/WebKit/Source/core/inspector/browser_protocol.json?format=text"
-	jsProtocolFile      = "https://chromium.googlesource.com/v8/v8/+/%s/src/inspector/js_protocol.json?format=text"
+	channel             = "stable"                                  // appears only stable is in github/devtools-protocol.
+	revisionOS          = "win"                                     // doesn't really matter
+	revisionEndpoint    = "https://omahaproxy.appspot.com/all.json" // get release level info
+	browserProtocolFile = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json"
+	jsProtocolFile      = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/js_protocol.json"
 )
 
 type ChromiumRevision []struct {
@@ -70,12 +70,12 @@ type RevisionInfo struct {
 	JsBranch string
 }
 
-func getApiRevision(channel string) *RevisionInfo {
+func getApiRevision() *RevisionInfo {
 	versionInfo := getRevisionData(channel)
 	if versionInfo == nil {
 		log.Fatalf("Error finding version information from %s", revisionEndpoint)
 	}
-	download(fmt.Sprintf(browserProtocolFile, versionInfo.Branch), fmt.Sprintf(jsProtocolFile, versionInfo.JsBranch))
+	download(browserProtocolFile, jsProtocolFile)
 	return versionInfo
 }
 
@@ -103,8 +103,8 @@ func getRevisionData(channel string) *RevisionInfo {
 }
 
 func download(browserFile, jsFile string) {
-	browserData := fixBrokenBool(decodeProtocol(getRemoteFile(browserFile)))
-	jsData := fixBrokenBool(decodeProtocol(getRemoteFile(jsFile)))
+	browserData := fixBrokenBool(getRemoteFile(browserFile))
+	jsData := fixBrokenBool(getRemoteFile(jsFile))
 
 	api := &ProtoDebuggerApi{}
 	copyApi := &ProtoDebuggerApi{}

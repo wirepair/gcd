@@ -34,6 +34,7 @@ type DOMSnapshotDOMNode struct {
 	ImportedDocumentIndex int                         `json:"importedDocumentIndex,omitempty"` // Index of the imported document's node of a link element in the `domNodes` array returned by `getSnapshot`, if any.
 	TemplateContentIndex  int                         `json:"templateContentIndex,omitempty"`  // Index of the content node of a template element in the `domNodes` array returned by `getSnapshot`.
 	PseudoType            string                      `json:"pseudoType,omitempty"`            // Type of a pseudo element node. enum values: first-line, first-letter, before, after, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	ShadowRootType        string                      `json:"shadowRootType,omitempty"`        // Shadow root type. enum values: user-agent, open, closed
 	IsClickable           bool                        `json:"isClickable,omitempty"`           // Whether this DOM node responds to mouse clicks. This includes nodes that have had click event listeners attached via JavaScript as well as anchor tags that naturally navigate when clicked.
 	EventListeners        []*DOMDebuggerEventListener `json:"eventListeners,omitempty"`        // Details of the node's event listeners, if any.
 	CurrentSourceURL      string                      `json:"currentSourceURL,omitempty"`      // The selected url for nodes with a srcset attribute.
@@ -42,8 +43,8 @@ type DOMSnapshotDOMNode struct {
 // Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.
 type DOMSnapshotInlineTextBox struct {
 	BoundingBox         *DOMRect `json:"boundingBox"`         // The absolute position bounding box.
-	StartCharacterIndex int      `json:"startCharacterIndex"` // The starting index in characters, for this post layout textbox substring.
-	NumCharacters       int      `json:"numCharacters"`       // The number of characters in this post layout textbox substring.
+	StartCharacterIndex int      `json:"startCharacterIndex"` // The starting index in characters, for this post layout textbox substring. Characters that would be represented as a surrogate pair in UTF-16 have length 2.
+	NumCharacters       int      `json:"numCharacters"`       // The number of characters in this post layout textbox substring. Characters that would be represented as a surrogate pair in UTF-16 have length 2.
 }
 
 // Details of an element in the DOM tree with a LayoutObject.
@@ -53,6 +54,7 @@ type DOMSnapshotLayoutTreeNode struct {
 	LayoutText      string                      `json:"layoutText,omitempty"`      // Contents of the LayoutText, if any.
 	InlineTextNodes []*DOMSnapshotInlineTextBox `json:"inlineTextNodes,omitempty"` // The post-layout inline text nodes, if any.
 	StyleIndex      int                         `json:"styleIndex,omitempty"`      // Index into the `computedStyles` array returned by `getSnapshot`.
+	PaintOrder      int                         `json:"paintOrder,omitempty"`      // Global paint order index, which is determined by the stacking order of the nodes. Nodes that are painted together will have the same index. Only provided if includePaintOrder in getSnapshot was true.
 }
 
 // A subset of the full ComputedStyle as defined by the request whitelist.
@@ -80,6 +82,10 @@ type DOMSnapshotGetSnapshotParams struct {
 	ComputedStyleWhitelist []string `json:"computedStyleWhitelist"`
 	// Whether or not to retrieve details of DOM listeners (default false).
 	IncludeEventListeners bool `json:"includeEventListeners,omitempty"`
+	// Whether to determine and include the paint order index of LayoutTreeNodes (default false).
+	IncludePaintOrder bool `json:"includePaintOrder,omitempty"`
+	// Whether to include UA shadow tree in the snapshot (default false).
+	IncludeUserAgentShadowTree bool `json:"includeUserAgentShadowTree,omitempty"`
 }
 
 // GetSnapshotWithParams - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
@@ -119,10 +125,14 @@ func (c *DOMSnapshot) GetSnapshotWithParams(v *DOMSnapshotGetSnapshotParams) ([]
 // GetSnapshot - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
 // computedStyleWhitelist - Whitelist of computed styles to return.
 // includeEventListeners - Whether or not to retrieve details of DOM listeners (default false).
+// includePaintOrder - Whether to determine and include the paint order index of LayoutTreeNodes (default false).
+// includeUserAgentShadowTree - Whether to include UA shadow tree in the snapshot (default false).
 // Returns -  domNodes - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. layoutTreeNodes - The nodes in the layout tree. computedStyles - Whitelisted ComputedStyle properties for each node in the layout tree.
-func (c *DOMSnapshot) GetSnapshot(computedStyleWhitelist []string, includeEventListeners bool) ([]*DOMSnapshotDOMNode, []*DOMSnapshotLayoutTreeNode, []*DOMSnapshotComputedStyle, error) {
+func (c *DOMSnapshot) GetSnapshot(computedStyleWhitelist []string, includeEventListeners bool, includePaintOrder bool, includeUserAgentShadowTree bool) ([]*DOMSnapshotDOMNode, []*DOMSnapshotLayoutTreeNode, []*DOMSnapshotComputedStyle, error) {
 	var v DOMSnapshotGetSnapshotParams
 	v.ComputedStyleWhitelist = computedStyleWhitelist
 	v.IncludeEventListeners = includeEventListeners
+	v.IncludePaintOrder = includePaintOrder
+	v.IncludeUserAgentShadowTree = includeUserAgentShadowTree
 	return c.GetSnapshotWithParams(&v)
 }

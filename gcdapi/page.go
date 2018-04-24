@@ -183,10 +183,11 @@ type PageJavascriptDialogClosedEvent struct {
 type PageJavascriptDialogOpeningEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Url           string `json:"url"`                     // Frame url.
-		Message       string `json:"message"`                 // Message that will be displayed by the dialog.
-		Type          string `json:"type"`                    // Dialog type. enum values: alert, confirm, prompt, beforeunload
-		DefaultPrompt string `json:"defaultPrompt,omitempty"` // Default dialog prompt.
+		Url               string `json:"url"`                     // Frame url.
+		Message           string `json:"message"`                 // Message that will be displayed by the dialog.
+		Type              string `json:"type"`                    // Dialog type. enum values: alert, confirm, prompt, beforeunload
+		HasBrowserHandler bool   `json:"hasBrowserHandler"`       // True iff browser is capable showing or acting on the given dialog. When browser has no dialog handler for given target, calling alert while Page domain is engaged will stall the page execution. Execution can be resumed via calling Page.handleJavaScriptDialog.
+		DefaultPrompt     string `json:"defaultPrompt,omitempty"` // Default dialog prompt.
 	} `json:"Params,omitempty"`
 }
 
@@ -206,6 +207,15 @@ type PageLoadEventFiredEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Timestamp float64 `json:"timestamp"` //
+	} `json:"Params,omitempty"`
+}
+
+// Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
+type PageNavigatedWithinDocumentEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame.
+		Url     string `json:"url"`     // Frame's new url.
 	} `json:"Params,omitempty"`
 }
 
@@ -876,7 +886,7 @@ type PagePrintToPDFParams struct {
 	PageRanges string `json:"pageRanges,omitempty"`
 	// Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
 	IgnoreInvalidPageRanges bool `json:"ignoreInvalidPageRanges,omitempty"`
-	// HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - date - formatted print date - title - document title - url - document location - pageNumber - current page number - totalPages - total pages in the document  For example, <span class=title></span> would generate span containing the title.
+	// HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - `date`: formatted print date - `title`: document title - `url`: document location - `pageNumber`: current page number - `totalPages`: total pages in the document  For example, `<span class=title></span>` would generate span containing the title.
 	HeaderTemplate string `json:"headerTemplate,omitempty"`
 	// HTML template for the print footer. Should use the same format as the `headerTemplate`.
 	FooterTemplate string `json:"footerTemplate,omitempty"`
@@ -929,7 +939,7 @@ func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, error) {
 // marginRight - Right margin in inches. Defaults to 1cm (~0.4 inches).
 // pageRanges - Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
 // ignoreInvalidPageRanges - Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
-// headerTemplate - HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - date - formatted print date - title - document title - url - document location - pageNumber - current page number - totalPages - total pages in the document  For example, <span class=title></span> would generate span containing the title.
+// headerTemplate - HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - `date`: formatted print date - `title`: document title - `url`: document location - `pageNumber`: current page number - `totalPages`: total pages in the document  For example, `<span class=title></span>` would generate span containing the title.
 // footerTemplate - HTML template for the print footer. Should use the same format as the `headerTemplate`.
 // preferCSSPageSize - Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
 // Returns -  data - Base64-encoded pdf data.
@@ -1112,6 +1122,24 @@ func (c *Page) SetAdBlockingEnabled(enabled bool) (*gcdmessage.ChromeResponse, e
 	var v PageSetAdBlockingEnabledParams
 	v.Enabled = enabled
 	return c.SetAdBlockingEnabledWithParams(&v)
+}
+
+type PageSetBypassCSPParams struct {
+	// Whether to bypass page CSP.
+	Enabled bool `json:"enabled"`
+}
+
+// SetBypassCSPWithParams - Enable page Content Security Policy by-passing.
+func (c *Page) SetBypassCSPWithParams(v *PageSetBypassCSPParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setBypassCSP", Params: v})
+}
+
+// SetBypassCSP - Enable page Content Security Policy by-passing.
+// enabled - Whether to bypass page CSP.
+func (c *Page) SetBypassCSP(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetBypassCSPParams
+	v.Enabled = enabled
+	return c.SetBypassCSPWithParams(&v)
 }
 
 type PageSetDeviceMetricsOverrideParams struct {

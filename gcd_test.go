@@ -202,9 +202,10 @@ func TestEvaluate(t *testing.T) {
 		returnByValue := false
 		generatePreview := true
 		userGestures := true
-		rro, exception, err := target.Runtime.Evaluate(scriptSource, objectGroup, includeCommandLineAPI, silent, contextId, returnByValue, generatePreview, userGestures, awaitPromise)
+		evalParams := &gcdapi.RuntimeEvaluateParams{Expression: scriptSource, ObjectGroup: objectGroup, IncludeCommandLineAPI: includeCommandLineAPI, Silent: silent, ContextId: contextId, ReturnByValue: returnByValue, GeneratePreview: generatePreview, UserGesture: userGestures, AwaitPromise: awaitPromise}
+		rro, exception, err := target.Runtime.EvaluateWithParams(evalParams)
 		if err != nil {
-			t.Fatalf("error evaluating: %s %s\n", err, exception)
+			t.Fatalf("error evaluating: %s %#v\n", err, exception)
 		}
 
 		if val, ok := rro.Value.(string); ok {

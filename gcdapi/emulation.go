@@ -339,35 +339,36 @@ type EmulationSetVirtualTimePolicyParams struct {
 }
 
 // SetVirtualTimePolicyWithParams - Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.
-// Returns -  virtualTimeBase - Absolute timestamp at which virtual time was first enabled (milliseconds since epoch).
-func (c *Emulation) SetVirtualTimePolicyWithParams(v *EmulationSetVirtualTimePolicyParams) (float64, error) {
+// Returns -  virtualTimeBase - Absolute timestamp at which virtual time was first enabled (milliseconds since epoch). virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
+func (c *Emulation) SetVirtualTimePolicyWithParams(v *EmulationSetVirtualTimePolicyParams) (float64, float64, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setVirtualTimePolicy", Params: v})
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			VirtualTimeBase float64
+			VirtualTimeBase      float64
+			VirtualTimeTicksBase float64
 		}
 	}
 
 	if resp == nil {
-		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return chromeData.Result.VirtualTimeBase, nil
+	return chromeData.Result.VirtualTimeBase, chromeData.Result.VirtualTimeTicksBase, nil
 }
 
 // SetVirtualTimePolicy - Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.
@@ -375,8 +376,8 @@ func (c *Emulation) SetVirtualTimePolicyWithParams(v *EmulationSetVirtualTimePol
 // budget - If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
 // maxVirtualTimeTaskStarvationCount - If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
 // waitForNavigation - If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
-// Returns -  virtualTimeBase - Absolute timestamp at which virtual time was first enabled (milliseconds since epoch).
-func (c *Emulation) SetVirtualTimePolicy(policy string, budget float64, maxVirtualTimeTaskStarvationCount int, waitForNavigation bool) (float64, error) {
+// Returns -  virtualTimeBase - Absolute timestamp at which virtual time was first enabled (milliseconds since epoch). virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
+func (c *Emulation) SetVirtualTimePolicy(policy string, budget float64, maxVirtualTimeTaskStarvationCount int, waitForNavigation bool) (float64, float64, error) {
 	var v EmulationSetVirtualTimePolicyParams
 	v.Policy = policy
 	v.Budget = budget

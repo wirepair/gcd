@@ -147,6 +147,18 @@ type CSSPlatformFontUsage struct {
 	GlyphCount   float64 `json:"glyphCount"`   // Amount of glyphs that were rendered with this font.
 }
 
+// Properties of a web font: https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions
+type CSSFontFace struct {
+	FontFamily         string `json:"fontFamily"`         // The font-family.
+	FontStyle          string `json:"fontStyle"`          // The font-style.
+	FontVariant        string `json:"fontVariant"`        // The font-variant.
+	FontWeight         string `json:"fontWeight"`         // The font-weight.
+	FontStretch        string `json:"fontStretch"`        // The font-stretch.
+	UnicodeRange       string `json:"unicodeRange"`       // The unicode-range.
+	Src                string `json:"src"`                // The src.
+	PlatformFontFamily string `json:"platformFontFamily"` // The resolved platform font family
+}
+
 // CSS keyframes rule representation.
 type CSSCSSKeyframesRule struct {
 	AnimationName *CSSValue             `json:"animationName"` // Animation name.
@@ -166,6 +178,14 @@ type CSSStyleDeclarationEdit struct {
 	StyleSheetId string          `json:"styleSheetId"` // The css style sheet identifier.
 	Range        *CSSSourceRange `json:"range"`        // The range of the style text in the enclosing stylesheet.
 	Text         string          `json:"text"`         // New style text.
+}
+
+// Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded web font
+type CSSFontsUpdatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Font *CSSFontFace `json:"font,omitempty"` // The web font that has loaded.
+	} `json:"Params,omitempty"`
 }
 
 // Fired whenever an active document stylesheet is added.
@@ -655,7 +675,7 @@ type CSSGetStyleSheetTextParams struct {
 	StyleSheetId string `json:"styleSheetId"`
 }
 
-// GetStyleSheetTextWithParams - Returns the current textual content and the URL for a stylesheet.
+// GetStyleSheetTextWithParams - Returns the current textual content for a stylesheet.
 // Returns -  text - The stylesheet text.
 func (c *CSS) GetStyleSheetTextWithParams(v *CSSGetStyleSheetTextParams) (string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getStyleSheetText", Params: v})
@@ -687,7 +707,7 @@ func (c *CSS) GetStyleSheetTextWithParams(v *CSSGetStyleSheetTextParams) (string
 	return chromeData.Result.Text, nil
 }
 
-// GetStyleSheetText - Returns the current textual content and the URL for a stylesheet.
+// GetStyleSheetText - Returns the current textual content for a stylesheet.
 // styleSheetId -
 // Returns -  text - The stylesheet text.
 func (c *CSS) GetStyleSheetText(styleSheetId string) (string, error) {

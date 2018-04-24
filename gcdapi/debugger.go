@@ -745,6 +745,56 @@ func (c *Debugger) SetBreakpointByUrl(lineNumber int, url string, urlRegex strin
 	return c.SetBreakpointByUrlWithParams(&v)
 }
 
+type DebuggerSetBreakpointOnFunctionCallParams struct {
+	// Function object id.
+	ObjectId string `json:"objectId"`
+	// Expression to use as a breakpoint condition. When specified, debugger will stop on the breakpoint if this expression evaluates to true.
+	Condition string `json:"condition,omitempty"`
+}
+
+// SetBreakpointOnFunctionCallWithParams - Sets JavaScript breakpoint before each call to the given function. If another function was created from the same source as a given one, calling it will also trigger the breakpoint.
+// Returns -  breakpointId - Id of the created breakpoint for further reference.
+func (c *Debugger) SetBreakpointOnFunctionCallWithParams(v *DebuggerSetBreakpointOnFunctionCallParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointOnFunctionCall", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			BreakpointId string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.BreakpointId, nil
+}
+
+// SetBreakpointOnFunctionCall - Sets JavaScript breakpoint before each call to the given function. If another function was created from the same source as a given one, calling it will also trigger the breakpoint.
+// objectId - Function object id.
+// condition - Expression to use as a breakpoint condition. When specified, debugger will stop on the breakpoint if this expression evaluates to true.
+// Returns -  breakpointId - Id of the created breakpoint for further reference.
+func (c *Debugger) SetBreakpointOnFunctionCall(objectId string, condition string) (string, error) {
+	var v DebuggerSetBreakpointOnFunctionCallParams
+	v.ObjectId = objectId
+	v.Condition = condition
+	return c.SetBreakpointOnFunctionCallWithParams(&v)
+}
+
 type DebuggerSetBreakpointsActiveParams struct {
 	// New value for breakpoints active state.
 	Active bool `json:"active"`

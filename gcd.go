@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2017 isaac dawson
+Copyright (c) 2018 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ import (
 	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "1.2018.1.17.0"
+var GCDVERSION = "1.2018.4.24.0"
 
 // When we get an error reading the body from the debugger api endpoint
 type GcdBodyReadErr struct {

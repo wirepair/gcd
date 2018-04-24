@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2016 isaac dawson
+Copyright (c) 2018 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,6 @@ const CHROME_VERSION = "%s"`
 )
 
 var file string
-var channel string
 var update bool
 var templates *template.Template // for code generation
 var funcMap template.FuncMap     // helper funcs
@@ -69,7 +68,6 @@ var revisionInfo *RevisionInfo
 
 func init() {
 	flag.BoolVar(&update, "update", false, "download and merge js_protocol.json and browser_protocol.json into protocol.json")
-	flag.StringVar(&channel, "channel", "dev", "choose the channel for updating protocol file")
 	flag.StringVar(&file, "file", "protocol.json", "open remote debugger protocol file, if -update the filename to write to.")
 	funcMap := template.FuncMap{
 		"Title":    strings.Title,
@@ -87,7 +85,7 @@ func main() {
 	flag.Parse()
 
 	if update {
-		revisionInfo = getApiRevision(channel)
+		revisionInfo = getApiRevision()
 	}
 
 	protocolData := openFile()

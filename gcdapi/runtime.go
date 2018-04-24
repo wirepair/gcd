@@ -15,7 +15,7 @@ type RuntimeRemoteObject struct {
 	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only.
 	ClassName           string                `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
 	Value               interface{}           `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
-	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property. enum values: Infinity, NaN, -Infinity, -0
+	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property.
 	Description         string                `json:"description,omitempty"`         // String representation of the object.
 	ObjectId            string                `json:"objectId,omitempty"`            // Unique object identifier (for non-primitive values).
 	Preview             *RuntimeObjectPreview `json:"preview,omitempty"`             // Preview containing abbreviated property values. Specified for `object` type values only.
@@ -79,7 +79,7 @@ type RuntimeInternalPropertyDescriptor struct {
 // Represents function call argument. Either remote object id `objectId`, primitive `value`, unserializable primitive value or neither of (for undefined) them should be specified.
 type RuntimeCallArgument struct {
 	Value               interface{} `json:"value,omitempty"`               // Primitive value or serializable javascript object.
-	UnserializableValue string      `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified. enum values: Infinity, NaN, -Infinity, -0
+	UnserializableValue string      `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified.
 	ObjectId            string      `json:"objectId,omitempty"`            // Remote object handle.
 }
 
@@ -423,6 +423,10 @@ type RuntimeEvaluateParams struct {
 	UserGesture bool `json:"userGesture,omitempty"`
 	// Whether execution should `await` for resulting value and return once awaited promise is resolved.
 	AwaitPromise bool `json:"awaitPromise,omitempty"`
+	// Whether to throw an exception if side effect cannot be ruled out during evaluation.
+	ThrowOnSideEffect bool `json:"throwOnSideEffect,omitempty"`
+	// Terminate execution after timing out (number of milliseconds).
+	Timeout float64 `json:"timeout,omitempty"`
 }
 
 // EvaluateWithParams - Evaluates expression on global object.
@@ -468,8 +472,10 @@ func (c *Runtime) EvaluateWithParams(v *RuntimeEvaluateParams) (*RuntimeRemoteOb
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
 // awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
+// throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation.
+// timeout - Terminate execution after timing out (number of milliseconds).
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
 	v.Expression = expression
 	v.ObjectGroup = objectGroup
@@ -480,7 +486,74 @@ func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommand
 	v.GeneratePreview = generatePreview
 	v.UserGesture = userGesture
 	v.AwaitPromise = awaitPromise
+	v.ThrowOnSideEffect = throwOnSideEffect
+	v.Timeout = timeout
 	return c.EvaluateWithParams(&v)
+}
+
+// GetIsolateId - Returns the isolate id.
+// Returns -  id - The isolate id.
+func (c *Runtime) GetIsolateId() (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getIsolateId"})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Id string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.Id, nil
+}
+
+// GetHeapUsage - Returns the JavaScript heap usage. It is the total usage of the corresponding isolate not scoped to a particular Runtime.
+// Returns -  usedSize - Used heap size in bytes. totalSize - Allocated heap size in bytes.
+func (c *Runtime) GetHeapUsage() (float64, float64, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getHeapUsage"})
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			UsedSize  float64
+			TotalSize float64
+		}
+	}
+
+	if resp == nil {
+		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return 0, 0, err
+	}
+
+	return chromeData.Result.UsedSize, chromeData.Result.TotalSize, nil
 }
 
 type RuntimeGetPropertiesParams struct {
@@ -592,6 +665,8 @@ func (c *Runtime) GlobalLexicalScopeNames(executionContextId int) ([]string, err
 type RuntimeQueryObjectsParams struct {
 	// Identifier of the prototype to return objects for.
 	PrototypeObjectId string `json:"prototypeObjectId"`
+	// Symbolic group name that can be used to release the results.
+	ObjectGroup string `json:"objectGroup,omitempty"`
 }
 
 // QueryObjectsWithParams -
@@ -628,10 +703,12 @@ func (c *Runtime) QueryObjectsWithParams(v *RuntimeQueryObjectsParams) (*Runtime
 
 // QueryObjects -
 // prototypeObjectId - Identifier of the prototype to return objects for.
+// objectGroup - Symbolic group name that can be used to release the results.
 // Returns -  objects - Array with objects.
-func (c *Runtime) QueryObjects(prototypeObjectId string) (*RuntimeRemoteObject, error) {
+func (c *Runtime) QueryObjects(prototypeObjectId string, objectGroup string) (*RuntimeRemoteObject, error) {
 	var v RuntimeQueryObjectsParams
 	v.PrototypeObjectId = prototypeObjectId
+	v.ObjectGroup = objectGroup
 	return c.QueryObjectsWithParams(&v)
 }
 
@@ -767,4 +844,9 @@ func (c *Runtime) SetCustomObjectFormatterEnabled(enabled bool) (*gcdmessage.Chr
 	var v RuntimeSetCustomObjectFormatterEnabledParams
 	v.Enabled = enabled
 	return c.SetCustomObjectFormatterEnabledWithParams(&v)
+}
+
+// Terminate current or next JavaScript execution. Will cancel the termination when the outer-most script execution ends.
+func (c *Runtime) TerminateExecution() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.terminateExecution"})
 }

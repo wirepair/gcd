@@ -67,8 +67,12 @@ func NewAccessibility(target gcdmessage.ChromeTargeter) *Accessibility {
 }
 
 type AccessibilityGetPartialAXTreeParams struct {
-	// ID of node to get the partial accessibility tree for.
-	NodeId int `json:"nodeId"`
+	// Identifier of the node to get the partial accessibility tree for.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node to get the partial accessibility tree for.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper to get the partial accessibility tree for.
+	ObjectId string `json:"objectId,omitempty"`
 	// Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
 	FetchRelatives bool `json:"fetchRelatives,omitempty"`
 }
@@ -106,12 +110,16 @@ func (c *Accessibility) GetPartialAXTreeWithParams(v *AccessibilityGetPartialAXT
 }
 
 // GetPartialAXTree - Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
-// nodeId - ID of node to get the partial accessibility tree for.
+// nodeId - Identifier of the node to get the partial accessibility tree for.
+// backendNodeId - Identifier of the backend node to get the partial accessibility tree for.
+// objectId - JavaScript object id of the node wrapper to get the partial accessibility tree for.
 // fetchRelatives - Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
 // Returns -  nodes - The `Accessibility.AXNode` for this DOM node, if it exists, plus its ancestors, siblings and children, if requested.
-func (c *Accessibility) GetPartialAXTree(nodeId int, fetchRelatives bool) ([]*AccessibilityAXNode, error) {
+func (c *Accessibility) GetPartialAXTree(nodeId int, backendNodeId int, objectId string, fetchRelatives bool) ([]*AccessibilityAXNode, error) {
 	var v AccessibilityGetPartialAXTreeParams
 	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
 	v.FetchRelatives = fetchRelatives
 	return c.GetPartialAXTreeWithParams(&v)
 }

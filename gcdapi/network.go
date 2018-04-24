@@ -56,18 +56,19 @@ type NetworkSignedCertificateTimestamp struct {
 
 // Security details about a request.
 type NetworkSecurityDetails struct {
-	Protocol                       string                               `json:"protocol"`                       // Protocol name (e.g. "TLS 1.2" or "QUIC").
-	KeyExchange                    string                               `json:"keyExchange"`                    // Key Exchange used by the connection, or the empty string if not applicable.
-	KeyExchangeGroup               string                               `json:"keyExchangeGroup,omitempty"`     // (EC)DH group used by the connection, if applicable.
-	Cipher                         string                               `json:"cipher"`                         // Cipher name.
-	Mac                            string                               `json:"mac,omitempty"`                  // TLS MAC. Note that AEAD ciphers do not have separate MACs.
-	CertificateId                  int                                  `json:"certificateId"`                  // Certificate ID value.
-	SubjectName                    string                               `json:"subjectName"`                    // Certificate subject name.
-	SanList                        []string                             `json:"sanList"`                        // Subject Alternative Name (SAN) DNS names and IP addresses.
-	Issuer                         string                               `json:"issuer"`                         // Name of the issuing CA.
-	ValidFrom                      float64                              `json:"validFrom"`                      // Certificate valid from date.
-	ValidTo                        float64                              `json:"validTo"`                        // Certificate valid to (expiration) date
-	SignedCertificateTimestampList []*NetworkSignedCertificateTimestamp `json:"signedCertificateTimestampList"` // List of signed certificate timestamps (SCTs).
+	Protocol                          string                               `json:"protocol"`                          // Protocol name (e.g. "TLS 1.2" or "QUIC").
+	KeyExchange                       string                               `json:"keyExchange"`                       // Key Exchange used by the connection, or the empty string if not applicable.
+	KeyExchangeGroup                  string                               `json:"keyExchangeGroup,omitempty"`        // (EC)DH group used by the connection, if applicable.
+	Cipher                            string                               `json:"cipher"`                            // Cipher name.
+	Mac                               string                               `json:"mac,omitempty"`                     // TLS MAC. Note that AEAD ciphers do not have separate MACs.
+	CertificateId                     int                                  `json:"certificateId"`                     // Certificate ID value.
+	SubjectName                       string                               `json:"subjectName"`                       // Certificate subject name.
+	SanList                           []string                             `json:"sanList"`                           // Subject Alternative Name (SAN) DNS names and IP addresses.
+	Issuer                            string                               `json:"issuer"`                            // Name of the issuing CA.
+	ValidFrom                         float64                              `json:"validFrom"`                         // Certificate valid from date.
+	ValidTo                           float64                              `json:"validTo"`                           // Certificate valid to (expiration) date
+	SignedCertificateTimestampList    []*NetworkSignedCertificateTimestamp `json:"signedCertificateTimestampList"`    // List of signed certificate timestamps (SCTs).
+	CertificateTransparencyCompliance string                               `json:"certificateTransparencyCompliance"` // Whether the request complied with Certificate Transparency policy enum values: unknown, not-compliant, compliant
 }
 
 // HTTP response data.
@@ -266,6 +267,7 @@ type NetworkRequestWillBeSentEvent struct {
 		RedirectResponse *NetworkResponse  `json:"redirectResponse,omitempty"` // Redirect response data.
 		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
 		FrameId          string            `json:"frameId,omitempty"`          // Frame identifier.
+		HasUserGesture   bool              `json:"hasUserGesture,omitempty"`   // Whether the request is initiated by a user gesture. Defaults to false.
 	} `json:"Params,omitempty"`
 }
 
