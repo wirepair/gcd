@@ -39,7 +39,7 @@ func (c *IO) Close(handle string) (*gcdmessage.ChromeResponse, error) {
 type IOReadParams struct {
 	// Handle of the stream to read.
 	Handle string `json:"handle"`
-	// Seek to the specified offset before reading (if not specificed, proceed with offset following the last read).
+	// Seek to the specified offset before reading (if not specificed, proceed with offset following the last read). Some types of streams may only support sequential reads.
 	Offset int `json:"offset,omitempty"`
 	// Maximum number of bytes to read (left upon the agent discretion if not specified).
 	Size int `json:"size,omitempty"`
@@ -81,7 +81,7 @@ func (c *IO) ReadWithParams(v *IOReadParams) (bool, string, bool, error) {
 
 // Read - Read a chunk of the stream
 // handle - Handle of the stream to read.
-// offset - Seek to the specified offset before reading (if not specificed, proceed with offset following the last read).
+// offset - Seek to the specified offset before reading (if not specificed, proceed with offset following the last read). Some types of streams may only support sequential reads.
 // size - Maximum number of bytes to read (left upon the agent discretion if not specified).
 // Returns -  base64Encoded - Set if the data is base64-encoded data - Data that were read. eof - Set if the end-of-file condition occured while reading.
 func (c *IO) Read(handle string, offset int, size int) (bool, string, bool, error) {

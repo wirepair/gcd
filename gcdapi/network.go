@@ -119,7 +119,7 @@ type NetworkWebSocketFrame struct {
 // Information about the cached resource.
 type NetworkCachedResource struct {
 	Url      string           `json:"url"`                // Resource URL. This is the url of the original network request.
-	Type     string           `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+	Type     string           `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
 	Response *NetworkResponse `json:"response,omitempty"` // Cached response data.
 	BodySize float64          `json:"bodySize"`           // Cached response body size.
 }
@@ -128,7 +128,7 @@ type NetworkCachedResource struct {
 type NetworkInitiator struct {
 	Type       string             `json:"type"`                 // Type of this initiator.
 	Stack      *RuntimeStackTrace `json:"stack,omitempty"`      // Initiator JavaScript stack trace, set for Script only.
-	Url        string             `json:"url,omitempty"`        // Initiator URL, set for Parser type or for Script type (when script is importing module).
+	Url        string             `json:"url,omitempty"`        // Initiator URL, set for Parser type or for Script type (when script is importing module) or for SignedExchange type.
 	LineNumber float64            `json:"lineNumber,omitempty"` // Initiator line number, set for Parser type or for Script type (when script is importing module) (0-based).
 }
 
@@ -177,8 +177,45 @@ type NetworkAuthChallengeResponse struct {
 // Request pattern for interception.
 type NetworkRequestPattern struct {
 	UrlPattern        string `json:"urlPattern,omitempty"`        // Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to "*".
-	ResourceType      string `json:"resourceType,omitempty"`      // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+	ResourceType      string `json:"resourceType,omitempty"`      // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
 	InterceptionStage string `json:"interceptionStage,omitempty"` // Stage at wich to begin intercepting requests. Default is Request. enum values: Request, HeadersReceived
+}
+
+// Information about a signed exchange signature. https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#rfc.section.3.1
+type NetworkSignedExchangeSignature struct {
+	Label        string   `json:"label"`                  // Signed exchange signature label.
+	Signature    string   `json:"signature"`              // The hex string of signed exchange signature.
+	Integrity    string   `json:"integrity"`              // Signed exchange signature integrity.
+	CertUrl      string   `json:"certUrl,omitempty"`      // Signed exchange signature cert Url.
+	CertSha256   string   `json:"certSha256,omitempty"`   // The hex string of signed exchange signature cert sha256.
+	ValidityUrl  string   `json:"validityUrl"`            // Signed exchange signature validity Url.
+	Date         int      `json:"date"`                   // Signed exchange signature date.
+	Expires      int      `json:"expires"`                // Signed exchange signature expires.
+	Certificates []string `json:"certificates,omitempty"` // The encoded certificates.
+}
+
+// Information about a signed exchange header. https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cbor-representation
+type NetworkSignedExchangeHeader struct {
+	RequestUrl      string                            `json:"requestUrl"`      // Signed exchange request URL.
+	RequestMethod   string                            `json:"requestMethod"`   // Signed exchange request method.
+	ResponseCode    int                               `json:"responseCode"`    // Signed exchange response code.
+	ResponseHeaders map[string]interface{}            `json:"responseHeaders"` // Signed exchange response headers.
+	Signatures      []*NetworkSignedExchangeSignature `json:"signatures"`      // Signed exchange response signature.
+}
+
+// Information about a signed exchange response.
+type NetworkSignedExchangeError struct {
+	Message        string `json:"message"`                  // Error message.
+	SignatureIndex int    `json:"signatureIndex,omitempty"` // The index of the signature which caused the error.
+	ErrorField     string `json:"errorField,omitempty"`     // The field which caused the error. enum values: signatureSig, signatureIntegrity, signatureCertUrl, signatureCertSha256, signatureValidityUrl, signatureTimestamps
+}
+
+// Information about a signed exchange response.
+type NetworkSignedExchangeInfo struct {
+	OuterResponse   *NetworkResponse              `json:"outerResponse"`             // The outer response of signed HTTP exchange which was received from network.
+	Header          *NetworkSignedExchangeHeader  `json:"header,omitempty"`          // Information about the signed exchange header.
+	SecurityDetails *NetworkSecurityDetails       `json:"securityDetails,omitempty"` // Security details for the signed exchange header.
+	Errors          []*NetworkSignedExchangeError `json:"errors,omitempty"`          // Errors occurred while handling the signed exchagne.
 }
 
 // Fired when data chunk was received over the network.
@@ -210,10 +247,10 @@ type NetworkLoadingFailedEvent struct {
 	Params struct {
 		RequestId     string  `json:"requestId"`               // Request identifier.
 		Timestamp     float64 `json:"timestamp"`               // Timestamp.
-		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
 		ErrorText     string  `json:"errorText"`               // User friendly error message.
 		Canceled      bool    `json:"canceled,omitempty"`      // True if loading was canceled.
-		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: csp, mixed-content, origin, inspector, subresource-filter, other
+		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type
 	} `json:"Params,omitempty"`
 }
 
@@ -235,11 +272,12 @@ type NetworkRequestInterceptedEvent struct {
 		InterceptionId      string                 `json:"interceptionId"`                // Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
 		Request             *NetworkRequest        `json:"request"`                       //
 		FrameId             string                 `json:"frameId"`                       // The id of the frame that initiated the request.
-		ResourceType        string                 `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+		ResourceType        string                 `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
 		IsNavigationRequest bool                   `json:"isNavigationRequest"`           // Whether this is a navigation request, which can abort the navigation completely.
+		IsDownload          bool                   `json:"isDownload,omitempty"`          // Set if the request is a navigation that will result in a download. Only present after response is received from the server (i.e. HeadersReceived stage).
 		RedirectUrl         string                 `json:"redirectUrl,omitempty"`         // Redirect location, only sent if a redirect was intercepted.
 		AuthChallenge       *NetworkAuthChallenge  `json:"authChallenge,omitempty"`       // Details of the Authorization Challenge encountered. If this is set then continueInterceptedRequest must contain an authChallengeResponse.
-		ResponseErrorReason string                 `json:"responseErrorReason,omitempty"` // Response error if intercepted at response stage or if redirect occurred while intercepting request. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
+		ResponseErrorReason string                 `json:"responseErrorReason,omitempty"` // Response error if intercepted at response stage or if redirect occurred while intercepting request. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable, BlockedByClient, BlockedByResponse
 		ResponseStatusCode  int                    `json:"responseStatusCode,omitempty"`  // Response code if intercepted at response stage or if redirect occurred while intercepting request or auth retry occurred.
 		ResponseHeaders     map[string]interface{} `json:"responseHeaders,omitempty"`     // Response headers if intercepted at the response stage or if redirect occurred while intercepting request or auth retry occurred.
 	} `json:"Params,omitempty"`
@@ -265,7 +303,7 @@ type NetworkRequestWillBeSentEvent struct {
 		WallTime         float64           `json:"wallTime"`                   // Timestamp.
 		Initiator        *NetworkInitiator `json:"initiator"`                  // Request initiator.
 		RedirectResponse *NetworkResponse  `json:"redirectResponse,omitempty"` // Redirect response data.
-		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
 		FrameId          string            `json:"frameId,omitempty"`          // Frame identifier.
 		HasUserGesture   bool              `json:"hasUserGesture,omitempty"`   // Whether the request is initiated by a user gesture. Defaults to false.
 	} `json:"Params,omitempty"`
@@ -281,6 +319,15 @@ type NetworkResourceChangedPriorityEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+// Fired when a signed exchange was received over the network
+type NetworkSignedExchangeReceivedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		RequestId string                     `json:"requestId"` // Request identifier.
+		Info      *NetworkSignedExchangeInfo `json:"info"`      // Information about the signed exchange response.
+	} `json:"Params,omitempty"`
+}
+
 // Fired when HTTP response is available.
 type NetworkResponseReceivedEvent struct {
 	Method string `json:"method"`
@@ -288,7 +335,7 @@ type NetworkResponseReceivedEvent struct {
 		RequestId string           `json:"requestId"`         // Request identifier.
 		LoaderId  string           `json:"loaderId"`          // Loader identifier. Empty string if the request is fetched from worker.
 		Timestamp float64          `json:"timestamp"`         // Timestamp.
-		Type      string           `json:"type"`              // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+		Type      string           `json:"type"`              // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
 		Response  *NetworkResponse `json:"response"`          // Response data.
 		FrameId   string           `json:"frameId,omitempty"` // Frame identifier.
 	} `json:"Params,omitempty"`
@@ -482,7 +529,7 @@ func (c *Network) ClearBrowserCookies() (*gcdmessage.ChromeResponse, error) {
 type NetworkContinueInterceptedRequestParams struct {
 	//
 	InterceptionId string `json:"interceptionId"`
-	// If set this causes the request to fail with the given reason. Passing `Aborted` for requests marked with `isNavigationRequest` also cancels the navigation. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
+	// If set this causes the request to fail with the given reason. Passing `Aborted` for requests marked with `isNavigationRequest` also cancels the navigation. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable, BlockedByClient, BlockedByResponse
 	ErrorReason string `json:"errorReason,omitempty"`
 	// If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
 	RawResponse string `json:"rawResponse,omitempty"`
@@ -505,7 +552,7 @@ func (c *Network) ContinueInterceptedRequestWithParams(v *NetworkContinueInterce
 
 // ContinueInterceptedRequest - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId.
 // interceptionId -
-// errorReason - If set this causes the request to fail with the given reason. Passing `Aborted` for requests marked with `isNavigationRequest` also cancels the navigation. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable
+// errorReason - If set this causes the request to fail with the given reason. Passing `Aborted` for requests marked with `isNavigationRequest` also cancels the navigation. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable, BlockedByClient, BlockedByResponse
 // rawResponse - If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
 // url - If set the request url will be modified in a way that's not observable by page. Must not be set in response to an authChallenge.
 // method - If set this allows the request method to be overridden. Must not be set in response to an authChallenge.
@@ -884,6 +931,52 @@ func (c *Network) GetResponseBodyForInterception(interceptionId string) (string,
 	return c.GetResponseBodyForInterceptionWithParams(&v)
 }
 
+type NetworkTakeResponseBodyForInterceptionAsStreamParams struct {
+	//
+	InterceptionId string `json:"interceptionId"`
+}
+
+// TakeResponseBodyForInterceptionAsStreamWithParams - Returns a handle to the stream representing the response body. Note that after this command, the intercepted request can't be continued as is -- you either need to cancel it or to provide the response body. The stream only supports sequential read, IO.read will fail if the position is specified.
+// Returns -  stream -
+func (c *Network) TakeResponseBodyForInterceptionAsStreamWithParams(v *NetworkTakeResponseBodyForInterceptionAsStreamParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.takeResponseBodyForInterceptionAsStream", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Stream string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.Stream, nil
+}
+
+// TakeResponseBodyForInterceptionAsStream - Returns a handle to the stream representing the response body. Note that after this command, the intercepted request can't be continued as is -- you either need to cancel it or to provide the response body. The stream only supports sequential read, IO.read will fail if the position is specified.
+// interceptionId -
+// Returns -  stream -
+func (c *Network) TakeResponseBodyForInterceptionAsStream(interceptionId string) (string, error) {
+	var v NetworkTakeResponseBodyForInterceptionAsStreamParams
+	v.InterceptionId = interceptionId
+	return c.TakeResponseBodyForInterceptionAsStreamWithParams(&v)
+}
+
 type NetworkReplayXHRParams struct {
 	// Identifier of XHR to replay.
 	RequestId string `json:"requestId"`
@@ -1171,6 +1264,10 @@ func (c *Network) SetRequestInterception(patterns []*NetworkRequestPattern) (*gc
 type NetworkSetUserAgentOverrideParams struct {
 	// User agent to use.
 	UserAgent string `json:"userAgent"`
+	// Browser langugage to emulate.
+	AcceptLanguage string `json:"acceptLanguage,omitempty"`
+	// The platform navigator.platform should return.
+	Platform string `json:"platform,omitempty"`
 }
 
 // SetUserAgentOverrideWithParams - Allows overriding user agent with the given string.
@@ -1180,8 +1277,12 @@ func (c *Network) SetUserAgentOverrideWithParams(v *NetworkSetUserAgentOverrideP
 
 // SetUserAgentOverride - Allows overriding user agent with the given string.
 // userAgent - User agent to use.
-func (c *Network) SetUserAgentOverride(userAgent string) (*gcdmessage.ChromeResponse, error) {
+// acceptLanguage - Browser langugage to emulate.
+// platform - The platform navigator.platform should return.
+func (c *Network) SetUserAgentOverride(userAgent string, acceptLanguage string, platform string) (*gcdmessage.ChromeResponse, error) {
 	var v NetworkSetUserAgentOverrideParams
 	v.UserAgent = userAgent
+	v.AcceptLanguage = acceptLanguage
+	v.Platform = platform
 	return c.SetUserAgentOverrideWithParams(&v)
 }

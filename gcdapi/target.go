@@ -11,12 +11,13 @@ import (
 
 // No Description.
 type TargetTargetInfo struct {
-	TargetId string `json:"targetId"`           //
-	Type     string `json:"type"`               //
-	Title    string `json:"title"`              //
-	Url      string `json:"url"`                //
-	Attached bool   `json:"attached"`           // Whether the target has an attached client.
-	OpenerId string `json:"openerId,omitempty"` // Opener target Id
+	TargetId         string `json:"targetId"`                   //
+	Type             string `json:"type"`                       //
+	Title            string `json:"title"`                      //
+	Url              string `json:"url"`                        //
+	Attached         bool   `json:"attached"`                   // Whether the target has an attached client.
+	OpenerId         string `json:"openerId,omitempty"`         // Opener target Id
+	BrowserContextId string `json:"browserContextId,omitempty"` //
 }
 
 // No Description.
@@ -67,6 +68,16 @@ type TargetTargetDestroyedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		TargetId string `json:"targetId"` //
+	} `json:"Params,omitempty"`
+}
+
+// Issued when a target has crashed.
+type TargetTargetCrashedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		TargetId  string `json:"targetId"`  //
+		Status    string `json:"status"`    // Termination status type.
+		ErrorCode int    `json:"errorCode"` // Termination error code.
 	} `json:"Params,omitempty"`
 }
 
@@ -229,6 +240,38 @@ func (c *Target) CreateBrowserContext() (string, error) {
 	return chromeData.Result.BrowserContextId, nil
 }
 
+// GetBrowserContexts - Returns all browser contexts created with `Target.createBrowserContext` method.
+// Returns -  browserContextIds - An array of browser context ids.
+func (c *Target) GetBrowserContexts() ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getBrowserContexts"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			BrowserContextIds []string
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.BrowserContextIds, nil
+}
+
 type TargetCreateTargetParams struct {
 	// The initial URL the page will be navigated to.
 	Url string `json:"url"`
@@ -236,7 +279,7 @@ type TargetCreateTargetParams struct {
 	Width int `json:"width,omitempty"`
 	// Frame height in DIP (headless chrome only).
 	Height int `json:"height,omitempty"`
-	// The browser context to create the page in (headless chrome only).
+	// The browser context to create the page in.
 	BrowserContextId string `json:"browserContextId,omitempty"`
 	// Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
 	EnableBeginFrameControl bool `json:"enableBeginFrameControl,omitempty"`
@@ -278,7 +321,7 @@ func (c *Target) CreateTargetWithParams(v *TargetCreateTargetParams) (string, er
 // url - The initial URL the page will be navigated to.
 // width - Frame width in DIP (headless chrome only).
 // height - Frame height in DIP (headless chrome only).
-// browserContextId - The browser context to create the page in (headless chrome only).
+// browserContextId - The browser context to create the page in.
 // enableBeginFrameControl - Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
 // Returns -  targetId - The id of the page opened.
 func (c *Target) CreateTarget(url string, width int, height int, browserContextId string, enableBeginFrameControl bool) (string, error) {
@@ -318,42 +361,14 @@ type TargetDisposeBrowserContextParams struct {
 	BrowserContextId string `json:"browserContextId"`
 }
 
-// DisposeBrowserContextWithParams - Deletes a BrowserContext, will fail of any open page uses it.
-// Returns -  success -
-func (c *Target) DisposeBrowserContextWithParams(v *TargetDisposeBrowserContextParams) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.disposeBrowserContext", Params: v})
-	if err != nil {
-		return false, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Success bool
-		}
-	}
-
-	if resp == nil {
-		return false, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return false, err
-	}
-
-	return chromeData.Result.Success, nil
+// DisposeBrowserContextWithParams - Deletes a BrowserContext. All the belonging pages will be closed without calling their beforeunload hooks.
+func (c *Target) DisposeBrowserContextWithParams(v *TargetDisposeBrowserContextParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.disposeBrowserContext", Params: v})
 }
 
-// DisposeBrowserContext - Deletes a BrowserContext, will fail of any open page uses it.
+// DisposeBrowserContext - Deletes a BrowserContext. All the belonging pages will be closed without calling their beforeunload hooks.
 // browserContextId -
-// Returns -  success -
-func (c *Target) DisposeBrowserContext(browserContextId string) (bool, error) {
+func (c *Target) DisposeBrowserContext(browserContextId string) (*gcdmessage.ChromeResponse, error) {
 	var v TargetDisposeBrowserContextParams
 	v.BrowserContextId = browserContextId
 	return c.DisposeBrowserContextWithParams(&v)

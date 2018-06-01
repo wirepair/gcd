@@ -185,6 +185,24 @@ func (c *Emulation) SetDeviceMetricsOverride(width int, height int, deviceScaleF
 	return c.SetDeviceMetricsOverrideWithParams(&v)
 }
 
+type EmulationSetScrollbarsHiddenParams struct {
+	// Whether scrollbars should be always hidden.
+	Hidden bool `json:"hidden"`
+}
+
+// SetScrollbarsHiddenWithParams -
+func (c *Emulation) SetScrollbarsHiddenWithParams(v *EmulationSetScrollbarsHiddenParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setScrollbarsHidden", Params: v})
+}
+
+// SetScrollbarsHidden -
+// hidden - Whether scrollbars should be always hidden.
+func (c *Emulation) SetScrollbarsHidden(hidden bool) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetScrollbarsHiddenParams
+	v.Hidden = hidden
+	return c.SetScrollbarsHiddenWithParams(&v)
+}
+
 type EmulationSetEmitTouchEventsForMouseParams struct {
 	// Whether touch emulation based on mouse input should be enabled.
 	Enabled bool `json:"enabled"`
@@ -336,39 +354,40 @@ type EmulationSetVirtualTimePolicyParams struct {
 	MaxVirtualTimeTaskStarvationCount int `json:"maxVirtualTimeTaskStarvationCount,omitempty"`
 	// If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
 	WaitForNavigation bool `json:"waitForNavigation,omitempty"`
+	// If set, base::Time::Now will be overriden to initially return this value.
+	InitialVirtualTime float64 `json:"initialVirtualTime,omitempty"`
 }
 
 // SetVirtualTimePolicyWithParams - Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.
-// Returns -  virtualTimeBase - Absolute timestamp at which virtual time was first enabled (milliseconds since epoch). virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
-func (c *Emulation) SetVirtualTimePolicyWithParams(v *EmulationSetVirtualTimePolicyParams) (float64, float64, error) {
+// Returns -  virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
+func (c *Emulation) SetVirtualTimePolicyWithParams(v *EmulationSetVirtualTimePolicyParams) (float64, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setVirtualTimePolicy", Params: v})
 	if err != nil {
-		return 0, 0, err
+		return 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			VirtualTimeBase      float64
 			VirtualTimeTicksBase float64
 		}
 	}
 
 	if resp == nil {
-		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, 0, err
+		return 0, err
 	}
 
-	return chromeData.Result.VirtualTimeBase, chromeData.Result.VirtualTimeTicksBase, nil
+	return chromeData.Result.VirtualTimeTicksBase, nil
 }
 
 // SetVirtualTimePolicy - Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.
@@ -376,13 +395,15 @@ func (c *Emulation) SetVirtualTimePolicyWithParams(v *EmulationSetVirtualTimePol
 // budget - If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
 // maxVirtualTimeTaskStarvationCount - If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
 // waitForNavigation - If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
-// Returns -  virtualTimeBase - Absolute timestamp at which virtual time was first enabled (milliseconds since epoch). virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
-func (c *Emulation) SetVirtualTimePolicy(policy string, budget float64, maxVirtualTimeTaskStarvationCount int, waitForNavigation bool) (float64, float64, error) {
+// initialVirtualTime - If set, base::Time::Now will be overriden to initially return this value.
+// Returns -  virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
+func (c *Emulation) SetVirtualTimePolicy(policy string, budget float64, maxVirtualTimeTaskStarvationCount int, waitForNavigation bool, initialVirtualTime float64) (float64, error) {
 	var v EmulationSetVirtualTimePolicyParams
 	v.Policy = policy
 	v.Budget = budget
 	v.MaxVirtualTimeTaskStarvationCount = maxVirtualTimeTaskStarvationCount
 	v.WaitForNavigation = waitForNavigation
+	v.InitialVirtualTime = initialVirtualTime
 	return c.SetVirtualTimePolicyWithParams(&v)
 }
 
@@ -406,4 +427,30 @@ func (c *Emulation) SetVisibleSize(width int, height int) (*gcdmessage.ChromeRes
 	v.Width = width
 	v.Height = height
 	return c.SetVisibleSizeWithParams(&v)
+}
+
+type EmulationSetUserAgentOverrideParams struct {
+	// User agent to use.
+	UserAgent string `json:"userAgent"`
+	// Browser langugage to emulate.
+	AcceptLanguage string `json:"acceptLanguage,omitempty"`
+	// The platform navigator.platform should return.
+	Platform string `json:"platform,omitempty"`
+}
+
+// SetUserAgentOverrideWithParams - Allows overriding user agent with the given string.
+func (c *Emulation) SetUserAgentOverrideWithParams(v *EmulationSetUserAgentOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setUserAgentOverride", Params: v})
+}
+
+// SetUserAgentOverride - Allows overriding user agent with the given string.
+// userAgent - User agent to use.
+// acceptLanguage - Browser langugage to emulate.
+// platform - The platform navigator.platform should return.
+func (c *Emulation) SetUserAgentOverride(userAgent string, acceptLanguage string, platform string) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetUserAgentOverrideParams
+	v.UserAgent = userAgent
+	v.AcceptLanguage = acceptLanguage
+	v.Platform = platform
+	return c.SetUserAgentOverrideWithParams(&v)
 }

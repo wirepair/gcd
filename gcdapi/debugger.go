@@ -208,6 +208,8 @@ type DebuggerEvaluateOnCallFrameParams struct {
 	GeneratePreview bool `json:"generatePreview,omitempty"`
 	// Whether to throw an exception if side effect cannot be ruled out during evaluation.
 	ThrowOnSideEffect bool `json:"throwOnSideEffect,omitempty"`
+	// Terminate execution after timing out (number of milliseconds).
+	Timeout float64 `json:"timeout,omitempty"`
 }
 
 // EvaluateOnCallFrameWithParams - Evaluates expression on a given call frame.
@@ -252,8 +254,9 @@ func (c *Debugger) EvaluateOnCallFrameWithParams(v *DebuggerEvaluateOnCallFrameP
 // returnByValue - Whether the result is expected to be a JSON object that should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
 // throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation.
+// timeout - Terminate execution after timing out (number of milliseconds).
 // Returns -  result - Object wrapper for the evaluation result. exceptionDetails - Exception details.
-func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, returnByValue bool, generatePreview bool, throwOnSideEffect bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, returnByValue bool, generatePreview bool, throwOnSideEffect bool, timeout float64) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v DebuggerEvaluateOnCallFrameParams
 	v.CallFrameId = callFrameId
 	v.Expression = expression
@@ -263,6 +266,7 @@ func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, ob
 	v.ReturnByValue = returnByValue
 	v.GeneratePreview = generatePreview
 	v.ThrowOnSideEffect = throwOnSideEffect
+	v.Timeout = timeout
 	return c.EvaluateOnCallFrameWithParams(&v)
 }
 

@@ -38,6 +38,7 @@ type DOMSnapshotDOMNode struct {
 	IsClickable           bool                        `json:"isClickable,omitempty"`           // Whether this DOM node responds to mouse clicks. This includes nodes that have had click event listeners attached via JavaScript as well as anchor tags that naturally navigate when clicked.
 	EventListeners        []*DOMDebuggerEventListener `json:"eventListeners,omitempty"`        // Details of the node's event listeners, if any.
 	CurrentSourceURL      string                      `json:"currentSourceURL,omitempty"`      // The selected url for nodes with a srcset attribute.
+	OriginURL             string                      `json:"originURL,omitempty"`             // The url of the script (if any) that generates this node.
 }
 
 // Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.
@@ -75,6 +76,16 @@ type DOMSnapshot struct {
 func NewDOMSnapshot(target gcdmessage.ChromeTargeter) *DOMSnapshot {
 	c := &DOMSnapshot{target: target}
 	return c
+}
+
+// Disables DOM snapshot agent for the given page.
+func (c *DOMSnapshot) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.disable"})
+}
+
+// Enables DOM snapshot agent for the given page.
+func (c *DOMSnapshot) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.enable"})
 }
 
 type DOMSnapshotGetSnapshotParams struct {

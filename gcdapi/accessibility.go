@@ -31,7 +31,7 @@ type AccessibilityAXRelatedNode struct {
 
 // No Description.
 type AccessibilityAXProperty struct {
-	Name  string                `json:"name"`  // The name of this property. enum values: busy, disabled, hidden, hiddenRoot, invalid, keyshortcuts, roledescription, live, atomic, relevant, root, autocomplete, haspopup, level, multiselectable, orientation, multiline, readonly, required, valuemin, valuemax, valuetext, checked, expanded, modal, pressed, selected, activedescendant, controls, describedby, details, errormessage, flowto, labelledby, owns
+	Name  string                `json:"name"`  // The name of this property. enum values: busy, disabled, hidden, hiddenRoot, invalid, keyshortcuts, roledescription, live, atomic, relevant, root, autocomplete, hasPopup, level, multiselectable, orientation, multiline, readonly, required, valuemin, valuemax, valuetext, checked, expanded, modal, pressed, selected, activedescendant, controls, describedby, details, errormessage, flowto, labelledby, owns
 	Value *AccessibilityAXValue `json:"value"` // The value of this property.
 }
 

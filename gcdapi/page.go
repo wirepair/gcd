@@ -24,7 +24,7 @@ type PageFrame struct {
 // Information about the Resource on the page.
 type PageFrameResource struct {
 	Url          string  `json:"url"`                    // Resource URL.
-	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, Other
+	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
 	MimeType     string  `json:"mimeType"`               // Resource mimeType as determined by the browser.
 	LastModified float64 `json:"lastModified,omitempty"` // last-modified timestamp as reported by server.
 	ContentSize  float64 `json:"contentSize,omitempty"`  // Resource content size.
@@ -1382,6 +1382,29 @@ func (c *Page) StopLoading() (*gcdmessage.ChromeResponse, error) {
 // Crashes renderer on the IO thread, generates minidumps.
 func (c *Page) Crash() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.crash"})
+}
+
+// Tries to close page, running its beforeunload hooks, if any.
+func (c *Page) Close() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.close"})
+}
+
+type PageSetWebLifecycleStateParams struct {
+	// Target lifecycle state
+	State string `json:"state"`
+}
+
+// SetWebLifecycleStateWithParams - Tries to update the web lifecycle state of the page. It will transition the page to the given state according to: https://github.com/WICG/web-lifecycle/
+func (c *Page) SetWebLifecycleStateWithParams(v *PageSetWebLifecycleStateParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setWebLifecycleState", Params: v})
+}
+
+// SetWebLifecycleState - Tries to update the web lifecycle state of the page. It will transition the page to the given state according to: https://github.com/WICG/web-lifecycle/
+// state - Target lifecycle state
+func (c *Page) SetWebLifecycleState(state string) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetWebLifecycleStateParams
+	v.State = state
+	return c.SetWebLifecycleStateWithParams(&v)
 }
 
 // Stops sending each frame in the `screencastFrame`.
