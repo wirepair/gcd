@@ -119,6 +119,8 @@ func (c *Target) ActivateTarget(targetId string) (*gcdmessage.ChromeResponse, er
 type TargetAttachToTargetParams struct {
 	//
 	TargetId string `json:"targetId"`
+	// Enables "flat" access to the session via specifying sessionId attribute in the commands.
+	Flatten bool `json:"flatten,omitempty"`
 }
 
 // AttachToTargetWithParams - Attaches to the target with given id.
@@ -155,11 +157,45 @@ func (c *Target) AttachToTargetWithParams(v *TargetAttachToTargetParams) (string
 
 // AttachToTarget - Attaches to the target with given id.
 // targetId -
+// flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands.
 // Returns -  sessionId - Id assigned to the session.
-func (c *Target) AttachToTarget(targetId string) (string, error) {
+func (c *Target) AttachToTarget(targetId string, flatten bool) (string, error) {
 	var v TargetAttachToTargetParams
 	v.TargetId = targetId
+	v.Flatten = flatten
 	return c.AttachToTargetWithParams(&v)
+}
+
+// AttachToBrowserTarget - Attaches to the browser target, only uses flat sessionId mode.
+// Returns -  sessionId - Id assigned to the session.
+func (c *Target) AttachToBrowserTarget() (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.attachToBrowserTarget"})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			SessionId string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.SessionId, nil
 }
 
 type TargetCloseTargetParams struct {
@@ -206,6 +242,28 @@ func (c *Target) CloseTarget(targetId string) (bool, error) {
 	var v TargetCloseTargetParams
 	v.TargetId = targetId
 	return c.CloseTargetWithParams(&v)
+}
+
+type TargetExposeDevToolsProtocolParams struct {
+	//
+	TargetId string `json:"targetId"`
+	// Binding name, 'cdp' if not specified.
+	BindingName string `json:"bindingName,omitempty"`
+}
+
+// ExposeDevToolsProtocolWithParams - Inject object to the target's main frame that provides a communication channel with browser target.  Injected object will be available as `window[bindingName]`.  The object has the follwing API: - `binding.send(json)` - a method to send messages over the remote debugging protocol - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
+func (c *Target) ExposeDevToolsProtocolWithParams(v *TargetExposeDevToolsProtocolParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.exposeDevToolsProtocol", Params: v})
+}
+
+// ExposeDevToolsProtocol - Inject object to the target's main frame that provides a communication channel with browser target.  Injected object will be available as `window[bindingName]`.  The object has the follwing API: - `binding.send(json)` - a method to send messages over the remote debugging protocol - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
+// targetId -
+// bindingName - Binding name, 'cdp' if not specified.
+func (c *Target) ExposeDevToolsProtocol(targetId string, bindingName string) (*gcdmessage.ChromeResponse, error) {
+	var v TargetExposeDevToolsProtocolParams
+	v.TargetId = targetId
+	v.BindingName = bindingName
+	return c.ExposeDevToolsProtocolWithParams(&v)
 }
 
 // CreateBrowserContext - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
@@ -376,7 +434,7 @@ func (c *Target) DisposeBrowserContext(browserContextId string) (*gcdmessage.Chr
 
 type TargetGetTargetInfoParams struct {
 	//
-	TargetId string `json:"targetId"`
+	TargetId string `json:"targetId,omitempty"`
 }
 
 // GetTargetInfoWithParams - Returns information about a target.
@@ -483,6 +541,8 @@ type TargetSetAutoAttachParams struct {
 	AutoAttach bool `json:"autoAttach"`
 	// Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
 	WaitForDebuggerOnStart bool `json:"waitForDebuggerOnStart"`
+	// Enables "flat" access to the session via specifying sessionId attribute in the commands.
+	Flatten bool `json:"flatten,omitempty"`
 }
 
 // SetAutoAttachWithParams - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
@@ -493,10 +553,12 @@ func (c *Target) SetAutoAttachWithParams(v *TargetSetAutoAttachParams) (*gcdmess
 // SetAutoAttach - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
 // autoAttach - Whether to auto-attach to related targets.
 // waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
-func (c *Target) SetAutoAttach(autoAttach bool, waitForDebuggerOnStart bool) (*gcdmessage.ChromeResponse, error) {
+// flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands.
+func (c *Target) SetAutoAttach(autoAttach bool, waitForDebuggerOnStart bool, flatten bool) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSetAutoAttachParams
 	v.AutoAttach = autoAttach
 	v.WaitForDebuggerOnStart = waitForDebuggerOnStart
+	v.Flatten = flatten
 	return c.SetAutoAttachWithParams(&v)
 }
 

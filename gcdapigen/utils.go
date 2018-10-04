@@ -75,6 +75,7 @@ func PopulateReferences(domain string, types []*ProtoType) {
 			arrType := protoType.GetArrayType()
 			ref.IsArrayRef = true
 			ref.ExternalGoName = domain + arrType
+			ref.RefToRefName = domain + "." + arrType
 		}
 
 		if len(protoType.Enum) > 0 {

@@ -98,6 +98,24 @@ func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float6
 	return c.DispatchKeyEventWithParams(&v)
 }
 
+type InputInsertTextParams struct {
+	// The text to insert.
+	Text string `json:"text"`
+}
+
+// InsertTextWithParams - This method emulates inserting text that doesn't come from a key press, for example an emoji keyboard or an IME.
+func (c *Input) InsertTextWithParams(v *InputInsertTextParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.insertText", Params: v})
+}
+
+// InsertText - This method emulates inserting text that doesn't come from a key press, for example an emoji keyboard or an IME.
+// text - The text to insert.
+func (c *Input) InsertText(text string) (*gcdmessage.ChromeResponse, error) {
+	var v InputInsertTextParams
+	v.Text = text
+	return c.InsertTextWithParams(&v)
+}
+
 type InputDispatchMouseEventParams struct {
 	// Type of the mouse event.
 	TheType string `json:"type"`

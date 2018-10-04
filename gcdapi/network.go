@@ -31,7 +31,8 @@ type NetworkResourceTiming struct {
 
 // HTTP request data.
 type NetworkRequest struct {
-	Url              string                 `json:"url"`                        // Request URL.
+	Url              string                 `json:"url"`                        // Request URL (without fragment).
+	UrlFragment      string                 `json:"urlFragment,omitempty"`      // Fragment of the requested URL starting with hash, if present.
 	Method           string                 `json:"method"`                     // HTTP request method.
 	Headers          map[string]interface{} `json:"headers"`                    // HTTP request headers.
 	PostData         string                 `json:"postData,omitempty"`         // HTTP POST request data.
@@ -119,7 +120,7 @@ type NetworkWebSocketFrame struct {
 // Information about the cached resource.
 type NetworkCachedResource struct {
 	Url      string           `json:"url"`                // Resource URL. This is the url of the original network request.
-	Type     string           `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
+	Type     string           `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 	Response *NetworkResponse `json:"response,omitempty"` // Cached response data.
 	BodySize float64          `json:"bodySize"`           // Cached response body size.
 }
@@ -177,7 +178,7 @@ type NetworkAuthChallengeResponse struct {
 // Request pattern for interception.
 type NetworkRequestPattern struct {
 	UrlPattern        string `json:"urlPattern,omitempty"`        // Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to "*".
-	ResourceType      string `json:"resourceType,omitempty"`      // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
+	ResourceType      string `json:"resourceType,omitempty"`      // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 	InterceptionStage string `json:"interceptionStage,omitempty"` // Stage at wich to begin intercepting requests. Default is Request. enum values: Request, HeadersReceived
 }
 
@@ -247,10 +248,10 @@ type NetworkLoadingFailedEvent struct {
 	Params struct {
 		RequestId     string  `json:"requestId"`               // Request identifier.
 		Timestamp     float64 `json:"timestamp"`               // Timestamp.
-		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
+		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 		ErrorText     string  `json:"errorText"`               // User friendly error message.
 		Canceled      bool    `json:"canceled,omitempty"`      // True if loading was canceled.
-		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type
+		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type, collapsed-by-client
 	} `json:"Params,omitempty"`
 }
 
@@ -261,7 +262,7 @@ type NetworkLoadingFinishedEvent struct {
 		RequestId                string  `json:"requestId"`                          // Request identifier.
 		Timestamp                float64 `json:"timestamp"`                          // Timestamp.
 		EncodedDataLength        float64 `json:"encodedDataLength"`                  // Total number of bytes received for this request.
-		BlockedCrossSiteDocument bool    `json:"blockedCrossSiteDocument,omitempty"` // Set when response was blocked due to being cross-site document response.
+		ShouldReportCorbBlocking bool    `json:"shouldReportCorbBlocking,omitempty"` // Set when 1) response was blocked by Cross-Origin Read Blocking and also 2) this needs to be reported to the DevTools console.
 	} `json:"Params,omitempty"`
 }
 
@@ -272,7 +273,7 @@ type NetworkRequestInterceptedEvent struct {
 		InterceptionId      string                 `json:"interceptionId"`                // Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
 		Request             *NetworkRequest        `json:"request"`                       //
 		FrameId             string                 `json:"frameId"`                       // The id of the frame that initiated the request.
-		ResourceType        string                 `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
+		ResourceType        string                 `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 		IsNavigationRequest bool                   `json:"isNavigationRequest"`           // Whether this is a navigation request, which can abort the navigation completely.
 		IsDownload          bool                   `json:"isDownload,omitempty"`          // Set if the request is a navigation that will result in a download. Only present after response is received from the server (i.e. HeadersReceived stage).
 		RedirectUrl         string                 `json:"redirectUrl,omitempty"`         // Redirect location, only sent if a redirect was intercepted.
@@ -303,7 +304,7 @@ type NetworkRequestWillBeSentEvent struct {
 		WallTime         float64           `json:"wallTime"`                   // Timestamp.
 		Initiator        *NetworkInitiator `json:"initiator"`                  // Request initiator.
 		RedirectResponse *NetworkResponse  `json:"redirectResponse,omitempty"` // Redirect response data.
-		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
+		Type             string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 		FrameId          string            `json:"frameId,omitempty"`          // Frame identifier.
 		HasUserGesture   bool              `json:"hasUserGesture,omitempty"`   // Whether the request is initiated by a user gesture. Defaults to false.
 	} `json:"Params,omitempty"`
@@ -335,7 +336,7 @@ type NetworkResponseReceivedEvent struct {
 		RequestId string           `json:"requestId"`         // Request identifier.
 		LoaderId  string           `json:"loaderId"`          // Loader identifier. Empty string if the request is fetched from worker.
 		Timestamp float64          `json:"timestamp"`         // Timestamp.
-		Type      string           `json:"type"`              // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
+		Type      string           `json:"type"`              // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 		Response  *NetworkResponse `json:"response"`          // Response data.
 		FrameId   string           `json:"frameId,omitempty"` // Frame identifier.
 	} `json:"Params,omitempty"`

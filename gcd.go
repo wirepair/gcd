@@ -37,7 +37,7 @@ import (
 	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "1.2018.6.1.0"
+var GCDVERSION = "v1.0.0"
 
 // When we get an error reading the body from the debugger api endpoint
 type GcdBodyReadErr struct {

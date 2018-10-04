@@ -525,6 +525,60 @@ func (c *DOM) GetBoxModel(nodeId int, backendNodeId int, objectId string) (*DOMB
 	return c.GetBoxModelWithParams(&v)
 }
 
+type DOMGetContentQuadsParams struct {
+	// Identifier of the node.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId,omitempty"`
+}
+
+// GetContentQuadsWithParams - Returns quads that describe node position on the page. This method might return multiple quads for inline nodes.
+// Returns -  quads - Quads that describe node layout relative to viewport.
+func (c *DOM) GetContentQuadsWithParams(v *DOMGetContentQuadsParams) ([]float64, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getContentQuads", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Quads []float64
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Quads, nil
+}
+
+// GetContentQuads - Returns quads that describe node position on the page. This method might return multiple quads for inline nodes.
+// nodeId - Identifier of the node.
+// backendNodeId - Identifier of the backend node.
+// objectId - JavaScript object id of the node wrapper.
+// Returns -  quads - Quads that describe node layout relative to viewport.
+func (c *DOM) GetContentQuads(nodeId int, backendNodeId int, objectId string) ([]float64, error) {
+	var v DOMGetContentQuadsParams
+	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
+	return c.GetContentQuadsWithParams(&v)
+}
+
 type DOMGetDocumentParams struct {
 	// The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
 	Depth int `json:"depth,omitempty"`
@@ -634,44 +688,45 @@ type DOMGetNodeForLocationParams struct {
 	IncludeUserAgentShadowDOM bool `json:"includeUserAgentShadowDOM,omitempty"`
 }
 
-// GetNodeForLocationWithParams - Returns node id at given location.
-// Returns -  nodeId - Id of the node at given coordinates.
-func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int, error) {
+// GetNodeForLocationWithParams - Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is either returned or not.
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
+func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int, int, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: v})
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			NodeId int
+			BackendNodeId int
+			NodeId        int
 		}
 	}
 
 	if resp == nil {
-		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return chromeData.Result.NodeId, nil
+	return chromeData.Result.BackendNodeId, chromeData.Result.NodeId, nil
 }
 
-// GetNodeForLocation - Returns node id at given location.
+// GetNodeForLocation - Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is either returned or not.
 // x - X coordinate.
 // y - Y coordinate.
 // includeUserAgentShadowDOM - False to skip to the nearest non-UA shadow root ancestor (default: false).
-// Returns -  nodeId - Id of the node at given coordinates.
-func (c *DOM) GetNodeForLocation(x int, y int, includeUserAgentShadowDOM bool) (int, error) {
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
+func (c *DOM) GetNodeForLocation(x int, y int, includeUserAgentShadowDOM bool) (int, int, error) {
 	var v DOMGetNodeForLocationParams
 	v.X = x
 	v.Y = y

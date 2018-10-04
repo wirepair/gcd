@@ -87,6 +87,24 @@ func (c *Emulation) ResetPageScaleFactor() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetPageScaleFactor"})
 }
 
+type EmulationSetFocusEmulationEnabledParams struct {
+	// Whether to enable to disable focus emulation.
+	Enabled bool `json:"enabled"`
+}
+
+// SetFocusEmulationEnabledWithParams - Enables or disables simulating a focused and active page.
+func (c *Emulation) SetFocusEmulationEnabledWithParams(v *EmulationSetFocusEmulationEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setFocusEmulationEnabled", Params: v})
+}
+
+// SetFocusEmulationEnabled - Enables or disables simulating a focused and active page.
+// enabled - Whether to enable to disable focus emulation.
+func (c *Emulation) SetFocusEmulationEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetFocusEmulationEnabledParams
+	v.Enabled = enabled
+	return c.SetFocusEmulationEnabledWithParams(&v)
+}
+
 type EmulationSetCPUThrottlingRateParams struct {
 	// Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc).
 	Rate float64 `json:"rate"`
@@ -201,6 +219,24 @@ func (c *Emulation) SetScrollbarsHidden(hidden bool) (*gcdmessage.ChromeResponse
 	var v EmulationSetScrollbarsHiddenParams
 	v.Hidden = hidden
 	return c.SetScrollbarsHiddenWithParams(&v)
+}
+
+type EmulationSetDocumentCookieDisabledParams struct {
+	// Whether document.coookie API should be disabled.
+	Disabled bool `json:"disabled"`
+}
+
+// SetDocumentCookieDisabledWithParams -
+func (c *Emulation) SetDocumentCookieDisabledWithParams(v *EmulationSetDocumentCookieDisabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDocumentCookieDisabled", Params: v})
+}
+
+// SetDocumentCookieDisabled -
+// disabled - Whether document.coookie API should be disabled.
+func (c *Emulation) SetDocumentCookieDisabled(disabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetDocumentCookieDisabledParams
+	v.Disabled = disabled
+	return c.SetDocumentCookieDisabledWithParams(&v)
 }
 
 type EmulationSetEmitTouchEventsForMouseParams struct {

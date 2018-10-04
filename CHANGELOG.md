@@ -1,4 +1,5 @@
 # Changelog (2018)
+- October 4th: Updated to latest gcd / protocol.json filee for 69.0.3497.100 for stable branch. Fixed bug in gcdapigen when resolving references to references to base types.
 - June 1st: Updated to latest gcd / protocol.json file for 67.0.3396.62 for *stable* branch.
 - April 24th: Updated to latest gcd / protocol.json file for 66.0.3359.117 for *stable* branch. Please note there was a change to protocol files again, more details: https://github.com/wirepair/gcd/issues/21.
 - Feburary 22nd: Updated to latest gcd / protocol.json file for 66.0.3346.8. Added dep init/dep ensure to repository for package management.

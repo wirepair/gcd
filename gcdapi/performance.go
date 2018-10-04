@@ -43,6 +43,24 @@ func (c *Performance) Enable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.enable"})
 }
 
+type PerformanceSetTimeDomainParams struct {
+	// Time domain
+	TimeDomain string `json:"timeDomain"`
+}
+
+// SetTimeDomainWithParams - Sets time domain to use for collecting and reporting duration metrics. Note that this must be called before enabling metrics collection. Calling this method while metrics collection is enabled returns an error.
+func (c *Performance) SetTimeDomainWithParams(v *PerformanceSetTimeDomainParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.setTimeDomain", Params: v})
+}
+
+// SetTimeDomain - Sets time domain to use for collecting and reporting duration metrics. Note that this must be called before enabling metrics collection. Calling this method while metrics collection is enabled returns an error.
+// timeDomain - Time domain
+func (c *Performance) SetTimeDomain(timeDomain string) (*gcdmessage.ChromeResponse, error) {
+	var v PerformanceSetTimeDomainParams
+	v.TimeDomain = timeDomain
+	return c.SetTimeDomainWithParams(&v)
+}
+
 // GetMetrics - Retrieve current values of run-time metrics.
 // Returns -  metrics - Current values for run-time metrics.
 func (c *Performance) GetMetrics() ([]*PerformanceMetric, error) {

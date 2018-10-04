@@ -42,6 +42,7 @@ type GlobalReference struct {
 	BaseType        string // what is it
 	EnumDescription string // is it an enum, if so keep metadata of enum values
 	IsArrayRef      bool   // is this a reference to another type that is of an array type
+	RefToRefName    string // reference to another reference
 }
 
 // Stores a list of all references and if they are base types

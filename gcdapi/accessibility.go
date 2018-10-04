@@ -123,3 +123,35 @@ func (c *Accessibility) GetPartialAXTree(nodeId int, backendNodeId int, objectId
 	v.FetchRelatives = fetchRelatives
 	return c.GetPartialAXTreeWithParams(&v)
 }
+
+// GetFullAXTree - Fetches the entire accessibility tree
+// Returns -  nodes -
+func (c *Accessibility) GetFullAXTree() ([]*AccessibilityAXNode, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getFullAXTree"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Nodes []*AccessibilityAXNode
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Nodes, nil
+}

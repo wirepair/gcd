@@ -240,7 +240,15 @@ func (d *Domain) resolveReference(prop PropSetter) bool {
 	if ref.IsBaseType {
 		prop.SetGoType(ref.BaseType)
 	} else {
-		prop.SetGoType(ref.ExternalGoName)
+		// we can have this type, reference another type, which is just a base type
+		// so just set that here.
+		if ref2ref, ok := globalRefs[ref.RefToRefName]; ok {
+			if ref2ref.IsBaseType {
+				prop.SetGoType(ref2ref.BaseType)
+			}
+		} else {
+			prop.SetGoType(ref.ExternalGoName)
+		}
 		prop.SetIsRef(true)
 	}
 	// set the type as being an array of whatever type it references

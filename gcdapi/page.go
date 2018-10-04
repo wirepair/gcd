@@ -24,7 +24,7 @@ type PageFrame struct {
 // Information about the Resource on the page.
 type PageFrameResource struct {
 	Url          string  `json:"url"`                    // Resource URL.
-	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Other
+	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 	MimeType     string  `json:"mimeType"`               // Resource mimeType as determined by the browser.
 	LastModified float64 `json:"lastModified,omitempty"` // last-modified timestamp as reported by server.
 	ContentSize  float64 `json:"contentSize,omitempty"`  // Resource content size.
@@ -51,7 +51,7 @@ type PageNavigationEntry struct {
 	Url            string `json:"url"`            // URL of the navigation history entry.
 	UserTypedURL   string `json:"userTypedURL"`   // URL that the user typed in the url bar.
 	Title          string `json:"title"`          // Title of the navigation history entry.
-	TransitionType string `json:"transitionType"` // Transition type. enum values: link, typed, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
+	TransitionType string `json:"transitionType"` // Transition type. enum values: link, typed, address_bar, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 }
 
 // Screencast frame metadata.
@@ -99,6 +99,23 @@ type PageViewport struct {
 	Width  float64 `json:"width"`  // Rectangle width in CSS pixels
 	Height float64 `json:"height"` // Rectangle height in CSS pixels
 	Scale  float64 `json:"scale"`  // Page scale factor.
+}
+
+// Generic font families collection.
+type PageFontFamilies struct {
+	Standard   string `json:"standard,omitempty"`   // The standard font-family.
+	Fixed      string `json:"fixed,omitempty"`      // The fixed font-family.
+	Serif      string `json:"serif,omitempty"`      // The serif font-family.
+	SansSerif  string `json:"sansSerif,omitempty"`  // The sansSerif font-family.
+	Cursive    string `json:"cursive,omitempty"`    // The cursive font-family.
+	Fantasy    string `json:"fantasy,omitempty"`    // The fantasy font-family.
+	Pictograph string `json:"pictograph,omitempty"` // The pictograph font-family.
+}
+
+// Default font sizes.
+type PageFontSizes struct {
+	Standard int `json:"standard,omitempty"` // Default standard font size.
+	Fixed    int `json:"fixed,omitempty"`    // Default fixed font size.
 }
 
 //
@@ -248,6 +265,15 @@ type PageWindowOpenEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+// Issued for every compilation cache generated. Is only available if Page.setGenerateCompilationCache is enabled.
+type PageCompilationCacheProducedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Url  string `json:"url"`  //
+		Data string `json:"data"` // Base64-encoded data
+	} `json:"Params,omitempty"`
+}
+
 type Page struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -306,6 +332,8 @@ func (c *Page) AddScriptToEvaluateOnLoad(scriptSource string) (string, error) {
 type PageAddScriptToEvaluateOnNewDocumentParams struct {
 	//
 	Source string `json:"source"`
+	// If specified, creates an isolated world with the given name and evaluates given script in it. This world name will be used as the ExecutionContextDescription::name when the corresponding event is emitted.
+	WorldName string `json:"worldName,omitempty"`
 }
 
 // AddScriptToEvaluateOnNewDocumentWithParams - Evaluates given script in every frame upon creation (before loading frame's scripts).
@@ -342,10 +370,12 @@ func (c *Page) AddScriptToEvaluateOnNewDocumentWithParams(v *PageAddScriptToEval
 
 // AddScriptToEvaluateOnNewDocument - Evaluates given script in every frame upon creation (before loading frame's scripts).
 // source -
+// worldName - If specified, creates an isolated world with the given name and evaluates given script in it. This world name will be used as the ExecutionContextDescription::name when the corresponding event is emitted.
 // Returns -  identifier - Identifier of the added script.
-func (c *Page) AddScriptToEvaluateOnNewDocument(source string) (string, error) {
+func (c *Page) AddScriptToEvaluateOnNewDocument(source string, worldName string) (string, error) {
 	var v PageAddScriptToEvaluateOnNewDocumentParams
 	v.Source = source
+	v.WorldName = worldName
 	return c.AddScriptToEvaluateOnNewDocumentWithParams(&v)
 }
 
@@ -788,7 +818,7 @@ type PageNavigateParams struct {
 	Url string `json:"url"`
 	// Referrer URL.
 	Referrer string `json:"referrer,omitempty"`
-	// Intended transition type. enum values: link, typed, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
+	// Intended transition type. enum values: link, typed, address_bar, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 	TransitionType string `json:"transitionType,omitempty"`
 	// Frame id to navigate, if not specified navigates the top frame.
 	FrameId string `json:"frameId,omitempty"`
@@ -831,7 +861,7 @@ func (c *Page) NavigateWithParams(v *PageNavigateParams) (string, string, string
 // Navigate - Navigates current page to the given URL.
 // url - URL to navigate the page to.
 // referrer - Referrer URL.
-// transitionType - Intended transition type. enum values: link, typed, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
+// transitionType - Intended transition type. enum values: link, typed, address_bar, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 // frameId - Frame id to navigate, if not specified navigates the top frame.
 // Returns -  frameId - Frame id that has navigated (or failed to navigate) loaderId - Loader identifier. errorText - User friendly error message, present if and only if navigation has failed.
 func (c *Page) Navigate(url string, referrer string, transitionType string, frameId string) (string, string, string, error) {
@@ -1230,6 +1260,42 @@ func (c *Page) SetDeviceOrientationOverride(alpha float64, beta float64, gamma f
 	return c.SetDeviceOrientationOverrideWithParams(&v)
 }
 
+type PageSetFontFamiliesParams struct {
+	// Specifies font families to set. If a font family is not specified, it won't be changed.
+	FontFamilies *PageFontFamilies `json:"fontFamilies"`
+}
+
+// SetFontFamiliesWithParams - Set generic font families.
+func (c *Page) SetFontFamiliesWithParams(v *PageSetFontFamiliesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setFontFamilies", Params: v})
+}
+
+// SetFontFamilies - Set generic font families.
+// fontFamilies - Specifies font families to set. If a font family is not specified, it won't be changed.
+func (c *Page) SetFontFamilies(fontFamilies *PageFontFamilies) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetFontFamiliesParams
+	v.FontFamilies = fontFamilies
+	return c.SetFontFamiliesWithParams(&v)
+}
+
+type PageSetFontSizesParams struct {
+	// Specifies font sizes to set. If a font size is not specified, it won't be changed.
+	FontSizes *PageFontSizes `json:"fontSizes"`
+}
+
+// SetFontSizesWithParams - Set default font sizes.
+func (c *Page) SetFontSizesWithParams(v *PageSetFontSizesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setFontSizes", Params: v})
+}
+
+// SetFontSizes - Set default font sizes.
+// fontSizes - Specifies font sizes to set. If a font size is not specified, it won't be changed.
+func (c *Page) SetFontSizes(fontSizes *PageFontSizes) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetFontSizesParams
+	v.FontSizes = fontSizes
+	return c.SetFontSizesWithParams(&v)
+}
+
 type PageSetDocumentContentParams struct {
 	// Frame id to set HTML for.
 	FrameId string `json:"frameId"`
@@ -1410,4 +1476,71 @@ func (c *Page) SetWebLifecycleState(state string) (*gcdmessage.ChromeResponse, e
 // Stops sending each frame in the `screencastFrame`.
 func (c *Page) StopScreencast() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.stopScreencast"})
+}
+
+type PageSetProduceCompilationCacheParams struct {
+	//
+	Enabled bool `json:"enabled"`
+}
+
+// SetProduceCompilationCacheWithParams - Forces compilation cache to be generated for every subresource script.
+func (c *Page) SetProduceCompilationCacheWithParams(v *PageSetProduceCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setProduceCompilationCache", Params: v})
+}
+
+// SetProduceCompilationCache - Forces compilation cache to be generated for every subresource script.
+// enabled -
+func (c *Page) SetProduceCompilationCache(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetProduceCompilationCacheParams
+	v.Enabled = enabled
+	return c.SetProduceCompilationCacheWithParams(&v)
+}
+
+type PageAddCompilationCacheParams struct {
+	//
+	Url string `json:"url"`
+	// Base64-encoded data
+	Data string `json:"data"`
+}
+
+// AddCompilationCacheWithParams - Seeds compilation cache for given url. Compilation cache does not survive cross-process navigation.
+func (c *Page) AddCompilationCacheWithParams(v *PageAddCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.addCompilationCache", Params: v})
+}
+
+// AddCompilationCache - Seeds compilation cache for given url. Compilation cache does not survive cross-process navigation.
+// url -
+// data - Base64-encoded data
+func (c *Page) AddCompilationCache(url string, data string) (*gcdmessage.ChromeResponse, error) {
+	var v PageAddCompilationCacheParams
+	v.Url = url
+	v.Data = data
+	return c.AddCompilationCacheWithParams(&v)
+}
+
+// Clears seeded compilation cache.
+func (c *Page) ClearCompilationCache() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearCompilationCache"})
+}
+
+type PageGenerateTestReportParams struct {
+	// Message to be displayed in the report.
+	Message string `json:"message"`
+	// Specifies the endpoint group to deliver the report to.
+	Group string `json:"group,omitempty"`
+}
+
+// GenerateTestReportWithParams - Generates a report for testing.
+func (c *Page) GenerateTestReportWithParams(v *PageGenerateTestReportParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.generateTestReport", Params: v})
+}
+
+// GenerateTestReport - Generates a report for testing.
+// message - Message to be displayed in the report.
+// group - Specifies the endpoint group to deliver the report to.
+func (c *Page) GenerateTestReport(message string, group string) (*gcdmessage.ChromeResponse, error) {
+	var v PageGenerateTestReportParams
+	v.Message = message
+	v.Group = group
+	return c.GenerateTestReportWithParams(&v)
 }

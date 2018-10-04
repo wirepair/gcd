@@ -127,6 +127,16 @@ type RuntimeStackTraceId struct {
 	DebuggerId string `json:"debuggerId,omitempty"` //
 }
 
+// Notification is issued every time when binding is called.
+type RuntimeBindingCalledEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Name               string `json:"name"`               //
+		Payload            string `json:"payload"`            //
+		ExecutionContextId int    `json:"executionContextId"` // Identifier of the context where the call was made.
+	} `json:"Params,omitempty"`
+}
+
 // Issued when console API was called.
 type RuntimeConsoleAPICalledEvent struct {
 	Method string `json:"method"`
@@ -828,6 +838,24 @@ func (c *Runtime) RunScript(scriptId string, executionContextId int, objectGroup
 	return c.RunScriptWithParams(&v)
 }
 
+type RuntimeSetAsyncCallStackDepthParams struct {
+	// Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async call stacks (default).
+	MaxDepth int `json:"maxDepth"`
+}
+
+// SetAsyncCallStackDepthWithParams - Enables or disables async call stacks tracking.
+func (c *Runtime) SetAsyncCallStackDepthWithParams(v *RuntimeSetAsyncCallStackDepthParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setAsyncCallStackDepth", Params: v})
+}
+
+// SetAsyncCallStackDepth - Enables or disables async call stacks tracking.
+// maxDepth - Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async call stacks (default).
+func (c *Runtime) SetAsyncCallStackDepth(maxDepth int) (*gcdmessage.ChromeResponse, error) {
+	var v RuntimeSetAsyncCallStackDepthParams
+	v.MaxDepth = maxDepth
+	return c.SetAsyncCallStackDepthWithParams(&v)
+}
+
 type RuntimeSetCustomObjectFormatterEnabledParams struct {
 	//
 	Enabled bool `json:"enabled"`
@@ -846,7 +874,65 @@ func (c *Runtime) SetCustomObjectFormatterEnabled(enabled bool) (*gcdmessage.Chr
 	return c.SetCustomObjectFormatterEnabledWithParams(&v)
 }
 
+type RuntimeSetMaxCallStackSizeToCaptureParams struct {
+	//
+	Size int `json:"size"`
+}
+
+// SetMaxCallStackSizeToCaptureWithParams -
+func (c *Runtime) SetMaxCallStackSizeToCaptureWithParams(v *RuntimeSetMaxCallStackSizeToCaptureParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setMaxCallStackSizeToCapture", Params: v})
+}
+
+// SetMaxCallStackSizeToCapture -
+// size -
+func (c *Runtime) SetMaxCallStackSizeToCapture(size int) (*gcdmessage.ChromeResponse, error) {
+	var v RuntimeSetMaxCallStackSizeToCaptureParams
+	v.Size = size
+	return c.SetMaxCallStackSizeToCaptureWithParams(&v)
+}
+
 // Terminate current or next JavaScript execution. Will cancel the termination when the outer-most script execution ends.
 func (c *Runtime) TerminateExecution() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.terminateExecution"})
+}
+
+type RuntimeAddBindingParams struct {
+	//
+	Name string `json:"name"`
+	//
+	ExecutionContextId int `json:"executionContextId,omitempty"`
+}
+
+// AddBindingWithParams - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. If executionContextId is specified, adds binding only on global object of given execution context. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
+func (c *Runtime) AddBindingWithParams(v *RuntimeAddBindingParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.addBinding", Params: v})
+}
+
+// AddBinding - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. If executionContextId is specified, adds binding only on global object of given execution context. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
+// name -
+// executionContextId -
+func (c *Runtime) AddBinding(name string, executionContextId int) (*gcdmessage.ChromeResponse, error) {
+	var v RuntimeAddBindingParams
+	v.Name = name
+	v.ExecutionContextId = executionContextId
+	return c.AddBindingWithParams(&v)
+}
+
+type RuntimeRemoveBindingParams struct {
+	//
+	Name string `json:"name"`
+}
+
+// RemoveBindingWithParams - This method does not remove binding function from global object but unsubscribes current runtime agent from Runtime.bindingCalled notifications.
+func (c *Runtime) RemoveBindingWithParams(v *RuntimeRemoveBindingParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.removeBinding", Params: v})
+}
+
+// RemoveBinding - This method does not remove binding function from global object but unsubscribes current runtime agent from Runtime.bindingCalled notifications.
+// name -
+func (c *Runtime) RemoveBinding(name string) (*gcdmessage.ChromeResponse, error) {
+	var v RuntimeRemoveBindingParams
+	v.Name = name
+	return c.RemoveBindingWithParams(&v)
 }
