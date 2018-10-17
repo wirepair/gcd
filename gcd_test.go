@@ -29,13 +29,13 @@ func init() {
 	switch runtime.GOOS {
 	case "windows":
 		flag.StringVar(&testPath, "chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "path to chrome")
-		flag.StringVar(&testDir, "dir", "C:\\temp\\", "user directory")
+		flag.StringVar(&testDir, "dir", "C:\\temp\\gcd\\", "user directory")
 	case "darwin":
 		flag.StringVar(&testPath, "chrome", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "path to chrome")
-		flag.StringVar(&testDir, "dir", "/tmp/", "user directory")
+		flag.StringVar(&testDir, "dir", "/tmp/gcd/", "user directory")
 	case "linux":
 		flag.StringVar(&testPath, "chrome", "/usr/bin/chromium-browser", "path to chrome")
-		flag.StringVar(&testDir, "dir", "/tmp/", "user directory")
+		flag.StringVar(&testDir, "dir", "/tmp/gcd/", "user directory")
 	}
 	flag.StringVar(&testPort, "port", "9222", "Debugger port")
 
@@ -47,7 +47,7 @@ func init() {
 func TestMain(m *testing.M) {
 	flag.Parse()
 	testServer()
-
+	os.MkdirAll(testDir, 0755)
 	ret := m.Run()
 	testCleanUp()
 	os.Exit(ret)
@@ -55,6 +55,22 @@ func TestMain(m *testing.M) {
 
 func testCleanUp() {
 	testListener.Close()
+	os.RemoveAll(testDir)
+}
+
+func TestDeleteProfileOnExit(t *testing.T) {
+	debugger := NewChromeDebugger()
+	debugger.DeleteProfileOnExit()
+
+	profileDir := testRandomTempDir(t)
+	err := debugger.StartProcess(testPath, profileDir, testRandomPort(t))
+	if err != nil {
+		t.Fatalf("error starting chrome")
+	}
+	debugger.ExitProcess()
+	if stat, err := os.Stat(profileDir); err == nil {
+		t.Fatalf("error temporary profileDir still exists: %s\n", stat.Name())
+	}
 }
 
 func TestGetPages(t *testing.T) {
@@ -439,6 +455,15 @@ func TestNetworkIntercept(t *testing.T) {
 	<-doneCh
 }
 
+func TestGetFirstTab(t *testing.T) {
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+	_, err := debugger.GetFirstTab()
+	if err != nil {
+		t.Fatalf("error getting first tab: %v\n", err)
+	}
+}
+
 // UTILITY FUNCTIONS
 func testExtensionStartup(t *testing.T) {
 	debugger = NewChromeDebugger()
@@ -456,6 +481,7 @@ func testExtensionStartup(t *testing.T) {
 
 func testDefaultStartup(t *testing.T) {
 	debugger = NewChromeDebugger()
+	debugger.DeleteProfileOnExit()
 	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
 }
 

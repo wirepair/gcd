@@ -26,6 +26,7 @@ package gcd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -37,7 +38,11 @@ import (
 	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "v1.0.0"
+var GCDVERSION = "v1.0.1"
+
+var (
+	ErrNoTabAvailable = errors.New("no available tab found")
+)
 
 // When we get an error reading the body from the debugger api endpoint
 type GcdBodyReadErr struct {
@@ -68,6 +73,8 @@ type Gcd struct {
 	port              string
 	host              string
 	addr              string
+	profileDir        string
+	deleteProfile     bool
 	readyCh           chan struct{}
 	apiEndpoint       string
 	flags             []string
@@ -92,19 +99,23 @@ func (c *Gcd) SetTerminationHandler(handler TerminatedHandler) {
 	c.terminatedHandler = handler
 }
 
-// Set the timeout for how long we should wait for debug port to become available.
+// SetTimeout for how long we should wait for debug port to become available.
 func (c *Gcd) SetTimeout(timeout time.Duration) {
 	c.timeout = timeout
 }
 
-// Allows caller to add additional startup flags to the chrome process
+// AddFlags Allows caller to add additional startup flags to the chrome process
 func (c *Gcd) AddFlags(flags []string) {
 	c.flags = append(c.flags, flags...)
 }
 
-// Add environment variables for the chrome process, useful for Xvfb etc.
+// AddEnvironmentVars for the chrome process, useful for Xvfb etc.
 func (c *Gcd) AddEnvironmentVars(vars []string) {
 	c.env = append(c.env, vars...)
+}
+
+func (c *Gcd) DeleteProfileOnExit() {
+	c.deleteProfile = true
 }
 
 // Starts the process
@@ -114,9 +125,10 @@ func (c *Gcd) AddEnvironmentVars(vars []string) {
 func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 	c.port = port
 	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
+	c.profileDir = userDir
 	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
 	// profile directory
-	c.flags = append(c.flags, fmt.Sprintf("--user-data-dir=%s", userDir))
+	c.flags = append(c.flags, fmt.Sprintf("--user-data-dir=%s", c.profileDir))
 	// debug port to use
 	c.flags = append(c.flags, fmt.Sprintf("--remote-debugging-port=%s", port))
 	// bypass first run check
@@ -128,13 +140,21 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 	// add custom environment variables.
 	c.chromeCmd.Env = os.Environ()
 	c.chromeCmd.Env = append(c.chromeCmd.Env, c.env...)
+
 	go func() {
 		err := c.chromeCmd.Start()
 		if err != nil {
-			log.Fatalf("error starting chrome process: %s", err)
+			msg := fmt.Sprintf("failed to start chrome: %s", err)
+			if c.terminatedHandler != nil {
+				c.terminatedHandler(msg)
+			} else {
+				log.Println(msg)
+			}
 		}
 		c.chromeProcess = c.chromeCmd.Process
 		err = c.chromeCmd.Wait()
+
+		c.removeProfileDir()
 
 		closeMessage := "exited"
 		if err != nil {
@@ -156,7 +176,20 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 
 // ExitProcess kills the process
 func (c *Gcd) ExitProcess() error {
-	return c.chromeProcess.Kill()
+	err := c.chromeProcess.Kill()
+	c.removeProfileDir()
+	return err
+}
+
+// removeProfileDir if deleteProfile is true
+func (c *Gcd) removeProfileDir() {
+	if c.deleteProfile {
+		// let chrome shutdown completely before deleting
+		time.Sleep(1 * time.Second)
+		if err := os.RemoveAll(c.profileDir); err != nil {
+			log.Printf("error deleting profile directory: %s\n", err)
+		}
+	}
 }
 
 // ConnectToInstance connects to a running chrome instance without starting a local process
@@ -188,6 +221,25 @@ func (c *Gcd) GetTargets() ([]*ChromeTarget, error) {
 // provided they weren't in the knownIds list. Note it is an error to attempt
 // to create a new chrome target from one that already exists.
 func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, error) {
+	connectableTargets, err := c.getConnectableTargets()
+	if err != nil {
+		return nil, err
+	}
+
+	chromeTargets := make([]*ChromeTarget, 0)
+	for _, v := range connectableTargets {
+		if _, ok := knownIds[v.Id]; !ok {
+			target, err := openChromeTarget(c.addr, v)
+			if err != nil {
+				return nil, err
+			}
+			chromeTargets = append(chromeTargets, target)
+		}
+	}
+	return chromeTargets, nil
+}
+
+func (c *Gcd) getConnectableTargets() ([]*TargetInfo, error) {
 	resp, err := http.Get(c.apiEndpoint)
 	if err != nil {
 		return nil, err
@@ -211,18 +263,7 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 			connectableTargets = append(connectableTargets, v)
 		}
 	}
-
-	chromeTargets := make([]*ChromeTarget, 0)
-	for _, v := range connectableTargets {
-		if _, ok := knownIds[v.Id]; !ok {
-			target, err := openChromeTarget(c.addr, v)
-			if err != nil {
-				return nil, err
-			}
-			chromeTargets = append(chromeTargets, target)
-		}
-	}
-	return chromeTargets, nil
+	return connectableTargets, nil
 }
 
 // NewTab a new empty tab, returns the chrome target.
@@ -244,6 +285,21 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
 	return openChromeTarget(c.addr, tabTarget)
+}
+
+// GetFirstTab returns the first tab created, to be called when
+// first started, otherwise you will get a random tab returned.
+func (c *Gcd) GetFirstTab() (*ChromeTarget, error) {
+	connectableTargets, err := c.getConnectableTargets()
+	if err != nil {
+		return nil, err
+	}
+	for _, tabTarget := range connectableTargets {
+		if tabTarget.Type == "page" {
+			return openChromeTarget(c.addr, tabTarget)
+		}
+	}
+	return nil, ErrNoTabAvailable
 }
 
 // GetRevision of chrome
