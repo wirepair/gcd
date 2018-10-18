@@ -45,7 +45,7 @@ func NewBrowser(target gcdmessage.ChromeTargeter) *Browser {
 type BrowserGrantPermissionsParams struct {
 	//
 	Origin string `json:"origin"`
-	//  enum values: accessibilityEvents, audioCapture, backgroundSync, clipboardRead, clipboardWrite, durableStorage, flash, geolocation, midi, midiSysex, notifications, paymentHandler, protectedMediaIdentifier, sensors, videoCapture
+	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardRead, clipboardWrite, durableStorage, flash, geolocation, midi, midiSysex, notifications, paymentHandler, protectedMediaIdentifier, sensors, videoCapture
 	Permissions []string `json:"permissions"`
 	// BrowserContext to override permissions. When omitted, default browser context is used.
 	BrowserContextId string `json:"browserContextId,omitempty"`
@@ -58,7 +58,7 @@ func (c *Browser) GrantPermissionsWithParams(v *BrowserGrantPermissionsParams) (
 
 // GrantPermissions - Grant specific permissions to the given origin and reject all others.
 // origin -
-// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, clipboardRead, clipboardWrite, durableStorage, flash, geolocation, midi, midiSysex, notifications, paymentHandler, protectedMediaIdentifier, sensors, videoCapture
+// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardRead, clipboardWrite, durableStorage, flash, geolocation, midi, midiSysex, notifications, paymentHandler, protectedMediaIdentifier, sensors, videoCapture
 // browserContextId - BrowserContext to override permissions. When omitted, default browser context is used.
 func (c *Browser) GrantPermissions(origin string, permissions []string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserGrantPermissionsParams

@@ -38,7 +38,7 @@ import (
 	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "v1.0.1"
+var GCDVERSION = "v1.0.2"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
