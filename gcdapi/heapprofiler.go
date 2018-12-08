@@ -13,12 +13,21 @@ import (
 type HeapProfilerSamplingHeapProfileNode struct {
 	CallFrame *RuntimeCallFrame                      `json:"callFrame"` // Function location.
 	SelfSize  float64                                `json:"selfSize"`  // Allocations size in bytes for the node excluding children.
+	Id        int                                    `json:"id"`        // Node id. Ids are unique across all profiles collected between startSampling and stopSampling.
 	Children  []*HeapProfilerSamplingHeapProfileNode `json:"children"`  // Child nodes.
 }
 
-// Profile.
+// A single sample from a sampling profile.
+type HeapProfilerSamplingHeapProfileSample struct {
+	Size    float64 `json:"size"`    // Allocation size in bytes attributed to the sample.
+	NodeId  int     `json:"nodeId"`  // Id of the corresponding profile tree node.
+	Ordinal float64 `json:"ordinal"` // Time-ordered sample ordinal number. It is unique across all profiles retrieved between startSampling and stopSampling.
+}
+
+// Sampling profile.
 type HeapProfilerSamplingHeapProfile struct {
-	Head *HeapProfilerSamplingHeapProfileNode `json:"head"` //
+	Head    *HeapProfilerSamplingHeapProfileNode     `json:"head"`    //
+	Samples []*HeapProfilerSamplingHeapProfileSample `json:"samples"` //
 }
 
 //

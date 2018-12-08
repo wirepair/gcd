@@ -110,11 +110,11 @@ type NetworkWebSocketResponse struct {
 	RequestHeadersText string                 `json:"requestHeadersText,omitempty"` // HTTP request headers text.
 }
 
-// WebSocket frame data.
+// WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
 type NetworkWebSocketFrame struct {
-	Opcode      float64 `json:"opcode"`      // WebSocket frame opcode.
-	Mask        bool    `json:"mask"`        // WebSocke frame mask.
-	PayloadData string  `json:"payloadData"` // WebSocke frame payload data.
+	Opcode      float64 `json:"opcode"`      // WebSocket message opcode.
+	Mask        bool    `json:"mask"`        // WebSocket message mask.
+	PayloadData string  `json:"payloadData"` // WebSocket message payload data.
 }
 
 // Information about the cached resource.
@@ -361,17 +361,17 @@ type NetworkWebSocketCreatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Fired when WebSocket frame error occurs.
+// Fired when WebSocket message error occurs.
 type NetworkWebSocketFrameErrorEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		RequestId    string  `json:"requestId"`    // Request identifier.
 		Timestamp    float64 `json:"timestamp"`    // Timestamp.
-		ErrorMessage string  `json:"errorMessage"` // WebSocket frame error message.
+		ErrorMessage string  `json:"errorMessage"` // WebSocket error message.
 	} `json:"Params,omitempty"`
 }
 
-// Fired when WebSocket frame is received.
+// Fired when WebSocket message is received.
 type NetworkWebSocketFrameReceivedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -381,7 +381,7 @@ type NetworkWebSocketFrameReceivedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Fired when WebSocket frame is sent.
+// Fired when WebSocket message is sent.
 type NetworkWebSocketFrameSentEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -845,7 +845,7 @@ type NetworkGetRequestPostDataParams struct {
 }
 
 // GetRequestPostDataWithParams - Returns post data sent with the request. Returns an error when no data was sent with the request.
-// Returns -  postData - Base64-encoded request body.
+// Returns -  postData - Request body string, omitting files from multipart requests
 func (c *Network) GetRequestPostDataWithParams(v *NetworkGetRequestPostDataParams) (string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getRequestPostData", Params: v})
 	if err != nil {
@@ -878,7 +878,7 @@ func (c *Network) GetRequestPostDataWithParams(v *NetworkGetRequestPostDataParam
 
 // GetRequestPostData - Returns post data sent with the request. Returns an error when no data was sent with the request.
 // requestId - Identifier of the network request to get content for.
-// Returns -  postData - Base64-encoded request body.
+// Returns -  postData - Request body string, omitting files from multipart requests
 func (c *Network) GetRequestPostData(requestId string) (string, error) {
 	var v NetworkGetRequestPostDataParams
 	v.RequestId = requestId

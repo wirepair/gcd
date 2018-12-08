@@ -442,6 +442,52 @@ func (c *Page) CaptureScreenshot(format string, quality int, clip *PageViewport,
 	return c.CaptureScreenshotWithParams(&v)
 }
 
+type PageCaptureSnapshotParams struct {
+	// Format (defaults to mhtml).
+	Format string `json:"format,omitempty"`
+}
+
+// CaptureSnapshotWithParams - Returns a snapshot of the page as a string. For MHTML format, the serialization includes iframes, shadow DOM, external resources, and element-inline styles.
+// Returns -  data - Serialized page data.
+func (c *Page) CaptureSnapshotWithParams(v *PageCaptureSnapshotParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.captureSnapshot", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Data string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.Data, nil
+}
+
+// CaptureSnapshot - Returns a snapshot of the page as a string. For MHTML format, the serialization includes iframes, shadow DOM, external resources, and element-inline styles.
+// format - Format (defaults to mhtml).
+// Returns -  data - Serialized page data.
+func (c *Page) CaptureSnapshot(format string) (string, error) {
+	var v PageCaptureSnapshotParams
+	v.Format = format
+	return c.CaptureSnapshotWithParams(&v)
+}
+
 // Clears the overriden device metrics.
 func (c *Page) ClearDeviceMetricsOverride() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearDeviceMetricsOverride"})

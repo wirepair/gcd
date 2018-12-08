@@ -25,6 +25,13 @@ type SystemInfoGPUInfo struct {
 	DriverBugWorkarounds []string               `json:"driverBugWorkarounds"`    // An optional array of GPU driver bug workarounds.
 }
 
+// Represents process info.
+type SystemInfoProcessInfo struct {
+	Type    string  `json:"type"`    // Specifies process type.
+	Id      int     `json:"id"`      // Specifies process id.
+	CpuTime float64 `json:"cpuTime"` // Specifies cumulative CPU usage in seconds across all threads of the process since the process start.
+}
+
 type SystemInfo struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -67,4 +74,36 @@ func (c *SystemInfo) GetInfo() (*SystemInfoGPUInfo, string, string, string, erro
 	}
 
 	return chromeData.Result.Gpu, chromeData.Result.ModelName, chromeData.Result.ModelVersion, chromeData.Result.CommandLine, nil
+}
+
+// GetProcessInfo - Returns information about all running processes.
+// Returns -  processInfo - An array of process info blocks.
+func (c *SystemInfo) GetProcessInfo() ([]*SystemInfoProcessInfo, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "SystemInfo.getProcessInfo"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ProcessInfo []*SystemInfoProcessInfo
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.ProcessInfo, nil
 }

@@ -1,4 +1,5 @@
 # Changelog (2018)
+- December 8th: Updated to latest gcd / protocol.json file for 71.0.3578.80
 - October 18th: Updated to latest gcd / protocol.json file for 70.0.3538.67.
 - October 17th: Added new helper features to Gcd, GetFirstTab()) and DeleteProfileOnExit()
 - October 4th: Updated to latest gcd / protocol.json file for 69.0.3497.100 for stable branch. Fixed bug in gcdapigen when resolving references to references to base types.

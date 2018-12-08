@@ -24,11 +24,8 @@ type RuntimeRemoteObject struct {
 
 // No Description.
 type RuntimeCustomPreview struct {
-	Header                     string `json:"header"`                     //
-	HasBody                    bool   `json:"hasBody"`                    //
-	FormatterObjectId          string `json:"formatterObjectId"`          //
-	BindRemoteObjectFunctionId string `json:"bindRemoteObjectFunctionId"` //
-	ConfigObjectId             string `json:"configObjectId,omitempty"`   //
+	Header       string `json:"header"`                 // The JSON-stringified result of formatter.header(object, config) call. It contains json ML array that represents RemoteObject.
+	BodyGetterId string `json:"bodyGetterId,omitempty"` // If formatter returns true as a result of formatter.hasBody call then bodyGetterId will contain RemoteObjectId for the function that returns result of formatter.body(object, config) call. The result value is json ML array.
 }
 
 // Object containing abbreviated remote object value.

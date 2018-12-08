@@ -10,12 +10,13 @@ import (
 
 // An explanation of an factor contributing to the security state.
 type SecuritySecurityStateExplanation struct {
-	SecurityState    string   `json:"securityState"`    // Security state representing the severity of the factor being explained. enum values: unknown, neutral, insecure, secure, info
-	Title            string   `json:"title"`            // Title describing the type of factor.
-	Summary          string   `json:"summary"`          // Short phrase describing the type of factor.
-	Description      string   `json:"description"`      // Full text explanation of the factor.
-	MixedContentType string   `json:"mixedContentType"` // The type of mixed content described by the explanation. enum values: blockable, optionally-blockable, none
-	Certificate      []string `json:"certificate"`      // Page certificate.
+	SecurityState    string   `json:"securityState"`             // Security state representing the severity of the factor being explained. enum values: unknown, neutral, insecure, secure, info
+	Title            string   `json:"title"`                     // Title describing the type of factor.
+	Summary          string   `json:"summary"`                   // Short phrase describing the type of factor.
+	Description      string   `json:"description"`               // Full text explanation of the factor.
+	MixedContentType string   `json:"mixedContentType"`          // The type of mixed content described by the explanation. enum values: blockable, optionally-blockable, none
+	Certificate      []string `json:"certificate"`               // Page certificate.
+	Recommendations  []string `json:"recommendations,omitempty"` // Recommendations to fix any issues.
 }
 
 // Information about insecure content on the page.

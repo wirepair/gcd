@@ -17,6 +17,7 @@ type CacheStorageDataEntry struct {
 	ResponseTime       float64               `json:"responseTime"`       // Number of seconds since epoch.
 	ResponseStatus     int                   `json:"responseStatus"`     // HTTP response status code.
 	ResponseStatusText string                `json:"responseStatusText"` // HTTP response status text.
+	ResponseType       string                `json:"responseType"`       // HTTP response type enum values: basic, cors, default, error, opaqueResponse, opaqueRedirect
 	ResponseHeaders    []*CacheStorageHeader `json:"responseHeaders"`    // Response headers
 }
 
@@ -134,7 +135,7 @@ func (c *CacheStorage) RequestCacheNames(securityOrigin string) ([]*CacheStorage
 }
 
 type CacheStorageRequestCachedResponseParams struct {
-	// Id of cache that contains the enty.
+	// Id of cache that contains the entry.
 	CacheId string `json:"cacheId"`
 	// URL spec of the request.
 	RequestURL string `json:"requestURL"`
@@ -173,7 +174,7 @@ func (c *CacheStorage) RequestCachedResponseWithParams(v *CacheStorageRequestCac
 }
 
 // RequestCachedResponse - Fetches cache entry.
-// cacheId - Id of cache that contains the enty.
+// cacheId - Id of cache that contains the entry.
 // requestURL - URL spec of the request.
 // Returns -  response - Response read from the cache.
 func (c *CacheStorage) RequestCachedResponse(cacheId string, requestURL string) (*CacheStorageCachedResponse, error) {
@@ -190,6 +191,8 @@ type CacheStorageRequestEntriesParams struct {
 	SkipCount int `json:"skipCount"`
 	// Number of records to fetch.
 	PageSize int `json:"pageSize"`
+	// If present, only return the entries containing this substring in the path
+	PathFilter string `json:"pathFilter,omitempty"`
 }
 
 // RequestEntriesWithParams - Requests data from cache.
@@ -229,11 +232,13 @@ func (c *CacheStorage) RequestEntriesWithParams(v *CacheStorageRequestEntriesPar
 // cacheId - ID of cache to get entries from.
 // skipCount - Number of records to skip.
 // pageSize - Number of records to fetch.
+// pathFilter - If present, only return the entries containing this substring in the path
 // Returns -  cacheDataEntries - Array of object store data entries. hasMore - If true, there are more entries to fetch in the given range.
-func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize int) ([]*CacheStorageDataEntry, bool, error) {
+func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize int, pathFilter string) ([]*CacheStorageDataEntry, bool, error) {
 	var v CacheStorageRequestEntriesParams
 	v.CacheId = cacheId
 	v.SkipCount = skipCount
 	v.PageSize = pageSize
+	v.PathFilter = pathFilter
 	return c.RequestEntriesWithParams(&v)
 }

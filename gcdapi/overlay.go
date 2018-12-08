@@ -352,6 +352,24 @@ func (c *Overlay) SetShowScrollBottleneckRects(show bool) (*gcdmessage.ChromeRes
 	return c.SetShowScrollBottleneckRectsWithParams(&v)
 }
 
+type OverlaySetShowHitTestBordersParams struct {
+	// True for showing hit-test borders
+	Show bool `json:"show"`
+}
+
+// SetShowHitTestBordersWithParams - Requests that backend shows hit-test borders on layers
+func (c *Overlay) SetShowHitTestBordersWithParams(v *OverlaySetShowHitTestBordersParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowHitTestBorders", Params: v})
+}
+
+// SetShowHitTestBorders - Requests that backend shows hit-test borders on layers
+// show - True for showing hit-test borders
+func (c *Overlay) SetShowHitTestBorders(show bool) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowHitTestBordersParams
+	v.Show = show
+	return c.SetShowHitTestBordersWithParams(&v)
+}
+
 type OverlaySetShowViewportSizeOnResizeParams struct {
 	// Whether to paint size or not.
 	Show bool `json:"show"`
