@@ -58,6 +58,8 @@ type TargetInfo struct {
 // Events are handled by mapping the method name to a function which takes a target and byte output.
 // For now, callers will need to unmarshall the types themselves.
 type ChromeTarget struct {
+	sendId      int64                    		       // An Id which is atomically incremented per request.
+							       // must be at top because of alignement and atomic usage 
 	replyLock       sync.RWMutex                           // lock for dispatching responses
 	replyDispatcher map[int64]chan *gcdmessage.Message     // Replies to synch methods using a non-buffered channel
 	eventLock       sync.RWMutex                           // lock for dispatching events
@@ -110,7 +112,6 @@ type ChromeTarget struct {
 	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
 	doneCh      chan struct{}            // we be donez.
 	apiTimeout  time.Duration            // A customizable timeout for waiting on Chrome to respond to us
-	sendId      int64                    // An Id which is atomically incremented per request.
 	debugEvents bool                     // flag for spitting out event data as a string which we have not subscribed to.
 	debug       bool                     // flag for printing internal debugging messages
 	stopped     bool                     // we are/have shutdown
