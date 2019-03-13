@@ -1,3 +1,6 @@
+# Changelog (2019)
+- March 13th: Updated to latest gcd / protocol.json file for 73.0.3683.75. Added ability custom start the process
+
 # Changelog (2018)
 - December 8th: Updated to latest gcd / protocol.json file for 71.0.3578.80
 - October 18th: Updated to latest gcd / protocol.json file for 70.0.3538.67.

@@ -73,6 +73,12 @@ type RuntimeInternalPropertyDescriptor struct {
 	Value *RuntimeRemoteObject `json:"value,omitempty"` // The value associated with the property.
 }
 
+// Object private field descriptor.
+type RuntimePrivatePropertyDescriptor struct {
+	Name  string               `json:"name"`  // Private property name.
+	Value *RuntimeRemoteObject `json:"value"` // The value associated with the private property.
+}
+
 // Represents function call argument. Either remote object id `objectId`, primitive `value`, unserializable primitive value or neither of (for undefined) them should be specified.
 type RuntimeCallArgument struct {
 	Value               interface{} `json:"value,omitempty"`               // Primitive value or serializable javascript object.
@@ -575,37 +581,38 @@ type RuntimeGetPropertiesParams struct {
 }
 
 // GetPropertiesWithParams - Returns properties of a given object. Object group of the result is inherited from the target object.
-// Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). exceptionDetails - Exception details.
-func (c *Runtime) GetPropertiesWithParams(v *RuntimeGetPropertiesParams) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, *RuntimeExceptionDetails, error) {
+// Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). privateProperties - Object private properties. exceptionDetails - Exception details.
+func (c *Runtime) GetPropertiesWithParams(v *RuntimeGetPropertiesParams) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getProperties", Params: v})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
 			Result             []*RuntimePropertyDescriptor
 			InternalProperties []*RuntimeInternalPropertyDescriptor
+			PrivateProperties  []*RuntimePrivatePropertyDescriptor
 			ExceptionDetails   *RuntimeExceptionDetails
 		}
 	}
 
 	if resp == nil {
-		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	return chromeData.Result.Result, chromeData.Result.InternalProperties, chromeData.Result.ExceptionDetails, nil
+	return chromeData.Result.Result, chromeData.Result.InternalProperties, chromeData.Result.PrivateProperties, chromeData.Result.ExceptionDetails, nil
 }
 
 // GetProperties - Returns properties of a given object. Object group of the result is inherited from the target object.
@@ -613,8 +620,8 @@ func (c *Runtime) GetPropertiesWithParams(v *RuntimeGetPropertiesParams) ([]*Run
 // ownProperties - If true, returns properties belonging only to the element itself, not to its prototype chain.
 // accessorPropertiesOnly - If true, returns accessor properties (with getter/setter) only; internal properties are not returned either.
 // generatePreview - Whether preview should be generated for the results.
-// Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). exceptionDetails - Exception details.
-func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, *RuntimeExceptionDetails, error) {
+// Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). privateProperties - Object private properties. exceptionDetails - Exception details.
+func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
 	var v RuntimeGetPropertiesParams
 	v.ObjectId = objectId
 	v.OwnProperties = ownProperties

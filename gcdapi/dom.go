@@ -689,7 +689,7 @@ type DOMGetNodeForLocationParams struct {
 }
 
 // GetNodeForLocationWithParams - Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is either returned or not.
-// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int, int, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: v})
 	if err != nil {
@@ -725,7 +725,7 @@ func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int,
 // x - X coordinate.
 // y - Y coordinate.
 // includeUserAgentShadowDOM - False to skip to the nearest non-UA shadow root ancestor (default: false).
-// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetNodeForLocation(x int, y int, includeUserAgentShadowDOM bool) (int, int, error) {
 	var v DOMGetNodeForLocationParams
 	v.X = x
@@ -1329,6 +1329,8 @@ type DOMResolveNodeParams struct {
 	BackendNodeId int `json:"backendNodeId,omitempty"`
 	// Symbolic group name that can be used to release multiple objects.
 	ObjectGroup string `json:"objectGroup,omitempty"`
+	// Execution context in which to resolve the node.
+	ExecutionContextId int `json:"executionContextId,omitempty"`
 }
 
 // ResolveNodeWithParams - Resolves the JavaScript node object for a given NodeId or BackendNodeId.
@@ -1367,12 +1369,14 @@ func (c *DOM) ResolveNodeWithParams(v *DOMResolveNodeParams) (*RuntimeRemoteObje
 // nodeId - Id of the node to resolve.
 // backendNodeId - Backend identifier of the node to resolve.
 // objectGroup - Symbolic group name that can be used to release multiple objects.
+// executionContextId - Execution context in which to resolve the node.
 // Returns -  object - JavaScript object wrapper for given node.
-func (c *DOM) ResolveNode(nodeId int, backendNodeId int, objectGroup string) (*RuntimeRemoteObject, error) {
+func (c *DOM) ResolveNode(nodeId int, backendNodeId int, objectGroup string, executionContextId int) (*RuntimeRemoteObject, error) {
 	var v DOMResolveNodeParams
 	v.NodeId = nodeId
 	v.BackendNodeId = backendNodeId
 	v.ObjectGroup = objectGroup
+	v.ExecutionContextId = executionContextId
 	return c.ResolveNodeWithParams(&v)
 }
 
@@ -1456,6 +1460,52 @@ func (c *DOM) SetFileInputFiles(files []string, nodeId int, backendNodeId int, o
 	v.BackendNodeId = backendNodeId
 	v.ObjectId = objectId
 	return c.SetFileInputFilesWithParams(&v)
+}
+
+type DOMGetFileInfoParams struct {
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId"`
+}
+
+// GetFileInfoWithParams - Returns file information for the given File wrapper.
+// Returns -  path -
+func (c *DOM) GetFileInfoWithParams(v *DOMGetFileInfoParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFileInfo", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Path string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.Path, nil
+}
+
+// GetFileInfo - Returns file information for the given File wrapper.
+// objectId - JavaScript object id of the node wrapper.
+// Returns -  path -
+func (c *DOM) GetFileInfo(objectId string) (string, error) {
+	var v DOMGetFileInfoParams
+	v.ObjectId = objectId
+	return c.GetFileInfoWithParams(&v)
 }
 
 type DOMSetInspectedNodeParams struct {
@@ -1581,7 +1631,7 @@ type DOMGetFrameOwnerParams struct {
 }
 
 // GetFrameOwnerWithParams - Returns iframe node that owns iframe with the given domain.
-// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetFrameOwnerWithParams(v *DOMGetFrameOwnerParams) (int, int, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFrameOwner", Params: v})
 	if err != nil {
@@ -1615,7 +1665,7 @@ func (c *DOM) GetFrameOwnerWithParams(v *DOMGetFrameOwnerParams) (int, int, erro
 
 // GetFrameOwner - Returns iframe node that owns iframe with the given domain.
 // frameId -
-// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetFrameOwner(frameId string) (int, int, error) {
 	var v DOMGetFrameOwnerParams
 	v.FrameId = frameId

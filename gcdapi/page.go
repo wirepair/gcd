@@ -83,21 +83,22 @@ type PageLayoutViewport struct {
 
 // Visual viewport position, dimensions, and scale.
 type PageVisualViewport struct {
-	OffsetX      float64 `json:"offsetX"`      // Horizontal offset relative to the layout viewport (CSS pixels).
-	OffsetY      float64 `json:"offsetY"`      // Vertical offset relative to the layout viewport (CSS pixels).
-	PageX        float64 `json:"pageX"`        // Horizontal offset relative to the document (CSS pixels).
-	PageY        float64 `json:"pageY"`        // Vertical offset relative to the document (CSS pixels).
-	ClientWidth  float64 `json:"clientWidth"`  // Width (CSS pixels), excludes scrollbar if present.
-	ClientHeight float64 `json:"clientHeight"` // Height (CSS pixels), excludes scrollbar if present.
-	Scale        float64 `json:"scale"`        // Scale relative to the ideal viewport (size at width=device-width).
+	OffsetX      float64 `json:"offsetX"`        // Horizontal offset relative to the layout viewport (CSS pixels).
+	OffsetY      float64 `json:"offsetY"`        // Vertical offset relative to the layout viewport (CSS pixels).
+	PageX        float64 `json:"pageX"`          // Horizontal offset relative to the document (CSS pixels).
+	PageY        float64 `json:"pageY"`          // Vertical offset relative to the document (CSS pixels).
+	ClientWidth  float64 `json:"clientWidth"`    // Width (CSS pixels), excludes scrollbar if present.
+	ClientHeight float64 `json:"clientHeight"`   // Height (CSS pixels), excludes scrollbar if present.
+	Scale        float64 `json:"scale"`          // Scale relative to the ideal viewport (size at width=device-width).
+	Zoom         float64 `json:"zoom,omitempty"` // Page zoom factor (CSS to device independent pixels ratio).
 }
 
 // Viewport for capturing screenshot.
 type PageViewport struct {
-	X      float64 `json:"x"`      // X offset in CSS pixels.
-	Y      float64 `json:"y"`      // Y offset in CSS pixels
-	Width  float64 `json:"width"`  // Rectangle width in CSS pixels
-	Height float64 `json:"height"` // Rectangle height in CSS pixels
+	X      float64 `json:"x"`      // X offset in device independent pixels (dip).
+	Y      float64 `json:"y"`      // Y offset in device independent pixels (dip).
+	Width  float64 `json:"width"`  // Rectangle width in device independent pixels (dip).
+	Height float64 `json:"height"` // Rectangle height in device independent pixels (dip).
 	Scale  float64 `json:"scale"`  // Page scale factor.
 }
 
@@ -754,6 +755,11 @@ func (c *Page) GetNavigationHistory() (int, []*PageNavigationEntry, error) {
 	return chromeData.Result.CurrentIndex, chromeData.Result.Entries, nil
 }
 
+// Resets navigation history for the current page.
+func (c *Page) ResetNavigationHistory() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.resetNavigationHistory"})
+}
+
 type PageGetResourceContentParams struct {
 	// Frame id to get resource for.
 	FrameId string `json:"frameId"`
@@ -1095,11 +1101,6 @@ func (c *Page) RemoveScriptToEvaluateOnNewDocument(identifier string) (*gcdmessa
 	var v PageRemoveScriptToEvaluateOnNewDocumentParams
 	v.Identifier = identifier
 	return c.RemoveScriptToEvaluateOnNewDocumentWithParams(&v)
-}
-
-//
-func (c *Page) RequestAppBanner() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.requestAppBanner"})
 }
 
 type PageScreencastFrameAckParams struct {
@@ -1589,4 +1590,9 @@ func (c *Page) GenerateTestReport(message string, group string) (*gcdmessage.Chr
 	v.Message = message
 	v.Group = group
 	return c.GenerateTestReportWithParams(&v)
+}
+
+// Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger.
+func (c *Page) WaitForDebugger() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.waitForDebugger"})
 }

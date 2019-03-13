@@ -482,6 +482,7 @@ func testExtensionStartup(t *testing.T) {
 func testDefaultStartup(t *testing.T) {
 	debugger = NewChromeDebugger()
 	debugger.DeleteProfileOnExit()
+	debugger.AddFlags([]string{"--headless"})
 	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
 }
 

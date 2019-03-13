@@ -139,6 +139,8 @@ type CacheStorageRequestCachedResponseParams struct {
 	CacheId string `json:"cacheId"`
 	// URL spec of the request.
 	RequestURL string `json:"requestURL"`
+	// headers of the request.
+	RequestHeaders []*CacheStorageHeader `json:"requestHeaders"`
 }
 
 // RequestCachedResponseWithParams - Fetches cache entry.
@@ -176,11 +178,13 @@ func (c *CacheStorage) RequestCachedResponseWithParams(v *CacheStorageRequestCac
 // RequestCachedResponse - Fetches cache entry.
 // cacheId - Id of cache that contains the entry.
 // requestURL - URL spec of the request.
+// requestHeaders - headers of the request.
 // Returns -  response - Response read from the cache.
-func (c *CacheStorage) RequestCachedResponse(cacheId string, requestURL string) (*CacheStorageCachedResponse, error) {
+func (c *CacheStorage) RequestCachedResponse(cacheId string, requestURL string, requestHeaders []*CacheStorageHeader) (*CacheStorageCachedResponse, error) {
 	var v CacheStorageRequestCachedResponseParams
 	v.CacheId = cacheId
 	v.RequestURL = requestURL
+	v.RequestHeaders = requestHeaders
 	return c.RequestCachedResponseWithParams(&v)
 }
 

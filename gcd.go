@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2018 isaac dawson
+Copyright (c) 2019 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import (
 	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "v1.0.2"
+var GCDVERSION = "v1.0.3"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -118,7 +118,7 @@ func (c *Gcd) DeleteProfileOnExit() {
 	c.deleteProfile = true
 }
 
-// Starts the process
+// StartProcess the process
 // exePath - the path to the executable
 // userDir - the user directory to start from so we get a fresh profile
 // port - The port to listen on.
@@ -174,11 +174,26 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 	return err
 }
 
+// StartProcessCustom lets you start the process under sudo etc.
+// ex: debugger.StartProcessCustom([]string{"sudo", "-H", "-u", "webuser", "/usr/bin/google-chrome", "--headless"}, testRandomTempDir(t), testRandomPort(t))
+// Note if doing the above, you probably won't be able to kill the chrome process, you'll need to kill it another way (such as sudo -H -u user kill -9 etc)
+func (c *Gcd) StartProcessCustom(execArgs []string, userDir, port string) error {
+	if len(execArgs) < 1 {
+		return errors.New("not enough exec arguments")
+	}
+	cmd := execArgs[0]
+	c.flags = append(c.flags, execArgs[1:]...)
+	return c.StartProcess(cmd, userDir, port)
+}
+
 // ExitProcess kills the process
 func (c *Gcd) ExitProcess() error {
-	err := c.chromeProcess.Kill()
-	c.removeProfileDir()
-	return err
+	return c.chromeProcess.Kill()
+}
+
+// PID of the started process
+func (c *Gcd) PID() int {
+	return c.chromeProcess.Pid
 }
 
 // removeProfileDir if deleteProfile is true
