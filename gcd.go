@@ -38,7 +38,7 @@ import (
 	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "v1.0.3"
+var GCDVERSION = "v1.0.4"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -141,6 +141,22 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 	c.chromeCmd.Env = os.Environ()
 	c.chromeCmd.Env = append(c.chromeCmd.Env, c.env...)
 
+	return c.startProcess()
+}
+
+// StartProcessCustom lets you pass in the exec.Cmd to use
+func (c *Gcd) StartProcessCustom(cmd *exec.Cmd, userDir, port string) error {
+	c.port = port
+	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
+	c.profileDir = userDir
+	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
+	c.chromeCmd = cmd
+
+	return c.startProcess()
+}
+
+// startProcess starts the process and waits for the debugger port to be ready
+func (c *Gcd) startProcess() error {
 	go func() {
 		err := c.chromeCmd.Start()
 		if err != nil {
@@ -172,18 +188,6 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 	<-c.readyCh
 
 	return err
-}
-
-// StartProcessCustom lets you start the process under sudo etc.
-// ex: debugger.StartProcessCustom([]string{"sudo", "-H", "-u", "webuser", "/usr/bin/google-chrome", "--headless"}, testRandomTempDir(t), testRandomPort(t))
-// Note if doing the above, you probably won't be able to kill the chrome process, you'll need to kill it another way (such as sudo -H -u user kill -9 etc)
-func (c *Gcd) StartProcessCustom(execArgs []string, userDir, port string) error {
-	if len(execArgs) < 1 {
-		return errors.New("not enough exec arguments")
-	}
-	cmd := execArgs[0]
-	c.flags = append(c.flags, execArgs[1:]...)
-	return c.StartProcess(cmd, userDir, port)
 }
 
 // ExitProcess kills the process

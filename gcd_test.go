@@ -59,6 +59,9 @@ func testCleanUp() {
 }
 
 func TestDeleteProfileOnExit(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("windows will hold on to the process handle too long")
+	}
 	debugger := NewChromeDebugger()
 	debugger.DeleteProfileOnExit()
 
