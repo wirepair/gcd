@@ -104,6 +104,16 @@ func (c *Gcd) SetTimeout(timeout time.Duration) {
 	c.timeout = timeout
 }
 
+// Port that the debugger is listening on
+func (c *Gcd) Port() string {
+	return c.port
+}
+
+// Host that the debugger is listening on
+func (c *Gcd) Host() string {
+	return c.host
+}
+
 // AddFlags Allows caller to add additional startup flags to the chrome process
 func (c *Gcd) AddFlags(flags []string) {
 	c.flags = append(c.flags, flags...)
