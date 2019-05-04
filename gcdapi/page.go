@@ -161,6 +161,16 @@ type PageFrameNavigatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+// Fired when a renderer-initiated navigation is requested. Navigation may still be cancelled after the event is issued.
+type PageFrameRequestedNavigationEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame that is being navigated.
+		Reason  string `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload
+		Url     string `json:"url"`     // The destination URL for the requested navigation.
+	} `json:"Params,omitempty"`
+}
+
 // Fired when frame schedules a potential navigation.
 type PageFrameScheduledNavigationEvent struct {
 	Method string `json:"method"`
@@ -185,6 +195,15 @@ type PageFrameStoppedLoadingEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId string `json:"frameId"` // Id of the frame that has stopped loading.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when page is about to start a download.
+type PageDownloadWillBeginEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame that caused download to begin.
+		Url     string `json:"url"`     // URL of the resource being downloaded.
 	} `json:"Params,omitempty"`
 }
 
@@ -622,6 +641,38 @@ func (c *Page) GetAppManifest() (string, []*PageAppManifestError, string, error)
 	}
 
 	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, nil
+}
+
+// GetInstallabilityErrors -
+// Returns -  errors -
+func (c *Page) GetInstallabilityErrors() ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getInstallabilityErrors"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Errors []string
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Errors, nil
 }
 
 // GetCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the `cookies` field.

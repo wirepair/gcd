@@ -244,7 +244,7 @@ func (c *Overlay) HighlightRect(x int, y int, width int, height int, color *DOMR
 }
 
 type OverlaySetInspectModeParams struct {
-	// Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, captureAreaScreenshot, none
+	// Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, captureAreaScreenshot, showDistances, none
 	Mode string `json:"mode"`
 	// A descriptor for the highlight appearance of hovered-over nodes. May be omitted if `enabled == false`.
 	HighlightConfig *OverlayHighlightConfig `json:"highlightConfig,omitempty"`
@@ -256,7 +256,7 @@ func (c *Overlay) SetInspectModeWithParams(v *OverlaySetInspectModeParams) (*gcd
 }
 
 // SetInspectMode - Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection.
-// mode - Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, captureAreaScreenshot, none
+// mode - Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, captureAreaScreenshot, showDistances, none
 // highlightConfig - A descriptor for the highlight appearance of hovered-over nodes. May be omitted if `enabled == false`.
 func (c *Overlay) SetInspectMode(mode string, highlightConfig *OverlayHighlightConfig) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetInspectModeParams
@@ -407,22 +407,4 @@ func (c *Overlay) SetShowViewportSizeOnResize(show bool) (*gcdmessage.ChromeResp
 	var v OverlaySetShowViewportSizeOnResizeParams
 	v.Show = show
 	return c.SetShowViewportSizeOnResizeWithParams(&v)
-}
-
-type OverlaySetSuspendedParams struct {
-	// Whether overlay should be suspended and not consume any resources until resumed.
-	Suspended bool `json:"suspended"`
-}
-
-// SetSuspendedWithParams -
-func (c *Overlay) SetSuspendedWithParams(v *OverlaySetSuspendedParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setSuspended", Params: v})
-}
-
-// SetSuspended -
-// suspended - Whether overlay should be suspended and not consume any resources until resumed.
-func (c *Overlay) SetSuspended(suspended bool) (*gcdmessage.ChromeResponse, error) {
-	var v OverlaySetSuspendedParams
-	v.Suspended = suspended
-	return c.SetSuspendedWithParams(&v)
 }

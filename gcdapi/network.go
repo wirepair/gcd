@@ -144,7 +144,7 @@ type NetworkCookie struct {
 	HttpOnly bool    `json:"httpOnly"`           // True if cookie is http-only.
 	Secure   bool    `json:"secure"`             // True if cookie is secure.
 	Session  bool    `json:"session"`            // True in case of session cookie.
-	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax
+	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, Extended, None
 }
 
 // Cookie parameter object
@@ -156,7 +156,7 @@ type NetworkCookieParam struct {
 	Path     string  `json:"path,omitempty"`     // Cookie path.
 	Secure   bool    `json:"secure,omitempty"`   // True if cookie is secure.
 	HttpOnly bool    `json:"httpOnly,omitempty"` // True if cookie is http-only.
-	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax
+	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, Extended, None
 	Expires  float64 `json:"expires,omitempty"`  // Cookie expiration date, session cookie if not set
 }
 
@@ -280,6 +280,7 @@ type NetworkRequestInterceptedEvent struct {
 		ResponseErrorReason string                 `json:"responseErrorReason,omitempty"` // Response error if intercepted at response stage or if redirect occurred while intercepting request. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable, BlockedByClient, BlockedByResponse
 		ResponseStatusCode  int                    `json:"responseStatusCode,omitempty"`  // Response code if intercepted at response stage or if redirect occurred while intercepting request or auth retry occurred.
 		ResponseHeaders     map[string]interface{} `json:"responseHeaders,omitempty"`     // Response headers if intercepted at the response stage or if redirect occurred while intercepting request or auth retry occurred.
+		RequestId           string                 `json:"requestId,omitempty"`           // If the intercepted request had a corresponding requestWillBeSent event fired for it, then this requestId will be the same as the requestId present in the requestWillBeSent event.
 	} `json:"Params,omitempty"`
 }
 
@@ -1122,7 +1123,7 @@ type NetworkSetCookieParams struct {
 	Secure bool `json:"secure,omitempty"`
 	// True if cookie is http-only.
 	HttpOnly bool `json:"httpOnly,omitempty"`
-	// Cookie SameSite type. enum values: Strict, Lax
+	// Cookie SameSite type. enum values: Strict, Lax, Extended, None
 	SameSite string `json:"sameSite,omitempty"`
 	// Cookie expiration date, session cookie if not set
 	Expires float64 `json:"expires,omitempty"`
@@ -1168,7 +1169,7 @@ func (c *Network) SetCookieWithParams(v *NetworkSetCookieParams) (bool, error) {
 // path - Cookie path.
 // secure - True if cookie is secure.
 // httpOnly - True if cookie is http-only.
-// sameSite - Cookie SameSite type. enum values: Strict, Lax
+// sameSite - Cookie SameSite type. enum values: Strict, Lax, Extended, None
 // expires - Cookie expiration date, session cookie if not set
 // Returns -  success - True if successfully set cookie.
 func (c *Network) SetCookie(name string, value string, url string, domain string, path string, secure bool, httpOnly bool, sameSite string, expires float64) (bool, error) {
@@ -1248,12 +1249,12 @@ type NetworkSetRequestInterceptionParams struct {
 	Patterns []*NetworkRequestPattern `json:"patterns"`
 }
 
-// SetRequestInterceptionWithParams - Sets the requests to intercept that match a the provided patterns and optionally resource types.
+// SetRequestInterceptionWithParams - Sets the requests to intercept that match the provided patterns and optionally resource types.
 func (c *Network) SetRequestInterceptionWithParams(v *NetworkSetRequestInterceptionParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setRequestInterception", Params: v})
 }
 
-// SetRequestInterception - Sets the requests to intercept that match a the provided patterns and optionally resource types.
+// SetRequestInterception - Sets the requests to intercept that match the provided patterns and optionally resource types.
 // patterns - Requests matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call.
 func (c *Network) SetRequestInterception(patterns []*NetworkRequestPattern) (*gcdmessage.ChromeResponse, error) {
 	var v NetworkSetRequestInterceptionParams

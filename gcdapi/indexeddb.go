@@ -231,7 +231,7 @@ func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, obje
 	return c.RequestDataWithParams(&v)
 }
 
-type IndexedDBGetKeyGeneratorCurrentNumberParams struct {
+type IndexedDBGetMetadataParams struct {
 	// Security origin.
 	SecurityOrigin string `json:"securityOrigin"`
 	// Database name.
@@ -240,49 +240,50 @@ type IndexedDBGetKeyGeneratorCurrentNumberParams struct {
 	ObjectStoreName string `json:"objectStoreName"`
 }
 
-// GetKeyGeneratorCurrentNumberWithParams - Gets the auto increment number of an object store. Only meaningful when objectStore.autoIncrement is true.
-// Returns -  currentNumber - the current value of key generator, to become the next inserted key into the object store.
-func (c *IndexedDB) GetKeyGeneratorCurrentNumberWithParams(v *IndexedDBGetKeyGeneratorCurrentNumberParams) (float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.getKeyGeneratorCurrentNumber", Params: v})
+// GetMetadataWithParams - Gets metadata of an object store
+// Returns -  entriesCount - the entries count keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
+func (c *IndexedDB) GetMetadataWithParams(v *IndexedDBGetMetadataParams) (float64, float64, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.getMetadata", Params: v})
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			CurrentNumber float64
+			EntriesCount      float64
+			KeyGeneratorValue float64
 		}
 	}
 
 	if resp == nil {
-		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return chromeData.Result.CurrentNumber, nil
+	return chromeData.Result.EntriesCount, chromeData.Result.KeyGeneratorValue, nil
 }
 
-// GetKeyGeneratorCurrentNumber - Gets the auto increment number of an object store. Only meaningful when objectStore.autoIncrement is true.
+// GetMetadata - Gets metadata of an object store
 // securityOrigin - Security origin.
 // databaseName - Database name.
 // objectStoreName - Object store name.
-// Returns -  currentNumber - the current value of key generator, to become the next inserted key into the object store.
-func (c *IndexedDB) GetKeyGeneratorCurrentNumber(securityOrigin string, databaseName string, objectStoreName string) (float64, error) {
-	var v IndexedDBGetKeyGeneratorCurrentNumberParams
+// Returns -  entriesCount - the entries count keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
+func (c *IndexedDB) GetMetadata(securityOrigin string, databaseName string, objectStoreName string) (float64, float64, error) {
+	var v IndexedDBGetMetadataParams
 	v.SecurityOrigin = securityOrigin
 	v.DatabaseName = databaseName
 	v.ObjectStoreName = objectStoreName
-	return c.GetKeyGeneratorCurrentNumberWithParams(&v)
+	return c.GetMetadataWithParams(&v)
 }
 
 type IndexedDBRequestDatabaseParams struct {

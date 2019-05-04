@@ -70,8 +70,9 @@ type ChromeTarget struct {
 	Accessibility        *gcdapi.Accessibility
 	Animation            *gcdapi.Animation
 	ApplicationCache     *gcdapi.ApplicationCache // application cache API
-	Browser              *gcdapi.Browser
+	Audits               *gcdapi.Audits
 	BackgroundService    *gcdapi.BackgroundService
+	Browser              *gcdapi.Browser
 	CacheStorage         *gcdapi.CacheStorage
 	Cast                 *gcdapi.Cast
 	Console              *gcdapi.Console           // console API
@@ -79,11 +80,12 @@ type ChromeTarget struct {
 	Database             *gcdapi.Database          // Database API
 	Debugger             *gcdapi.Debugger          // JS Debugger API
 	DeviceOrientation    *gcdapi.DeviceOrientation // Device Orientation API
-	DOMDebugger          *gcdapi.DOMDebugger       // DOM Debugger API
 	DOM                  *gcdapi.DOM               // DOM API
+	DOMDebugger          *gcdapi.DOMDebugger       // DOM Debugger API
 	DOMSnapshot          *gcdapi.DOMSnapshot
 	DOMStorage           *gcdapi.DOMStorage // DOM Storage API
 	Emulation            *gcdapi.Emulation
+	Fetch                *gcdapi.Fetch
 	HeadlessExperimental *gcdapi.HeadlessExperimental
 	HeapProfiler         *gcdapi.HeapProfiler // HeapProfiler API
 	IndexedDB            *gcdapi.IndexedDB    // IndexedDB API
@@ -96,8 +98,8 @@ type ChromeTarget struct {
 	Network              *gcdapi.Network
 	Overlay              *gcdapi.Overlay
 	Page                 *gcdapi.Page
-	Profiler             *gcdapi.Profiler
 	Performance          *gcdapi.Performance // if stable channel you'll need to uncomment
+	Profiler             *gcdapi.Profiler
 	Runtime              *gcdapi.Runtime
 	Schema               *gcdapi.Schema
 	Security             *gcdapi.Security
@@ -105,10 +107,10 @@ type ChromeTarget struct {
 	Storage              *gcdapi.Storage
 	SystemInfo           *gcdapi.SystemInfo
 	TargetApi            *gcdapi.Target // buh name collision
-	Tracing              *gcdapi.Tracing
 	Tethering            *gcdapi.Tethering
 	Testing              *gcdapi.Testing
-	Fetch                *gcdapi.Fetch
+	Tracing              *gcdapi.Tracing
+	WebAudio             *gcdapi.WebAudio
 
 	Target      *TargetInfo              // The target information see, TargetInfo
 	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
@@ -143,6 +145,7 @@ func (c *ChromeTarget) Init() {
 	c.Accessibility = gcdapi.NewAccessibility(c)
 	c.Animation = gcdapi.NewAnimation(c)
 	c.ApplicationCache = gcdapi.NewApplicationCache(c)
+	c.Audits = gcdapi.NewAudits(c)
 	c.Browser = gcdapi.NewBrowser(c)
 	c.BackgroundService = gcdapi.NewBackgroundService(c)
 	c.CacheStorage = gcdapi.NewCacheStorage(c)
@@ -178,10 +181,10 @@ func (c *ChromeTarget) Init() {
 	c.Tracing = gcdapi.NewTracing(c)
 	c.Tethering = gcdapi.NewTethering(c)
 	c.HeadlessExperimental = gcdapi.NewHeadlessExperimental(c)
-	// if stable channel you'll need to comment this out
 	c.Performance = gcdapi.NewPerformance(c)
 	c.Testing = gcdapi.NewTesting(c)
 	c.Fetch = gcdapi.NewFetch(c)
+	c.WebAudio = gcdapi.NewWebAudio(c)
 }
 
 // clean up this target

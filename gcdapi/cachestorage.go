@@ -200,36 +200,36 @@ type CacheStorageRequestEntriesParams struct {
 }
 
 // RequestEntriesWithParams - Requests data from cache.
-// Returns -  cacheDataEntries - Array of object store data entries. hasMore - If true, there are more entries to fetch in the given range.
-func (c *CacheStorage) RequestEntriesWithParams(v *CacheStorageRequestEntriesParams) ([]*CacheStorageDataEntry, bool, error) {
+// Returns -  cacheDataEntries - Array of object store data entries. returnCount - Count of returned entries from this storage. If pathFilter is empty, it is the count of all entries from this storage.
+func (c *CacheStorage) RequestEntriesWithParams(v *CacheStorageRequestEntriesParams) ([]*CacheStorageDataEntry, float64, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestEntries", Params: v})
 	if err != nil {
-		return nil, false, err
+		return nil, 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
 			CacheDataEntries []*CacheStorageDataEntry
-			HasMore          bool
+			ReturnCount      float64
 		}
 	}
 
 	if resp == nil {
-		return nil, false, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, false, err
+		return nil, 0, err
 	}
 
-	return chromeData.Result.CacheDataEntries, chromeData.Result.HasMore, nil
+	return chromeData.Result.CacheDataEntries, chromeData.Result.ReturnCount, nil
 }
 
 // RequestEntries - Requests data from cache.
@@ -237,8 +237,8 @@ func (c *CacheStorage) RequestEntriesWithParams(v *CacheStorageRequestEntriesPar
 // skipCount - Number of records to skip.
 // pageSize - Number of records to fetch.
 // pathFilter - If present, only return the entries containing this substring in the path
-// Returns -  cacheDataEntries - Array of object store data entries. hasMore - If true, there are more entries to fetch in the given range.
-func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize int, pathFilter string) ([]*CacheStorageDataEntry, bool, error) {
+// Returns -  cacheDataEntries - Array of object store data entries. returnCount - Count of returned entries from this storage. If pathFilter is empty, it is the count of all entries from this storage.
+func (c *CacheStorage) RequestEntries(cacheId string, skipCount int, pageSize int, pathFilter string) ([]*CacheStorageDataEntry, float64, error) {
 	var v CacheStorageRequestEntriesParams
 	v.CacheId = cacheId
 	v.SkipCount = skipCount

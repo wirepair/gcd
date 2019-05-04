@@ -159,10 +159,15 @@ func (c *Debugger) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disable"})
 }
 
-// Enable - Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
+type DebuggerEnableParams struct {
+	// The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if paramter is omitted.
+	MaxScriptsCacheSize float64 `json:"maxScriptsCacheSize,omitempty"`
+}
+
+// EnableWithParams - Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
 // Returns -  debuggerId - Unique identifier of the debugger.
-func (c *Debugger) Enable() (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enable"})
+func (c *Debugger) EnableWithParams(v *DebuggerEnableParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enable", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -189,6 +194,15 @@ func (c *Debugger) Enable() (string, error) {
 	}
 
 	return chromeData.Result.DebuggerId, nil
+}
+
+// Enable - Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
+// maxScriptsCacheSize - The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if paramter is omitted.
+// Returns -  debuggerId - Unique identifier of the debugger.
+func (c *Debugger) Enable(maxScriptsCacheSize float64) (string, error) {
+	var v DebuggerEnableParams
+	v.MaxScriptsCacheSize = maxScriptsCacheSize
+	return c.EnableWithParams(&v)
 }
 
 type DebuggerEvaluateOnCallFrameParams struct {

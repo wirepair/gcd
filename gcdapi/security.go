@@ -21,13 +21,13 @@ type SecuritySecurityStateExplanation struct {
 
 // Information about insecure content on the page.
 type SecurityInsecureContentStatus struct {
-	RanMixedContent                bool   `json:"ranMixedContent"`                // True if the page was loaded over HTTPS and ran mixed (HTTP) content such as scripts.
-	DisplayedMixedContent          bool   `json:"displayedMixedContent"`          // True if the page was loaded over HTTPS and displayed mixed (HTTP) content such as images.
-	ContainedMixedForm             bool   `json:"containedMixedForm"`             // True if the page was loaded over HTTPS and contained a form targeting an insecure url.
-	RanContentWithCertErrors       bool   `json:"ranContentWithCertErrors"`       // True if the page was loaded over HTTPS without certificate errors, and ran content such as scripts that were loaded with certificate errors.
-	DisplayedContentWithCertErrors bool   `json:"displayedContentWithCertErrors"` // True if the page was loaded over HTTPS without certificate errors, and displayed content such as images that were loaded with certificate errors.
-	RanInsecureContentStyle        string `json:"ranInsecureContentStyle"`        // Security state representing a page that ran insecure content. enum values: unknown, neutral, insecure, secure, info
-	DisplayedInsecureContentStyle  string `json:"displayedInsecureContentStyle"`  // Security state representing a page that displayed insecure content. enum values: unknown, neutral, insecure, secure, info
+	RanMixedContent                bool   `json:"ranMixedContent"`                // Always false.
+	DisplayedMixedContent          bool   `json:"displayedMixedContent"`          // Always false.
+	ContainedMixedForm             bool   `json:"containedMixedForm"`             // Always false.
+	RanContentWithCertErrors       bool   `json:"ranContentWithCertErrors"`       // Always false.
+	DisplayedContentWithCertErrors bool   `json:"displayedContentWithCertErrors"` // Always false.
+	RanInsecureContentStyle        string `json:"ranInsecureContentStyle"`        // Always set to unknown. enum values: unknown, neutral, insecure, secure, info
+	DisplayedInsecureContentStyle  string `json:"displayedInsecureContentStyle"`  // Always set to unknown. enum values: unknown, neutral, insecure, secure, info
 }
 
 // There is a certificate error. If overriding certificate errors is enabled, then it should be handled with the `handleCertificateError` command. Note: this event does not fire if the certificate error has been allowed internally. Only one client per target should override certificate errors at the same time.
