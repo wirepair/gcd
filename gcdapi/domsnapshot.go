@@ -99,8 +99,8 @@ type DOMSnapshotDocumentSnapshot struct {
 	Nodes           *DOMSnapshotNodeTreeSnapshot   `json:"nodes"`                   // A table with dom nodes.
 	Layout          *DOMSnapshotLayoutTreeSnapshot `json:"layout"`                  // The nodes in the layout tree.
 	TextBoxes       *DOMSnapshotTextBoxSnapshot    `json:"textBoxes"`               // The post-layout inline text nodes.
-	ScrollOffsetX   float64                        `json:"scrollOffsetX,omitempty"` // Scroll offsets.
-	ScrollOffsetY   float64                        `json:"scrollOffsetY,omitempty"` //
+	ScrollOffsetX   float64                        `json:"scrollOffsetX,omitempty"` // Horizontal scroll offset.
+	ScrollOffsetY   float64                        `json:"scrollOffsetY,omitempty"` // Vertical scroll offset.
 }
 
 // Table containing nodes.
@@ -122,18 +122,21 @@ type DOMSnapshotNodeTreeSnapshot struct {
 	OriginURL            *DOMSnapshotRareStringData  `json:"originURL,omitempty"`            // The url of the script (if any) that generates this node.
 }
 
-// Details of an element in the DOM tree with a LayoutObject.
+// Table of details of an element in the DOM tree with a LayoutObject.
 type DOMSnapshotLayoutTreeSnapshot struct {
-	NodeIndex        []int                       `json:"nodeIndex"`        // The index of the related DOM node in the `domNodes` array returned by `getSnapshot`.
-	Styles           []int                       `json:"styles"`           // Index into the `computedStyles` array returned by `captureSnapshot`.
-	Bounds           []float64                   `json:"bounds"`           // The absolute position bounding box.
-	Text             []int                       `json:"text"`             // Contents of the LayoutText, if any.
-	StackingContexts *DOMSnapshotRareBooleanData `json:"stackingContexts"` // Stacking context information.
+	NodeIndex        []int                       `json:"nodeIndex"`             // Index of the corresponding node in the `NodeTreeSnapshot` array returned by `captureSnapshot`.
+	Styles           []int                       `json:"styles"`                // Array of indexes specifying computed style strings, filtered according to the `computedStyles` parameter passed to `captureSnapshot`.
+	Bounds           []float64                   `json:"bounds"`                // The absolute position bounding box.
+	Text             []int                       `json:"text"`                  // Contents of the LayoutText, if any.
+	StackingContexts *DOMSnapshotRareBooleanData `json:"stackingContexts"`      // Stacking context information.
+	OffsetRects      []float64                   `json:"offsetRects,omitempty"` // The offset rect of nodes. Only available when includeDOMRects is set to true
+	ScrollRects      []float64                   `json:"scrollRects,omitempty"` // The scroll rect of nodes. Only available when includeDOMRects is set to true
+	ClientRects      []float64                   `json:"clientRects,omitempty"` // The client rect of nodes. Only available when includeDOMRects is set to true
 }
 
-// Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.
+// Table of details of the post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.
 type DOMSnapshotTextBoxSnapshot struct {
-	LayoutIndex []int     `json:"layoutIndex"` // Intex of th elayout tree node that owns this box collection.
+	LayoutIndex []int     `json:"layoutIndex"` // Index of the layout tree node that owns this box collection.
 	Bounds      []float64 `json:"bounds"`      // The absolute position bounding box.
 	Start       []int     `json:"start"`       // The starting index in characters, for this post layout textbox substring. Characters that would be represented as a surrogate pair in UTF-16 have length 2.
 	Length      []int     `json:"length"`      // The number of characters in this post layout textbox substring. Characters that would be represented as a surrogate pair in UTF-16 have length 2.
@@ -221,6 +224,8 @@ func (c *DOMSnapshot) GetSnapshot(computedStyleWhitelist []string, includeEventL
 type DOMSnapshotCaptureSnapshotParams struct {
 	// Whitelist of computed styles to return.
 	ComputedStyles []string `json:"computedStyles"`
+	// Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
+	IncludeDOMRects bool `json:"includeDOMRects,omitempty"`
 }
 
 // CaptureSnapshotWithParams - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
@@ -258,9 +263,11 @@ func (c *DOMSnapshot) CaptureSnapshotWithParams(v *DOMSnapshotCaptureSnapshotPar
 
 // CaptureSnapshot - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
 // computedStyles - Whitelist of computed styles to return.
+// includeDOMRects - Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
 // Returns -  documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. strings - Shared string table that all string properties refer to with indexes.
-func (c *DOMSnapshot) CaptureSnapshot(computedStyles []string) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
+func (c *DOMSnapshot) CaptureSnapshot(computedStyles []string, includeDOMRects bool) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
 	var v DOMSnapshotCaptureSnapshotParams
 	v.ComputedStyles = computedStyles
+	v.IncludeDOMRects = includeDOMRects
 	return c.CaptureSnapshotWithParams(&v)
 }

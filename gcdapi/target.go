@@ -341,6 +341,10 @@ type TargetCreateTargetParams struct {
 	BrowserContextId string `json:"browserContextId,omitempty"`
 	// Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
 	EnableBeginFrameControl bool `json:"enableBeginFrameControl,omitempty"`
+	// Whether to create a new Window or Tab (chrome-only, false by default).
+	NewWindow bool `json:"newWindow,omitempty"`
+	// Whether to create the target in background or foreground (chrome-only, false by default).
+	Background bool `json:"background,omitempty"`
 }
 
 // CreateTargetWithParams - Creates a new page.
@@ -381,14 +385,18 @@ func (c *Target) CreateTargetWithParams(v *TargetCreateTargetParams) (string, er
 // height - Frame height in DIP (headless chrome only).
 // browserContextId - The browser context to create the page in.
 // enableBeginFrameControl - Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
+// newWindow - Whether to create a new Window or Tab (chrome-only, false by default).
+// background - Whether to create the target in background or foreground (chrome-only, false by default).
 // Returns -  targetId - The id of the page opened.
-func (c *Target) CreateTarget(url string, width int, height int, browserContextId string, enableBeginFrameControl bool) (string, error) {
+func (c *Target) CreateTarget(url string, width int, height int, browserContextId string, enableBeginFrameControl bool, newWindow bool, background bool) (string, error) {
 	var v TargetCreateTargetParams
 	v.Url = url
 	v.Width = width
 	v.Height = height
 	v.BrowserContextId = browserContextId
 	v.EnableBeginFrameControl = enableBeginFrameControl
+	v.NewWindow = newWindow
+	v.Background = background
 	return c.CreateTargetWithParams(&v)
 }
 

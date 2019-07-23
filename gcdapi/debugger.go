@@ -691,6 +691,52 @@ func (c *Debugger) SetBreakpoint(location *DebuggerLocation, condition string) (
 	return c.SetBreakpointWithParams(&v)
 }
 
+type DebuggerSetInstrumentationBreakpointParams struct {
+	// Instrumentation name.
+	Instrumentation string `json:"instrumentation"`
+}
+
+// SetInstrumentationBreakpointWithParams - Sets instrumentation breakpoint.
+// Returns -  breakpointId - Id of the created breakpoint for further reference.
+func (c *Debugger) SetInstrumentationBreakpointWithParams(v *DebuggerSetInstrumentationBreakpointParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setInstrumentationBreakpoint", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			BreakpointId string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.BreakpointId, nil
+}
+
+// SetInstrumentationBreakpoint - Sets instrumentation breakpoint.
+// instrumentation - Instrumentation name.
+// Returns -  breakpointId - Id of the created breakpoint for further reference.
+func (c *Debugger) SetInstrumentationBreakpoint(instrumentation string) (string, error) {
+	var v DebuggerSetInstrumentationBreakpointParams
+	v.Instrumentation = instrumentation
+	return c.SetInstrumentationBreakpointWithParams(&v)
+}
+
 type DebuggerSetBreakpointByUrlParams struct {
 	// Line number to set breakpoint at.
 	LineNumber int `json:"lineNumber"`

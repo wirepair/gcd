@@ -427,6 +427,24 @@ func (c *Emulation) SetVirtualTimePolicy(policy string, budget float64, maxVirtu
 	return c.SetVirtualTimePolicyWithParams(&v)
 }
 
+type EmulationSetTimezoneOverrideParams struct {
+	// The timezone identifier. If empty, disables the override and restores default host system timezone.
+	TimezoneId string `json:"timezoneId"`
+}
+
+// SetTimezoneOverrideWithParams - Overrides default host system timezone with the specified one.
+func (c *Emulation) SetTimezoneOverrideWithParams(v *EmulationSetTimezoneOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setTimezoneOverride", Params: v})
+}
+
+// SetTimezoneOverride - Overrides default host system timezone with the specified one.
+// timezoneId - The timezone identifier. If empty, disables the override and restores default host system timezone.
+func (c *Emulation) SetTimezoneOverride(timezoneId string) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetTimezoneOverrideParams
+	v.TimezoneId = timezoneId
+	return c.SetTimezoneOverrideWithParams(&v)
+}
+
 type EmulationSetVisibleSizeParams struct {
 	// Frame width (DIP).
 	Width int `json:"width"`

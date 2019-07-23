@@ -1,4 +1,5 @@
 # Changelog (2019)
+- July 23rd: Updated to latest gcd / protocol.json file for 75.0.3770.142. Added WebAuthN APIs.
 - May 4th:  Updated to latest gcd / protocol.json file for 74.0.3729.131. Added Audits and WebAudio APIs.
 - March 13th: Updated to latest gcd / protocol.json file for 73.0.3683.75. Added ability custom start the process
 

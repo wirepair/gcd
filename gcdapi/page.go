@@ -15,10 +15,11 @@ type PageFrame struct {
 	ParentId       string `json:"parentId,omitempty"`       // Parent frame identifier.
 	LoaderId       string `json:"loaderId"`                 // Identifier of the loader associated with this frame.
 	Name           string `json:"name,omitempty"`           // Frame's name as specified in the tag.
-	Url            string `json:"url"`                      // Frame document's URL.
+	Url            string `json:"url"`                      // Frame document's URL without fragment.
+	UrlFragment    string `json:"urlFragment,omitempty"`    // Frame document's URL fragment including the '#'.
 	SecurityOrigin string `json:"securityOrigin"`           // Frame document's security origin.
 	MimeType       string `json:"mimeType"`                 // Frame document's mimeType as determined by the browser.
-	UnreachableUrl string `json:"unreachableUrl,omitempty"` // If the frame failed to load, this contains the URL that could not be loaded.
+	UnreachableUrl string `json:"unreachableUrl,omitempty"` // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
 }
 
 // Information about the Resource on the page.
@@ -124,6 +125,14 @@ type PageDomContentEventFiredEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Timestamp float64 `json:"timestamp"` //
+	} `json:"Params,omitempty"`
+}
+
+// Emitted only when `page.interceptFileChooser` is enabled.
+type PageFileChooserOpenedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Mode string `json:"mode"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -1025,38 +1034,41 @@ type PagePrintToPDFParams struct {
 	FooterTemplate string `json:"footerTemplate,omitempty"`
 	// Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
 	PreferCSSPageSize bool `json:"preferCSSPageSize,omitempty"`
+	// return as stream
+	TransferMode string `json:"transferMode,omitempty"`
 }
 
 // PrintToPDFWithParams - Print page as PDF.
-// Returns -  data - Base64-encoded pdf data.
-func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, error) {
+// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. stream - A handle of the stream that holds resulting PDF data.
+func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.printToPDF", Params: v})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Data string
+			Data   string
+			Stream string
 		}
 	}
 
 	if resp == nil {
-		return "", &gcdmessage.ChromeEmptyResponseErr{}
+		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return chromeData.Result.Data, nil
+	return chromeData.Result.Data, chromeData.Result.Stream, nil
 }
 
 // PrintToPDF - Print page as PDF.
@@ -1075,8 +1087,9 @@ func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, error) {
 // headerTemplate - HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - `date`: formatted print date - `title`: document title - `url`: document location - `pageNumber`: current page number - `totalPages`: total pages in the document  For example, `<span class=title></span>` would generate span containing the title.
 // footerTemplate - HTML template for the print footer. Should use the same format as the `headerTemplate`.
 // preferCSSPageSize - Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
-// Returns -  data - Base64-encoded pdf data.
-func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool, headerTemplate string, footerTemplate string, preferCSSPageSize bool) (string, error) {
+// transferMode - return as stream
+// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. stream - A handle of the stream that holds resulting PDF data.
+func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool, headerTemplate string, footerTemplate string, preferCSSPageSize bool, transferMode string) (string, string, error) {
 	var v PagePrintToPDFParams
 	v.Landscape = landscape
 	v.DisplayHeaderFooter = displayHeaderFooter
@@ -1093,6 +1106,7 @@ func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackgro
 	v.HeaderTemplate = headerTemplate
 	v.FooterTemplate = footerTemplate
 	v.PreferCSSPageSize = preferCSSPageSize
+	v.TransferMode = transferMode
 	return c.PrintToPDFWithParams(&v)
 }
 
@@ -1646,4 +1660,44 @@ func (c *Page) GenerateTestReport(message string, group string) (*gcdmessage.Chr
 // Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger.
 func (c *Page) WaitForDebugger() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.waitForDebugger"})
+}
+
+type PageSetInterceptFileChooserDialogParams struct {
+	//
+	Enabled bool `json:"enabled"`
+}
+
+// SetInterceptFileChooserDialogWithParams - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted. File chooser can be handled with `page.handleFileChooser` command.
+func (c *Page) SetInterceptFileChooserDialogWithParams(v *PageSetInterceptFileChooserDialogParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setInterceptFileChooserDialog", Params: v})
+}
+
+// SetInterceptFileChooserDialog - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted. File chooser can be handled with `page.handleFileChooser` command.
+// enabled -
+func (c *Page) SetInterceptFileChooserDialog(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetInterceptFileChooserDialogParams
+	v.Enabled = enabled
+	return c.SetInterceptFileChooserDialogWithParams(&v)
+}
+
+type PageHandleFileChooserParams struct {
+	//
+	Action string `json:"action"`
+	// Array of absolute file paths to set, only respected with `accept` action.
+	Files []string `json:"files,omitempty"`
+}
+
+// HandleFileChooserWithParams - Accepts or cancels an intercepted file chooser dialog.
+func (c *Page) HandleFileChooserWithParams(v *PageHandleFileChooserParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.handleFileChooser", Params: v})
+}
+
+// HandleFileChooser - Accepts or cancels an intercepted file chooser dialog.
+// action -
+// files - Array of absolute file paths to set, only respected with `accept` action.
+func (c *Page) HandleFileChooser(action string, files []string) (*gcdmessage.ChromeResponse, error) {
+	var v PageHandleFileChooserParams
+	v.Action = action
+	v.Files = files
+	return c.HandleFileChooserWithParams(&v)
 }

@@ -71,6 +71,10 @@ func (c *Overlay) Enable() (*gcdmessage.ChromeResponse, error) {
 type OverlayGetHighlightObjectForTestParams struct {
 	// Id of the node to get highlight object for.
 	NodeId int `json:"nodeId"`
+	// Whether to include distance info.
+	IncludeDistance bool `json:"includeDistance,omitempty"`
+	// Whether to include style info.
+	IncludeStyle bool `json:"includeStyle,omitempty"`
 }
 
 // GetHighlightObjectForTestWithParams - For testing.
@@ -107,10 +111,14 @@ func (c *Overlay) GetHighlightObjectForTestWithParams(v *OverlayGetHighlightObje
 
 // GetHighlightObjectForTest - For testing.
 // nodeId - Id of the node to get highlight object for.
+// includeDistance - Whether to include distance info.
+// includeStyle - Whether to include style info.
 // Returns -  highlight - Highlight data for the node.
-func (c *Overlay) GetHighlightObjectForTest(nodeId int) (map[string]interface{}, error) {
+func (c *Overlay) GetHighlightObjectForTest(nodeId int, includeDistance bool, includeStyle bool) (map[string]interface{}, error) {
 	var v OverlayGetHighlightObjectForTestParams
 	v.NodeId = nodeId
+	v.IncludeDistance = includeDistance
+	v.IncludeStyle = includeStyle
 	return c.GetHighlightObjectForTestWithParams(&v)
 }
 
@@ -353,6 +361,24 @@ func (c *Overlay) SetShowPaintRects(result bool) (*gcdmessage.ChromeResponse, er
 	var v OverlaySetShowPaintRectsParams
 	v.Result = result
 	return c.SetShowPaintRectsWithParams(&v)
+}
+
+type OverlaySetShowLayoutShiftRegionsParams struct {
+	// True for showing layout shift regions
+	Result bool `json:"result"`
+}
+
+// SetShowLayoutShiftRegionsWithParams - Requests that backend shows layout shift regions
+func (c *Overlay) SetShowLayoutShiftRegionsWithParams(v *OverlaySetShowLayoutShiftRegionsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowLayoutShiftRegions", Params: v})
+}
+
+// SetShowLayoutShiftRegions - Requests that backend shows layout shift regions
+// result - True for showing layout shift regions
+func (c *Overlay) SetShowLayoutShiftRegions(result bool) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowLayoutShiftRegionsParams
+	v.Result = result
+	return c.SetShowLayoutShiftRegionsWithParams(&v)
 }
 
 type OverlaySetShowScrollBottleneckRectsParams struct {

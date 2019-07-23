@@ -35,6 +35,7 @@ type TracingBufferUsageEvent struct {
 type TracingTracingCompleteEvent struct {
 	Method string `json:"method"`
 	Params struct {
+		DataLossOccurred  bool   `json:"dataLossOccurred"`            // Indicates whether some trace data is known to have been lost, e.g. because the trace ring buffer wrapped around.
 		Stream            string `json:"stream,omitempty"`            // A handle of the stream that holds resulting trace data.
 		TraceFormat       string `json:"traceFormat,omitempty"`       // Trace data format of returned stream. enum values: json, proto
 		StreamCompression string `json:"streamCompression,omitempty"` // Compression format of returned stream. enum values: none, gzip

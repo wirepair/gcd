@@ -8,11 +8,18 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
+// No Description.
+type CastSink struct {
+	Name    string `json:"name"`              //
+	Id      string `json:"id"`                //
+	Session string `json:"session,omitempty"` // Text describing the current session. Present only if there is an active session on the sink.
+}
+
 // This is fired whenever the list of available sinks changes. A sink is a device or a software surface that you can cast to.
 type CastSinksUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		SinkNames []string `json:"sinkNames"` //
+		Sinks []*CastSink `json:"sinks"` //
 	} `json:"Params,omitempty"`
 }
 
