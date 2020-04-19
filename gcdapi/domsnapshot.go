@@ -102,11 +102,8 @@ type DOMSnapshotDocumentSnapshot struct {
 	TextBoxes       *DOMSnapshotTextBoxSnapshot    `json:"textBoxes"`               // The post-layout inline text nodes.
 	ScrollOffsetX   float64                        `json:"scrollOffsetX,omitempty"` // Horizontal scroll offset.
 	ScrollOffsetY   float64                        `json:"scrollOffsetY,omitempty"` // Vertical scroll offset.
-<<<<<<< HEAD
 	ContentWidth    float64                        `json:"contentWidth,omitempty"`  // Document content width.
 	ContentHeight   float64                        `json:"contentHeight,omitempty"` // Document content height.
-=======
->>>>>>> master
 }
 
 // Table containing nodes.
@@ -135,10 +132,7 @@ type DOMSnapshotLayoutTreeSnapshot struct {
 	Bounds           []float64                   `json:"bounds"`                // The absolute position bounding box.
 	Text             []int                       `json:"text"`                  // Contents of the LayoutText, if any.
 	StackingContexts *DOMSnapshotRareBooleanData `json:"stackingContexts"`      // Stacking context information.
-<<<<<<< HEAD
 	PaintOrders      []int                       `json:"paintOrders,omitempty"` // Global paint order index, which is determined by the stacking order of the nodes. Nodes that are painted together will have the same index. Only provided if includePaintOrder in captureSnapshot was true.
-=======
->>>>>>> master
 	OffsetRects      []float64                   `json:"offsetRects,omitempty"` // The offset rect of nodes. Only available when includeDOMRects is set to true
 	ScrollRects      []float64                   `json:"scrollRects,omitempty"` // The scroll rect of nodes. Only available when includeDOMRects is set to true
 	ClientRects      []float64                   `json:"clientRects,omitempty"` // The client rect of nodes. Only available when includeDOMRects is set to true
@@ -234,11 +228,8 @@ func (c *DOMSnapshot) GetSnapshot(computedStyleWhitelist []string, includeEventL
 type DOMSnapshotCaptureSnapshotParams struct {
 	// Whitelist of computed styles to return.
 	ComputedStyles []string `json:"computedStyles"`
-<<<<<<< HEAD
 	// Whether to include layout object paint orders into the snapshot.
 	IncludePaintOrder bool `json:"includePaintOrder,omitempty"`
-=======
->>>>>>> master
 	// Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
 	IncludeDOMRects bool `json:"includeDOMRects,omitempty"`
 }
@@ -278,7 +269,6 @@ func (c *DOMSnapshot) CaptureSnapshotWithParams(v *DOMSnapshotCaptureSnapshotPar
 
 // CaptureSnapshot - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
 // computedStyles - Whitelist of computed styles to return.
-<<<<<<< HEAD
 // includePaintOrder - Whether to include layout object paint orders into the snapshot.
 // includeDOMRects - Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
 // Returns -  documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. strings - Shared string table that all string properties refer to with indexes.
@@ -286,13 +276,6 @@ func (c *DOMSnapshot) CaptureSnapshot(computedStyles []string, includePaintOrder
 	var v DOMSnapshotCaptureSnapshotParams
 	v.ComputedStyles = computedStyles
 	v.IncludePaintOrder = includePaintOrder
-=======
-// includeDOMRects - Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
-// Returns -  documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. strings - Shared string table that all string properties refer to with indexes.
-func (c *DOMSnapshot) CaptureSnapshot(computedStyles []string, includeDOMRects bool) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
-	var v DOMSnapshotCaptureSnapshotParams
-	v.ComputedStyles = computedStyles
->>>>>>> master
 	v.IncludeDOMRects = includeDOMRects
 	return c.CaptureSnapshotWithParams(&v)
 }

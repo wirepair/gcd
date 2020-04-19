@@ -149,13 +149,9 @@ type PageDomContentEventFiredEvent struct {
 type PageFileChooserOpenedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-<<<<<<< HEAD
 		FrameId       string `json:"frameId"`       // Id of the frame containing input node.
 		BackendNodeId int    `json:"backendNodeId"` // Input node id.
 		Mode          string `json:"mode"`          // Input mode.
-=======
-		Mode string `json:"mode"` //
->>>>>>> master
 	} `json:"Params,omitempty"`
 }
 
@@ -198,11 +194,7 @@ type PageFrameRequestedNavigationEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId string `json:"frameId"` // Id of the frame that is being navigated.
-<<<<<<< HEAD
 		Reason  string `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
-=======
-		Reason  string `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload
->>>>>>> master
 		Url     string `json:"url"`     // The destination URL for the requested navigation.
 	} `json:"Params,omitempty"`
 }
@@ -239,15 +231,11 @@ type PageDownloadWillBeginEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId string `json:"frameId"` // Id of the frame that caused download to begin.
-<<<<<<< HEAD
 		Guid    string `json:"guid"`    // Global unique identifier of the download.
-=======
->>>>>>> master
 		Url     string `json:"url"`     // URL of the resource being downloaded.
 	} `json:"Params,omitempty"`
 }
 
-<<<<<<< HEAD
 // Fired when download makes progress. Last call has |done| == true.
 type PageDownloadProgressEvent struct {
 	Method string `json:"method"`
@@ -259,8 +247,6 @@ type PageDownloadProgressEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-=======
->>>>>>> master
 // Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.
 type PageJavascriptDialogClosedEvent struct {
 	Method string `json:"method"`
@@ -760,38 +746,6 @@ func (c *Page) GetManifestIcons() (string, error) {
 	}
 
 	return chromeData.Result.PrimaryIcon, nil
-}
-
-// GetInstallabilityErrors -
-// Returns -  errors -
-func (c *Page) GetInstallabilityErrors() ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getInstallabilityErrors"})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Errors []string
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.Errors, nil
 }
 
 // GetCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the `cookies` field.
@@ -1781,48 +1735,15 @@ type PageSetInterceptFileChooserDialogParams struct {
 	Enabled bool `json:"enabled"`
 }
 
-<<<<<<< HEAD
 // SetInterceptFileChooserDialogWithParams - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted.
-=======
-// SetInterceptFileChooserDialogWithParams - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted. File chooser can be handled with `page.handleFileChooser` command.
->>>>>>> master
 func (c *Page) SetInterceptFileChooserDialogWithParams(v *PageSetInterceptFileChooserDialogParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setInterceptFileChooserDialog", Params: v})
 }
 
-<<<<<<< HEAD
 // SetInterceptFileChooserDialog - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted.
-=======
-// SetInterceptFileChooserDialog - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted. File chooser can be handled with `page.handleFileChooser` command.
->>>>>>> master
 // enabled -
 func (c *Page) SetInterceptFileChooserDialog(enabled bool) (*gcdmessage.ChromeResponse, error) {
 	var v PageSetInterceptFileChooserDialogParams
 	v.Enabled = enabled
 	return c.SetInterceptFileChooserDialogWithParams(&v)
 }
-<<<<<<< HEAD
-=======
-
-type PageHandleFileChooserParams struct {
-	//
-	Action string `json:"action"`
-	// Array of absolute file paths to set, only respected with `accept` action.
-	Files []string `json:"files,omitempty"`
-}
-
-// HandleFileChooserWithParams - Accepts or cancels an intercepted file chooser dialog.
-func (c *Page) HandleFileChooserWithParams(v *PageHandleFileChooserParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.handleFileChooser", Params: v})
-}
-
-// HandleFileChooser - Accepts or cancels an intercepted file chooser dialog.
-// action -
-// files - Array of absolute file paths to set, only respected with `accept` action.
-func (c *Page) HandleFileChooser(action string, files []string) (*gcdmessage.ChromeResponse, error) {
-	var v PageHandleFileChooserParams
-	v.Action = action
-	v.Files = files
-	return c.HandleFileChooserWithParams(&v)
-}
->>>>>>> master
