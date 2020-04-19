@@ -15,12 +15,15 @@ type EmulationScreenOrientation struct {
 	Angle int    `json:"angle"` // Orientation angle.
 }
 
+<<<<<<< HEAD
 // No Description.
 type EmulationMediaFeature struct {
 	Name  string `json:"name"`  //
 	Value string `json:"value"` //
 }
 
+=======
+>>>>>>> master
 type Emulation struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -455,6 +458,7 @@ func (c *Emulation) SetVirtualTimePolicy(policy string, budget float64, maxVirtu
 	return c.SetVirtualTimePolicyWithParams(&v)
 }
 
+<<<<<<< HEAD
 type EmulationSetLocaleOverrideParams struct {
 	// ICU style C locale (e.g. "en_US"). If not specified or empty, disables the override and restores default host system locale.
 	Locale string `json:"locale,omitempty"`
@@ -473,6 +477,8 @@ func (c *Emulation) SetLocaleOverride(locale string) (*gcdmessage.ChromeResponse
 	return c.SetLocaleOverrideWithParams(&v)
 }
 
+=======
+>>>>>>> master
 type EmulationSetTimezoneOverrideParams struct {
 	// The timezone identifier. If empty, disables the override and restores default host system timezone.
 	TimezoneId string `json:"timezoneId"`

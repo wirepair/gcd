@@ -82,7 +82,13 @@ func (c *Browser) SetPermission(permission *BrowserPermissionDescriptor, setting
 }
 
 type BrowserGrantPermissionsParams struct {
+<<<<<<< HEAD
 	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+=======
+	//
+	Origin string `json:"origin"`
+	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardRead, clipboardWrite, durableStorage, flash, geolocation, midi, midiSysex, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+>>>>>>> master
 	Permissions []string `json:"permissions"`
 	// Origin the permission applies to, all origins if not specified.
 	Origin string `json:"origin,omitempty"`
@@ -96,8 +102,13 @@ func (c *Browser) GrantPermissionsWithParams(v *BrowserGrantPermissionsParams) (
 }
 
 // GrantPermissions - Grant specific permissions to the given origin and reject all others.
+<<<<<<< HEAD
 // permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
 // origin - Origin the permission applies to, all origins if not specified.
+=======
+// origin -
+// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardRead, clipboardWrite, durableStorage, flash, geolocation, midi, midiSysex, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+>>>>>>> master
 // browserContextId - BrowserContext to override permissions. When omitted, default browser context is used.
 func (c *Browser) GrantPermissions(permissions []string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserGrantPermissionsParams

@@ -28,6 +28,7 @@ type WebAudioBaseAudioContext struct {
 	SampleRate            float64                      `json:"sampleRate"`             // Context sample rate.
 }
 
+<<<<<<< HEAD
 // Protocol object for AudioListner
 type WebAudioAudioListener struct {
 	ListenerId string `json:"listenerId"` //
@@ -58,6 +59,8 @@ type WebAudioAudioParam struct {
 	MaxValue     float64 `json:"maxValue"`     //
 }
 
+=======
+>>>>>>> master
 // Notifies that a new BaseAudioContext has been created.
 type WebAudioContextCreatedEvent struct {
 	Method string `json:"method"`
@@ -66,8 +69,13 @@ type WebAudioContextCreatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+<<<<<<< HEAD
 // Notifies that an existing BaseAudioContext will be destroyed.
 type WebAudioContextWillBeDestroyedEvent struct {
+=======
+// Notifies that existing BaseAudioContext has been destroyed.
+type WebAudioContextDestroyedEvent struct {
+>>>>>>> master
 	Method string `json:"method"`
 	Params struct {
 		ContextId string `json:"contextId"` //
@@ -82,6 +90,7 @@ type WebAudioContextChangedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+<<<<<<< HEAD
 // Notifies that the construction of an AudioListener has finished.
 type WebAudioAudioListenerCreatedEvent struct {
 	Method string `json:"method"`
@@ -180,6 +189,8 @@ type WebAudioNodeParamDisconnectedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+=======
+>>>>>>> master
 type WebAudio struct {
 	target gcdmessage.ChromeTargeter
 }

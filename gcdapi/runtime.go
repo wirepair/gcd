@@ -75,10 +75,15 @@ type RuntimeInternalPropertyDescriptor struct {
 
 // Object private field descriptor.
 type RuntimePrivatePropertyDescriptor struct {
+<<<<<<< HEAD
 	Name  string               `json:"name"`            // Private property name.
 	Value *RuntimeRemoteObject `json:"value,omitempty"` // The value associated with the private property.
 	Get   *RuntimeRemoteObject `json:"get,omitempty"`   // A function which serves as a getter for the private property, or `undefined` if there is no getter (accessor descriptors only).
 	Set   *RuntimeRemoteObject `json:"set,omitempty"`   // A function which serves as a setter for the private property, or `undefined` if there is no setter (accessor descriptors only).
+=======
+	Name  string               `json:"name"`  // Private property name.
+	Value *RuntimeRemoteObject `json:"value"` // The value associated with the private property.
+>>>>>>> master
 }
 
 // Represents function call argument. Either remote object id `objectId`, primitive `value`, unserializable primitive value or neither of (for undefined) them should be specified.

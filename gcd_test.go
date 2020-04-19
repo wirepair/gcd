@@ -59,6 +59,9 @@ func testCleanUp() {
 }
 
 func TestDeleteProfileOnExit(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("windows will hold on to the process handle too long")
+	}
 	debugger := NewChromeDebugger()
 	debugger.DeleteProfileOnExit()
 
@@ -482,6 +485,7 @@ func testExtensionStartup(t *testing.T) {
 func testDefaultStartup(t *testing.T) {
 	debugger = NewChromeDebugger()
 	debugger.DeleteProfileOnExit()
+	debugger.AddFlags([]string{"--headless"})
 	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
 }
 

@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2018 isaac dawson
+Copyright (c) 2020 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import (
 	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "v1.0.3"
+var GCDVERSION = "v1.0.8"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -104,6 +104,16 @@ func (c *Gcd) SetTimeout(timeout time.Duration) {
 	c.timeout = timeout
 }
 
+// Port that the debugger is listening on
+func (c *Gcd) Port() string {
+	return c.port
+}
+
+// Host that the debugger is listening on
+func (c *Gcd) Host() string {
+	return c.host
+}
+
 // AddFlags Allows caller to add additional startup flags to the chrome process
 func (c *Gcd) AddFlags(flags []string) {
 	c.flags = append(c.flags, flags...)
@@ -118,7 +128,7 @@ func (c *Gcd) DeleteProfileOnExit() {
 	c.deleteProfile = true
 }
 
-// Starts the process
+// StartProcess the process
 // exePath - the path to the executable
 // userDir - the user directory to start from so we get a fresh profile
 // port - The port to listen on.
@@ -141,6 +151,22 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 	c.chromeCmd.Env = os.Environ()
 	c.chromeCmd.Env = append(c.chromeCmd.Env, c.env...)
 
+	return c.startProcess()
+}
+
+// StartProcessCustom lets you pass in the exec.Cmd to use
+func (c *Gcd) StartProcessCustom(cmd *exec.Cmd, userDir, port string) error {
+	c.port = port
+	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
+	c.profileDir = userDir
+	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
+	c.chromeCmd = cmd
+
+	return c.startProcess()
+}
+
+// startProcess starts the process and waits for the debugger port to be ready
+func (c *Gcd) startProcess() error {
 	go func() {
 		err := c.chromeCmd.Start()
 		if err != nil {
@@ -176,9 +202,12 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 
 // ExitProcess kills the process
 func (c *Gcd) ExitProcess() error {
-	err := c.chromeProcess.Kill()
-	c.removeProfileDir()
-	return err
+	return c.chromeProcess.Kill()
+}
+
+// PID of the started process
+func (c *Gcd) PID() int {
+	return c.chromeProcess.Pid
 }
 
 // removeProfileDir if deleteProfile is true

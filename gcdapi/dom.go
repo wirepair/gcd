@@ -721,8 +721,13 @@ type DOMGetNodeForLocationParams struct {
 }
 
 // GetNodeForLocationWithParams - Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is either returned or not.
+<<<<<<< HEAD
 // Returns -  backendNodeId - Resulting node. frameId - Frame this node belongs to. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int, string, int, error) {
+=======
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
+func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int, int, error) {
+>>>>>>> master
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: v})
 	if err != nil {
 		return 0, "", 0, err
@@ -758,9 +763,14 @@ func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int,
 // x - X coordinate.
 // y - Y coordinate.
 // includeUserAgentShadowDOM - False to skip to the nearest non-UA shadow root ancestor (default: false).
+<<<<<<< HEAD
 // ignorePointerEventsNone - Whether to ignore pointer-events: none on elements and hit test them.
 // Returns -  backendNodeId - Resulting node. frameId - Frame this node belongs to. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetNodeForLocation(x int, y int, includeUserAgentShadowDOM bool, ignorePointerEventsNone bool) (int, string, int, error) {
+=======
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
+func (c *DOM) GetNodeForLocation(x int, y int, includeUserAgentShadowDOM bool) (int, int, error) {
+>>>>>>> master
 	var v DOMGetNodeForLocationParams
 	v.X = x
 	v.Y = y
@@ -1497,6 +1507,7 @@ func (c *DOM) SetFileInputFiles(files []string, nodeId int, backendNodeId int, o
 	return c.SetFileInputFilesWithParams(&v)
 }
 
+<<<<<<< HEAD
 type DOMSetNodeStackTracesEnabledParams struct {
 	// Enable or disable.
 	Enable bool `json:"enable"`
@@ -1561,6 +1572,8 @@ func (c *DOM) GetNodeStackTraces(nodeId int) (*RuntimeStackTrace, error) {
 	return c.GetNodeStackTracesWithParams(&v)
 }
 
+=======
+>>>>>>> master
 type DOMGetFileInfoParams struct {
 	// JavaScript object id of the node wrapper.
 	ObjectId string `json:"objectId"`
