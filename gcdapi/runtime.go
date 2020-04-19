@@ -12,7 +12,7 @@ import (
 // Mirror object referencing original JavaScript object.
 type RuntimeRemoteObject struct {
 	Type                string                `json:"type"`                          // Object type.
-	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only.
+	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` or `wasm` type values only.
 	ClassName           string                `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
 	Value               interface{}           `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
 	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property.
@@ -75,8 +75,15 @@ type RuntimeInternalPropertyDescriptor struct {
 
 // Object private field descriptor.
 type RuntimePrivatePropertyDescriptor struct {
+<<<<<<< HEAD
+	Name  string               `json:"name"`            // Private property name.
+	Value *RuntimeRemoteObject `json:"value,omitempty"` // The value associated with the private property.
+	Get   *RuntimeRemoteObject `json:"get,omitempty"`   // A function which serves as a getter for the private property, or `undefined` if there is no getter (accessor descriptors only).
+	Set   *RuntimeRemoteObject `json:"set,omitempty"`   // A function which serves as a setter for the private property, or `undefined` if there is no setter (accessor descriptors only).
+=======
 	Name  string               `json:"name"`  // Private property name.
 	Value *RuntimeRemoteObject `json:"value"` // The value associated with the private property.
+>>>>>>> master
 }
 
 // Represents function call argument. Either remote object id `objectId`, primitive `value`, unserializable primitive value or neither of (for undefined) them should be specified.
@@ -436,10 +443,14 @@ type RuntimeEvaluateParams struct {
 	UserGesture bool `json:"userGesture,omitempty"`
 	// Whether execution should `await` for resulting value and return once awaited promise is resolved.
 	AwaitPromise bool `json:"awaitPromise,omitempty"`
-	// Whether to throw an exception if side effect cannot be ruled out during evaluation.
+	// Whether to throw an exception if side effect cannot be ruled out during evaluation. This implies `disableBreaks` below.
 	ThrowOnSideEffect bool `json:"throwOnSideEffect,omitempty"`
 	// Terminate execution after timing out (number of milliseconds).
 	Timeout float64 `json:"timeout,omitempty"`
+	// Disable breakpoints during execution.
+	DisableBreaks bool `json:"disableBreaks,omitempty"`
+	// Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
+	ReplMode bool `json:"replMode,omitempty"`
 }
 
 // EvaluateWithParams - Evaluates expression on global object.
@@ -485,10 +496,12 @@ func (c *Runtime) EvaluateWithParams(v *RuntimeEvaluateParams) (*RuntimeRemoteOb
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
 // awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
-// throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation.
+// throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation. This implies `disableBreaks` below.
 // timeout - Terminate execution after timing out (number of milliseconds).
+// disableBreaks - Disable breakpoints during execution.
+// replMode - Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
 	v.Expression = expression
 	v.ObjectGroup = objectGroup
@@ -501,6 +514,8 @@ func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommand
 	v.AwaitPromise = awaitPromise
 	v.ThrowOnSideEffect = throwOnSideEffect
 	v.Timeout = timeout
+	v.DisableBreaks = disableBreaks
+	v.ReplMode = replMode
 	return c.EvaluateWithParams(&v)
 }
 

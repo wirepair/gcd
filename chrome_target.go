@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2019 isaac dawson
+Copyright (c) 2020 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -107,10 +107,11 @@ type ChromeTarget struct {
 	Storage              *gcdapi.Storage
 	SystemInfo           *gcdapi.SystemInfo
 	TargetApi            *gcdapi.Target // buh name collision
-	Tethering            *gcdapi.Tethering
-	Testing              *gcdapi.Testing
 	Tracing              *gcdapi.Tracing
+	Tethering            *gcdapi.Tethering
+	Media                *gcdapi.Media
 	WebAudio             *gcdapi.WebAudio
+	WebAuthn             *gcdapi.WebAuthn
 
 	Target      *TargetInfo              // The target information see, TargetInfo
 	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
@@ -182,9 +183,13 @@ func (c *ChromeTarget) Init() {
 	c.Tethering = gcdapi.NewTethering(c)
 	c.HeadlessExperimental = gcdapi.NewHeadlessExperimental(c)
 	c.Performance = gcdapi.NewPerformance(c)
-	c.Testing = gcdapi.NewTesting(c)
 	c.Fetch = gcdapi.NewFetch(c)
+	c.Cast = gcdapi.NewCast(c)
+	c.Media = gcdapi.NewMedia(c)
 	c.WebAudio = gcdapi.NewWebAudio(c)
+	c.WebAuthn = gcdapi.NewWebAuthn(c)
+	c.BackgroundService = gcdapi.NewBackgroundService(c)
+
 }
 
 // clean up this target

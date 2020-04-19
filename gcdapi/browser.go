@@ -18,6 +18,15 @@ type BrowserBounds struct {
 	WindowState string `json:"windowState,omitempty"` // The window state. Default to normal. enum values: normal, minimized, maximized, fullscreen
 }
 
+// Definition of PermissionDescriptor defined in the Permissions API: https://w3c.github.io/permissions/#dictdef-permissiondescriptor.
+type BrowserPermissionDescriptor struct {
+	Name                     string `json:"name"`                               // Name of permission. See https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/permissions/permission_descriptor.idl for valid permission names.
+	Sysex                    bool   `json:"sysex,omitempty"`                    // For "midi" permission, may also specify sysex control.
+	UserVisibleOnly          bool   `json:"userVisibleOnly,omitempty"`          // For "push" permission, may specify userVisibleOnly. Note that userVisibleOnly = true is the only currently supported type.
+	Type                     string `json:"type,omitempty"`                     // For "wake-lock" permission, must specify type as either "screen" or "system".
+	AllowWithoutSanitization bool   `json:"allowWithoutSanitization,omitempty"` // For "clipboard" permission, may specify allowWithoutSanitization.
+}
+
 // Chrome histogram bucket.
 type BrowserBucket struct {
 	Low   int `json:"low"`   // Minimum value (inclusive).
@@ -42,11 +51,47 @@ func NewBrowser(target gcdmessage.ChromeTargeter) *Browser {
 	return c
 }
 
+type BrowserSetPermissionParams struct {
+	// Descriptor of permission to override.
+	Permission *BrowserPermissionDescriptor `json:"permission"`
+	// Setting of the permission. enum values: granted, denied, prompt
+	Setting string `json:"setting"`
+	// Origin the permission applies to, all origins if not specified.
+	Origin string `json:"origin,omitempty"`
+	// Context to override. When omitted, default browser context is used.
+	BrowserContextId string `json:"browserContextId,omitempty"`
+}
+
+// SetPermissionWithParams - Set permission settings for given origin.
+func (c *Browser) SetPermissionWithParams(v *BrowserSetPermissionParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setPermission", Params: v})
+}
+
+// SetPermission - Set permission settings for given origin.
+// permission - Descriptor of permission to override.
+// setting - Setting of the permission. enum values: granted, denied, prompt
+// origin - Origin the permission applies to, all origins if not specified.
+// browserContextId - Context to override. When omitted, default browser context is used.
+func (c *Browser) SetPermission(permission *BrowserPermissionDescriptor, setting string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
+	var v BrowserSetPermissionParams
+	v.Permission = permission
+	v.Setting = setting
+	v.Origin = origin
+	v.BrowserContextId = browserContextId
+	return c.SetPermissionWithParams(&v)
+}
+
 type BrowserGrantPermissionsParams struct {
+<<<<<<< HEAD
+	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+=======
 	//
 	Origin string `json:"origin"`
 	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardRead, clipboardWrite, durableStorage, flash, geolocation, midi, midiSysex, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+>>>>>>> master
 	Permissions []string `json:"permissions"`
+	// Origin the permission applies to, all origins if not specified.
+	Origin string `json:"origin,omitempty"`
 	// BrowserContext to override permissions. When omitted, default browser context is used.
 	BrowserContextId string `json:"browserContextId,omitempty"`
 }
@@ -57,13 +102,18 @@ func (c *Browser) GrantPermissionsWithParams(v *BrowserGrantPermissionsParams) (
 }
 
 // GrantPermissions - Grant specific permissions to the given origin and reject all others.
+<<<<<<< HEAD
+// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+// origin - Origin the permission applies to, all origins if not specified.
+=======
 // origin -
 // permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardRead, clipboardWrite, durableStorage, flash, geolocation, midi, midiSysex, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+>>>>>>> master
 // browserContextId - BrowserContext to override permissions. When omitted, default browser context is used.
-func (c *Browser) GrantPermissions(origin string, permissions []string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Browser) GrantPermissions(permissions []string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserGrantPermissionsParams
-	v.Origin = origin
 	v.Permissions = permissions
+	v.Origin = origin
 	v.BrowserContextId = browserContextId
 	return c.GrantPermissionsWithParams(&v)
 }
@@ -84,6 +134,32 @@ func (c *Browser) ResetPermissions(browserContextId string) (*gcdmessage.ChromeR
 	var v BrowserResetPermissionsParams
 	v.BrowserContextId = browserContextId
 	return c.ResetPermissionsWithParams(&v)
+}
+
+type BrowserSetDownloadBehaviorParams struct {
+	// Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
+	Behavior string `json:"behavior"`
+	// BrowserContext to set download behavior. When omitted, default browser context is used.
+	BrowserContextId string `json:"browserContextId,omitempty"`
+	// The default path to save downloaded files to. This is requred if behavior is set to 'allow' or 'allowAndName'.
+	DownloadPath string `json:"downloadPath,omitempty"`
+}
+
+// SetDownloadBehaviorWithParams - Set the behavior when downloading a file.
+func (c *Browser) SetDownloadBehaviorWithParams(v *BrowserSetDownloadBehaviorParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDownloadBehavior", Params: v})
+}
+
+// SetDownloadBehavior - Set the behavior when downloading a file.
+// behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
+// browserContextId - BrowserContext to set download behavior. When omitted, default browser context is used.
+// downloadPath - The default path to save downloaded files to. This is requred if behavior is set to 'allow' or 'allowAndName'.
+func (c *Browser) SetDownloadBehavior(behavior string, browserContextId string, downloadPath string) (*gcdmessage.ChromeResponse, error) {
+	var v BrowserSetDownloadBehaviorParams
+	v.Behavior = behavior
+	v.BrowserContextId = browserContextId
+	v.DownloadPath = downloadPath
+	return c.SetDownloadBehaviorWithParams(&v)
 }
 
 // Close browser gracefully.

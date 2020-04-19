@@ -81,6 +81,92 @@ func (c *Storage) ClearDataForOrigin(origin string, storageTypes string) (*gcdme
 	return c.ClearDataForOriginWithParams(&v)
 }
 
+type StorageGetCookiesParams struct {
+	// Browser context to use when called on the browser endpoint.
+	BrowserContextId string `json:"browserContextId,omitempty"`
+}
+
+// GetCookiesWithParams - Returns all browser cookies.
+// Returns -  cookies - Array of cookie objects.
+func (c *Storage) GetCookiesWithParams(v *StorageGetCookiesParams) ([]*NetworkCookie, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getCookies", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Cookies []*NetworkCookie
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Cookies, nil
+}
+
+// GetCookies - Returns all browser cookies.
+// browserContextId - Browser context to use when called on the browser endpoint.
+// Returns -  cookies - Array of cookie objects.
+func (c *Storage) GetCookies(browserContextId string) ([]*NetworkCookie, error) {
+	var v StorageGetCookiesParams
+	v.BrowserContextId = browserContextId
+	return c.GetCookiesWithParams(&v)
+}
+
+type StorageSetCookiesParams struct {
+	// Cookies to be set.
+	Cookies []*NetworkCookieParam `json:"cookies"`
+	// Browser context to use when called on the browser endpoint.
+	BrowserContextId string `json:"browserContextId,omitempty"`
+}
+
+// SetCookiesWithParams - Sets given cookies.
+func (c *Storage) SetCookiesWithParams(v *StorageSetCookiesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.setCookies", Params: v})
+}
+
+// SetCookies - Sets given cookies.
+// cookies - Cookies to be set.
+// browserContextId - Browser context to use when called on the browser endpoint.
+func (c *Storage) SetCookies(cookies []*NetworkCookieParam, browserContextId string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageSetCookiesParams
+	v.Cookies = cookies
+	v.BrowserContextId = browserContextId
+	return c.SetCookiesWithParams(&v)
+}
+
+type StorageClearCookiesParams struct {
+	// Browser context to use when called on the browser endpoint.
+	BrowserContextId string `json:"browserContextId,omitempty"`
+}
+
+// ClearCookiesWithParams - Clears cookies.
+func (c *Storage) ClearCookiesWithParams(v *StorageClearCookiesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearCookies", Params: v})
+}
+
+// ClearCookies - Clears cookies.
+// browserContextId - Browser context to use when called on the browser endpoint.
+func (c *Storage) ClearCookies(browserContextId string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageClearCookiesParams
+	v.BrowserContextId = browserContextId
+	return c.ClearCookiesWithParams(&v)
+}
+
 type StorageGetUsageAndQuotaParams struct {
 	// Security origin.
 	Origin string `json:"origin"`

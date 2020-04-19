@@ -38,9 +38,22 @@ func (c *Performance) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.disable"})
 }
 
-// Enable collecting and reporting metrics.
-func (c *Performance) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.enable"})
+type PerformanceEnableParams struct {
+	// Time domain to use for collecting and reporting duration metrics.
+	TimeDomain string `json:"timeDomain,omitempty"`
+}
+
+// EnableWithParams - Enable collecting and reporting metrics.
+func (c *Performance) EnableWithParams(v *PerformanceEnableParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.enable", Params: v})
+}
+
+// Enable - Enable collecting and reporting metrics.
+// timeDomain - Time domain to use for collecting and reporting duration metrics.
+func (c *Performance) Enable(timeDomain string) (*gcdmessage.ChromeResponse, error) {
+	var v PerformanceEnableParams
+	v.TimeDomain = timeDomain
+	return c.EnableWithParams(&v)
 }
 
 type PerformanceSetTimeDomainParams struct {

@@ -13,17 +13,33 @@ import (
 type WebAuthnVirtualAuthenticatorOptions struct {
 	Protocol                    string `json:"protocol"`                              //  enum values: u2f, ctap2
 	Transport                   string `json:"transport"`                             //  enum values: usb, nfc, ble, cable, internal
+<<<<<<< HEAD
+	HasResidentKey              bool   `json:"hasResidentKey,omitempty"`              // Defaults to false.
+	HasUserVerification         bool   `json:"hasUserVerification,omitempty"`         // Defaults to false.
+	AutomaticPresenceSimulation bool   `json:"automaticPresenceSimulation,omitempty"` // If set to true, tests of user presence will succeed immediately. Otherwise, they will not be resolved. Defaults to true.
+	IsUserVerified              bool   `json:"isUserVerified,omitempty"`              // Sets whether User Verification succeeds or fails for an authenticator. Defaults to false.
+=======
 	HasResidentKey              bool   `json:"hasResidentKey"`                        //
 	HasUserVerification         bool   `json:"hasUserVerification"`                   //
 	AutomaticPresenceSimulation bool   `json:"automaticPresenceSimulation,omitempty"` // If set to true, tests of user presence will succeed immediately. Otherwise, they will not be resolved. Defaults to true.
+>>>>>>> master
 }
 
 // No Description.
 type WebAuthnCredential struct {
+<<<<<<< HEAD
+	CredentialId         string `json:"credentialId"`         //
+	IsResidentCredential bool   `json:"isResidentCredential"` //
+	RpId                 string `json:"rpId,omitempty"`       // Relying Party ID the credential is scoped to. Must be set when adding a credential.
+	PrivateKey           string `json:"privateKey"`           // The ECDSA P-256 private key in PKCS#8 format.
+	UserHandle           string `json:"userHandle,omitempty"` // An opaque byte sequence with a maximum size of 64 bytes mapping the credential to a specific user.
+	SignCount            int    `json:"signCount"`            // Signature counter. This is incremented by one for each successful assertion. See https://w3c.github.io/webauthn/#signature-counter
+=======
 	CredentialId string `json:"credentialId"` //
 	RpIdHash     string `json:"rpIdHash"`     // SHA-256 hash of the Relying Party ID the credential is scoped to. Must be 32 bytes long. See https://w3c.github.io/webauthn/#rpidhash
 	PrivateKey   string `json:"privateKey"`   // The private key in PKCS#8 format.
 	SignCount    int    `json:"signCount"`    // Signature counter. This is incremented by one for each successful assertion. See https://w3c.github.io/webauthn/#signature-counter
+>>>>>>> master
 }
 
 type WebAuthn struct {
@@ -131,6 +147,59 @@ func (c *WebAuthn) AddCredential(authenticatorId string, credential *WebAuthnCre
 	return c.AddCredentialWithParams(&v)
 }
 
+<<<<<<< HEAD
+type WebAuthnGetCredentialParams struct {
+	//
+	AuthenticatorId string `json:"authenticatorId"`
+	//
+	CredentialId string `json:"credentialId"`
+}
+
+// GetCredentialWithParams - Returns a single credential stored in the given virtual authenticator that matches the credential ID.
+// Returns -  credential -
+func (c *WebAuthn) GetCredentialWithParams(v *WebAuthnGetCredentialParams) (*WebAuthnCredential, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.getCredential", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Credential *WebAuthnCredential
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Credential, nil
+}
+
+// GetCredential - Returns a single credential stored in the given virtual authenticator that matches the credential ID.
+// authenticatorId -
+// credentialId -
+// Returns -  credential -
+func (c *WebAuthn) GetCredential(authenticatorId string, credentialId string) (*WebAuthnCredential, error) {
+	var v WebAuthnGetCredentialParams
+	v.AuthenticatorId = authenticatorId
+	v.CredentialId = credentialId
+	return c.GetCredentialWithParams(&v)
+}
+
+=======
+>>>>>>> master
 type WebAuthnGetCredentialsParams struct {
 	//
 	AuthenticatorId string `json:"authenticatorId"`
@@ -177,6 +246,31 @@ func (c *WebAuthn) GetCredentials(authenticatorId string) ([]*WebAuthnCredential
 	return c.GetCredentialsWithParams(&v)
 }
 
+<<<<<<< HEAD
+type WebAuthnRemoveCredentialParams struct {
+	//
+	AuthenticatorId string `json:"authenticatorId"`
+	//
+	CredentialId string `json:"credentialId"`
+}
+
+// RemoveCredentialWithParams - Removes a credential from the authenticator.
+func (c *WebAuthn) RemoveCredentialWithParams(v *WebAuthnRemoveCredentialParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.removeCredential", Params: v})
+}
+
+// RemoveCredential - Removes a credential from the authenticator.
+// authenticatorId -
+// credentialId -
+func (c *WebAuthn) RemoveCredential(authenticatorId string, credentialId string) (*gcdmessage.ChromeResponse, error) {
+	var v WebAuthnRemoveCredentialParams
+	v.AuthenticatorId = authenticatorId
+	v.CredentialId = credentialId
+	return c.RemoveCredentialWithParams(&v)
+}
+
+=======
+>>>>>>> master
 type WebAuthnClearCredentialsParams struct {
 	//
 	AuthenticatorId string `json:"authenticatorId"`

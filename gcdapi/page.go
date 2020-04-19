@@ -74,6 +74,11 @@ type PageAppManifestError struct {
 	Column   int    `json:"column"`   // Error column.
 }
 
+// Parsed app manifest properties.
+type PageAppManifestParsedProperties struct {
+	Scope string `json:"scope"` // Computed scope value
+}
+
 // Layout viewport position and dimensions.
 type PageLayoutViewport struct {
 	PageX        int `json:"pageX"`        // Horizontal offset relative to the document (CSS pixels).
@@ -120,6 +125,18 @@ type PageFontSizes struct {
 	Fixed    int `json:"fixed,omitempty"`    // Default fixed font size.
 }
 
+// No Description.
+type PageInstallabilityErrorArgument struct {
+	Name  string `json:"name"`  // Argument name (e.g. name:'minimum-icon-size-in-pixels').
+	Value string `json:"value"` // Argument value (e.g. value:'64').
+}
+
+// The installability error
+type PageInstallabilityError struct {
+	ErrorId        string                             `json:"errorId"`        // The error id (e.g. 'manifest-missing-suitable-icon').
+	ErrorArguments []*PageInstallabilityErrorArgument `json:"errorArguments"` // The list of error arguments (e.g. {name:'minimum-icon-size-in-pixels', value:'64'}).
+}
+
 //
 type PageDomContentEventFiredEvent struct {
 	Method string `json:"method"`
@@ -132,7 +149,13 @@ type PageDomContentEventFiredEvent struct {
 type PageFileChooserOpenedEvent struct {
 	Method string `json:"method"`
 	Params struct {
+<<<<<<< HEAD
+		FrameId       string `json:"frameId"`       // Id of the frame containing input node.
+		BackendNodeId int    `json:"backendNodeId"` // Input node id.
+		Mode          string `json:"mode"`          // Input mode.
+=======
 		Mode string `json:"mode"` //
+>>>>>>> master
 	} `json:"Params,omitempty"`
 }
 
@@ -175,7 +198,11 @@ type PageFrameRequestedNavigationEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId string `json:"frameId"` // Id of the frame that is being navigated.
+<<<<<<< HEAD
+		Reason  string `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
+=======
 		Reason  string `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload
+>>>>>>> master
 		Url     string `json:"url"`     // The destination URL for the requested navigation.
 	} `json:"Params,omitempty"`
 }
@@ -186,7 +213,7 @@ type PageFrameScheduledNavigationEvent struct {
 	Params struct {
 		FrameId string  `json:"frameId"` // Id of the frame that has scheduled a navigation.
 		Delay   float64 `json:"delay"`   // Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start.
-		Reason  string  `json:"reason"`  // The reason for the navigation.
+		Reason  string  `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
 		Url     string  `json:"url"`     // The destination URL for the scheduled navigation.
 	} `json:"Params,omitempty"`
 }
@@ -212,10 +239,28 @@ type PageDownloadWillBeginEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId string `json:"frameId"` // Id of the frame that caused download to begin.
+<<<<<<< HEAD
+		Guid    string `json:"guid"`    // Global unique identifier of the download.
+=======
+>>>>>>> master
 		Url     string `json:"url"`     // URL of the resource being downloaded.
 	} `json:"Params,omitempty"`
 }
 
+<<<<<<< HEAD
+// Fired when download makes progress. Last call has |done| == true.
+type PageDownloadProgressEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Guid          string  `json:"guid"`          // Global unique identifier of the download.
+		TotalBytes    float64 `json:"totalBytes"`    // Total expected bytes to download.
+		ReceivedBytes float64 `json:"receivedBytes"` // Total bytes received.
+		State         string  `json:"state"`         // Download status.
+	} `json:"Params,omitempty"`
+}
+
+=======
+>>>>>>> master
 // Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.
 type PageJavascriptDialogClosedEvent struct {
 	Method string `json:"method"`
@@ -619,11 +664,11 @@ func (c *Page) Enable() (*gcdmessage.ChromeResponse, error) {
 }
 
 // GetAppManifest -
-// Returns -  url - Manifest location. errors -  data - Manifest content.
-func (c *Page) GetAppManifest() (string, []*PageAppManifestError, string, error) {
+// Returns -  url - Manifest location. errors -  data - Manifest content. parsed - Parsed manifest properties
+func (c *Page) GetAppManifest() (string, []*PageAppManifestError, string, *PageAppManifestParsedProperties, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getAppManifest"})
 	if err != nil {
-		return "", nil, "", err
+		return "", nil, "", nil, err
 	}
 
 	var chromeData struct {
@@ -631,25 +676,90 @@ func (c *Page) GetAppManifest() (string, []*PageAppManifestError, string, error)
 			Url    string
 			Errors []*PageAppManifestError
 			Data   string
+			Parsed *PageAppManifestParsedProperties
 		}
 	}
 
 	if resp == nil {
-		return "", nil, "", &gcdmessage.ChromeEmptyResponseErr{}
+		return "", nil, "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return "", nil, "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return "", nil, "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", nil, "", err
+		return "", nil, "", nil, err
 	}
 
-	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, nil
+	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, chromeData.Result.Parsed, nil
+}
+
+// GetInstallabilityErrors -
+// Returns -  installabilityErrors -
+func (c *Page) GetInstallabilityErrors() ([]*PageInstallabilityError, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getInstallabilityErrors"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			InstallabilityErrors []*PageInstallabilityError
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.InstallabilityErrors, nil
+}
+
+// GetManifestIcons -
+// Returns -  primaryIcon -
+func (c *Page) GetManifestIcons() (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getManifestIcons"})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			PrimaryIcon string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.PrimaryIcon, nil
 }
 
 // GetInstallabilityErrors -
@@ -934,6 +1044,8 @@ type PageNavigateParams struct {
 	TransitionType string `json:"transitionType,omitempty"`
 	// Frame id to navigate, if not specified navigates the top frame.
 	FrameId string `json:"frameId,omitempty"`
+	// Referrer-policy used for the navigation. enum values: noReferrer, noReferrerWhenDowngrade, origin, originWhenCrossOrigin, sameOrigin, strictOrigin, strictOriginWhenCrossOrigin, unsafeUrl
+	ReferrerPolicy string `json:"referrerPolicy,omitempty"`
 }
 
 // NavigateWithParams - Navigates current page to the given URL.
@@ -975,13 +1087,15 @@ func (c *Page) NavigateWithParams(v *PageNavigateParams) (string, string, string
 // referrer - Referrer URL.
 // transitionType - Intended transition type. enum values: link, typed, address_bar, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 // frameId - Frame id to navigate, if not specified navigates the top frame.
+// referrerPolicy - Referrer-policy used for the navigation. enum values: noReferrer, noReferrerWhenDowngrade, origin, originWhenCrossOrigin, sameOrigin, strictOrigin, strictOriginWhenCrossOrigin, unsafeUrl
 // Returns -  frameId - Frame id that has navigated (or failed to navigate) loaderId - Loader identifier. errorText - User friendly error message, present if and only if navigation has failed.
-func (c *Page) Navigate(url string, referrer string, transitionType string, frameId string) (string, string, string, error) {
+func (c *Page) Navigate(url string, referrer string, transitionType string, frameId string, referrerPolicy string) (string, string, string, error) {
 	var v PageNavigateParams
 	v.Url = url
 	v.Referrer = referrer
 	v.TransitionType = transitionType
 	v.FrameId = frameId
+	v.ReferrerPolicy = referrerPolicy
 	return c.NavigateWithParams(&v)
 }
 
@@ -1667,18 +1781,28 @@ type PageSetInterceptFileChooserDialogParams struct {
 	Enabled bool `json:"enabled"`
 }
 
+<<<<<<< HEAD
+// SetInterceptFileChooserDialogWithParams - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted.
+=======
 // SetInterceptFileChooserDialogWithParams - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted. File chooser can be handled with `page.handleFileChooser` command.
+>>>>>>> master
 func (c *Page) SetInterceptFileChooserDialogWithParams(v *PageSetInterceptFileChooserDialogParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setInterceptFileChooserDialog", Params: v})
 }
 
+<<<<<<< HEAD
+// SetInterceptFileChooserDialog - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted.
+=======
 // SetInterceptFileChooserDialog - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted. File chooser can be handled with `page.handleFileChooser` command.
+>>>>>>> master
 // enabled -
 func (c *Page) SetInterceptFileChooserDialog(enabled bool) (*gcdmessage.ChromeResponse, error) {
 	var v PageSetInterceptFileChooserDialogParams
 	v.Enabled = enabled
 	return c.SetInterceptFileChooserDialogWithParams(&v)
 }
+<<<<<<< HEAD
+=======
 
 type PageHandleFileChooserParams struct {
 	//
@@ -1701,3 +1825,4 @@ func (c *Page) HandleFileChooser(action string, files []string) (*gcdmessage.Chr
 	v.Files = files
 	return c.HandleFileChooserWithParams(&v)
 }
+>>>>>>> master

@@ -306,6 +306,8 @@ func (c *HeapProfiler) StopSampling() (*HeapProfilerSamplingHeapProfile, error) 
 type HeapProfilerStopTrackingHeapObjectsParams struct {
 	// If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
 	ReportProgress bool `json:"reportProgress,omitempty"`
+	//
+	TreatGlobalObjectsAsRoots bool `json:"treatGlobalObjectsAsRoots,omitempty"`
 }
 
 // StopTrackingHeapObjectsWithParams -
@@ -315,15 +317,19 @@ func (c *HeapProfiler) StopTrackingHeapObjectsWithParams(v *HeapProfilerStopTrac
 
 // StopTrackingHeapObjects -
 // reportProgress - If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
-func (c *HeapProfiler) StopTrackingHeapObjects(reportProgress bool) (*gcdmessage.ChromeResponse, error) {
+// treatGlobalObjectsAsRoots -
+func (c *HeapProfiler) StopTrackingHeapObjects(reportProgress bool, treatGlobalObjectsAsRoots bool) (*gcdmessage.ChromeResponse, error) {
 	var v HeapProfilerStopTrackingHeapObjectsParams
 	v.ReportProgress = reportProgress
+	v.TreatGlobalObjectsAsRoots = treatGlobalObjectsAsRoots
 	return c.StopTrackingHeapObjectsWithParams(&v)
 }
 
 type HeapProfilerTakeHeapSnapshotParams struct {
 	// If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
 	ReportProgress bool `json:"reportProgress,omitempty"`
+	// If true, a raw snapshot without artifical roots will be generated
+	TreatGlobalObjectsAsRoots bool `json:"treatGlobalObjectsAsRoots,omitempty"`
 }
 
 // TakeHeapSnapshotWithParams -
@@ -333,8 +339,10 @@ func (c *HeapProfiler) TakeHeapSnapshotWithParams(v *HeapProfilerTakeHeapSnapsho
 
 // TakeHeapSnapshot -
 // reportProgress - If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
-func (c *HeapProfiler) TakeHeapSnapshot(reportProgress bool) (*gcdmessage.ChromeResponse, error) {
+// treatGlobalObjectsAsRoots - If true, a raw snapshot without artifical roots will be generated
+func (c *HeapProfiler) TakeHeapSnapshot(reportProgress bool, treatGlobalObjectsAsRoots bool) (*gcdmessage.ChromeResponse, error) {
 	var v HeapProfilerTakeHeapSnapshotParams
 	v.ReportProgress = reportProgress
+	v.TreatGlobalObjectsAsRoots = treatGlobalObjectsAsRoots
 	return c.TakeHeapSnapshotWithParams(&v)
 }

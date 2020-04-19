@@ -106,10 +106,15 @@ func (c *Tracing) RecordClockSyncMarker(syncId string) (*gcdmessage.ChromeRespon
 	return c.RecordClockSyncMarkerWithParams(&v)
 }
 
-// RequestMemoryDump - Request a global memory dump.
+type TracingRequestMemoryDumpParams struct {
+	// Enables more deterministic results by forcing garbage collection
+	Deterministic bool `json:"deterministic,omitempty"`
+}
+
+// RequestMemoryDumpWithParams - Request a global memory dump.
 // Returns -  dumpGuid - GUID of the resulting global memory dump. success - True iff the global memory dump succeeded.
-func (c *Tracing) RequestMemoryDump() (string, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.requestMemoryDump"})
+func (c *Tracing) RequestMemoryDumpWithParams(v *TracingRequestMemoryDumpParams) (string, bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.requestMemoryDump", Params: v})
 	if err != nil {
 		return "", false, err
 	}
@@ -137,6 +142,15 @@ func (c *Tracing) RequestMemoryDump() (string, bool, error) {
 	}
 
 	return chromeData.Result.DumpGuid, chromeData.Result.Success, nil
+}
+
+// RequestMemoryDump - Request a global memory dump.
+// deterministic - Enables more deterministic results by forcing garbage collection
+// Returns -  dumpGuid - GUID of the resulting global memory dump. success - True iff the global memory dump succeeded.
+func (c *Tracing) RequestMemoryDump(deterministic bool) (string, bool, error) {
+	var v TracingRequestMemoryDumpParams
+	v.Deterministic = deterministic
+	return c.RequestMemoryDumpWithParams(&v)
 }
 
 type TracingStartParams struct {

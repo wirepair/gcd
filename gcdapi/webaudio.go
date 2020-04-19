@@ -28,6 +28,39 @@ type WebAudioBaseAudioContext struct {
 	SampleRate            float64                      `json:"sampleRate"`             // Context sample rate.
 }
 
+<<<<<<< HEAD
+// Protocol object for AudioListner
+type WebAudioAudioListener struct {
+	ListenerId string `json:"listenerId"` //
+	ContextId  string `json:"contextId"`  //
+}
+
+// Protocol object for AudioNode
+type WebAudioAudioNode struct {
+	NodeId                string  `json:"nodeId"`                //
+	ContextId             string  `json:"contextId"`             //
+	NodeType              string  `json:"nodeType"`              //
+	NumberOfInputs        float64 `json:"numberOfInputs"`        //
+	NumberOfOutputs       float64 `json:"numberOfOutputs"`       //
+	ChannelCount          float64 `json:"channelCount"`          //
+	ChannelCountMode      string  `json:"channelCountMode"`      //  enum values: clamped-max, explicit, max
+	ChannelInterpretation string  `json:"channelInterpretation"` //  enum values: discrete, speakers
+}
+
+// Protocol object for AudioParam
+type WebAudioAudioParam struct {
+	ParamId      string  `json:"paramId"`      //
+	NodeId       string  `json:"nodeId"`       //
+	ContextId    string  `json:"contextId"`    //
+	ParamType    string  `json:"paramType"`    //
+	Rate         string  `json:"rate"`         //  enum values: a-rate, k-rate
+	DefaultValue float64 `json:"defaultValue"` //
+	MinValue     float64 `json:"minValue"`     //
+	MaxValue     float64 `json:"maxValue"`     //
+}
+
+=======
+>>>>>>> master
 // Notifies that a new BaseAudioContext has been created.
 type WebAudioContextCreatedEvent struct {
 	Method string `json:"method"`
@@ -36,8 +69,13 @@ type WebAudioContextCreatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+<<<<<<< HEAD
+// Notifies that an existing BaseAudioContext will be destroyed.
+type WebAudioContextWillBeDestroyedEvent struct {
+=======
 // Notifies that existing BaseAudioContext has been destroyed.
 type WebAudioContextDestroyedEvent struct {
+>>>>>>> master
 	Method string `json:"method"`
 	Params struct {
 		ContextId string `json:"contextId"` //
@@ -52,6 +90,107 @@ type WebAudioContextChangedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+<<<<<<< HEAD
+// Notifies that the construction of an AudioListener has finished.
+type WebAudioAudioListenerCreatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Listener *WebAudioAudioListener `json:"listener"` //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that a new AudioListener has been created.
+type WebAudioAudioListenerWillBeDestroyedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		ContextId  string `json:"contextId"`  //
+		ListenerId string `json:"listenerId"` //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that a new AudioNode has been created.
+type WebAudioAudioNodeCreatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Node *WebAudioAudioNode `json:"node"` //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that an existing AudioNode has been destroyed.
+type WebAudioAudioNodeWillBeDestroyedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		ContextId string `json:"contextId"` //
+		NodeId    string `json:"nodeId"`    //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that a new AudioParam has been created.
+type WebAudioAudioParamCreatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Param *WebAudioAudioParam `json:"param"` //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that an existing AudioParam has been destroyed.
+type WebAudioAudioParamWillBeDestroyedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		ContextId string `json:"contextId"` //
+		NodeId    string `json:"nodeId"`    //
+		ParamId   string `json:"paramId"`   //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that two AudioNodes are connected.
+type WebAudioNodesConnectedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		ContextId             string  `json:"contextId"`                       //
+		SourceId              string  `json:"sourceId"`                        //
+		DestinationId         string  `json:"destinationId"`                   //
+		SourceOutputIndex     float64 `json:"sourceOutputIndex,omitempty"`     //
+		DestinationInputIndex float64 `json:"destinationInputIndex,omitempty"` //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that AudioNodes are disconnected. The destination can be null, and it means all the outgoing connections from the source are disconnected.
+type WebAudioNodesDisconnectedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		ContextId             string  `json:"contextId"`                       //
+		SourceId              string  `json:"sourceId"`                        //
+		DestinationId         string  `json:"destinationId"`                   //
+		SourceOutputIndex     float64 `json:"sourceOutputIndex,omitempty"`     //
+		DestinationInputIndex float64 `json:"destinationInputIndex,omitempty"` //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that an AudioNode is connected to an AudioParam.
+type WebAudioNodeParamConnectedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		ContextId         string  `json:"contextId"`                   //
+		SourceId          string  `json:"sourceId"`                    //
+		DestinationId     string  `json:"destinationId"`               //
+		SourceOutputIndex float64 `json:"sourceOutputIndex,omitempty"` //
+	} `json:"Params,omitempty"`
+}
+
+// Notifies that an AudioNode is disconnected to an AudioParam.
+type WebAudioNodeParamDisconnectedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		ContextId         string  `json:"contextId"`                   //
+		SourceId          string  `json:"sourceId"`                    //
+		DestinationId     string  `json:"destinationId"`               //
+		SourceOutputIndex float64 `json:"sourceOutputIndex,omitempty"` //
+	} `json:"Params,omitempty"`
+}
+
+=======
+>>>>>>> master
 type WebAudio struct {
 	target gcdmessage.ChromeTargeter
 }

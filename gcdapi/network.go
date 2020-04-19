@@ -92,7 +92,7 @@ type NetworkResponse struct {
 	EncodedDataLength  float64                 `json:"encodedDataLength"`            // Total number of bytes received for this request so far.
 	Timing             *NetworkResourceTiming  `json:"timing,omitempty"`             // Timing information for the given request.
 	Protocol           string                  `json:"protocol,omitempty"`           // Protocol used to fetch this request.
-	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, secure, info
+	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, secure, info, insecure-broken
 	SecurityDetails    *NetworkSecurityDetails `json:"securityDetails,omitempty"`    // Security details for the request.
 }
 
@@ -145,20 +145,36 @@ type NetworkCookie struct {
 	HttpOnly bool    `json:"httpOnly"`           // True if cookie is http-only.
 	Secure   bool    `json:"secure"`             // True if cookie is secure.
 	Session  bool    `json:"session"`            // True in case of session cookie.
+<<<<<<< HEAD
+	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, None
+	Priority string  `json:"priority"`           // Cookie Priority enum values: Low, Medium, High
+=======
 	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, Extended, None
+>>>>>>> master
 }
 
 // A cookie which was not stored from a response with the corresponding reason.
 type NetworkBlockedSetCookieWithReason struct {
+<<<<<<< HEAD
+	BlockedReasons []string       `json:"blockedReasons"`   // The reason(s) this cookie was blocked. enum values: SecureOnly, SameSiteStrict, SameSiteLax, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, SyntaxError, SchemeNotSupported, OverwriteSecure, InvalidDomain, InvalidPrefix, UnknownError
+	CookieLine     string         `json:"cookieLine"`       // The string representing this individual cookie as it would appear in the header. This is not the entire "cookie" or "set-cookie" header which could have multiple cookies.
+	Cookie         *NetworkCookie `json:"cookie,omitempty"` // The cookie object which represents the cookie which was not stored. It is optional because sometimes complete cookie information is not available, such as in the case of parsing errors.
+=======
 	BlockedReason string         `json:"blockedReason"`    // The reason this cookie was blocked. enum values: SecureOnly, SameSiteStrict, SameSiteLax, SameSiteExtended, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, SyntaxError, SchemeNotSupported, OverwriteSecure, InvalidDomain, InvalidPrefix, UnknownError
 	CookieLine    string         `json:"cookieLine"`       // The string representing this individual cookie as it would appear in the header. This is not the entire "cookie" or "set-cookie" header which could have multiple cookies.
 	Cookie        *NetworkCookie `json:"cookie,omitempty"` // The cookie object which represents the cookie which was not stored. It is optional because sometimes complete cookie information is not available, such as in the case of parsing errors.
+>>>>>>> master
 }
 
 // A cookie with was not sent with a request with the corresponding reason.
 type NetworkBlockedCookieWithReason struct {
+<<<<<<< HEAD
+	BlockedReasons []string       `json:"blockedReasons"` // The reason(s) the cookie was blocked. enum values: SecureOnly, NotOnPath, DomainMismatch, SameSiteStrict, SameSiteLax, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, UnknownError
+	Cookie         *NetworkCookie `json:"cookie"`         // The cookie object representing the cookie which was not sent.
+=======
 	BlockedReason string         `json:"blockedReason"` // The reason the cookie was blocked. enum values: SecureOnly, NotOnPath, DomainMismatch, SameSiteStrict, SameSiteLax, SameSiteExtended, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, UnknownError
 	Cookie        *NetworkCookie `json:"cookie"`        // The cookie object representing the cookie which was not sent.
+>>>>>>> master
 }
 
 // Cookie parameter object
@@ -170,8 +186,13 @@ type NetworkCookieParam struct {
 	Path     string  `json:"path,omitempty"`     // Cookie path.
 	Secure   bool    `json:"secure,omitempty"`   // True if cookie is secure.
 	HttpOnly bool    `json:"httpOnly,omitempty"` // True if cookie is http-only.
+<<<<<<< HEAD
+	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, None
+=======
 	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, Extended, None
+>>>>>>> master
 	Expires  float64 `json:"expires,omitempty"`  // Cookie expiration date, session cookie if not set
+	Priority string  `json:"priority,omitempty"` // Cookie Priority. enum values: Low, Medium, High
 }
 
 // Authorization challenge for HTTP status code 401 or 407.
@@ -265,7 +286,7 @@ type NetworkLoadingFailedEvent struct {
 		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 		ErrorText     string  `json:"errorText"`               // User friendly error message.
 		Canceled      bool    `json:"canceled,omitempty"`      // True if loading was canceled.
-		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type, collapsed-by-client
+		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type, collapsed-by-client, coep-frame-resource-needs-coep-header, coop-sandboxed-iframe-cannot-navigate-to-coop-page, corp-not-same-origin, corp-not-same-origin-after-defaulted-to-same-origin-by-coep, corp-not-same-site
 	} `json:"Params,omitempty"`
 }
 
@@ -1159,10 +1180,16 @@ type NetworkSetCookieParams struct {
 	Secure bool `json:"secure,omitempty"`
 	// True if cookie is http-only.
 	HttpOnly bool `json:"httpOnly,omitempty"`
+<<<<<<< HEAD
+	// Cookie SameSite type. enum values: Strict, Lax, None
+=======
 	// Cookie SameSite type. enum values: Strict, Lax, Extended, None
+>>>>>>> master
 	SameSite string `json:"sameSite,omitempty"`
 	// Cookie expiration date, session cookie if not set
 	Expires float64 `json:"expires,omitempty"`
+	// Cookie Priority type. enum values: Low, Medium, High
+	Priority string `json:"priority,omitempty"`
 }
 
 // SetCookieWithParams - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
@@ -1205,10 +1232,15 @@ func (c *Network) SetCookieWithParams(v *NetworkSetCookieParams) (bool, error) {
 // path - Cookie path.
 // secure - True if cookie is secure.
 // httpOnly - True if cookie is http-only.
+<<<<<<< HEAD
+// sameSite - Cookie SameSite type. enum values: Strict, Lax, None
+=======
 // sameSite - Cookie SameSite type. enum values: Strict, Lax, Extended, None
+>>>>>>> master
 // expires - Cookie expiration date, session cookie if not set
+// priority - Cookie Priority type. enum values: Low, Medium, High
 // Returns -  success - True if successfully set cookie.
-func (c *Network) SetCookie(name string, value string, url string, domain string, path string, secure bool, httpOnly bool, sameSite string, expires float64) (bool, error) {
+func (c *Network) SetCookie(name string, value string, url string, domain string, path string, secure bool, httpOnly bool, sameSite string, expires float64, priority string) (bool, error) {
 	var v NetworkSetCookieParams
 	v.Name = name
 	v.Value = value
@@ -1219,6 +1251,7 @@ func (c *Network) SetCookie(name string, value string, url string, domain string
 	v.HttpOnly = httpOnly
 	v.SameSite = sameSite
 	v.Expires = expires
+	v.Priority = priority
 	return c.SetCookieWithParams(&v)
 }
 

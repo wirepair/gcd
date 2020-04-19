@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2019 isaac dawson
+Copyright (c) 2020 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import (
 	"github.com/wirepair/gcd/gcdapi"
 )
 
-var GCDVERSION = "v1.0.7"
+var GCDVERSION = "v1.0.8"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")

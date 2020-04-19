@@ -76,7 +76,7 @@ type DebuggerPausedEvent struct {
 		HitBreakpoints        []string               `json:"hitBreakpoints,omitempty"`        // Hit breakpoints IDs
 		AsyncStackTrace       *RuntimeStackTrace     `json:"asyncStackTrace,omitempty"`       // Async stack trace, if any.
 		AsyncStackTraceId     *RuntimeStackTraceId   `json:"asyncStackTraceId,omitempty"`     // Async stack trace, if any.
-		AsyncCallStackTraceId *RuntimeStackTraceId   `json:"asyncCallStackTraceId,omitempty"` // Just scheduled async call will have this stack trace as parent stack during async execution. This field is available only after `Debugger.stepInto` call with `breakOnAsynCall` flag.
+		AsyncCallStackTraceId *RuntimeStackTraceId   `json:"asyncCallStackTraceId,omitempty"` // Never present, will be removed.
 	} `json:"Params,omitempty"`
 }
 
@@ -98,6 +98,8 @@ type DebuggerScriptFailedToParseEvent struct {
 		IsModule                bool                   `json:"isModule,omitempty"`                // True, if this script is ES6 module.
 		Length                  int                    `json:"length,omitempty"`                  // This script length.
 		StackTrace              *RuntimeStackTrace     `json:"stackTrace,omitempty"`              // JavaScript top stack frame of where the script parsed event was triggered if available.
+		CodeOffset              int                    `json:"codeOffset,omitempty"`              // If the scriptLanguage is WebAssembly, the code section offset in the module.
+		ScriptLanguage          string                 `json:"scriptLanguage,omitempty"`          // The language of the script. enum values: JavaScript, WebAssembly
 	} `json:"Params,omitempty"`
 }
 
@@ -120,6 +122,8 @@ type DebuggerScriptParsedEvent struct {
 		IsModule                bool                   `json:"isModule,omitempty"`                // True, if this script is ES6 module.
 		Length                  int                    `json:"length,omitempty"`                  // This script length.
 		StackTrace              *RuntimeStackTrace     `json:"stackTrace,omitempty"`              // JavaScript top stack frame of where the script parsed event was triggered if available.
+		CodeOffset              int                    `json:"codeOffset,omitempty"`              // If the scriptLanguage is WebAssembly, the code section offset in the module.
+		ScriptLanguage          string                 `json:"scriptLanguage,omitempty"`          // The language of the script. enum values: JavaScript, WebAssembly
 	} `json:"Params,omitempty"`
 }
 
@@ -344,16 +348,63 @@ type DebuggerGetScriptSourceParams struct {
 }
 
 // GetScriptSourceWithParams - Returns source for the script with given id.
-// Returns -  scriptSource - Script source.
-func (c *Debugger) GetScriptSourceWithParams(v *DebuggerGetScriptSourceParams) (string, error) {
+// Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode.
+func (c *Debugger) GetScriptSourceWithParams(v *DebuggerGetScriptSourceParams) (string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource", Params: v})
+	if err != nil {
+		return "", "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ScriptSource string
+			Bytecode     string
+		}
+	}
+
+	if resp == nil {
+		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", "", err
+	}
+
+	return chromeData.Result.ScriptSource, chromeData.Result.Bytecode, nil
+}
+
+// GetScriptSource - Returns source for the script with given id.
+// scriptId - Id of the script to get source for.
+// Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode.
+func (c *Debugger) GetScriptSource(scriptId string) (string, string, error) {
+	var v DebuggerGetScriptSourceParams
+	v.ScriptId = scriptId
+	return c.GetScriptSourceWithParams(&v)
+}
+
+type DebuggerGetWasmBytecodeParams struct {
+	// Id of the Wasm script to get source for.
+	ScriptId string `json:"scriptId"`
+}
+
+// GetWasmBytecodeWithParams - This command is deprecated. Use getScriptSource instead.
+// Returns -  bytecode - Script source.
+func (c *Debugger) GetWasmBytecodeWithParams(v *DebuggerGetWasmBytecodeParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getWasmBytecode", Params: v})
 	if err != nil {
 		return "", err
 	}
 
 	var chromeData struct {
 		Result struct {
-			ScriptSource string
+			Bytecode string
 		}
 	}
 
@@ -372,16 +423,16 @@ func (c *Debugger) GetScriptSourceWithParams(v *DebuggerGetScriptSourceParams) (
 		return "", err
 	}
 
-	return chromeData.Result.ScriptSource, nil
+	return chromeData.Result.Bytecode, nil
 }
 
-// GetScriptSource - Returns source for the script with given id.
-// scriptId - Id of the script to get source for.
-// Returns -  scriptSource - Script source.
-func (c *Debugger) GetScriptSource(scriptId string) (string, error) {
-	var v DebuggerGetScriptSourceParams
+// GetWasmBytecode - This command is deprecated. Use getScriptSource instead.
+// scriptId - Id of the Wasm script to get source for.
+// Returns -  bytecode - Script source.
+func (c *Debugger) GetWasmBytecode(scriptId string) (string, error) {
+	var v DebuggerGetWasmBytecodeParams
 	v.ScriptId = scriptId
-	return c.GetScriptSourceWithParams(&v)
+	return c.GetWasmBytecodeWithParams(&v)
 }
 
 type DebuggerGetStackTraceParams struct {
@@ -519,9 +570,22 @@ func (c *Debugger) RestartFrame(callFrameId string) ([]*DebuggerCallFrame, *Runt
 	return c.RestartFrameWithParams(&v)
 }
 
-// Resumes JavaScript execution.
-func (c *Debugger) Resume() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.resume"})
+type DebuggerResumeParams struct {
+	// Set to true to terminate execution upon resuming execution. In contrast to Runtime.terminateExecution, this will allows to execute further JavaScript (i.e. via evaluation) until execution of the paused code is actually resumed, at which point termination is triggered. If execution is currently not paused, this parameter has no effect.
+	TerminateOnResume bool `json:"terminateOnResume,omitempty"`
+}
+
+// ResumeWithParams - Resumes JavaScript execution.
+func (c *Debugger) ResumeWithParams(v *DebuggerResumeParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.resume", Params: v})
+}
+
+// Resume - Resumes JavaScript execution.
+// terminateOnResume - Set to true to terminate execution upon resuming execution. In contrast to Runtime.terminateExecution, this will allows to execute further JavaScript (i.e. via evaluation) until execution of the paused code is actually resumed, at which point termination is triggered. If execution is currently not paused, this parameter has no effect.
+func (c *Debugger) Resume(terminateOnResume bool) (*gcdmessage.ChromeResponse, error) {
+	var v DebuggerResumeParams
+	v.TerminateOnResume = terminateOnResume
+	return c.ResumeWithParams(&v)
 }
 
 type DebuggerSearchInContentParams struct {
@@ -1015,7 +1079,7 @@ func (c *Debugger) SetVariableValue(scopeNumber int, variableName string, newVal
 }
 
 type DebuggerStepIntoParams struct {
-	// Debugger will issue additional Debugger.paused notification if any async task is scheduled before next pause.
+	// Debugger will pause on the execution of the first async task which was scheduled before next pause.
 	BreakOnAsyncCall bool `json:"breakOnAsyncCall,omitempty"`
 }
 
@@ -1025,7 +1089,7 @@ func (c *Debugger) StepIntoWithParams(v *DebuggerStepIntoParams) (*gcdmessage.Ch
 }
 
 // StepInto - Steps into the function call.
-// breakOnAsyncCall - Debugger will issue additional Debugger.paused notification if any async task is scheduled before next pause.
+// breakOnAsyncCall - Debugger will pause on the execution of the first async task which was scheduled before next pause.
 func (c *Debugger) StepInto(breakOnAsyncCall bool) (*gcdmessage.ChromeResponse, error) {
 	var v DebuggerStepIntoParams
 	v.BreakOnAsyncCall = breakOnAsyncCall

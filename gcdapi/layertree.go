@@ -82,41 +82,42 @@ type LayerTreeCompositingReasonsParams struct {
 }
 
 // CompositingReasonsWithParams - Provides the reasons why the given layer was composited.
-// Returns -  compositingReasons - A list of strings specifying reasons for the given layer to become composited.
-func (c *LayerTree) CompositingReasonsWithParams(v *LayerTreeCompositingReasonsParams) ([]string, error) {
+// Returns -  compositingReasons - A list of strings specifying reasons for the given layer to become composited. compositingReasonIds - A list of strings specifying reason IDs for the given layer to become composited.
+func (c *LayerTree) CompositingReasonsWithParams(v *LayerTreeCompositingReasonsParams) ([]string, []string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons", Params: v})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			CompositingReasons []string
+			CompositingReasons   []string
+			CompositingReasonIds []string
 		}
 	}
 
 	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return chromeData.Result.CompositingReasons, nil
+	return chromeData.Result.CompositingReasons, chromeData.Result.CompositingReasonIds, nil
 }
 
 // CompositingReasons - Provides the reasons why the given layer was composited.
 // layerId - The id of the layer for which we want to get the reasons it was composited.
-// Returns -  compositingReasons - A list of strings specifying reasons for the given layer to become composited.
-func (c *LayerTree) CompositingReasons(layerId string) ([]string, error) {
+// Returns -  compositingReasons - A list of strings specifying reasons for the given layer to become composited. compositingReasonIds - A list of strings specifying reason IDs for the given layer to become composited.
+func (c *LayerTree) CompositingReasons(layerId string) ([]string, []string, error) {
 	var v LayerTreeCompositingReasonsParams
 	v.LayerId = layerId
 	return c.CompositingReasonsWithParams(&v)

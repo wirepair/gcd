@@ -11,7 +11,7 @@ import (
 
 // CSS rule collection for a single pseudo style.
 type CSSPseudoElementMatches struct {
-	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
 	Matches    []*CSSRuleMatch `json:"matches"`    // Matches of CSS rules applicable to the pseudo style.
 }
 
@@ -54,6 +54,8 @@ type CSSCSSStyleSheetHeader struct {
 	StartLine    float64 `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
 	StartColumn  float64 `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
 	Length       float64 `json:"length"`                 // Size of the content (in characters).
+	EndLine      float64 `json:"endLine"`                // Line offset of the end of the stylesheet within the resource (zero based).
+	EndColumn    float64 `json:"endColumn"`              // Column offset of the end of the stylesheet within the resource (zero based).
 }
 
 // CSS rule representation.
@@ -1037,33 +1039,34 @@ func (c *CSS) StopRuleUsageTracking() ([]*CSSRuleUsage, error) {
 }
 
 // TakeCoverageDelta - Obtain list of rules that became used since last call to this method (or since start of coverage instrumentation)
-// Returns -  coverage -
-func (c *CSS) TakeCoverageDelta() ([]*CSSRuleUsage, error) {
+// Returns -  coverage -  timestamp - Monotonically increasing time, in seconds.
+func (c *CSS) TakeCoverageDelta() ([]*CSSRuleUsage, float64, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeCoverageDelta"})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Coverage []*CSSRuleUsage
+			Coverage  []*CSSRuleUsage
+			Timestamp float64
 		}
 	}
 
 	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return chromeData.Result.Coverage, nil
+	return chromeData.Result.Coverage, chromeData.Result.Timestamp, nil
 }

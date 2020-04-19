@@ -15,6 +15,15 @@ type EmulationScreenOrientation struct {
 	Angle int    `json:"angle"` // Orientation angle.
 }
 
+<<<<<<< HEAD
+// No Description.
+type EmulationMediaFeature struct {
+	Name  string `json:"name"`  //
+	Value string `json:"value"` //
+}
+
+=======
+>>>>>>> master
 type Emulation struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -247,20 +256,42 @@ func (c *Emulation) SetEmitTouchEventsForMouse(enabled bool, configuration strin
 
 type EmulationSetEmulatedMediaParams struct {
 	// Media type to emulate. Empty string disables the override.
-	Media string `json:"media"`
+	Media string `json:"media,omitempty"`
+	// Media features to emulate.
+	Features []*EmulationMediaFeature `json:"features,omitempty"`
 }
 
-// SetEmulatedMediaWithParams - Emulates the given media for CSS media queries.
+// SetEmulatedMediaWithParams - Emulates the given media type or media feature for CSS media queries.
 func (c *Emulation) SetEmulatedMediaWithParams(v *EmulationSetEmulatedMediaParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedMedia", Params: v})
 }
 
-// SetEmulatedMedia - Emulates the given media for CSS media queries.
+// SetEmulatedMedia - Emulates the given media type or media feature for CSS media queries.
 // media - Media type to emulate. Empty string disables the override.
-func (c *Emulation) SetEmulatedMedia(media string) (*gcdmessage.ChromeResponse, error) {
+// features - Media features to emulate.
+func (c *Emulation) SetEmulatedMedia(media string, features []*EmulationMediaFeature) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetEmulatedMediaParams
 	v.Media = media
+	v.Features = features
 	return c.SetEmulatedMediaWithParams(&v)
+}
+
+type EmulationSetEmulatedVisionDeficiencyParams struct {
+	// Vision deficiency to emulate.
+	TheType string `json:"type"`
+}
+
+// SetEmulatedVisionDeficiencyWithParams - Emulates the given vision deficiency.
+func (c *Emulation) SetEmulatedVisionDeficiencyWithParams(v *EmulationSetEmulatedVisionDeficiencyParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedVisionDeficiency", Params: v})
+}
+
+// SetEmulatedVisionDeficiency - Emulates the given vision deficiency.
+// type - Vision deficiency to emulate.
+func (c *Emulation) SetEmulatedVisionDeficiency(theType string) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetEmulatedVisionDeficiencyParams
+	v.TheType = theType
+	return c.SetEmulatedVisionDeficiencyWithParams(&v)
 }
 
 type EmulationSetGeolocationOverrideParams struct {
@@ -427,6 +458,27 @@ func (c *Emulation) SetVirtualTimePolicy(policy string, budget float64, maxVirtu
 	return c.SetVirtualTimePolicyWithParams(&v)
 }
 
+<<<<<<< HEAD
+type EmulationSetLocaleOverrideParams struct {
+	// ICU style C locale (e.g. "en_US"). If not specified or empty, disables the override and restores default host system locale.
+	Locale string `json:"locale,omitempty"`
+}
+
+// SetLocaleOverrideWithParams - Overrides default host system locale with the specified one.
+func (c *Emulation) SetLocaleOverrideWithParams(v *EmulationSetLocaleOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setLocaleOverride", Params: v})
+}
+
+// SetLocaleOverride - Overrides default host system locale with the specified one.
+// locale - ICU style C locale (e.g. "en_US"). If not specified or empty, disables the override and restores default host system locale.
+func (c *Emulation) SetLocaleOverride(locale string) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetLocaleOverrideParams
+	v.Locale = locale
+	return c.SetLocaleOverrideWithParams(&v)
+}
+
+=======
+>>>>>>> master
 type EmulationSetTimezoneOverrideParams struct {
 	// The timezone identifier. If empty, disables the override and restores default host system timezone.
 	TimezoneId string `json:"timezoneId"`

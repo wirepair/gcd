@@ -128,10 +128,12 @@ type FetchFulfillRequestParams struct {
 	// An HTTP response code.
 	ResponseCode int `json:"responseCode"`
 	// Response headers.
-	ResponseHeaders []*FetchHeaderEntry `json:"responseHeaders"`
+	ResponseHeaders []*FetchHeaderEntry `json:"responseHeaders,omitempty"`
+	// Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text.
+	BinaryResponseHeaders string `json:"binaryResponseHeaders,omitempty"`
 	// A response body.
 	Body string `json:"body,omitempty"`
-	// A textual representation of responseCode. If absent, a standard phrase mathcing responseCode is used.
+	// A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
 	ResponsePhrase string `json:"responsePhrase,omitempty"`
 }
 
@@ -144,13 +146,15 @@ func (c *Fetch) FulfillRequestWithParams(v *FetchFulfillRequestParams) (*gcdmess
 // requestId - An id the client received in requestPaused event.
 // responseCode - An HTTP response code.
 // responseHeaders - Response headers.
+// binaryResponseHeaders - Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text.
 // body - A response body.
-// responsePhrase - A textual representation of responseCode. If absent, a standard phrase mathcing responseCode is used.
-func (c *Fetch) FulfillRequest(requestId string, responseCode int, responseHeaders []*FetchHeaderEntry, body string, responsePhrase string) (*gcdmessage.ChromeResponse, error) {
+// responsePhrase - A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
+func (c *Fetch) FulfillRequest(requestId string, responseCode int, responseHeaders []*FetchHeaderEntry, binaryResponseHeaders string, body string, responsePhrase string) (*gcdmessage.ChromeResponse, error) {
 	var v FetchFulfillRequestParams
 	v.RequestId = requestId
 	v.ResponseCode = responseCode
 	v.ResponseHeaders = responseHeaders
+	v.BinaryResponseHeaders = binaryResponseHeaders
 	v.Body = body
 	v.ResponsePhrase = responsePhrase
 	return c.FulfillRequestWithParams(&v)
@@ -165,7 +169,7 @@ type FetchContinueRequestParams struct {
 	Method string `json:"method,omitempty"`
 	// If set, overrides the post data in the request.
 	PostData string `json:"postData,omitempty"`
-	// If set, overrides the request headrts.
+	// If set, overrides the request headers.
 	Headers []*FetchHeaderEntry `json:"headers,omitempty"`
 }
 
@@ -179,7 +183,7 @@ func (c *Fetch) ContinueRequestWithParams(v *FetchContinueRequestParams) (*gcdme
 // url - If set, the request url will be modified in a way that's not observable by page.
 // method - If set, the request method is overridden.
 // postData - If set, overrides the post data in the request.
-// headers - If set, overrides the request headrts.
+// headers - If set, overrides the request headers.
 func (c *Fetch) ContinueRequest(requestId string, url string, method string, postData string, headers []*FetchHeaderEntry) (*gcdmessage.ChromeResponse, error) {
 	var v FetchContinueRequestParams
 	v.RequestId = requestId

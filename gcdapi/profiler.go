@@ -73,6 +73,12 @@ type ProfilerScriptTypeProfile struct {
 	Entries  []*ProfilerTypeProfileEntry `json:"entries"`  // Type profile entries for parameters and return values of the functions in the script.
 }
 
+// Collected counter information.
+type ProfilerCounterInfo struct {
+	Name  string `json:"name"`  // Counter name.
+	Value int    `json:"value"` // Counter value.
+}
+
 //
 type ProfilerConsoleProfileFinishedEvent struct {
 	Method string `json:"method"`
@@ -91,6 +97,16 @@ type ProfilerConsoleProfileStartedEvent struct {
 		Id       string            `json:"id"`              //
 		Location *DebuggerLocation `json:"location"`        // Location of console.profile().
 		Title    string            `json:"title,omitempty"` // Profile title passed as an argument to console.profile().
+	} `json:"Params,omitempty"`
+}
+
+// Reports coverage delta since the last poll (either from an event like this, or from `takePreciseCoverage` for the current isolate. May only be sent if precise code coverage has been started. This event can be trigged by the embedder to, for example, trigger collection of coverage data immediatelly at a certain point in time.
+type ProfilerPreciseCoverageDeltaUpdateEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Timestamp float64                   `json:"timestamp"` // Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+		Occassion string                    `json:"occassion"` // Identifier for distinguishing coverage events.
+		Result    []*ProfilerScriptCoverage `json:"result"`    // Coverage data for the current isolate.
 	} `json:"Params,omitempty"`
 }
 
@@ -173,20 +189,52 @@ type ProfilerStartPreciseCoverageParams struct {
 	CallCount bool `json:"callCount,omitempty"`
 	// Collect block-based coverage.
 	Detailed bool `json:"detailed,omitempty"`
+	// Allow the backend to send updates on its own initiative
+	AllowTriggeredUpdates bool `json:"allowTriggeredUpdates,omitempty"`
 }
 
 // StartPreciseCoverageWithParams - Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code coverage may be incomplete. Enabling prevents running optimized code and resets execution counters.
-func (c *Profiler) StartPreciseCoverageWithParams(v *ProfilerStartPreciseCoverageParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startPreciseCoverage", Params: v})
+// Returns -  timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+func (c *Profiler) StartPreciseCoverageWithParams(v *ProfilerStartPreciseCoverageParams) (float64, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startPreciseCoverage", Params: v})
+	if err != nil {
+		return 0, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Timestamp float64
+		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
+	}
+
+	return chromeData.Result.Timestamp, nil
 }
 
 // StartPreciseCoverage - Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code coverage may be incomplete. Enabling prevents running optimized code and resets execution counters.
 // callCount - Collect accurate call counts beyond simple 'covered' or 'not covered'.
 // detailed - Collect block-based coverage.
-func (c *Profiler) StartPreciseCoverage(callCount bool, detailed bool) (*gcdmessage.ChromeResponse, error) {
+// allowTriggeredUpdates - Allow the backend to send updates on its own initiative
+// Returns -  timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+func (c *Profiler) StartPreciseCoverage(callCount bool, detailed bool, allowTriggeredUpdates bool) (float64, error) {
 	var v ProfilerStartPreciseCoverageParams
 	v.CallCount = callCount
 	v.Detailed = detailed
+	v.AllowTriggeredUpdates = allowTriggeredUpdates
 	return c.StartPreciseCoverageWithParams(&v)
 }
 
@@ -238,16 +286,49 @@ func (c *Profiler) StopTypeProfile() (*gcdmessage.ChromeResponse, error) {
 }
 
 // TakePreciseCoverage - Collect coverage data for the current isolate, and resets execution counters. Precise code coverage needs to have started.
-// Returns -  result - Coverage data for the current isolate.
-func (c *Profiler) TakePreciseCoverage() ([]*ProfilerScriptCoverage, error) {
+// Returns -  result - Coverage data for the current isolate. timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+func (c *Profiler) TakePreciseCoverage() ([]*ProfilerScriptCoverage, float64, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takePreciseCoverage"})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Result    []*ProfilerScriptCoverage
+			Timestamp float64
+		}
+	}
+
+	if resp == nil {
+		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, 0, err
+	}
+
+	return chromeData.Result.Result, chromeData.Result.Timestamp, nil
+}
+
+// TakeTypeProfile - Collect type profile.
+// Returns -  result - Type profile for all scripts since startTypeProfile() was turned on.
+func (c *Profiler) TakeTypeProfile() ([]*ProfilerScriptTypeProfile, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takeTypeProfile"})
 	if err != nil {
 		return nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Result []*ProfilerScriptCoverage
+			Result []*ProfilerScriptTypeProfile
 		}
 	}
 
@@ -269,17 +350,27 @@ func (c *Profiler) TakePreciseCoverage() ([]*ProfilerScriptCoverage, error) {
 	return chromeData.Result.Result, nil
 }
 
-// TakeTypeProfile - Collect type profile.
-// Returns -  result - Type profile for all scripts since startTypeProfile() was turned on.
-func (c *Profiler) TakeTypeProfile() ([]*ProfilerScriptTypeProfile, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takeTypeProfile"})
+// Enable run time call stats collection.
+func (c *Profiler) EnableRuntimeCallStats() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableRuntimeCallStats"})
+}
+
+// Disable run time call stats collection.
+func (c *Profiler) DisableRuntimeCallStats() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disableRuntimeCallStats"})
+}
+
+// GetRuntimeCallStats - Retrieve run time call stats.
+// Returns -  result - Collected counter information.
+func (c *Profiler) GetRuntimeCallStats() ([]*ProfilerCounterInfo, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getRuntimeCallStats"})
 	if err != nil {
 		return nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Result []*ProfilerScriptTypeProfile
+			Result []*ProfilerCounterInfo
 		}
 	}
 
