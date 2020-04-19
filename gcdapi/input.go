@@ -127,14 +127,18 @@ type InputDispatchMouseEventParams struct {
 	Modifiers int `json:"modifiers,omitempty"`
 	// Time at which the event occurred.
 	Timestamp float64 `json:"timestamp,omitempty"`
-	// Mouse button (default: "none").
+	// Mouse button (default: "none"). enum values: none, left, middle, right, back, forward
 	Button string `json:"button,omitempty"`
+	// A number indicating which buttons are pressed on the mouse when a mouse event is triggered. Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
+	Buttons int `json:"buttons,omitempty"`
 	// Number of times the mouse button was clicked (default: 0).
 	ClickCount int `json:"clickCount,omitempty"`
 	// X delta in CSS pixels for mouse wheel event (default: 0).
 	DeltaX float64 `json:"deltaX,omitempty"`
 	// Y delta in CSS pixels for mouse wheel event (default: 0).
 	DeltaY float64 `json:"deltaY,omitempty"`
+	// Pointer type (default: "mouse").
+	PointerType string `json:"pointerType,omitempty"`
 }
 
 // DispatchMouseEventWithParams - Dispatches a mouse event to the page.
@@ -148,11 +152,13 @@ func (c *Input) DispatchMouseEventWithParams(v *InputDispatchMouseEventParams) (
 // y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // timestamp - Time at which the event occurred.
-// button - Mouse button (default: "none").
+// button - Mouse button (default: "none"). enum values: none, left, middle, right, back, forward
+// buttons - A number indicating which buttons are pressed on the mouse when a mouse event is triggered. Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
 // clickCount - Number of times the mouse button was clicked (default: 0).
 // deltaX - X delta in CSS pixels for mouse wheel event (default: 0).
 // deltaY - Y delta in CSS pixels for mouse wheel event (default: 0).
-func (c *Input) DispatchMouseEvent(theType string, x float64, y float64, modifiers int, timestamp float64, button string, clickCount int, deltaX float64, deltaY float64) (*gcdmessage.ChromeResponse, error) {
+// pointerType - Pointer type (default: "mouse").
+func (c *Input) DispatchMouseEvent(theType string, x float64, y float64, modifiers int, timestamp float64, button string, buttons int, clickCount int, deltaX float64, deltaY float64, pointerType string) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchMouseEventParams
 	v.TheType = theType
 	v.X = x
@@ -160,9 +166,11 @@ func (c *Input) DispatchMouseEvent(theType string, x float64, y float64, modifie
 	v.Modifiers = modifiers
 	v.Timestamp = timestamp
 	v.Button = button
+	v.Buttons = buttons
 	v.ClickCount = clickCount
 	v.DeltaX = deltaX
 	v.DeltaY = deltaY
+	v.PointerType = pointerType
 	return c.DispatchMouseEventWithParams(&v)
 }
 
@@ -203,7 +211,7 @@ type InputEmulateTouchFromMouseEventParams struct {
 	X int `json:"x"`
 	// Y coordinate of the mouse pointer in DIP.
 	Y int `json:"y"`
-	// Mouse button.
+	// Mouse button. Only "none", "left", "right" are supported. enum values: none, left, middle, right, back, forward
 	Button string `json:"button"`
 	// Time at which the event occurred (default: current time).
 	Timestamp float64 `json:"timestamp,omitempty"`
@@ -226,7 +234,7 @@ func (c *Input) EmulateTouchFromMouseEventWithParams(v *InputEmulateTouchFromMou
 // type - Type of the mouse event.
 // x - X coordinate of the mouse pointer in DIP.
 // y - Y coordinate of the mouse pointer in DIP.
-// button - Mouse button.
+// button - Mouse button. Only "none", "left", "right" are supported. enum values: none, left, middle, right, back, forward
 // timestamp - Time at which the event occurred (default: current time).
 // deltaX - X delta in DIP for mouse wheel event (default: 0).
 // deltaY - Y delta in DIP for mouse wheel event (default: 0).

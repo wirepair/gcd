@@ -1,6 +1,7 @@
 package gcdapi
 
 // Chrome Channel information
-const CHROME_CHANNEL = "stable" 
+const CHROME_CHANNEL = "stable"
+
 // Chrome Version information
-const CHROME_VERSION = "71.0.3578.80"
+const CHROME_VERSION = "81.0.4044.113"

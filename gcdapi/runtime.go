@@ -12,7 +12,7 @@ import (
 // Mirror object referencing original JavaScript object.
 type RuntimeRemoteObject struct {
 	Type                string                `json:"type"`                          // Object type.
-	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only.
+	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` or `wasm` type values only.
 	ClassName           string                `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
 	Value               interface{}           `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
 	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property.
@@ -71,6 +71,14 @@ type RuntimePropertyDescriptor struct {
 type RuntimeInternalPropertyDescriptor struct {
 	Name  string               `json:"name"`            // Conventional property name.
 	Value *RuntimeRemoteObject `json:"value,omitempty"` // The value associated with the property.
+}
+
+// Object private field descriptor.
+type RuntimePrivatePropertyDescriptor struct {
+	Name  string               `json:"name"`            // Private property name.
+	Value *RuntimeRemoteObject `json:"value,omitempty"` // The value associated with the private property.
+	Get   *RuntimeRemoteObject `json:"get,omitempty"`   // A function which serves as a getter for the private property, or `undefined` if there is no getter (accessor descriptors only).
+	Set   *RuntimeRemoteObject `json:"set,omitempty"`   // A function which serves as a setter for the private property, or `undefined` if there is no setter (accessor descriptors only).
 }
 
 // Represents function call argument. Either remote object id `objectId`, primitive `value`, unserializable primitive value or neither of (for undefined) them should be specified.
@@ -142,7 +150,7 @@ type RuntimeConsoleAPICalledEvent struct {
 		Args               []*RuntimeRemoteObject `json:"args"`                 // Call arguments.
 		ExecutionContextId int                    `json:"executionContextId"`   // Identifier of the context where the call was made.
 		Timestamp          float64                `json:"timestamp"`            // Call timestamp.
-		StackTrace         *RuntimeStackTrace     `json:"stackTrace,omitempty"` // Stack trace captured when the call was made.
+		StackTrace         *RuntimeStackTrace     `json:"stackTrace,omitempty"` // Stack trace captured when the call was made. The async stack chain is automatically reported for the following call types: `assert`, `error`, `trace`, `warning`. For other types the async call chain can be retrieved using `Debugger.getStackTrace` and `stackTrace.parentId` field.
 		Context            string                 `json:"context,omitempty"`    // Console context descriptor for calls on non-default console context (not console.*): 'anonymous#unique-logger-id' for call on unnamed context, 'name#unique-logger-id' for call on named context.
 	} `json:"Params,omitempty"`
 }
@@ -430,10 +438,14 @@ type RuntimeEvaluateParams struct {
 	UserGesture bool `json:"userGesture,omitempty"`
 	// Whether execution should `await` for resulting value and return once awaited promise is resolved.
 	AwaitPromise bool `json:"awaitPromise,omitempty"`
-	// Whether to throw an exception if side effect cannot be ruled out during evaluation.
+	// Whether to throw an exception if side effect cannot be ruled out during evaluation. This implies `disableBreaks` below.
 	ThrowOnSideEffect bool `json:"throwOnSideEffect,omitempty"`
 	// Terminate execution after timing out (number of milliseconds).
 	Timeout float64 `json:"timeout,omitempty"`
+	// Disable breakpoints during execution.
+	DisableBreaks bool `json:"disableBreaks,omitempty"`
+	// Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
+	ReplMode bool `json:"replMode,omitempty"`
 }
 
 // EvaluateWithParams - Evaluates expression on global object.
@@ -479,10 +491,12 @@ func (c *Runtime) EvaluateWithParams(v *RuntimeEvaluateParams) (*RuntimeRemoteOb
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
 // awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
-// throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation.
+// throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation. This implies `disableBreaks` below.
 // timeout - Terminate execution after timing out (number of milliseconds).
+// disableBreaks - Disable breakpoints during execution.
+// replMode - Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
 	v.Expression = expression
 	v.ObjectGroup = objectGroup
@@ -495,6 +509,8 @@ func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommand
 	v.AwaitPromise = awaitPromise
 	v.ThrowOnSideEffect = throwOnSideEffect
 	v.Timeout = timeout
+	v.DisableBreaks = disableBreaks
+	v.ReplMode = replMode
 	return c.EvaluateWithParams(&v)
 }
 
@@ -575,37 +591,38 @@ type RuntimeGetPropertiesParams struct {
 }
 
 // GetPropertiesWithParams - Returns properties of a given object. Object group of the result is inherited from the target object.
-// Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). exceptionDetails - Exception details.
-func (c *Runtime) GetPropertiesWithParams(v *RuntimeGetPropertiesParams) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, *RuntimeExceptionDetails, error) {
+// Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). privateProperties - Object private properties. exceptionDetails - Exception details.
+func (c *Runtime) GetPropertiesWithParams(v *RuntimeGetPropertiesParams) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getProperties", Params: v})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
 			Result             []*RuntimePropertyDescriptor
 			InternalProperties []*RuntimeInternalPropertyDescriptor
+			PrivateProperties  []*RuntimePrivatePropertyDescriptor
 			ExceptionDetails   *RuntimeExceptionDetails
 		}
 	}
 
 	if resp == nil {
-		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	return chromeData.Result.Result, chromeData.Result.InternalProperties, chromeData.Result.ExceptionDetails, nil
+	return chromeData.Result.Result, chromeData.Result.InternalProperties, chromeData.Result.PrivateProperties, chromeData.Result.ExceptionDetails, nil
 }
 
 // GetProperties - Returns properties of a given object. Object group of the result is inherited from the target object.
@@ -613,8 +630,8 @@ func (c *Runtime) GetPropertiesWithParams(v *RuntimeGetPropertiesParams) ([]*Run
 // ownProperties - If true, returns properties belonging only to the element itself, not to its prototype chain.
 // accessorPropertiesOnly - If true, returns accessor properties (with getter/setter) only; internal properties are not returned either.
 // generatePreview - Whether preview should be generated for the results.
-// Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). exceptionDetails - Exception details.
-func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, *RuntimeExceptionDetails, error) {
+// Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). privateProperties - Object private properties. exceptionDetails - Exception details.
+func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
 	var v RuntimeGetPropertiesParams
 	v.ObjectId = objectId
 	v.OwnProperties = ownProperties

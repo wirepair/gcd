@@ -119,7 +119,7 @@ func (c *Target) ActivateTarget(targetId string) (*gcdmessage.ChromeResponse, er
 type TargetAttachToTargetParams struct {
 	//
 	TargetId string `json:"targetId"`
-	// Enables "flat" access to the session via specifying sessionId attribute in the commands.
+	// Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
 	Flatten bool `json:"flatten,omitempty"`
 }
 
@@ -157,7 +157,7 @@ func (c *Target) AttachToTargetWithParams(v *TargetAttachToTargetParams) (string
 
 // AttachToTarget - Attaches to the target with given id.
 // targetId -
-// flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands.
+// flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
 // Returns -  sessionId - Id assigned to the session.
 func (c *Target) AttachToTarget(targetId string, flatten bool) (string, error) {
 	var v TargetAttachToTargetParams
@@ -266,10 +266,15 @@ func (c *Target) ExposeDevToolsProtocol(targetId string, bindingName string) (*g
 	return c.ExposeDevToolsProtocolWithParams(&v)
 }
 
-// CreateBrowserContext - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
+type TargetCreateBrowserContextParams struct {
+	// If specified, disposes this context when debugging session disconnects.
+	DisposeOnDetach bool `json:"disposeOnDetach,omitempty"`
+}
+
+// CreateBrowserContextWithParams - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
 // Returns -  browserContextId - The id of the context created.
-func (c *Target) CreateBrowserContext() (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.createBrowserContext"})
+func (c *Target) CreateBrowserContextWithParams(v *TargetCreateBrowserContextParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.createBrowserContext", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -296,6 +301,15 @@ func (c *Target) CreateBrowserContext() (string, error) {
 	}
 
 	return chromeData.Result.BrowserContextId, nil
+}
+
+// CreateBrowserContext - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
+// disposeOnDetach - If specified, disposes this context when debugging session disconnects.
+// Returns -  browserContextId - The id of the context created.
+func (c *Target) CreateBrowserContext(disposeOnDetach bool) (string, error) {
+	var v TargetCreateBrowserContextParams
+	v.DisposeOnDetach = disposeOnDetach
+	return c.CreateBrowserContextWithParams(&v)
 }
 
 // GetBrowserContexts - Returns all browser contexts created with `Target.createBrowserContext` method.
@@ -341,6 +355,10 @@ type TargetCreateTargetParams struct {
 	BrowserContextId string `json:"browserContextId,omitempty"`
 	// Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
 	EnableBeginFrameControl bool `json:"enableBeginFrameControl,omitempty"`
+	// Whether to create a new Window or Tab (chrome-only, false by default).
+	NewWindow bool `json:"newWindow,omitempty"`
+	// Whether to create the target in background or foreground (chrome-only, false by default).
+	Background bool `json:"background,omitempty"`
 }
 
 // CreateTargetWithParams - Creates a new page.
@@ -381,14 +399,18 @@ func (c *Target) CreateTargetWithParams(v *TargetCreateTargetParams) (string, er
 // height - Frame height in DIP (headless chrome only).
 // browserContextId - The browser context to create the page in.
 // enableBeginFrameControl - Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
+// newWindow - Whether to create a new Window or Tab (chrome-only, false by default).
+// background - Whether to create the target in background or foreground (chrome-only, false by default).
 // Returns -  targetId - The id of the page opened.
-func (c *Target) CreateTarget(url string, width int, height int, browserContextId string, enableBeginFrameControl bool) (string, error) {
+func (c *Target) CreateTarget(url string, width int, height int, browserContextId string, enableBeginFrameControl bool, newWindow bool, background bool) (string, error) {
 	var v TargetCreateTargetParams
 	v.Url = url
 	v.Width = width
 	v.Height = height
 	v.BrowserContextId = browserContextId
 	v.EnableBeginFrameControl = enableBeginFrameControl
+	v.NewWindow = newWindow
+	v.Background = background
 	return c.CreateTargetWithParams(&v)
 }
 
@@ -519,12 +541,12 @@ type TargetSendMessageToTargetParams struct {
 	TargetId string `json:"targetId,omitempty"`
 }
 
-// SendMessageToTargetWithParams - Sends protocol message over session with given id.
+// SendMessageToTargetWithParams - Sends protocol message over session with given id. Consider using flat mode instead; see commands attachToTarget, setAutoAttach, and crbug.com/991325.
 func (c *Target) SendMessageToTargetWithParams(v *TargetSendMessageToTargetParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.sendMessageToTarget", Params: v})
 }
 
-// SendMessageToTarget - Sends protocol message over session with given id.
+// SendMessageToTarget - Sends protocol message over session with given id. Consider using flat mode instead; see commands attachToTarget, setAutoAttach, and crbug.com/991325.
 // message -
 // sessionId - Identifier of the session.
 // targetId - Deprecated.
@@ -541,7 +563,7 @@ type TargetSetAutoAttachParams struct {
 	AutoAttach bool `json:"autoAttach"`
 	// Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
 	WaitForDebuggerOnStart bool `json:"waitForDebuggerOnStart"`
-	// Enables "flat" access to the session via specifying sessionId attribute in the commands.
+	// Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
 	Flatten bool `json:"flatten,omitempty"`
 }
 
@@ -553,7 +575,7 @@ func (c *Target) SetAutoAttachWithParams(v *TargetSetAutoAttachParams) (*gcdmess
 // SetAutoAttach - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
 // autoAttach - Whether to auto-attach to related targets.
 // waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
-// flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands.
+// flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
 func (c *Target) SetAutoAttach(autoAttach bool, waitForDebuggerOnStart bool, flatten bool) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSetAutoAttachParams
 	v.AutoAttach = autoAttach

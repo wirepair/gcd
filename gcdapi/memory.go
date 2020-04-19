@@ -78,6 +78,11 @@ func (c *Memory) PrepareForLeakDetection() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.prepareForLeakDetection"})
 }
 
+// Simulate OomIntervention by purging V8 memory.
+func (c *Memory) ForciblyPurgeJavaScriptMemory() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.forciblyPurgeJavaScriptMemory"})
+}
+
 type MemorySetPressureNotificationsSuppressedParams struct {
 	// If true, memory pressure notifications will be suppressed.
 	Suppressed bool `json:"suppressed"`

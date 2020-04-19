@@ -132,6 +132,32 @@ func (c *ServiceWorker) DispatchSyncEvent(origin string, registrationId string, 
 	return c.DispatchSyncEventWithParams(&v)
 }
 
+type ServiceWorkerDispatchPeriodicSyncEventParams struct {
+	//
+	Origin string `json:"origin"`
+	//
+	RegistrationId string `json:"registrationId"`
+	//
+	Tag string `json:"tag"`
+}
+
+// DispatchPeriodicSyncEventWithParams -
+func (c *ServiceWorker) DispatchPeriodicSyncEventWithParams(v *ServiceWorkerDispatchPeriodicSyncEventParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.dispatchPeriodicSyncEvent", Params: v})
+}
+
+// DispatchPeriodicSyncEvent -
+// origin -
+// registrationId -
+// tag -
+func (c *ServiceWorker) DispatchPeriodicSyncEvent(origin string, registrationId string, tag string) (*gcdmessage.ChromeResponse, error) {
+	var v ServiceWorkerDispatchPeriodicSyncEventParams
+	v.Origin = origin
+	v.RegistrationId = registrationId
+	v.Tag = tag
+	return c.DispatchPeriodicSyncEventWithParams(&v)
+}
+
 //
 func (c *ServiceWorker) Enable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.enable"})

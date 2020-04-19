@@ -11,7 +11,7 @@ import (
 
 // CSS rule collection for a single pseudo style.
 type CSSPseudoElementMatches struct {
-	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
 	Matches    []*CSSRuleMatch `json:"matches"`    // Matches of CSS rules applicable to the pseudo style.
 }
 
@@ -54,6 +54,8 @@ type CSSCSSStyleSheetHeader struct {
 	StartLine    float64 `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
 	StartColumn  float64 `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
 	Length       float64 `json:"length"`                 // Size of the content (in characters).
+	EndLine      float64 `json:"endLine"`                // Line offset of the end of the stylesheet within the resource (zero based).
+	EndColumn    float64 `json:"endColumn"`              // Column offset of the end of the stylesheet within the resource (zero based).
 }
 
 // CSS rule representation.
@@ -405,44 +407,43 @@ type CSSGetBackgroundColorsParams struct {
 }
 
 // GetBackgroundColorsWithParams -
-// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load). computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px'). computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100'). computedBodyFontSize - The computed font size for the document body, as a computed CSS value string (e.g. '16px').
-func (c *CSS) GetBackgroundColorsWithParams(v *CSSGetBackgroundColorsParams) ([]string, string, string, string, error) {
+// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load). computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px'). computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100').
+func (c *CSS) GetBackgroundColorsWithParams(v *CSSGetBackgroundColorsParams) ([]string, string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getBackgroundColors", Params: v})
 	if err != nil {
-		return nil, "", "", "", err
+		return nil, "", "", err
 	}
 
 	var chromeData struct {
 		Result struct {
-			BackgroundColors     []string
-			ComputedFontSize     string
-			ComputedFontWeight   string
-			ComputedBodyFontSize string
+			BackgroundColors   []string
+			ComputedFontSize   string
+			ComputedFontWeight string
 		}
 	}
 
 	if resp == nil {
-		return nil, "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, "", "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, "", "", "", err
+		return nil, "", "", err
 	}
 
-	return chromeData.Result.BackgroundColors, chromeData.Result.ComputedFontSize, chromeData.Result.ComputedFontWeight, chromeData.Result.ComputedBodyFontSize, nil
+	return chromeData.Result.BackgroundColors, chromeData.Result.ComputedFontSize, chromeData.Result.ComputedFontWeight, nil
 }
 
 // GetBackgroundColors -
 // nodeId - Id of the node to get background colors for.
-// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load). computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px'). computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100'). computedBodyFontSize - The computed font size for the document body, as a computed CSS value string (e.g. '16px').
-func (c *CSS) GetBackgroundColors(nodeId int) ([]string, string, string, string, error) {
+// Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load). computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px'). computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100').
+func (c *CSS) GetBackgroundColors(nodeId int) ([]string, string, string, error) {
 	var v CSSGetBackgroundColorsParams
 	v.NodeId = nodeId
 	return c.GetBackgroundColorsWithParams(&v)
@@ -1038,33 +1039,34 @@ func (c *CSS) StopRuleUsageTracking() ([]*CSSRuleUsage, error) {
 }
 
 // TakeCoverageDelta - Obtain list of rules that became used since last call to this method (or since start of coverage instrumentation)
-// Returns -  coverage -
-func (c *CSS) TakeCoverageDelta() ([]*CSSRuleUsage, error) {
+// Returns -  coverage -  timestamp - Monotonically increasing time, in seconds.
+func (c *CSS) TakeCoverageDelta() ([]*CSSRuleUsage, float64, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeCoverageDelta"})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Coverage []*CSSRuleUsage
+			Coverage  []*CSSRuleUsage
+			Timestamp float64
 		}
 	}
 
 	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return chromeData.Result.Coverage, nil
+	return chromeData.Result.Coverage, chromeData.Result.Timestamp, nil
 }

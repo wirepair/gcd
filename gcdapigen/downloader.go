@@ -36,7 +36,7 @@ import (
 
 const (
 	channel             = "stable"                                  // appears only stable is in github/devtools-protocol.
-	revisionOS          = "win"                                     // doesn't really matter
+	revisionOS          = "win64"                                   // doesn't really matter
 	revisionEndpoint    = "https://omahaproxy.appspot.com/all.json" // get release level info
 	browserProtocolFile = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json"
 	jsProtocolFile      = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/js_protocol.json"

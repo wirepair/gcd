@@ -15,10 +15,11 @@ type PageFrame struct {
 	ParentId       string `json:"parentId,omitempty"`       // Parent frame identifier.
 	LoaderId       string `json:"loaderId"`                 // Identifier of the loader associated with this frame.
 	Name           string `json:"name,omitempty"`           // Frame's name as specified in the tag.
-	Url            string `json:"url"`                      // Frame document's URL.
+	Url            string `json:"url"`                      // Frame document's URL without fragment.
+	UrlFragment    string `json:"urlFragment,omitempty"`    // Frame document's URL fragment including the '#'.
 	SecurityOrigin string `json:"securityOrigin"`           // Frame document's security origin.
 	MimeType       string `json:"mimeType"`                 // Frame document's mimeType as determined by the browser.
-	UnreachableUrl string `json:"unreachableUrl,omitempty"` // If the frame failed to load, this contains the URL that could not be loaded.
+	UnreachableUrl string `json:"unreachableUrl,omitempty"` // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
 }
 
 // Information about the Resource on the page.
@@ -73,6 +74,11 @@ type PageAppManifestError struct {
 	Column   int    `json:"column"`   // Error column.
 }
 
+// Parsed app manifest properties.
+type PageAppManifestParsedProperties struct {
+	Scope string `json:"scope"` // Computed scope value
+}
+
 // Layout viewport position and dimensions.
 type PageLayoutViewport struct {
 	PageX        int `json:"pageX"`        // Horizontal offset relative to the document (CSS pixels).
@@ -83,21 +89,22 @@ type PageLayoutViewport struct {
 
 // Visual viewport position, dimensions, and scale.
 type PageVisualViewport struct {
-	OffsetX      float64 `json:"offsetX"`      // Horizontal offset relative to the layout viewport (CSS pixels).
-	OffsetY      float64 `json:"offsetY"`      // Vertical offset relative to the layout viewport (CSS pixels).
-	PageX        float64 `json:"pageX"`        // Horizontal offset relative to the document (CSS pixels).
-	PageY        float64 `json:"pageY"`        // Vertical offset relative to the document (CSS pixels).
-	ClientWidth  float64 `json:"clientWidth"`  // Width (CSS pixels), excludes scrollbar if present.
-	ClientHeight float64 `json:"clientHeight"` // Height (CSS pixels), excludes scrollbar if present.
-	Scale        float64 `json:"scale"`        // Scale relative to the ideal viewport (size at width=device-width).
+	OffsetX      float64 `json:"offsetX"`        // Horizontal offset relative to the layout viewport (CSS pixels).
+	OffsetY      float64 `json:"offsetY"`        // Vertical offset relative to the layout viewport (CSS pixels).
+	PageX        float64 `json:"pageX"`          // Horizontal offset relative to the document (CSS pixels).
+	PageY        float64 `json:"pageY"`          // Vertical offset relative to the document (CSS pixels).
+	ClientWidth  float64 `json:"clientWidth"`    // Width (CSS pixels), excludes scrollbar if present.
+	ClientHeight float64 `json:"clientHeight"`   // Height (CSS pixels), excludes scrollbar if present.
+	Scale        float64 `json:"scale"`          // Scale relative to the ideal viewport (size at width=device-width).
+	Zoom         float64 `json:"zoom,omitempty"` // Page zoom factor (CSS to device independent pixels ratio).
 }
 
 // Viewport for capturing screenshot.
 type PageViewport struct {
-	X      float64 `json:"x"`      // X offset in CSS pixels.
-	Y      float64 `json:"y"`      // Y offset in CSS pixels
-	Width  float64 `json:"width"`  // Rectangle width in CSS pixels
-	Height float64 `json:"height"` // Rectangle height in CSS pixels
+	X      float64 `json:"x"`      // X offset in device independent pixels (dip).
+	Y      float64 `json:"y"`      // Y offset in device independent pixels (dip).
+	Width  float64 `json:"width"`  // Rectangle width in device independent pixels (dip).
+	Height float64 `json:"height"` // Rectangle height in device independent pixels (dip).
 	Scale  float64 `json:"scale"`  // Page scale factor.
 }
 
@@ -118,11 +125,33 @@ type PageFontSizes struct {
 	Fixed    int `json:"fixed,omitempty"`    // Default fixed font size.
 }
 
+// No Description.
+type PageInstallabilityErrorArgument struct {
+	Name  string `json:"name"`  // Argument name (e.g. name:'minimum-icon-size-in-pixels').
+	Value string `json:"value"` // Argument value (e.g. value:'64').
+}
+
+// The installability error
+type PageInstallabilityError struct {
+	ErrorId        string                             `json:"errorId"`        // The error id (e.g. 'manifest-missing-suitable-icon').
+	ErrorArguments []*PageInstallabilityErrorArgument `json:"errorArguments"` // The list of error arguments (e.g. {name:'minimum-icon-size-in-pixels', value:'64'}).
+}
+
 //
 type PageDomContentEventFiredEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Timestamp float64 `json:"timestamp"` //
+	} `json:"Params,omitempty"`
+}
+
+// Emitted only when `page.interceptFileChooser` is enabled.
+type PageFileChooserOpenedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		FrameId       string `json:"frameId"`       // Id of the frame containing input node.
+		BackendNodeId int    `json:"backendNodeId"` // Input node id.
+		Mode          string `json:"mode"`          // Input mode.
 	} `json:"Params,omitempty"`
 }
 
@@ -160,13 +189,23 @@ type PageFrameNavigatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+// Fired when a renderer-initiated navigation is requested. Navigation may still be cancelled after the event is issued.
+type PageFrameRequestedNavigationEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame that is being navigated.
+		Reason  string `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
+		Url     string `json:"url"`     // The destination URL for the requested navigation.
+	} `json:"Params,omitempty"`
+}
+
 // Fired when frame schedules a potential navigation.
 type PageFrameScheduledNavigationEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId string  `json:"frameId"` // Id of the frame that has scheduled a navigation.
 		Delay   float64 `json:"delay"`   // Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start.
-		Reason  string  `json:"reason"`  // The reason for the navigation.
+		Reason  string  `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
 		Url     string  `json:"url"`     // The destination URL for the scheduled navigation.
 	} `json:"Params,omitempty"`
 }
@@ -184,6 +223,27 @@ type PageFrameStoppedLoadingEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId string `json:"frameId"` // Id of the frame that has stopped loading.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when page is about to start a download.
+type PageDownloadWillBeginEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		FrameId string `json:"frameId"` // Id of the frame that caused download to begin.
+		Guid    string `json:"guid"`    // Global unique identifier of the download.
+		Url     string `json:"url"`     // URL of the resource being downloaded.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when download makes progress. Last call has |done| == true.
+type PageDownloadProgressEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Guid          string  `json:"guid"`          // Global unique identifier of the download.
+		TotalBytes    float64 `json:"totalBytes"`    // Total expected bytes to download.
+		ReceivedBytes float64 `json:"receivedBytes"` // Total bytes received.
+		State         string  `json:"state"`         // Download status.
 	} `json:"Params,omitempty"`
 }
 
@@ -590,11 +650,11 @@ func (c *Page) Enable() (*gcdmessage.ChromeResponse, error) {
 }
 
 // GetAppManifest -
-// Returns -  url - Manifest location. errors -  data - Manifest content.
-func (c *Page) GetAppManifest() (string, []*PageAppManifestError, string, error) {
+// Returns -  url - Manifest location. errors -  data - Manifest content. parsed - Parsed manifest properties
+func (c *Page) GetAppManifest() (string, []*PageAppManifestError, string, *PageAppManifestParsedProperties, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getAppManifest"})
 	if err != nil {
-		return "", nil, "", err
+		return "", nil, "", nil, err
 	}
 
 	var chromeData struct {
@@ -602,25 +662,90 @@ func (c *Page) GetAppManifest() (string, []*PageAppManifestError, string, error)
 			Url    string
 			Errors []*PageAppManifestError
 			Data   string
+			Parsed *PageAppManifestParsedProperties
 		}
 	}
 
 	if resp == nil {
-		return "", nil, "", &gcdmessage.ChromeEmptyResponseErr{}
+		return "", nil, "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return "", nil, "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return "", nil, "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", nil, "", err
+		return "", nil, "", nil, err
 	}
 
-	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, nil
+	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, chromeData.Result.Parsed, nil
+}
+
+// GetInstallabilityErrors -
+// Returns -  installabilityErrors -
+func (c *Page) GetInstallabilityErrors() ([]*PageInstallabilityError, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getInstallabilityErrors"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			InstallabilityErrors []*PageInstallabilityError
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.InstallabilityErrors, nil
+}
+
+// GetManifestIcons -
+// Returns -  primaryIcon -
+func (c *Page) GetManifestIcons() (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getManifestIcons"})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			PrimaryIcon string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.PrimaryIcon, nil
 }
 
 // GetCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the `cookies` field.
@@ -754,6 +879,11 @@ func (c *Page) GetNavigationHistory() (int, []*PageNavigationEntry, error) {
 	return chromeData.Result.CurrentIndex, chromeData.Result.Entries, nil
 }
 
+// Resets navigation history for the current page.
+func (c *Page) ResetNavigationHistory() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.resetNavigationHistory"})
+}
+
 type PageGetResourceContentParams struct {
 	// Frame id to get resource for.
 	FrameId string `json:"frameId"`
@@ -868,6 +998,8 @@ type PageNavigateParams struct {
 	TransitionType string `json:"transitionType,omitempty"`
 	// Frame id to navigate, if not specified navigates the top frame.
 	FrameId string `json:"frameId,omitempty"`
+	// Referrer-policy used for the navigation. enum values: noReferrer, noReferrerWhenDowngrade, origin, originWhenCrossOrigin, sameOrigin, strictOrigin, strictOriginWhenCrossOrigin, unsafeUrl
+	ReferrerPolicy string `json:"referrerPolicy,omitempty"`
 }
 
 // NavigateWithParams - Navigates current page to the given URL.
@@ -909,13 +1041,15 @@ func (c *Page) NavigateWithParams(v *PageNavigateParams) (string, string, string
 // referrer - Referrer URL.
 // transitionType - Intended transition type. enum values: link, typed, address_bar, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 // frameId - Frame id to navigate, if not specified navigates the top frame.
+// referrerPolicy - Referrer-policy used for the navigation. enum values: noReferrer, noReferrerWhenDowngrade, origin, originWhenCrossOrigin, sameOrigin, strictOrigin, strictOriginWhenCrossOrigin, unsafeUrl
 // Returns -  frameId - Frame id that has navigated (or failed to navigate) loaderId - Loader identifier. errorText - User friendly error message, present if and only if navigation has failed.
-func (c *Page) Navigate(url string, referrer string, transitionType string, frameId string) (string, string, string, error) {
+func (c *Page) Navigate(url string, referrer string, transitionType string, frameId string, referrerPolicy string) (string, string, string, error) {
 	var v PageNavigateParams
 	v.Url = url
 	v.Referrer = referrer
 	v.TransitionType = transitionType
 	v.FrameId = frameId
+	v.ReferrerPolicy = referrerPolicy
 	return c.NavigateWithParams(&v)
 }
 
@@ -968,38 +1102,41 @@ type PagePrintToPDFParams struct {
 	FooterTemplate string `json:"footerTemplate,omitempty"`
 	// Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
 	PreferCSSPageSize bool `json:"preferCSSPageSize,omitempty"`
+	// return as stream
+	TransferMode string `json:"transferMode,omitempty"`
 }
 
 // PrintToPDFWithParams - Print page as PDF.
-// Returns -  data - Base64-encoded pdf data.
-func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, error) {
+// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. stream - A handle of the stream that holds resulting PDF data.
+func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.printToPDF", Params: v})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var chromeData struct {
 		Result struct {
-			Data string
+			Data   string
+			Stream string
 		}
 	}
 
 	if resp == nil {
-		return "", &gcdmessage.ChromeEmptyResponseErr{}
+		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return chromeData.Result.Data, nil
+	return chromeData.Result.Data, chromeData.Result.Stream, nil
 }
 
 // PrintToPDF - Print page as PDF.
@@ -1018,8 +1155,9 @@ func (c *Page) PrintToPDFWithParams(v *PagePrintToPDFParams) (string, error) {
 // headerTemplate - HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - `date`: formatted print date - `title`: document title - `url`: document location - `pageNumber`: current page number - `totalPages`: total pages in the document  For example, `<span class=title></span>` would generate span containing the title.
 // footerTemplate - HTML template for the print footer. Should use the same format as the `headerTemplate`.
 // preferCSSPageSize - Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
-// Returns -  data - Base64-encoded pdf data.
-func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool, headerTemplate string, footerTemplate string, preferCSSPageSize bool) (string, error) {
+// transferMode - return as stream
+// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. stream - A handle of the stream that holds resulting PDF data.
+func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool, headerTemplate string, footerTemplate string, preferCSSPageSize bool, transferMode string) (string, string, error) {
 	var v PagePrintToPDFParams
 	v.Landscape = landscape
 	v.DisplayHeaderFooter = displayHeaderFooter
@@ -1036,6 +1174,7 @@ func (c *Page) PrintToPDF(landscape bool, displayHeaderFooter bool, printBackgro
 	v.HeaderTemplate = headerTemplate
 	v.FooterTemplate = footerTemplate
 	v.PreferCSSPageSize = preferCSSPageSize
+	v.TransferMode = transferMode
 	return c.PrintToPDFWithParams(&v)
 }
 
@@ -1095,11 +1234,6 @@ func (c *Page) RemoveScriptToEvaluateOnNewDocument(identifier string) (*gcdmessa
 	var v PageRemoveScriptToEvaluateOnNewDocumentParams
 	v.Identifier = identifier
 	return c.RemoveScriptToEvaluateOnNewDocumentWithParams(&v)
-}
-
-//
-func (c *Page) RequestAppBanner() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.requestAppBanner"})
 }
 
 type PageScreencastFrameAckParams struct {
@@ -1589,4 +1723,27 @@ func (c *Page) GenerateTestReport(message string, group string) (*gcdmessage.Chr
 	v.Message = message
 	v.Group = group
 	return c.GenerateTestReportWithParams(&v)
+}
+
+// Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger.
+func (c *Page) WaitForDebugger() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.waitForDebugger"})
+}
+
+type PageSetInterceptFileChooserDialogParams struct {
+	//
+	Enabled bool `json:"enabled"`
+}
+
+// SetInterceptFileChooserDialogWithParams - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted.
+func (c *Page) SetInterceptFileChooserDialogWithParams(v *PageSetInterceptFileChooserDialogParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setInterceptFileChooserDialog", Params: v})
+}
+
+// SetInterceptFileChooserDialog - Intercept file chooser requests and transfer control to protocol clients. When file chooser interception is enabled, native file chooser dialog is not shown. Instead, a protocol event `Page.fileChooserOpened` is emitted.
+// enabled -
+func (c *Page) SetInterceptFileChooserDialog(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetInterceptFileChooserDialogParams
+	v.Enabled = enabled
+	return c.SetInterceptFileChooserDialogWithParams(&v)
 }

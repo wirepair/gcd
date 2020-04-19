@@ -88,10 +88,11 @@ type NetworkResponse struct {
 	RemotePort         int                     `json:"remotePort,omitempty"`         // Remote port.
 	FromDiskCache      bool                    `json:"fromDiskCache,omitempty"`      // Specifies that the request was served from the disk cache.
 	FromServiceWorker  bool                    `json:"fromServiceWorker,omitempty"`  // Specifies that the request was served from the ServiceWorker.
+	FromPrefetchCache  bool                    `json:"fromPrefetchCache,omitempty"`  // Specifies that the request was served from the prefetch cache.
 	EncodedDataLength  float64                 `json:"encodedDataLength"`            // Total number of bytes received for this request so far.
 	Timing             *NetworkResourceTiming  `json:"timing,omitempty"`             // Timing information for the given request.
 	Protocol           string                  `json:"protocol,omitempty"`           // Protocol used to fetch this request.
-	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, secure, info
+	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, secure, info, insecure-broken
 	SecurityDetails    *NetworkSecurityDetails `json:"securityDetails,omitempty"`    // Security details for the request.
 }
 
@@ -114,7 +115,7 @@ type NetworkWebSocketResponse struct {
 type NetworkWebSocketFrame struct {
 	Opcode      float64 `json:"opcode"`      // WebSocket message opcode.
 	Mask        bool    `json:"mask"`        // WebSocket message mask.
-	PayloadData string  `json:"payloadData"` // WebSocket message payload data.
+	PayloadData string  `json:"payloadData"` // WebSocket message payload data. If the opcode is 1, this is a text message and payloadData is a UTF-8 string. If the opcode isn't 1, then payloadData is a base64 encoded string representing binary data.
 }
 
 // Information about the cached resource.
@@ -144,7 +145,21 @@ type NetworkCookie struct {
 	HttpOnly bool    `json:"httpOnly"`           // True if cookie is http-only.
 	Secure   bool    `json:"secure"`             // True if cookie is secure.
 	Session  bool    `json:"session"`            // True in case of session cookie.
-	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax
+	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, None
+	Priority string  `json:"priority"`           // Cookie Priority enum values: Low, Medium, High
+}
+
+// A cookie which was not stored from a response with the corresponding reason.
+type NetworkBlockedSetCookieWithReason struct {
+	BlockedReasons []string       `json:"blockedReasons"`   // The reason(s) this cookie was blocked. enum values: SecureOnly, SameSiteStrict, SameSiteLax, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, SyntaxError, SchemeNotSupported, OverwriteSecure, InvalidDomain, InvalidPrefix, UnknownError
+	CookieLine     string         `json:"cookieLine"`       // The string representing this individual cookie as it would appear in the header. This is not the entire "cookie" or "set-cookie" header which could have multiple cookies.
+	Cookie         *NetworkCookie `json:"cookie,omitempty"` // The cookie object which represents the cookie which was not stored. It is optional because sometimes complete cookie information is not available, such as in the case of parsing errors.
+}
+
+// A cookie with was not sent with a request with the corresponding reason.
+type NetworkBlockedCookieWithReason struct {
+	BlockedReasons []string       `json:"blockedReasons"` // The reason(s) the cookie was blocked. enum values: SecureOnly, NotOnPath, DomainMismatch, SameSiteStrict, SameSiteLax, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, UnknownError
+	Cookie         *NetworkCookie `json:"cookie"`         // The cookie object representing the cookie which was not sent.
 }
 
 // Cookie parameter object
@@ -156,8 +171,9 @@ type NetworkCookieParam struct {
 	Path     string  `json:"path,omitempty"`     // Cookie path.
 	Secure   bool    `json:"secure,omitempty"`   // True if cookie is secure.
 	HttpOnly bool    `json:"httpOnly,omitempty"` // True if cookie is http-only.
-	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax
+	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, None
 	Expires  float64 `json:"expires,omitempty"`  // Cookie expiration date, session cookie if not set
+	Priority string  `json:"priority,omitempty"` // Cookie Priority. enum values: Low, Medium, High
 }
 
 // Authorization challenge for HTTP status code 401 or 407.
@@ -198,10 +214,10 @@ type NetworkSignedExchangeSignature struct {
 // Information about a signed exchange header. https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cbor-representation
 type NetworkSignedExchangeHeader struct {
 	RequestUrl      string                            `json:"requestUrl"`      // Signed exchange request URL.
-	RequestMethod   string                            `json:"requestMethod"`   // Signed exchange request method.
 	ResponseCode    int                               `json:"responseCode"`    // Signed exchange response code.
 	ResponseHeaders map[string]interface{}            `json:"responseHeaders"` // Signed exchange response headers.
 	Signatures      []*NetworkSignedExchangeSignature `json:"signatures"`      // Signed exchange response signature.
+	HeaderIntegrity string                            `json:"headerIntegrity"` // Signed exchange header integrity hash in the form of "sha256-<base64-hash-value>".
 }
 
 // Information about a signed exchange response.
@@ -251,7 +267,7 @@ type NetworkLoadingFailedEvent struct {
 		Type          string  `json:"type"`                    // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
 		ErrorText     string  `json:"errorText"`               // User friendly error message.
 		Canceled      bool    `json:"canceled,omitempty"`      // True if loading was canceled.
-		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type, collapsed-by-client
+		BlockedReason string  `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type, collapsed-by-client, coep-frame-resource-needs-coep-header, coop-sandboxed-iframe-cannot-navigate-to-coop-page, corp-not-same-origin, corp-not-same-origin-after-defaulted-to-same-origin-by-coep, corp-not-same-site
 	} `json:"Params,omitempty"`
 }
 
@@ -266,7 +282,7 @@ type NetworkLoadingFinishedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Details of an intercepted HTTP request, which must be either allowed, blocked, modified or mocked.
+// Details of an intercepted HTTP request, which must be either allowed, blocked, modified or mocked. Deprecated, use Fetch.requestPaused instead.
 type NetworkRequestInterceptedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -281,6 +297,7 @@ type NetworkRequestInterceptedEvent struct {
 		ResponseErrorReason string                 `json:"responseErrorReason,omitempty"` // Response error if intercepted at response stage or if redirect occurred while intercepting request. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable, BlockedByClient, BlockedByResponse
 		ResponseStatusCode  int                    `json:"responseStatusCode,omitempty"`  // Response code if intercepted at response stage or if redirect occurred while intercepting request or auth retry occurred.
 		ResponseHeaders     map[string]interface{} `json:"responseHeaders,omitempty"`     // Response headers if intercepted at the response stage or if redirect occurred while intercepting request or auth retry occurred.
+		RequestId           string                 `json:"requestId,omitempty"`           // If the intercepted request had a corresponding requestWillBeSent event fired for it, then this requestId will be the same as the requestId present in the requestWillBeSent event.
 	} `json:"Params,omitempty"`
 }
 
@@ -409,6 +426,27 @@ type NetworkWebSocketWillSendHandshakeRequestEvent struct {
 		Timestamp float64                  `json:"timestamp"` // Timestamp.
 		WallTime  float64                  `json:"wallTime"`  // UTC Timestamp.
 		Request   *NetworkWebSocketRequest `json:"request"`   // WebSocket request data.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when additional information about a requestWillBeSent event is available from the network stack. Not every requestWillBeSent event will have an additional requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent or requestWillBeSentExtraInfo will be fired first for the same request.
+type NetworkRequestWillBeSentExtraInfoEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		RequestId      string                            `json:"requestId"`      // Request identifier. Used to match this information to an existing requestWillBeSent event.
+		BlockedCookies []*NetworkBlockedCookieWithReason `json:"blockedCookies"` // A list of cookies which will not be sent with this request along with corresponding reasons for blocking.
+		Headers        map[string]interface{}            `json:"headers"`        // Raw request headers as they will be sent over the wire.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when additional information about a responseReceived event is available from the network stack. Not every responseReceived event will have an additional responseReceivedExtraInfo for it, and responseReceivedExtraInfo may be fired before or after responseReceived.
+type NetworkResponseReceivedExtraInfoEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		RequestId      string                               `json:"requestId"`             // Request identifier. Used to match this information to another responseReceived event.
+		BlockedCookies []*NetworkBlockedSetCookieWithReason `json:"blockedCookies"`        // A list of cookies which were not stored from the response along with the corresponding reasons for blocking. The cookies here may not be valid due to syntax errors, which are represented by the invalid cookie line string instead of a proper cookie.
+		Headers        map[string]interface{}               `json:"headers"`               // Raw response headers as they were received over the wire.
+		HeadersText    string                               `json:"headersText,omitempty"` // Raw response header text as it was received over the wire. The raw text may not always be available, such as in the case of HTTP/2 or QUIC.
 	} `json:"Params,omitempty"`
 }
 
@@ -546,12 +584,12 @@ type NetworkContinueInterceptedRequestParams struct {
 	AuthChallengeResponse *NetworkAuthChallengeResponse `json:"authChallengeResponse,omitempty"`
 }
 
-// ContinueInterceptedRequestWithParams - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId.
+// ContinueInterceptedRequestWithParams - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId. Deprecated, use Fetch.continueRequest, Fetch.fulfillRequest and Fetch.failRequest instead.
 func (c *Network) ContinueInterceptedRequestWithParams(v *NetworkContinueInterceptedRequestParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.continueInterceptedRequest", Params: v})
 }
 
-// ContinueInterceptedRequest - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId.
+// ContinueInterceptedRequest - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId. Deprecated, use Fetch.continueRequest, Fetch.fulfillRequest and Fetch.failRequest instead.
 // interceptionId -
 // errorReason - If set this causes the request to fail with the given reason. Passing `Aborted` for requests marked with `isNavigationRequest` also cancels the navigation. Must not be set in response to an authChallenge. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable, BlockedByClient, BlockedByResponse
 // rawResponse - If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
@@ -1123,10 +1161,12 @@ type NetworkSetCookieParams struct {
 	Secure bool `json:"secure,omitempty"`
 	// True if cookie is http-only.
 	HttpOnly bool `json:"httpOnly,omitempty"`
-	// Cookie SameSite type. enum values: Strict, Lax
+	// Cookie SameSite type. enum values: Strict, Lax, None
 	SameSite string `json:"sameSite,omitempty"`
 	// Cookie expiration date, session cookie if not set
 	Expires float64 `json:"expires,omitempty"`
+	// Cookie Priority type. enum values: Low, Medium, High
+	Priority string `json:"priority,omitempty"`
 }
 
 // SetCookieWithParams - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
@@ -1169,10 +1209,11 @@ func (c *Network) SetCookieWithParams(v *NetworkSetCookieParams) (bool, error) {
 // path - Cookie path.
 // secure - True if cookie is secure.
 // httpOnly - True if cookie is http-only.
-// sameSite - Cookie SameSite type. enum values: Strict, Lax
+// sameSite - Cookie SameSite type. enum values: Strict, Lax, None
 // expires - Cookie expiration date, session cookie if not set
+// priority - Cookie Priority type. enum values: Low, Medium, High
 // Returns -  success - True if successfully set cookie.
-func (c *Network) SetCookie(name string, value string, url string, domain string, path string, secure bool, httpOnly bool, sameSite string, expires float64) (bool, error) {
+func (c *Network) SetCookie(name string, value string, url string, domain string, path string, secure bool, httpOnly bool, sameSite string, expires float64, priority string) (bool, error) {
 	var v NetworkSetCookieParams
 	v.Name = name
 	v.Value = value
@@ -1183,6 +1224,7 @@ func (c *Network) SetCookie(name string, value string, url string, domain string
 	v.HttpOnly = httpOnly
 	v.SameSite = sameSite
 	v.Expires = expires
+	v.Priority = priority
 	return c.SetCookieWithParams(&v)
 }
 
@@ -1249,12 +1291,12 @@ type NetworkSetRequestInterceptionParams struct {
 	Patterns []*NetworkRequestPattern `json:"patterns"`
 }
 
-// SetRequestInterceptionWithParams - Sets the requests to intercept that match a the provided patterns and optionally resource types.
+// SetRequestInterceptionWithParams - Sets the requests to intercept that match the provided patterns and optionally resource types. Deprecated, please use Fetch.enable instead.
 func (c *Network) SetRequestInterceptionWithParams(v *NetworkSetRequestInterceptionParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setRequestInterception", Params: v})
 }
 
-// SetRequestInterception - Sets the requests to intercept that match a the provided patterns and optionally resource types.
+// SetRequestInterception - Sets the requests to intercept that match the provided patterns and optionally resource types. Deprecated, please use Fetch.enable instead.
 // patterns - Requests matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call.
 func (c *Network) SetRequestInterception(patterns []*NetworkRequestPattern) (*gcdmessage.ChromeResponse, error) {
 	var v NetworkSetRequestInterceptionParams

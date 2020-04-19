@@ -9,6 +9,49 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
+// Information about a cookie that is affected by an inspector issue.
+type AuditsAffectedCookie struct {
+	Name   string `json:"name"`   // The following three properties uniquely identify a cookie
+	Path   string `json:"path"`   //
+	Domain string `json:"domain"` //
+}
+
+// Information about a request that is affected by an inspector issue.
+type AuditsAffectedRequest struct {
+	RequestId string `json:"requestId"`     // The unique request id.
+	Url       string `json:"url,omitempty"` //
+}
+
+// This information is currently necessary, as the front-end has a difficult time finding a specific cookie. With this, we can convey specific error information without the cookie.
+type AuditsSameSiteCookieIssueDetails struct {
+	Cookie                 *AuditsAffectedCookie  `json:"cookie"`                   //
+	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteCrossSchemeSecureUrlMethodUnsafe, WarnSameSiteCrossSchemeSecureUrlLax, WarnSameSiteCrossSchemeSecureUrlStrict, WarnSameSiteCrossSchemeInsecureUrlMethodUnsafe, WarnSameSiteCrossSchemeInsecureUrlLax, WarnSameSiteCrossSchemeInsecureUrlStrict
+	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure
+	Operation              string                 `json:"operation"`                // Optionally identifies the site-for-cookies and the cookie url, which may be used by the front-end as additional context. enum values: SetCookie, ReadCookie
+	SiteForCookies         string                 `json:"siteForCookies,omitempty"` //
+	CookieUrl              string                 `json:"cookieUrl,omitempty"`      //
+	Request                *AuditsAffectedRequest `json:"request,omitempty"`        //
+}
+
+// This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
+type AuditsInspectorIssueDetails struct {
+	SameSiteCookieIssueDetails *AuditsSameSiteCookieIssueDetails `json:"sameSiteCookieIssueDetails,omitempty"` //
+}
+
+// An inspector issue reported from the back-end.
+type AuditsInspectorIssue struct {
+	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue
+	Details *AuditsInspectorIssueDetails `json:"details"` //
+}
+
+//
+type AuditsIssueAddedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Issue *AuditsInspectorIssue `json:"issue"` //
+	} `json:"Params,omitempty"`
+}
+
 type Audits struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -76,4 +119,14 @@ func (c *Audits) GetEncodedResponse(requestId string, encoding string, quality f
 	v.Quality = quality
 	v.SizeOnly = sizeOnly
 	return c.GetEncodedResponseWithParams(&v)
+}
+
+// Disables issues domain, prevents further issues from being reported to the client.
+func (c *Audits) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.disable"})
+}
+
+// Enables issues domain, sends the issues collected so far to the client by means of the `issueAdded` event.
+func (c *Audits) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.enable"})
 }

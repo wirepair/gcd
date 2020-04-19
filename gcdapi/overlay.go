@@ -12,9 +12,9 @@ import (
 // Configuration data for the highlighting of page elements.
 type OverlayHighlightConfig struct {
 	ShowInfo           bool     `json:"showInfo,omitempty"`           // Whether the node info tooltip should be shown (default: false).
+	ShowStyles         bool     `json:"showStyles,omitempty"`         // Whether the node styles in the tooltip (default: false).
 	ShowRulers         bool     `json:"showRulers,omitempty"`         // Whether the rulers should be shown (default: false).
 	ShowExtensionLines bool     `json:"showExtensionLines,omitempty"` // Whether the extension lines from node to the rulers should be shown (default: false).
-	DisplayAsMaterial  bool     `json:"displayAsMaterial,omitempty"`  //
 	ContentColor       *DOMRGBA `json:"contentColor,omitempty"`       // The content box highlight fill color (default: transparent).
 	PaddingColor       *DOMRGBA `json:"paddingColor,omitempty"`       // The padding highlight fill color (default: transparent).
 	BorderColor        *DOMRGBA `json:"borderColor,omitempty"`        // The border highlight fill color (default: transparent).
@@ -22,7 +22,6 @@ type OverlayHighlightConfig struct {
 	EventTargetColor   *DOMRGBA `json:"eventTargetColor,omitempty"`   // The event target element highlight fill color (default: transparent).
 	ShapeColor         *DOMRGBA `json:"shapeColor,omitempty"`         // The shape outside fill color (default: transparent).
 	ShapeMarginColor   *DOMRGBA `json:"shapeMarginColor,omitempty"`   // The shape margin fill color (default: transparent).
-	SelectorList       string   `json:"selectorList,omitempty"`       // Selectors to highlight relevant nodes.
 	CssGridColor       *DOMRGBA `json:"cssGridColor,omitempty"`       // The grid layout color (default: transparent).
 }
 
@@ -46,7 +45,7 @@ type OverlayNodeHighlightRequestedEvent struct {
 type OverlayScreenshotRequestedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Viewport *PageViewport `json:"viewport"` // Viewport to capture, in CSS.
+		Viewport *PageViewport `json:"viewport"` // Viewport to capture, in device independent pixels (dip).
 	} `json:"Params,omitempty"`
 }
 
@@ -72,6 +71,10 @@ func (c *Overlay) Enable() (*gcdmessage.ChromeResponse, error) {
 type OverlayGetHighlightObjectForTestParams struct {
 	// Id of the node to get highlight object for.
 	NodeId int `json:"nodeId"`
+	// Whether to include distance info.
+	IncludeDistance bool `json:"includeDistance,omitempty"`
+	// Whether to include style info.
+	IncludeStyle bool `json:"includeStyle,omitempty"`
 }
 
 // GetHighlightObjectForTestWithParams - For testing.
@@ -108,10 +111,14 @@ func (c *Overlay) GetHighlightObjectForTestWithParams(v *OverlayGetHighlightObje
 
 // GetHighlightObjectForTest - For testing.
 // nodeId - Id of the node to get highlight object for.
+// includeDistance - Whether to include distance info.
+// includeStyle - Whether to include style info.
 // Returns -  highlight - Highlight data for the node.
-func (c *Overlay) GetHighlightObjectForTest(nodeId int) (map[string]interface{}, error) {
+func (c *Overlay) GetHighlightObjectForTest(nodeId int, includeDistance bool, includeStyle bool) (map[string]interface{}, error) {
 	var v OverlayGetHighlightObjectForTestParams
 	v.NodeId = nodeId
+	v.IncludeDistance = includeDistance
+	v.IncludeStyle = includeStyle
 	return c.GetHighlightObjectForTestWithParams(&v)
 }
 
@@ -155,6 +162,8 @@ type OverlayHighlightNodeParams struct {
 	BackendNodeId int `json:"backendNodeId,omitempty"`
 	// JavaScript object id of the node to be highlighted.
 	ObjectId string `json:"objectId,omitempty"`
+	// Selectors to highlight relevant nodes.
+	Selector string `json:"selector,omitempty"`
 }
 
 // HighlightNodeWithParams - Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified.
@@ -167,12 +176,14 @@ func (c *Overlay) HighlightNodeWithParams(v *OverlayHighlightNodeParams) (*gcdme
 // nodeId - Identifier of the node to highlight.
 // backendNodeId - Identifier of the backend node to highlight.
 // objectId - JavaScript object id of the node to be highlighted.
-func (c *Overlay) HighlightNode(highlightConfig *OverlayHighlightConfig, nodeId int, backendNodeId int, objectId string) (*gcdmessage.ChromeResponse, error) {
+// selector - Selectors to highlight relevant nodes.
+func (c *Overlay) HighlightNode(highlightConfig *OverlayHighlightConfig, nodeId int, backendNodeId int, objectId string, selector string) (*gcdmessage.ChromeResponse, error) {
 	var v OverlayHighlightNodeParams
 	v.HighlightConfig = highlightConfig
 	v.NodeId = nodeId
 	v.BackendNodeId = backendNodeId
 	v.ObjectId = objectId
+	v.Selector = selector
 	return c.HighlightNodeWithParams(&v)
 }
 
@@ -241,7 +252,7 @@ func (c *Overlay) HighlightRect(x int, y int, width int, height int, color *DOMR
 }
 
 type OverlaySetInspectModeParams struct {
-	// Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, none
+	// Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, captureAreaScreenshot, showDistances, none
 	Mode string `json:"mode"`
 	// A descriptor for the highlight appearance of hovered-over nodes. May be omitted if `enabled == false`.
 	HighlightConfig *OverlayHighlightConfig `json:"highlightConfig,omitempty"`
@@ -253,13 +264,31 @@ func (c *Overlay) SetInspectModeWithParams(v *OverlaySetInspectModeParams) (*gcd
 }
 
 // SetInspectMode - Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection.
-// mode - Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, none
+// mode - Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, captureAreaScreenshot, showDistances, none
 // highlightConfig - A descriptor for the highlight appearance of hovered-over nodes. May be omitted if `enabled == false`.
 func (c *Overlay) SetInspectMode(mode string, highlightConfig *OverlayHighlightConfig) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetInspectModeParams
 	v.Mode = mode
 	v.HighlightConfig = highlightConfig
 	return c.SetInspectModeWithParams(&v)
+}
+
+type OverlaySetShowAdHighlightsParams struct {
+	// True for showing ad highlights
+	Show bool `json:"show"`
+}
+
+// SetShowAdHighlightsWithParams - Highlights owner element of all frames detected to be ads.
+func (c *Overlay) SetShowAdHighlightsWithParams(v *OverlaySetShowAdHighlightsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowAdHighlights", Params: v})
+}
+
+// SetShowAdHighlights - Highlights owner element of all frames detected to be ads.
+// show - True for showing ad highlights
+func (c *Overlay) SetShowAdHighlights(show bool) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowAdHighlightsParams
+	v.Show = show
+	return c.SetShowAdHighlightsWithParams(&v)
 }
 
 type OverlaySetPausedInDebuggerMessageParams struct {
@@ -334,6 +363,24 @@ func (c *Overlay) SetShowPaintRects(result bool) (*gcdmessage.ChromeResponse, er
 	return c.SetShowPaintRectsWithParams(&v)
 }
 
+type OverlaySetShowLayoutShiftRegionsParams struct {
+	// True for showing layout shift regions
+	Result bool `json:"result"`
+}
+
+// SetShowLayoutShiftRegionsWithParams - Requests that backend shows layout shift regions
+func (c *Overlay) SetShowLayoutShiftRegionsWithParams(v *OverlaySetShowLayoutShiftRegionsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowLayoutShiftRegions", Params: v})
+}
+
+// SetShowLayoutShiftRegions - Requests that backend shows layout shift regions
+// result - True for showing layout shift regions
+func (c *Overlay) SetShowLayoutShiftRegions(result bool) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowLayoutShiftRegionsParams
+	v.Result = result
+	return c.SetShowLayoutShiftRegionsWithParams(&v)
+}
+
 type OverlaySetShowScrollBottleneckRectsParams struct {
 	// True for showing scroll bottleneck rects
 	Show bool `json:"show"`
@@ -386,22 +433,4 @@ func (c *Overlay) SetShowViewportSizeOnResize(show bool) (*gcdmessage.ChromeResp
 	var v OverlaySetShowViewportSizeOnResizeParams
 	v.Show = show
 	return c.SetShowViewportSizeOnResizeWithParams(&v)
-}
-
-type OverlaySetSuspendedParams struct {
-	// Whether overlay should be suspended and not consume any resources until resumed.
-	Suspended bool `json:"suspended"`
-}
-
-// SetSuspendedWithParams -
-func (c *Overlay) SetSuspendedWithParams(v *OverlaySetSuspendedParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setSuspended", Params: v})
-}
-
-// SetSuspended -
-// suspended - Whether overlay should be suspended and not consume any resources until resumed.
-func (c *Overlay) SetSuspended(suspended bool) (*gcdmessage.ChromeResponse, error) {
-	var v OverlaySetSuspendedParams
-	v.Suspended = suspended
-	return c.SetSuspendedWithParams(&v)
 }

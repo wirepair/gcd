@@ -36,7 +36,7 @@ type DOMNode struct {
 	XmlVersion       string            `json:"xmlVersion,omitempty"`       // `Document`'s XML version in case of XML documents.
 	Name             string            `json:"name,omitempty"`             // `Attr`'s name.
 	Value            string            `json:"value,omitempty"`            // `Attr`'s value.
-	PseudoType       string            `json:"pseudoType,omitempty"`       // Pseudo element type for this node. enum values: first-line, first-letter, before, after, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType       string            `json:"pseudoType,omitempty"`       // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
 	ShadowRootType   string            `json:"shadowRootType,omitempty"`   // Shadow root type. enum values: user-agent, open, closed
 	FrameId          string            `json:"frameId,omitempty"`          // Frame ID for frame owner elements.
 	ContentDocument  *DOMNode          `json:"contentDocument,omitempty"`  // Content document for frame owner elements.
@@ -371,6 +371,36 @@ func (c *DOM) DescribeNode(nodeId int, backendNodeId int, objectId string, depth
 	return c.DescribeNodeWithParams(&v)
 }
 
+type DOMScrollIntoViewIfNeededParams struct {
+	// Identifier of the node.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId,omitempty"`
+	// The rect to be scrolled into view, relative to the node's border box, in CSS pixels. When omitted, center of the node will be used, similar to Element.scrollIntoView.
+	Rect *DOMRect `json:"rect,omitempty"`
+}
+
+// ScrollIntoViewIfNeededWithParams - Scrolls the specified rect of the given node into view if not already visible. Note: exactly one between nodeId, backendNodeId and objectId should be passed to identify the node.
+func (c *DOM) ScrollIntoViewIfNeededWithParams(v *DOMScrollIntoViewIfNeededParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.scrollIntoViewIfNeeded", Params: v})
+}
+
+// ScrollIntoViewIfNeeded - Scrolls the specified rect of the given node into view if not already visible. Note: exactly one between nodeId, backendNodeId and objectId should be passed to identify the node.
+// nodeId - Identifier of the node.
+// backendNodeId - Identifier of the backend node.
+// objectId - JavaScript object id of the node wrapper.
+// rect - The rect to be scrolled into view, relative to the node's border box, in CSS pixels. When omitted, center of the node will be used, similar to Element.scrollIntoView.
+func (c *DOM) ScrollIntoViewIfNeeded(nodeId int, backendNodeId int, objectId string, rect *DOMRect) (*gcdmessage.ChromeResponse, error) {
+	var v DOMScrollIntoViewIfNeededParams
+	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
+	v.Rect = rect
+	return c.ScrollIntoViewIfNeededWithParams(&v)
+}
+
 // Disables DOM agent for the given page.
 func (c *DOM) Disable() (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.disable"})
@@ -686,51 +716,56 @@ type DOMGetNodeForLocationParams struct {
 	Y int `json:"y"`
 	// False to skip to the nearest non-UA shadow root ancestor (default: false).
 	IncludeUserAgentShadowDOM bool `json:"includeUserAgentShadowDOM,omitempty"`
+	// Whether to ignore pointer-events: none on elements and hit test them.
+	IgnorePointerEventsNone bool `json:"ignorePointerEventsNone,omitempty"`
 }
 
 // GetNodeForLocationWithParams - Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is either returned or not.
-// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
-func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int, int, error) {
+// Returns -  backendNodeId - Resulting node. frameId - Frame this node belongs to. nodeId - Id of the node at given coordinates, only when enabled and requested document.
+func (c *DOM) GetNodeForLocationWithParams(v *DOMGetNodeForLocationParams) (int, string, int, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: v})
 	if err != nil {
-		return 0, 0, err
+		return 0, "", 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
 			BackendNodeId int
+			FrameId       string
 			NodeId        int
 		}
 	}
 
 	if resp == nil {
-		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
+		return 0, "", 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return 0, "", 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, 0, err
+		return 0, "", 0, err
 	}
 
-	return chromeData.Result.BackendNodeId, chromeData.Result.NodeId, nil
+	return chromeData.Result.BackendNodeId, chromeData.Result.FrameId, chromeData.Result.NodeId, nil
 }
 
 // GetNodeForLocation - Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is either returned or not.
 // x - X coordinate.
 // y - Y coordinate.
 // includeUserAgentShadowDOM - False to skip to the nearest non-UA shadow root ancestor (default: false).
-// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
-func (c *DOM) GetNodeForLocation(x int, y int, includeUserAgentShadowDOM bool) (int, int, error) {
+// ignorePointerEventsNone - Whether to ignore pointer-events: none on elements and hit test them.
+// Returns -  backendNodeId - Resulting node. frameId - Frame this node belongs to. nodeId - Id of the node at given coordinates, only when enabled and requested document.
+func (c *DOM) GetNodeForLocation(x int, y int, includeUserAgentShadowDOM bool, ignorePointerEventsNone bool) (int, string, int, error) {
 	var v DOMGetNodeForLocationParams
 	v.X = x
 	v.Y = y
 	v.IncludeUserAgentShadowDOM = includeUserAgentShadowDOM
+	v.IgnorePointerEventsNone = ignorePointerEventsNone
 	return c.GetNodeForLocationWithParams(&v)
 }
 
@@ -1329,6 +1364,8 @@ type DOMResolveNodeParams struct {
 	BackendNodeId int `json:"backendNodeId,omitempty"`
 	// Symbolic group name that can be used to release multiple objects.
 	ObjectGroup string `json:"objectGroup,omitempty"`
+	// Execution context in which to resolve the node.
+	ExecutionContextId int `json:"executionContextId,omitempty"`
 }
 
 // ResolveNodeWithParams - Resolves the JavaScript node object for a given NodeId or BackendNodeId.
@@ -1367,12 +1404,14 @@ func (c *DOM) ResolveNodeWithParams(v *DOMResolveNodeParams) (*RuntimeRemoteObje
 // nodeId - Id of the node to resolve.
 // backendNodeId - Backend identifier of the node to resolve.
 // objectGroup - Symbolic group name that can be used to release multiple objects.
+// executionContextId - Execution context in which to resolve the node.
 // Returns -  object - JavaScript object wrapper for given node.
-func (c *DOM) ResolveNode(nodeId int, backendNodeId int, objectGroup string) (*RuntimeRemoteObject, error) {
+func (c *DOM) ResolveNode(nodeId int, backendNodeId int, objectGroup string, executionContextId int) (*RuntimeRemoteObject, error) {
 	var v DOMResolveNodeParams
 	v.NodeId = nodeId
 	v.BackendNodeId = backendNodeId
 	v.ObjectGroup = objectGroup
+	v.ExecutionContextId = executionContextId
 	return c.ResolveNodeWithParams(&v)
 }
 
@@ -1456,6 +1495,116 @@ func (c *DOM) SetFileInputFiles(files []string, nodeId int, backendNodeId int, o
 	v.BackendNodeId = backendNodeId
 	v.ObjectId = objectId
 	return c.SetFileInputFilesWithParams(&v)
+}
+
+type DOMSetNodeStackTracesEnabledParams struct {
+	// Enable or disable.
+	Enable bool `json:"enable"`
+}
+
+// SetNodeStackTracesEnabledWithParams - Sets if stack traces should be captured for Nodes. See `Node.getNodeStackTraces`. Default is disabled.
+func (c *DOM) SetNodeStackTracesEnabledWithParams(v *DOMSetNodeStackTracesEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeStackTracesEnabled", Params: v})
+}
+
+// SetNodeStackTracesEnabled - Sets if stack traces should be captured for Nodes. See `Node.getNodeStackTraces`. Default is disabled.
+// enable - Enable or disable.
+func (c *DOM) SetNodeStackTracesEnabled(enable bool) (*gcdmessage.ChromeResponse, error) {
+	var v DOMSetNodeStackTracesEnabledParams
+	v.Enable = enable
+	return c.SetNodeStackTracesEnabledWithParams(&v)
+}
+
+type DOMGetNodeStackTracesParams struct {
+	// Id of the node to get stack traces for.
+	NodeId int `json:"nodeId"`
+}
+
+// GetNodeStackTracesWithParams - Gets stack traces associated with a Node. As of now, only provides stack trace for Node creation.
+// Returns -  creation - Creation stack trace, if available.
+func (c *DOM) GetNodeStackTracesWithParams(v *DOMGetNodeStackTracesParams) (*RuntimeStackTrace, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeStackTraces", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Creation *RuntimeStackTrace
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Creation, nil
+}
+
+// GetNodeStackTraces - Gets stack traces associated with a Node. As of now, only provides stack trace for Node creation.
+// nodeId - Id of the node to get stack traces for.
+// Returns -  creation - Creation stack trace, if available.
+func (c *DOM) GetNodeStackTraces(nodeId int) (*RuntimeStackTrace, error) {
+	var v DOMGetNodeStackTracesParams
+	v.NodeId = nodeId
+	return c.GetNodeStackTracesWithParams(&v)
+}
+
+type DOMGetFileInfoParams struct {
+	// JavaScript object id of the node wrapper.
+	ObjectId string `json:"objectId"`
+}
+
+// GetFileInfoWithParams - Returns file information for the given File wrapper.
+// Returns -  path -
+func (c *DOM) GetFileInfoWithParams(v *DOMGetFileInfoParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFileInfo", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Path string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.Path, nil
+}
+
+// GetFileInfo - Returns file information for the given File wrapper.
+// objectId - JavaScript object id of the node wrapper.
+// Returns -  path -
+func (c *DOM) GetFileInfo(objectId string) (string, error) {
+	var v DOMGetFileInfoParams
+	v.ObjectId = objectId
+	return c.GetFileInfoWithParams(&v)
 }
 
 type DOMSetInspectedNodeParams struct {
@@ -1581,7 +1730,7 @@ type DOMGetFrameOwnerParams struct {
 }
 
 // GetFrameOwnerWithParams - Returns iframe node that owns iframe with the given domain.
-// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetFrameOwnerWithParams(v *DOMGetFrameOwnerParams) (int, int, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFrameOwner", Params: v})
 	if err != nil {
@@ -1615,7 +1764,7 @@ func (c *DOM) GetFrameOwnerWithParams(v *DOMGetFrameOwnerParams) (int, int, erro
 
 // GetFrameOwner - Returns iframe node that owns iframe with the given domain.
 // frameId -
-// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled.
+// Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetFrameOwner(frameId string) (int, int, error) {
 	var v DOMGetFrameOwnerParams
 	v.FrameId = frameId

@@ -12,7 +12,7 @@ import (
 // Database with an array of object stores.
 type IndexedDBDatabaseWithObjectStores struct {
 	Name         string                  `json:"name"`         // Database name.
-	Version      int                     `json:"version"`      // Database version.
+	Version      float64                 `json:"version"`      // Database version (type is not 'integer', as the standard requires the version number to be 'unsigned long long')
 	ObjectStores []*IndexedDBObjectStore `json:"objectStores"` // Object stores in this database.
 }
 
@@ -229,6 +229,61 @@ func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, obje
 	v.PageSize = pageSize
 	v.KeyRange = keyRange
 	return c.RequestDataWithParams(&v)
+}
+
+type IndexedDBGetMetadataParams struct {
+	// Security origin.
+	SecurityOrigin string `json:"securityOrigin"`
+	// Database name.
+	DatabaseName string `json:"databaseName"`
+	// Object store name.
+	ObjectStoreName string `json:"objectStoreName"`
+}
+
+// GetMetadataWithParams - Gets metadata of an object store
+// Returns -  entriesCount - the entries count keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
+func (c *IndexedDB) GetMetadataWithParams(v *IndexedDBGetMetadataParams) (float64, float64, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.getMetadata", Params: v})
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			EntriesCount      float64
+			KeyGeneratorValue float64
+		}
+	}
+
+	if resp == nil {
+		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return 0, 0, err
+	}
+
+	return chromeData.Result.EntriesCount, chromeData.Result.KeyGeneratorValue, nil
+}
+
+// GetMetadata - Gets metadata of an object store
+// securityOrigin - Security origin.
+// databaseName - Database name.
+// objectStoreName - Object store name.
+// Returns -  entriesCount - the entries count keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
+func (c *IndexedDB) GetMetadata(securityOrigin string, databaseName string, objectStoreName string) (float64, float64, error) {
+	var v IndexedDBGetMetadataParams
+	v.SecurityOrigin = securityOrigin
+	v.DatabaseName = databaseName
+	v.ObjectStoreName = objectStoreName
+	return c.GetMetadataWithParams(&v)
 }
 
 type IndexedDBRequestDatabaseParams struct {

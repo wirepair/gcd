@@ -103,8 +103,12 @@ type ChromeTarget struct {
 	TargetApi            *gcdapi.Target // buh name collision
 	Tracing              *gcdapi.Tracing
 	Tethering            *gcdapi.Tethering
-	Testing              *gcdapi.Testing
 	Fetch                *gcdapi.Fetch
+	BackgroundService    *gcdapi.BackgroundService
+	Cast                 *gcdapi.Cast
+	Media                *gcdapi.Media
+	WebAudio             *gcdapi.WebAudio
+	WebAuthn             *gcdapi.WebAuthn
 
 	Target      *TargetInfo              // The target information see, TargetInfo
 	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
@@ -173,10 +177,13 @@ func (c *ChromeTarget) Init() {
 	c.Tracing = gcdapi.NewTracing(c)
 	c.Tethering = gcdapi.NewTethering(c)
 	c.HeadlessExperimental = gcdapi.NewHeadlessExperimental(c)
-	// if stable channel you'll need to comment this out
 	c.Performance = gcdapi.NewPerformance(c)
-	c.Testing = gcdapi.NewTesting(c)
 	c.Fetch = gcdapi.NewFetch(c)
+	c.Cast = gcdapi.NewCast(c)
+	c.Media = gcdapi.NewMedia(c)
+	c.WebAudio = gcdapi.NewWebAudio(c)
+	c.WebAuthn = gcdapi.NewWebAuthn(c)
+	c.BackgroundService = gcdapi.NewBackgroundService(c)
 }
 
 // clean up this target
