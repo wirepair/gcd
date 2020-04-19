@@ -11,7 +11,6 @@ import (
 
 // Describes a single graphics processor (GPU).
 type SystemInfoGPUDevice struct {
-<<<<<<< HEAD
 	VendorId      float64 `json:"vendorId"`           // PCI ID of the GPU vendor, if available; 0 otherwise.
 	DeviceId      float64 `json:"deviceId"`           // PCI ID of the GPU device, if available; 0 otherwise.
 	SubSysId      float64 `json:"subSysId,omitempty"` // Sub sys ID of the GPU, only available on Windows.
@@ -20,14 +19,6 @@ type SystemInfoGPUDevice struct {
 	DeviceString  string  `json:"deviceString"`       // String description of the GPU device, if the PCI ID is not available.
 	DriverVendor  string  `json:"driverVendor"`       // String description of the GPU driver vendor.
 	DriverVersion string  `json:"driverVersion"`      // String description of the GPU driver version.
-=======
-	VendorId      float64 `json:"vendorId"`      // PCI ID of the GPU vendor, if available; 0 otherwise.
-	DeviceId      float64 `json:"deviceId"`      // PCI ID of the GPU device, if available; 0 otherwise.
-	VendorString  string  `json:"vendorString"`  // String description of the GPU vendor, if the PCI ID is not available.
-	DeviceString  string  `json:"deviceString"`  // String description of the GPU device, if the PCI ID is not available.
-	DriverVendor  string  `json:"driverVendor"`  // String description of the GPU driver vendor.
-	DriverVersion string  `json:"driverVersion"` // String description of the GPU driver version.
->>>>>>> master
 }
 
 // Describes the width and height dimensions of an entity.
@@ -53,11 +44,7 @@ type SystemInfoVideoEncodeAcceleratorCapability struct {
 
 // Describes a supported image decoding profile with its associated minimum and maximum resolutions and subsampling.
 type SystemInfoImageDecodeAcceleratorCapability struct {
-<<<<<<< HEAD
 	ImageType     string          `json:"imageType"`     // Image coded, e.g. Jpeg. enum values: jpeg, webp, unknown
-=======
-	ImageType     string          `json:"imageType"`     // Image coded, e.g. Jpeg.
->>>>>>> master
 	MaxDimensions *SystemInfoSize `json:"maxDimensions"` // Maximum supported dimensions of the image in pixels.
 	MinDimensions *SystemInfoSize `json:"minDimensions"` // Minimum supported dimensions of the image in pixels.
 	Subsamplings  []string        `json:"subsamplings"`  // Optional array of supported subsampling formats, e.g. 4:2:0, if known. enum values: yuv420, yuv422, yuv444

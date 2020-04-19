@@ -152,11 +152,7 @@ func (c *Input) DispatchMouseEventWithParams(v *InputDispatchMouseEventParams) (
 // y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // timestamp - Time at which the event occurred.
-<<<<<<< HEAD
 // button - Mouse button (default: "none"). enum values: none, left, middle, right, back, forward
-=======
-// button - Mouse button (default: "none").
->>>>>>> master
 // buttons - A number indicating which buttons are pressed on the mouse when a mouse event is triggered. Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
 // clickCount - Number of times the mouse button was clicked (default: 0).
 // deltaX - X delta in CSS pixels for mouse wheel event (default: 0).

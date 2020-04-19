@@ -19,11 +19,7 @@ type BackgroundServiceBackgroundServiceEvent struct {
 	Timestamp                   float64                           `json:"timestamp"`                   // Timestamp of the event (in seconds).
 	Origin                      string                            `json:"origin"`                      // The origin this event belongs to.
 	ServiceWorkerRegistrationId string                            `json:"serviceWorkerRegistrationId"` // The Service Worker ID that initiated the event.
-<<<<<<< HEAD
 	Service                     string                            `json:"service"`                     // The Background Service this event belongs to. enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-	Service                     string                            `json:"service"`                     // The Background Service this event belongs to. enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 	EventName                   string                            `json:"eventName"`                   // A description of the event.
 	InstanceId                  string                            `json:"instanceId"`                  // An identifier that groups related events together.
 	EventMetadata               []*BackgroundServiceEventMetadata `json:"eventMetadata"`               // A list of event-specific information.
@@ -34,11 +30,7 @@ type BackgroundServiceRecordingStateChangedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		IsRecording bool   `json:"isRecording"` //
-<<<<<<< HEAD
 		Service     string `json:"service"`     //  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-		Service     string `json:"service"`     //  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 	} `json:"Params,omitempty"`
 }
 
@@ -60,11 +52,7 @@ func NewBackgroundService(target gcdmessage.ChromeTargeter) *BackgroundService {
 }
 
 type BackgroundServiceStartObservingParams struct {
-<<<<<<< HEAD
 	//  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-	//  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 	Service string `json:"service"`
 }
 
@@ -74,11 +62,7 @@ func (c *BackgroundService) StartObservingWithParams(v *BackgroundServiceStartOb
 }
 
 // StartObserving - Enables event updates for the service.
-<<<<<<< HEAD
 // service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-// service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 func (c *BackgroundService) StartObserving(service string) (*gcdmessage.ChromeResponse, error) {
 	var v BackgroundServiceStartObservingParams
 	v.Service = service
@@ -86,11 +70,7 @@ func (c *BackgroundService) StartObserving(service string) (*gcdmessage.ChromeRe
 }
 
 type BackgroundServiceStopObservingParams struct {
-<<<<<<< HEAD
 	//  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-	//  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 	Service string `json:"service"`
 }
 
@@ -100,11 +80,7 @@ func (c *BackgroundService) StopObservingWithParams(v *BackgroundServiceStopObse
 }
 
 // StopObserving - Disables event updates for the service.
-<<<<<<< HEAD
 // service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-// service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 func (c *BackgroundService) StopObserving(service string) (*gcdmessage.ChromeResponse, error) {
 	var v BackgroundServiceStopObservingParams
 	v.Service = service
@@ -114,11 +90,7 @@ func (c *BackgroundService) StopObserving(service string) (*gcdmessage.ChromeRes
 type BackgroundServiceSetRecordingParams struct {
 	//
 	ShouldRecord bool `json:"shouldRecord"`
-<<<<<<< HEAD
 	//  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-	//  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 	Service string `json:"service"`
 }
 
@@ -129,11 +101,7 @@ func (c *BackgroundService) SetRecordingWithParams(v *BackgroundServiceSetRecord
 
 // SetRecording - Set the recording state for the service.
 // shouldRecord -
-<<<<<<< HEAD
 // service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-// service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 func (c *BackgroundService) SetRecording(shouldRecord bool, service string) (*gcdmessage.ChromeResponse, error) {
 	var v BackgroundServiceSetRecordingParams
 	v.ShouldRecord = shouldRecord
@@ -142,11 +110,7 @@ func (c *BackgroundService) SetRecording(shouldRecord bool, service string) (*gc
 }
 
 type BackgroundServiceClearEventsParams struct {
-<<<<<<< HEAD
 	//  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-	//  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 	Service string `json:"service"`
 }
 
@@ -156,11 +120,7 @@ func (c *BackgroundService) ClearEventsWithParams(v *BackgroundServiceClearEvent
 }
 
 // ClearEvents - Clears all stored data for the service.
-<<<<<<< HEAD
 // service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-=======
-// service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler
->>>>>>> master
 func (c *BackgroundService) ClearEvents(service string) (*gcdmessage.ChromeResponse, error) {
 	var v BackgroundServiceClearEventsParams
 	v.Service = service
