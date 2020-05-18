@@ -41,7 +41,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v1.0.9"
+var GCDVERSION = "v1.0.10"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")

@@ -1,5 +1,6 @@
 # Changelog (2020)
 
+- May 18th: Replace encoding/json with https://github.com/json-iterator/go, heavy DOM usage should see reduction of memory by half. Updated to latest gcd / protocol.json file for 81.0.4044.138
 - April 19th: Fix bad merge
 - April 19th: Move to go modules, remove vendor directory. Fix gcdapigen to output version properly. Updated to latest gcd / protocol.json file for 81.0.4044.113
 
