@@ -1,7 +1,6 @@
 package gcd
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"

@@ -8,18 +8,28 @@ import (
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
-// Player Property type
-type MediaPlayerProperty struct {
-	Name  string `json:"name"`            //
-	Value string `json:"value,omitempty"` //
+// Have one type per entry in MediaLogRecord::Type Corresponds to kMessage
+type MediaPlayerMessage struct {
+	Level   string `json:"level"`   // Keep in sync with MediaLogMessageLevel We are currently keeping the message level 'error' separate from the PlayerError type because right now they represent different things, this one being a DVLOG(ERROR) style log message that gets printed based on what log level is selected in the UI, and the other is a representation of a media::PipelineStatus object. Soon however we're going to be moving away from using PipelineStatus for errors and introducing a new error type which should hopefully let us integrate the error log level into the PlayerError type.
+	Message string `json:"message"` //
 }
 
-// No Description.
+// Corresponds to kMediaPropertyChange
+type MediaPlayerProperty struct {
+	Name  string `json:"name"`  //
+	Value string `json:"value"` //
+}
+
+// Corresponds to kMediaEventTriggered
 type MediaPlayerEvent struct {
-	Type      string  `json:"type"`      //  enum values: errorEvent, triggeredEvent, messageEvent
-	Timestamp float64 `json:"timestamp"` // Events are timestamped relative to the start of the player creation not relative to the start of playback.
-	Name      string  `json:"name"`      //
+	Timestamp float64 `json:"timestamp"` //
 	Value     string  `json:"value"`     //
+}
+
+// Corresponds to kMediaError
+type MediaPlayerError struct {
+	Type      string `json:"type"`      //
+	ErrorCode string `json:"errorCode"` // When this switches to using media::Status instead of PipelineStatus we can remove "errorCode" and replace it with the fields from a Status instance. This also seems like a duplicate of the error level enum - there is a todo bug to have that level removed and use this instead. (crbug.com/1068454)
 }
 
 // This can be called multiple times, and can be used to set / override / remove player properties. A null propValue indicates removal.
@@ -37,6 +47,24 @@ type MediaPlayerEventsAddedEvent struct {
 	Params struct {
 		PlayerId string              `json:"playerId"` //
 		Events   []*MediaPlayerEvent `json:"events"`   //
+	} `json:"Params,omitempty"`
+}
+
+// Send a list of any messages that need to be delivered.
+type MediaPlayerMessagesLoggedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		PlayerId string                `json:"playerId"` //
+		Messages []*MediaPlayerMessage `json:"messages"` //
+	} `json:"Params,omitempty"`
+}
+
+// Send a list of any errors that need to be delivered.
+type MediaPlayerErrorsRaisedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		PlayerId string              `json:"playerId"` //
+		Errors   []*MediaPlayerError `json:"errors"`   //
 	} `json:"Params,omitempty"`
 }
 

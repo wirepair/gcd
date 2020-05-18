@@ -11,6 +11,8 @@ import (
 {{end}}
 )
 
+
+
 {{range $element := $api.SubTypes}}// {{$element.Description}}
 type {{$api.Domain}}{{$element.Name | Title}} struct {
 	{{range $prop := $element.Properties}}
@@ -41,6 +43,7 @@ type {{$api.Domain}}{{$element.Name | Title}}Event struct {
 
 type {{.Domain}} struct {
 	target gcdmessage.ChromeTargeter
+    
 }
 
 func New{{.Domain}}(target gcdmessage.ChromeTargeter) *{{.Domain}} {

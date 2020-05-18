@@ -55,6 +55,11 @@ const (
 	templateFile = "api_template.txt"
 	versionData  = `package gcdapi
 
+import "github.com/json-iterator/go"
+
+// define json here for all Domains
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 // Chrome Channel information
 const CHROME_CHANNEL = "%s" 
 // Chrome Version information

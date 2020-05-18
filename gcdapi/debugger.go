@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"encoding/json"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -55,6 +54,12 @@ type DebuggerBreakLocation struct {
 	LineNumber   int    `json:"lineNumber"`             // Line number in the script (0-based).
 	ColumnNumber int    `json:"columnNumber,omitempty"` // Column number in the script (0-based).
 	Type         string `json:"type,omitempty"`         //
+}
+
+// Debug symbols available for a wasm script.
+type DebuggerDebugSymbols struct {
+	Type        string `json:"type"`                  // Type of the debug symbols.
+	ExternalURL string `json:"externalURL,omitempty"` // URL of the external symbol source.
 }
 
 // Fired when breakpoint is resolved to an actual script and location.
@@ -124,6 +129,7 @@ type DebuggerScriptParsedEvent struct {
 		StackTrace              *RuntimeStackTrace     `json:"stackTrace,omitempty"`              // JavaScript top stack frame of where the script parsed event was triggered if available.
 		CodeOffset              int                    `json:"codeOffset,omitempty"`              // If the scriptLanguage is WebAssembly, the code section offset in the module.
 		ScriptLanguage          string                 `json:"scriptLanguage,omitempty"`          // The language of the script. enum values: JavaScript, WebAssembly
+		DebugSymbols            *DebuggerDebugSymbols  `json:"debugSymbols,omitempty"`            // If the scriptLanguage is WebASsembly, the source of debug symbols for the module.
 	} `json:"Params,omitempty"`
 }
 
@@ -286,6 +292,61 @@ func (c *Debugger) EvaluateOnCallFrame(callFrameId string, expression string, ob
 	v.ThrowOnSideEffect = throwOnSideEffect
 	v.Timeout = timeout
 	return c.EvaluateOnCallFrameWithParams(&v)
+}
+
+type DebuggerExecuteWasmEvaluatorParams struct {
+	// WebAssembly call frame identifier to evaluate on.
+	CallFrameId string `json:"callFrameId"`
+	// Code of the evaluator module.
+	Evaluator string `json:"evaluator"`
+	// Terminate execution after timing out (number of milliseconds).
+	Timeout float64 `json:"timeout,omitempty"`
+}
+
+// ExecuteWasmEvaluatorWithParams - Execute a Wasm Evaluator module on a given call frame.
+// Returns -  result - Object wrapper for the evaluation result. exceptionDetails - Exception details.
+func (c *Debugger) ExecuteWasmEvaluatorWithParams(v *DebuggerExecuteWasmEvaluatorParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.executeWasmEvaluator", Params: v})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Result           *RuntimeRemoteObject
+			ExceptionDetails *RuntimeExceptionDetails
+		}
+	}
+
+	if resp == nil {
+		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, nil, err
+	}
+
+	return chromeData.Result.Result, chromeData.Result.ExceptionDetails, nil
+}
+
+// ExecuteWasmEvaluator - Execute a Wasm Evaluator module on a given call frame.
+// callFrameId - WebAssembly call frame identifier to evaluate on.
+// evaluator - Code of the evaluator module.
+// timeout - Terminate execution after timing out (number of milliseconds).
+// Returns -  result - Object wrapper for the evaluation result. exceptionDetails - Exception details.
+func (c *Debugger) ExecuteWasmEvaluator(callFrameId string, evaluator string, timeout float64) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	var v DebuggerExecuteWasmEvaluatorParams
+	v.CallFrameId = callFrameId
+	v.Evaluator = evaluator
+	v.Timeout = timeout
+	return c.ExecuteWasmEvaluatorWithParams(&v)
 }
 
 type DebuggerGetPossibleBreakpointsParams struct {

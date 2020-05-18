@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"encoding/json"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -22,10 +21,15 @@ type AuditsAffectedRequest struct {
 	Url       string `json:"url,omitempty"` //
 }
 
+// Information about the frame affected by an inspector issue.
+type AuditsAffectedFrame struct {
+	FrameId string `json:"frameId"` //
+}
+
 // This information is currently necessary, as the front-end has a difficult time finding a specific cookie. With this, we can convey specific error information without the cookie.
 type AuditsSameSiteCookieIssueDetails struct {
 	Cookie                 *AuditsAffectedCookie  `json:"cookie"`                   //
-	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteCrossSchemeSecureUrlMethodUnsafe, WarnSameSiteCrossSchemeSecureUrlLax, WarnSameSiteCrossSchemeSecureUrlStrict, WarnSameSiteCrossSchemeInsecureUrlMethodUnsafe, WarnSameSiteCrossSchemeInsecureUrlLax, WarnSameSiteCrossSchemeInsecureUrlStrict
+	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteStrictLaxDowngradeStrict, WarnSameSiteStrictCrossDowngradeStrict, WarnSameSiteStrictCrossDowngradeLax, WarnSameSiteLaxCrossDowngradeStrict, WarnSameSiteLaxCrossDowngradeLax
 	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure
 	Operation              string                 `json:"operation"`                // Optionally identifies the site-for-cookies and the cookie url, which may be used by the front-end as additional context. enum values: SetCookie, ReadCookie
 	SiteForCookies         string                 `json:"siteForCookies,omitempty"` //
@@ -33,14 +37,25 @@ type AuditsSameSiteCookieIssueDetails struct {
 	Request                *AuditsAffectedRequest `json:"request,omitempty"`        //
 }
 
+// No Description.
+type AuditsMixedContentIssueDetails struct {
+	ResourceType     string                 `json:"resourceType,omitempty"` // The type of resource causing the mixed content issue (css, js, iframe, form,...). Marked as optional because it is mapped to from blink::mojom::RequestContextType, which will be replaced by network::mojom::RequestDestination enum values: Audio, Beacon, CSPReport, Download, EventSource, Favicon, Font, Form, Frame, Image, Import, Manifest, Ping, PluginData, PluginResource, Prefetch, Resource, Script, ServiceWorker, SharedWorker, Stylesheet, Track, Video, Worker, XMLHttpRequest, XSLT
+	ResolutionStatus string                 `json:"resolutionStatus"`       // The way the mixed content issue is being resolved. enum values: MixedContentBlocked, MixedContentAutomaticallyUpgraded, MixedContentWarning
+	InsecureURL      string                 `json:"insecureURL"`            // The unsafe http url causing the mixed content issue.
+	MainResourceURL  string                 `json:"mainResourceURL"`        // The url responsible for the call to an unsafe url.
+	Request          *AuditsAffectedRequest `json:"request,omitempty"`      // The mixed content request. Does not always exist (e.g. for unsafe form submission urls).
+	Frame            *AuditsAffectedFrame   `json:"frame,omitempty"`        // Optional because not every mixed content issue is necessarily linked to a frame.
+}
+
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
 type AuditsInspectorIssueDetails struct {
 	SameSiteCookieIssueDetails *AuditsSameSiteCookieIssueDetails `json:"sameSiteCookieIssueDetails,omitempty"` //
+	MixedContentIssueDetails   *AuditsMixedContentIssueDetails   `json:"mixedContentIssueDetails,omitempty"`   //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue
+	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue
 	Details *AuditsInspectorIssueDetails `json:"details"` //
 }
 
