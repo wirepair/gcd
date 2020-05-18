@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"encoding/json"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -193,9 +192,10 @@ type PageFrameNavigatedEvent struct {
 type PageFrameRequestedNavigationEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		FrameId string `json:"frameId"` // Id of the frame that is being navigated.
-		Reason  string `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
-		Url     string `json:"url"`     // The destination URL for the requested navigation.
+		FrameId     string `json:"frameId"`     // Id of the frame that is being navigated.
+		Reason      string `json:"reason"`      // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
+		Url         string `json:"url"`         // The destination URL for the requested navigation.
+		Disposition string `json:"disposition"` // The disposition for the navigation. enum values: currentTab, newTab, newWindow, download
 	} `json:"Params,omitempty"`
 }
 
@@ -230,9 +230,10 @@ type PageFrameStoppedLoadingEvent struct {
 type PageDownloadWillBeginEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		FrameId string `json:"frameId"` // Id of the frame that caused download to begin.
-		Guid    string `json:"guid"`    // Global unique identifier of the download.
-		Url     string `json:"url"`     // URL of the resource being downloaded.
+		FrameId           string `json:"frameId"`           // Id of the frame that caused download to begin.
+		Guid              string `json:"guid"`              // Global unique identifier of the download.
+		Url               string `json:"url"`               // URL of the resource being downloaded.
+		SuggestedFilename string `json:"suggestedFilename"` // Suggested file name of the resource (the actual name of the file saved on disk may differ).
 	} `json:"Params,omitempty"`
 }
 

@@ -270,7 +270,8 @@ func (d *Domain) resolveReference(prop PropSetter) bool {
 func (d *Domain) ResolveImports() {
 	for _, returns := range d.Commands {
 		if returns.HasReturn {
-			d.Imports = append(d.Imports, "encoding/json")
+			// we define json-iterator in the version.go file now
+			//d.Imports = append(d.Imports, "github.com/json-iterator/go")
 			return
 		}
 	}

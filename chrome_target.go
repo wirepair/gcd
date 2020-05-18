@@ -25,7 +25,6 @@ THE SOFTWARE.
 package gcd
 
 import (
-	"encoding/json"
 	"io"
 	"log"
 	"net"

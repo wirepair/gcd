@@ -25,7 +25,6 @@ THE SOFTWARE.
 package gcd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -35,8 +34,12 @@ import (
 	"os/exec"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/wirepair/gcd/gcdapi"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 var GCDVERSION = "v1.0.9"
 

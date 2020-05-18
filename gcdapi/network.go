@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"encoding/json"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -433,9 +432,9 @@ type NetworkWebSocketWillSendHandshakeRequestEvent struct {
 type NetworkRequestWillBeSentExtraInfoEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		RequestId      string                            `json:"requestId"`      // Request identifier. Used to match this information to an existing requestWillBeSent event.
-		BlockedCookies []*NetworkBlockedCookieWithReason `json:"blockedCookies"` // A list of cookies which will not be sent with this request along with corresponding reasons for blocking.
-		Headers        map[string]interface{}            `json:"headers"`        // Raw request headers as they will be sent over the wire.
+		RequestId         string                            `json:"requestId"`         // Request identifier. Used to match this information to an existing requestWillBeSent event.
+		AssociatedCookies []*NetworkBlockedCookieWithReason `json:"associatedCookies"` // A list of cookies potentially associated to the requested URL. This includes both cookies sent with the request and the ones not sent; the latter are distinguished by having blockedReason field set.
+		Headers           map[string]interface{}            `json:"headers"`           // Raw request headers as they will be sent over the wire.
 	} `json:"Params,omitempty"`
 }
 
@@ -1311,6 +1310,8 @@ type NetworkSetUserAgentOverrideParams struct {
 	AcceptLanguage string `json:"acceptLanguage,omitempty"`
 	// The platform navigator.platform should return.
 	Platform string `json:"platform,omitempty"`
+	// To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
+	UserAgentMetadata *EmulationUserAgentMetadata `json:"userAgentMetadata,omitempty"`
 }
 
 // SetUserAgentOverrideWithParams - Allows overriding user agent with the given string.
@@ -1322,10 +1323,12 @@ func (c *Network) SetUserAgentOverrideWithParams(v *NetworkSetUserAgentOverrideP
 // userAgent - User agent to use.
 // acceptLanguage - Browser langugage to emulate.
 // platform - The platform navigator.platform should return.
-func (c *Network) SetUserAgentOverride(userAgent string, acceptLanguage string, platform string) (*gcdmessage.ChromeResponse, error) {
+// userAgentMetadata - To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
+func (c *Network) SetUserAgentOverride(userAgent string, acceptLanguage string, platform string, userAgentMetadata *EmulationUserAgentMetadata) (*gcdmessage.ChromeResponse, error) {
 	var v NetworkSetUserAgentOverrideParams
 	v.UserAgent = userAgent
 	v.AcceptLanguage = acceptLanguage
 	v.Platform = platform
+	v.UserAgentMetadata = userAgentMetadata
 	return c.SetUserAgentOverrideWithParams(&v)
 }

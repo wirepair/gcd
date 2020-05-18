@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"encoding/json"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -19,6 +18,23 @@ type EmulationScreenOrientation struct {
 type EmulationMediaFeature struct {
 	Name  string `json:"name"`  //
 	Value string `json:"value"` //
+}
+
+// Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+type EmulationUserAgentBrandVersion struct {
+	Brand   string `json:"brand"`   //
+	Version string `json:"version"` //
+}
+
+// Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+type EmulationUserAgentMetadata struct {
+	Brands          []*EmulationUserAgentBrandVersion `json:"brands"`          //
+	FullVersion     string                            `json:"fullVersion"`     //
+	Platform        string                            `json:"platform"`        //
+	PlatformVersion string                            `json:"platformVersion"` //
+	Architecture    string                            `json:"architecture"`    //
+	Model           string                            `json:"model"`           //
+	Mobile          bool                              `json:"mobile"`          //
 }
 
 type Emulation struct {
@@ -520,6 +536,8 @@ type EmulationSetUserAgentOverrideParams struct {
 	AcceptLanguage string `json:"acceptLanguage,omitempty"`
 	// The platform navigator.platform should return.
 	Platform string `json:"platform,omitempty"`
+	// To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
+	UserAgentMetadata *EmulationUserAgentMetadata `json:"userAgentMetadata,omitempty"`
 }
 
 // SetUserAgentOverrideWithParams - Allows overriding user agent with the given string.
@@ -531,10 +549,12 @@ func (c *Emulation) SetUserAgentOverrideWithParams(v *EmulationSetUserAgentOverr
 // userAgent - User agent to use.
 // acceptLanguage - Browser langugage to emulate.
 // platform - The platform navigator.platform should return.
-func (c *Emulation) SetUserAgentOverride(userAgent string, acceptLanguage string, platform string) (*gcdmessage.ChromeResponse, error) {
+// userAgentMetadata - To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
+func (c *Emulation) SetUserAgentOverride(userAgent string, acceptLanguage string, platform string, userAgentMetadata *EmulationUserAgentMetadata) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetUserAgentOverrideParams
 	v.UserAgent = userAgent
 	v.AcceptLanguage = acceptLanguage
 	v.Platform = platform
+	v.UserAgentMetadata = userAgentMetadata
 	return c.SetUserAgentOverrideWithParams(&v)
 }

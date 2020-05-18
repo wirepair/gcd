@@ -27,10 +27,13 @@ THE SOFTWARE.
 package gcdmessage
 
 import (
-	"encoding/json"
 	"strconv"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type ChromeTargeter interface {
 	GetId() int64
