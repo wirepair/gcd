@@ -25,16 +25,14 @@ THE SOFTWARE.
 package gcd
 
 import (
-	"io"
+	"context"
 	"log"
-	"net"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/wirepair/gcd/gcdapi"
 	"github.com/wirepair/gcd/gcdmessage"
-	"golang.org/x/net/websocket"
 )
 
 // TargetInfo defines the 'tab' or target for this chrome instance,
@@ -57,13 +55,14 @@ type TargetInfo struct {
 // Events are handled by mapping the method name to a function which takes a target and byte output.
 // For now, callers will need to unmarshall the types themselves.
 type ChromeTarget struct {
+	ctx    context.Context
 	sendId int64 // An Id which is atomically incremented per request.
 	// must be at top because of alignement and atomic usage
 	replyLock       sync.RWMutex                           // lock for dispatching responses
 	replyDispatcher map[int64]chan *gcdmessage.Message     // Replies to synch methods using a non-buffered channel
 	eventLock       sync.RWMutex                           // lock for dispatching events
 	eventDispatcher map[string]func(*ChromeTarget, []byte) // calls the function when events match the subscribed method
-	conn            *websocket.Conn                        // the connection to the chrome debugger service for this tab/process
+	conn            *wsConn                                // the connection to the chrome debugger service for this tab/process
 
 	// Chrome Debugger Domains
 	Accessibility        *gcdapi.Accessibility
@@ -122,8 +121,8 @@ type ChromeTarget struct {
 }
 
 // openChromeTarget creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
-func openChromeTarget(addr string, target *TargetInfo) (*ChromeTarget, error) {
-	conn, err := wsConnection(addr, target.WebSocketDebuggerUrl)
+func openChromeTarget(ctx context.Context, addr string, target *TargetInfo) (*ChromeTarget, error) {
+	conn, err := wsConnection(ctx, target.WebSocketDebuggerUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -135,6 +134,7 @@ func openChromeTarget(addr string, target *TargetInfo) (*ChromeTarget, error) {
 	doneCh := make(chan struct{})
 	chromeTarget := &ChromeTarget{conn: conn, Target: target, sendCh: sendCh, replyDispatcher: replier, eventDispatcher: eventer, doneCh: doneCh, sendId: 0}
 	chromeTarget.apiTimeout = 120 * time.Second // default 120 seconds to wait for chrome to respond to us
+	chromeTarget.ctx = ctx
 	chromeTarget.Init()
 	chromeTarget.listen()
 	return chromeTarget, nil
@@ -262,8 +262,7 @@ func (c *ChromeTarget) listenWrite() {
 			c.replyLock.Unlock()
 
 			c.debugf("%d sending to chrome. %s\n", msg.Id, msg.Data)
-
-			err := websocket.Message.Send(c.conn, string(msg.Data))
+			err := c.conn.Write(c.ctx, msg.Data)
 			if err != nil {
 				c.debugf("error sending message: %s\n", err)
 				return
@@ -277,25 +276,42 @@ func (c *ChromeTarget) listenWrite() {
 
 // Listens for responses coming in from the Chrome Debugger Service.
 func (c *ChromeTarget) listenRead() {
+	readCh := make(chan []byte, 1)
+	writeClosed := make(chan struct{})
+	go func() {
+		for {
+			var msg []byte
+			err := c.conn.Read(c.ctx, &msg)
+			if err != nil {
+				c.debugf("error in ws read: %s\n", err)
+				close(writeClosed)
+				return
+			} else {
+				select {
+				case <-c.ctx.Done():
+					return
+				case readCh <- msg:
+				}
+			}
+		}
+	}()
+
 	for {
 		select {
+		case <-writeClosed:
+			return
 		// receive done from listenWrite
 		case <-c.doneCh:
 			return
-		// read data from websocket connection
-		default:
-			var msg string
-			err := websocket.Message.Receive(c.conn, &msg)
-			if err == io.EOF {
-				c.debugf("error io.EOF in websocket read")
-				return
-			} else if err != nil {
-				c.debugf("error in ws read: %s\n", err)
-			} else {
-				go c.dispatchResponse([]byte(msg))
+		case <-c.ctx.Done():
+			return
+		case msg := <-readCh:
+			if len(msg) != 0 {
+				c.dispatchResponse(msg)
 			}
 		}
 	}
+
 }
 
 type responseHeader struct {
@@ -374,19 +390,10 @@ func (c *ChromeTarget) checkTargetDisconnected(method string) {
 }
 
 // Connects to the tab/process for sending/recv'ing debug events
-func wsConnection(addr, url string) (*websocket.Conn, error) {
-	conn, err := net.Dial("tcp", addr)
+func wsConnection(ctx context.Context, url string) (*wsConn, error) {
+	client, err := newWsConnDial(ctx, url)
 	if err != nil {
 		return nil, err
-	}
-
-	config, errConfig := websocket.NewConfig(url, "http://localhost")
-	if errConfig != nil {
-		return nil, errConfig
-	}
-	client, errWS := websocket.NewClient(config, conn)
-	if errWS != nil {
-		return nil, errWS
 	}
 	return client, nil
 }

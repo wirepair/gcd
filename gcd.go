@@ -25,6 +25,7 @@ THE SOFTWARE.
 package gcd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -41,7 +42,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v1.0.10"
+var GCDVERSION = "v1.0.11"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -83,6 +84,7 @@ type Gcd struct {
 	flags             []string
 	env               []string
 	chomeApiVersion   string
+	ctx               context.Context
 }
 
 // Give it a friendly name.
@@ -94,6 +96,7 @@ func NewChromeDebugger() *Gcd {
 	c.terminatedHandler = nil
 	c.flags = make([]string, 0)
 	c.env = make([]string, 0)
+	c.ctx = context.Background()
 	return c
 }
 
@@ -261,7 +264,7 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 	chromeTargets := make([]*ChromeTarget, 0)
 	for _, v := range connectableTargets {
 		if _, ok := knownIds[v.Id]; !ok {
-			target, err := openChromeTarget(c.addr, v)
+			target, err := openChromeTarget(c.ctx, c.addr, v)
 			if err != nil {
 				return nil, err
 			}
@@ -316,7 +319,7 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	if err != nil {
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
-	return openChromeTarget(c.addr, tabTarget)
+	return openChromeTarget(c.ctx, c.addr, tabTarget)
 }
 
 // GetFirstTab returns the first tab created, to be called when
@@ -328,7 +331,7 @@ func (c *Gcd) GetFirstTab() (*ChromeTarget, error) {
 	}
 	for _, tabTarget := range connectableTargets {
 		if tabTarget.Type == "page" {
-			return openChromeTarget(c.addr, tabTarget)
+			return openChromeTarget(c.ctx, c.addr, tabTarget)
 		}
 	}
 	return nil, ErrNoTabAvailable
