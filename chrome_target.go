@@ -262,10 +262,8 @@ func (c *ChromeTarget) listenWrite() {
 			c.replyLock.Unlock()
 
 			c.debugf("%d sending to chrome. %s\n", msg.Id, msg.Data)
-			log.Printf("%d sending to chrome. %s\n", msg.Id, msg.Data)
 			err := c.conn.Write(c.ctx, msg.Data)
 			if err != nil {
-				log.Printf("error sending message: %s\n", err)
 				c.debugf("error sending message: %s\n", err)
 				return
 			}
