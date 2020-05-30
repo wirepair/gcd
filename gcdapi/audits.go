@@ -47,15 +47,23 @@ type AuditsMixedContentIssueDetails struct {
 	Frame            *AuditsAffectedFrame   `json:"frame,omitempty"`        // Optional because not every mixed content issue is necessarily linked to a frame.
 }
 
+// Details for a request that has been blocked with the BLOCKED_BY_RESPONSE code. Currently only used for COEP/COOP, but may be extended to include some CSP errors in the future.
+type AuditsBlockedByResponseIssueDetails struct {
+	Request *AuditsAffectedRequest `json:"request"`         //
+	Frame   *AuditsAffectedFrame   `json:"frame,omitempty"` //
+	Reason  string                 `json:"reason"`          //  enum values: CoepFrameResourceNeedsCoepHeader, CoopSandboxedIFrameCannotNavigateToCoopPage, CorpNotSameOrigin, CorpNotSameOriginAfterDefaultedToSameOriginByCoep, CorpNotSameSite
+}
+
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
 type AuditsInspectorIssueDetails struct {
-	SameSiteCookieIssueDetails *AuditsSameSiteCookieIssueDetails `json:"sameSiteCookieIssueDetails,omitempty"` //
-	MixedContentIssueDetails   *AuditsMixedContentIssueDetails   `json:"mixedContentIssueDetails,omitempty"`   //
+	SameSiteCookieIssueDetails    *AuditsSameSiteCookieIssueDetails    `json:"sameSiteCookieIssueDetails,omitempty"`    //
+	MixedContentIssueDetails      *AuditsMixedContentIssueDetails      `json:"mixedContentIssueDetails,omitempty"`      //
+	BlockedByResponseIssueDetails *AuditsBlockedByResponseIssueDetails `json:"blockedByResponseIssueDetails,omitempty"` //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue
+	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue
 	Details *AuditsInspectorIssueDetails `json:"details"` //
 }
 

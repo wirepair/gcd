@@ -10,22 +10,24 @@ import (
 
 // Timing information for the request.
 type NetworkResourceTiming struct {
-	RequestTime       float64 `json:"requestTime"`       // Timing's requestTime is a baseline in seconds, while the other numbers are ticks in milliseconds relatively to this requestTime.
-	ProxyStart        float64 `json:"proxyStart"`        // Started resolving proxy.
-	ProxyEnd          float64 `json:"proxyEnd"`          // Finished resolving proxy.
-	DnsStart          float64 `json:"dnsStart"`          // Started DNS address resolve.
-	DnsEnd            float64 `json:"dnsEnd"`            // Finished DNS address resolve.
-	ConnectStart      float64 `json:"connectStart"`      // Started connecting to the remote host.
-	ConnectEnd        float64 `json:"connectEnd"`        // Connected to the remote host.
-	SslStart          float64 `json:"sslStart"`          // Started SSL handshake.
-	SslEnd            float64 `json:"sslEnd"`            // Finished SSL handshake.
-	WorkerStart       float64 `json:"workerStart"`       // Started running ServiceWorker.
-	WorkerReady       float64 `json:"workerReady"`       // Finished Starting ServiceWorker.
-	SendStart         float64 `json:"sendStart"`         // Started sending request.
-	SendEnd           float64 `json:"sendEnd"`           // Finished sending request.
-	PushStart         float64 `json:"pushStart"`         // Time the server started pushing request.
-	PushEnd           float64 `json:"pushEnd"`           // Time the server finished pushing request.
-	ReceiveHeadersEnd float64 `json:"receiveHeadersEnd"` // Finished receiving response headers.
+	RequestTime              float64 `json:"requestTime"`              // Timing's requestTime is a baseline in seconds, while the other numbers are ticks in milliseconds relatively to this requestTime.
+	ProxyStart               float64 `json:"proxyStart"`               // Started resolving proxy.
+	ProxyEnd                 float64 `json:"proxyEnd"`                 // Finished resolving proxy.
+	DnsStart                 float64 `json:"dnsStart"`                 // Started DNS address resolve.
+	DnsEnd                   float64 `json:"dnsEnd"`                   // Finished DNS address resolve.
+	ConnectStart             float64 `json:"connectStart"`             // Started connecting to the remote host.
+	ConnectEnd               float64 `json:"connectEnd"`               // Connected to the remote host.
+	SslStart                 float64 `json:"sslStart"`                 // Started SSL handshake.
+	SslEnd                   float64 `json:"sslEnd"`                   // Finished SSL handshake.
+	WorkerStart              float64 `json:"workerStart"`              // Started running ServiceWorker.
+	WorkerReady              float64 `json:"workerReady"`              // Finished Starting ServiceWorker.
+	WorkerFetchStart         float64 `json:"workerFetchStart"`         // Started fetch event.
+	WorkerRespondWithSettled float64 `json:"workerRespondWithSettled"` // Settled fetch event respondWith promise.
+	SendStart                float64 `json:"sendStart"`                // Started sending request.
+	SendEnd                  float64 `json:"sendEnd"`                  // Finished sending request.
+	PushStart                float64 `json:"pushStart"`                // Time the server started pushing request.
+	PushEnd                  float64 `json:"pushEnd"`                  // Time the server finished pushing request.
+	ReceiveHeadersEnd        float64 `json:"receiveHeadersEnd"`        // Finished receiving response headers.
 }
 
 // HTTP request data.
@@ -73,26 +75,29 @@ type NetworkSecurityDetails struct {
 
 // HTTP response data.
 type NetworkResponse struct {
-	Url                string                  `json:"url"`                          // Response URL. This URL can be different from CachedResource.url in case of redirect.
-	Status             int                     `json:"status"`                       // HTTP response status code.
-	StatusText         string                  `json:"statusText"`                   // HTTP response status text.
-	Headers            map[string]interface{}  `json:"headers"`                      // HTTP response headers.
-	HeadersText        string                  `json:"headersText,omitempty"`        // HTTP response headers text.
-	MimeType           string                  `json:"mimeType"`                     // Resource mimeType as determined by the browser.
-	RequestHeaders     map[string]interface{}  `json:"requestHeaders,omitempty"`     // Refined HTTP request headers that were actually transmitted over the network.
-	RequestHeadersText string                  `json:"requestHeadersText,omitempty"` // HTTP request headers text.
-	ConnectionReused   bool                    `json:"connectionReused"`             // Specifies whether physical connection was actually reused for this request.
-	ConnectionId       float64                 `json:"connectionId"`                 // Physical connection id that was actually used for this request.
-	RemoteIPAddress    string                  `json:"remoteIPAddress,omitempty"`    // Remote IP address.
-	RemotePort         int                     `json:"remotePort,omitempty"`         // Remote port.
-	FromDiskCache      bool                    `json:"fromDiskCache,omitempty"`      // Specifies that the request was served from the disk cache.
-	FromServiceWorker  bool                    `json:"fromServiceWorker,omitempty"`  // Specifies that the request was served from the ServiceWorker.
-	FromPrefetchCache  bool                    `json:"fromPrefetchCache,omitempty"`  // Specifies that the request was served from the prefetch cache.
-	EncodedDataLength  float64                 `json:"encodedDataLength"`            // Total number of bytes received for this request so far.
-	Timing             *NetworkResourceTiming  `json:"timing,omitempty"`             // Timing information for the given request.
-	Protocol           string                  `json:"protocol,omitempty"`           // Protocol used to fetch this request.
-	SecurityState      string                  `json:"securityState"`                // Security state of the request resource. enum values: unknown, neutral, insecure, secure, info, insecure-broken
-	SecurityDetails    *NetworkSecurityDetails `json:"securityDetails,omitempty"`    // Security details for the request.
+	Url                         string                  `json:"url"`                                   // Response URL. This URL can be different from CachedResource.url in case of redirect.
+	Status                      int                     `json:"status"`                                // HTTP response status code.
+	StatusText                  string                  `json:"statusText"`                            // HTTP response status text.
+	Headers                     map[string]interface{}  `json:"headers"`                               // HTTP response headers.
+	HeadersText                 string                  `json:"headersText,omitempty"`                 // HTTP response headers text.
+	MimeType                    string                  `json:"mimeType"`                              // Resource mimeType as determined by the browser.
+	RequestHeaders              map[string]interface{}  `json:"requestHeaders,omitempty"`              // Refined HTTP request headers that were actually transmitted over the network.
+	RequestHeadersText          string                  `json:"requestHeadersText,omitempty"`          // HTTP request headers text.
+	ConnectionReused            bool                    `json:"connectionReused"`                      // Specifies whether physical connection was actually reused for this request.
+	ConnectionId                float64                 `json:"connectionId"`                          // Physical connection id that was actually used for this request.
+	RemoteIPAddress             string                  `json:"remoteIPAddress,omitempty"`             // Remote IP address.
+	RemotePort                  int                     `json:"remotePort,omitempty"`                  // Remote port.
+	FromDiskCache               bool                    `json:"fromDiskCache,omitempty"`               // Specifies that the request was served from the disk cache.
+	FromServiceWorker           bool                    `json:"fromServiceWorker,omitempty"`           // Specifies that the request was served from the ServiceWorker.
+	FromPrefetchCache           bool                    `json:"fromPrefetchCache,omitempty"`           // Specifies that the request was served from the prefetch cache.
+	EncodedDataLength           float64                 `json:"encodedDataLength"`                     // Total number of bytes received for this request so far.
+	Timing                      *NetworkResourceTiming  `json:"timing,omitempty"`                      // Timing information for the given request.
+	ServiceWorkerResponseSource string                  `json:"serviceWorkerResponseSource,omitempty"` // Response source of response from ServiceWorker. enum values: cache-storage, http-cache, fallback-code, network
+	ResponseTime                float64                 `json:"responseTime,omitempty"`                // The time at which the returned response was generated.
+	CacheStorageCacheName       string                  `json:"cacheStorageCacheName,omitempty"`       // Cache Storage Cache Name.
+	Protocol                    string                  `json:"protocol,omitempty"`                    // Protocol used to fetch this request.
+	SecurityState               string                  `json:"securityState"`                         // Security state of the request resource. enum values: unknown, neutral, insecure, secure, info, insecure-broken
+	SecurityDetails             *NetworkSecurityDetails `json:"securityDetails,omitempty"`             // Security details for the request.
 }
 
 // WebSocket request data.
