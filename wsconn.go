@@ -88,5 +88,5 @@ func (c *wsConn) Write(_ context.Context, msg []byte) error {
 }
 
 func (c *wsConn) Close() error {
-	return c.Close()
+	return c.conn.Close()
 }

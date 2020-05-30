@@ -79,7 +79,10 @@ func TestGetPages(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
-	targets, _ := debugger.GetTargets()
+	targets, err := debugger.GetTargets()
+	if err != nil {
+		t.Fatalf("error getting targets: %s\n", err)
+	}
 	if len(targets) <= 0 {
 		t.Fatalf("invalid number of targets, got: %d\n", len(targets))
 	}
@@ -463,6 +466,18 @@ func TestGetFirstTab(t *testing.T) {
 	_, err := debugger.GetFirstTab()
 	if err != nil {
 		t.Fatalf("error getting first tab: %v\n", err)
+	}
+}
+
+func TestCloseTab(t *testing.T) {
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+	target, err := debugger.GetFirstTab()
+	if err != nil {
+		t.Fatalf("error getting first tab: %v\n", err)
+	}
+	if err := debugger.CloseTab(target); err != nil {
+		t.Fatalf("error closing tab")
 	}
 }
 
