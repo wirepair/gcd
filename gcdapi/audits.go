@@ -54,16 +54,33 @@ type AuditsBlockedByResponseIssueDetails struct {
 	Reason  string                 `json:"reason"`          //  enum values: CoepFrameResourceNeedsCoepHeader, CoopSandboxedIFrameCannotNavigateToCoopPage, CorpNotSameOrigin, CorpNotSameOriginAfterDefaultedToSameOriginByCoep, CorpNotSameSite
 }
 
+// No Description.
+type AuditsHeavyAdIssueDetails struct {
+	Resolution string               `json:"resolution"` // The resolution status, either blocking the content or warning. enum values: HeavyAdBlocked, HeavyAdWarning
+	Reason     string               `json:"reason"`     // The reason the ad was blocked, total network or cpu or peak cpu. enum values: NetworkTotalLimit, CpuTotalLimit, CpuPeakLimit
+	Frame      *AuditsAffectedFrame `json:"frame"`      // The frame that was blocked.
+}
+
+// No Description.
+type AuditsContentSecurityPolicyIssueDetails struct {
+	BlockedURL                         string               `json:"blockedURL,omitempty"`               // The url not included in allowed sources.
+	ViolatedDirective                  string               `json:"violatedDirective"`                  // Specific directive that is violated, causing the CSP issue.
+	ContentSecurityPolicyViolationType string               `json:"contentSecurityPolicyViolationType"` //  enum values: kInlineViolation, kEvalViolation, kURLViolation, kTrustedTypesSinkViolation, kTrustedTypesPolicyViolation
+	FrameAncestor                      *AuditsAffectedFrame `json:"frameAncestor,omitempty"`            //
+}
+
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
 type AuditsInspectorIssueDetails struct {
-	SameSiteCookieIssueDetails    *AuditsSameSiteCookieIssueDetails    `json:"sameSiteCookieIssueDetails,omitempty"`    //
-	MixedContentIssueDetails      *AuditsMixedContentIssueDetails      `json:"mixedContentIssueDetails,omitempty"`      //
-	BlockedByResponseIssueDetails *AuditsBlockedByResponseIssueDetails `json:"blockedByResponseIssueDetails,omitempty"` //
+	SameSiteCookieIssueDetails        *AuditsSameSiteCookieIssueDetails        `json:"sameSiteCookieIssueDetails,omitempty"`        //
+	MixedContentIssueDetails          *AuditsMixedContentIssueDetails          `json:"mixedContentIssueDetails,omitempty"`          //
+	BlockedByResponseIssueDetails     *AuditsBlockedByResponseIssueDetails     `json:"blockedByResponseIssueDetails,omitempty"`     //
+	HeavyAdIssueDetails               *AuditsHeavyAdIssueDetails               `json:"heavyAdIssueDetails,omitempty"`               //
+	ContentSecurityPolicyIssueDetails *AuditsContentSecurityPolicyIssueDetails `json:"contentSecurityPolicyIssueDetails,omitempty"` //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue
+	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue
 	Details *AuditsInspectorIssueDetails `json:"details"` //
 }
 

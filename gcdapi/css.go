@@ -50,6 +50,7 @@ type CSSCSSStyleSheetHeader struct {
 	Disabled     bool    `json:"disabled"`               // Denotes whether the stylesheet is disabled.
 	HasSourceURL bool    `json:"hasSourceURL,omitempty"` // Whether the sourceURL field value comes from the sourceURL comment.
 	IsInline     bool    `json:"isInline"`               // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
+	IsMutable    bool    `json:"isMutable"`              // Whether this stylesheet is mutable. Inline stylesheets become mutable after they have been modified via CSSOM API. <link> element's stylesheets are never mutable. Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
 	StartLine    float64 `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
 	StartColumn  float64 `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
 	Length       float64 `json:"length"`                 // Size of the content (in characters).
@@ -1068,4 +1069,22 @@ func (c *CSS) TakeCoverageDelta() ([]*CSSRuleUsage, float64, error) {
 	}
 
 	return chromeData.Result.Coverage, chromeData.Result.Timestamp, nil
+}
+
+type CSSSetLocalFontsEnabledParams struct {
+	// Whether rendering of local fonts is enabled.
+	Enabled bool `json:"enabled"`
+}
+
+// SetLocalFontsEnabledWithParams - Enables/disables rendering of local CSS fonts (enabled by default).
+func (c *CSS) SetLocalFontsEnabledWithParams(v *CSSSetLocalFontsEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setLocalFontsEnabled", Params: v})
+}
+
+// SetLocalFontsEnabled - Enables/disables rendering of local CSS fonts (enabled by default).
+// enabled - Whether rendering of local fonts is enabled.
+func (c *CSS) SetLocalFontsEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v CSSSetLocalFontsEnabledParams
+	v.Enabled = enabled
+	return c.SetLocalFontsEnabledWithParams(&v)
 }

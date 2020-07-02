@@ -57,6 +57,8 @@ type InputDispatchKeyEventParams struct {
 	IsSystemKey bool `json:"isSystemKey,omitempty"`
 	// Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default: 0).
 	Location int `json:"location,omitempty"`
+	// Editing commands to send with the key event (e.g., 'selectAll') (default: []). These are related to but not equal the command names used in `document.execCommand` and NSStandardKeyBindingResponding. See https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h for valid command names.
+	Commands []string `json:"commands,omitempty"`
 }
 
 // DispatchKeyEventWithParams - Dispatches a key event to the page.
@@ -79,7 +81,8 @@ func (c *Input) DispatchKeyEventWithParams(v *InputDispatchKeyEventParams) (*gcd
 // isKeypad - Whether the event was generated from the keypad (default: false).
 // isSystemKey - Whether the event was a system key event (default: false).
 // location - Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default: 0).
-func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float64, text string, unmodifiedText string, keyIdentifier string, code string, key string, windowsVirtualKeyCode int, nativeVirtualKeyCode int, autoRepeat bool, isKeypad bool, isSystemKey bool, location int) (*gcdmessage.ChromeResponse, error) {
+// commands - Editing commands to send with the key event (e.g., 'selectAll') (default: []). These are related to but not equal the command names used in `document.execCommand` and NSStandardKeyBindingResponding. See https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h for valid command names.
+func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float64, text string, unmodifiedText string, keyIdentifier string, code string, key string, windowsVirtualKeyCode int, nativeVirtualKeyCode int, autoRepeat bool, isKeypad bool, isSystemKey bool, location int, commands []string) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchKeyEventParams
 	v.TheType = theType
 	v.Modifiers = modifiers
@@ -95,6 +98,7 @@ func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float6
 	v.IsKeypad = isKeypad
 	v.IsSystemKey = isSystemKey
 	v.Location = location
+	v.Commands = commands
 	return c.DispatchKeyEventWithParams(&v)
 }
 
