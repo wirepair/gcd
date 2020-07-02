@@ -275,30 +275,38 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 }
 
 func (c *Gcd) getConnectableTargets() ([]*TargetInfo, error) {
-	resp, err := http.Get(c.apiEndpoint)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, errRead := ioutil.ReadAll(resp.Body)
-	if errRead != nil {
-		return nil, &GcdBodyReadErr{Message: errRead.Error()}
-	}
-
-	targets := make([]*TargetInfo, 0)
-	err = json.Unmarshal(body, &targets)
-	if err != nil {
-		return nil, &GcdDecodingErr{Message: err.Error()}
-	}
-
-	connectableTargets := make([]*TargetInfo, 0)
-	for _, v := range targets {
-		if v.WebSocketDebuggerUrl != "" {
-			connectableTargets = append(connectableTargets, v)
+	// some times it takes a while to get results, so retry 4x
+	for i := 0; i < 4; i++ {
+		resp, err := http.Get(c.apiEndpoint)
+		if err != nil {
+			return nil, err
 		}
+		defer resp.Body.Close()
+
+		body, errRead := ioutil.ReadAll(resp.Body)
+		if errRead != nil {
+			return nil, &GcdBodyReadErr{Message: errRead.Error()}
+		}
+
+		targets := make([]*TargetInfo, 0)
+		err = json.Unmarshal(body, &targets)
+		if err != nil {
+			return nil, &GcdDecodingErr{Message: err.Error()}
+		}
+
+		connectableTargets := make([]*TargetInfo, 0)
+		for _, v := range targets {
+			if v.WebSocketDebuggerUrl != "" {
+				connectableTargets = append(connectableTargets, v)
+			}
+		}
+
+		if len(connectableTargets) > 0 {
+			return connectableTargets, nil
+		}
+		time.Sleep(time.Millisecond * 350)
 	}
-	return connectableTargets, nil
+	return nil, ErrNoTabAvailable
 }
 
 // NewTab a new empty tab, returns the chrome target.
