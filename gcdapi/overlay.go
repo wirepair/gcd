@@ -10,33 +10,36 @@ import (
 
 // Configuration data for the highlighting of Grid elements.
 type OverlayGridHighlightConfig struct {
-	ShowGridExtensionLines bool     `json:"showGridExtensionLines,omitempty"` // Whether the extension lines from grid cells to the rulers should be shown (default: false).
-	GridBorderColor        *DOMRGBA `json:"gridBorderColor,omitempty"`        // The grid container border highlight color (default: transparent).
-	CellBorderColor        *DOMRGBA `json:"cellBorderColor,omitempty"`        // The cell border color (default: transparent).
-	GridBorderDash         bool     `json:"gridBorderDash,omitempty"`         // Whether the grid border is dashed (default: false).
-	CellBorderDash         bool     `json:"cellBorderDash,omitempty"`         // Whether the cell border is dashed (default: false).
-	RowGapColor            *DOMRGBA `json:"rowGapColor,omitempty"`            // The row gap highlight fill color (default: transparent).
-	RowHatchColor          *DOMRGBA `json:"rowHatchColor,omitempty"`          // The row gap hatching fill color (default: transparent).
-	ColumnGapColor         *DOMRGBA `json:"columnGapColor,omitempty"`         // The column gap highlight fill color (default: transparent).
-	ColumnHatchColor       *DOMRGBA `json:"columnHatchColor,omitempty"`       // The column gap hatching fill color (default: transparent).
+	ShowGridExtensionLines  bool     `json:"showGridExtensionLines,omitempty"`  // Whether the extension lines from grid cells to the rulers should be shown (default: false).
+	ShowPositiveLineNumbers bool     `json:"showPositiveLineNumbers,omitempty"` // Show Positive line number labels (default: false).
+	ShowNegativeLineNumbers bool     `json:"showNegativeLineNumbers,omitempty"` // Show Negative line number labels (default: false).
+	GridBorderColor         *DOMRGBA `json:"gridBorderColor,omitempty"`         // The grid container border highlight color (default: transparent).
+	CellBorderColor         *DOMRGBA `json:"cellBorderColor,omitempty"`         // The cell border color (default: transparent).
+	GridBorderDash          bool     `json:"gridBorderDash,omitempty"`          // Whether the grid border is dashed (default: false).
+	CellBorderDash          bool     `json:"cellBorderDash,omitempty"`          // Whether the cell border is dashed (default: false).
+	RowGapColor             *DOMRGBA `json:"rowGapColor,omitempty"`             // The row gap highlight fill color (default: transparent).
+	RowHatchColor           *DOMRGBA `json:"rowHatchColor,omitempty"`           // The row gap hatching fill color (default: transparent).
+	ColumnGapColor          *DOMRGBA `json:"columnGapColor,omitempty"`          // The column gap highlight fill color (default: transparent).
+	ColumnHatchColor        *DOMRGBA `json:"columnHatchColor,omitempty"`        // The column gap hatching fill color (default: transparent).
 }
 
 // Configuration data for the highlighting of page elements.
 type OverlayHighlightConfig struct {
-	ShowInfo            bool                        `json:"showInfo,omitempty"`            // Whether the node info tooltip should be shown (default: false).
-	ShowStyles          bool                        `json:"showStyles,omitempty"`          // Whether the node styles in the tooltip (default: false).
-	ShowRulers          bool                        `json:"showRulers,omitempty"`          // Whether the rulers should be shown (default: false).
-	ShowExtensionLines  bool                        `json:"showExtensionLines,omitempty"`  // Whether the extension lines from node to the rulers should be shown (default: false).
-	ContentColor        *DOMRGBA                    `json:"contentColor,omitempty"`        // The content box highlight fill color (default: transparent).
-	PaddingColor        *DOMRGBA                    `json:"paddingColor,omitempty"`        // The padding highlight fill color (default: transparent).
-	BorderColor         *DOMRGBA                    `json:"borderColor,omitempty"`         // The border highlight fill color (default: transparent).
-	MarginColor         *DOMRGBA                    `json:"marginColor,omitempty"`         // The margin highlight fill color (default: transparent).
-	EventTargetColor    *DOMRGBA                    `json:"eventTargetColor,omitempty"`    // The event target element highlight fill color (default: transparent).
-	ShapeColor          *DOMRGBA                    `json:"shapeColor,omitempty"`          // The shape outside fill color (default: transparent).
-	ShapeMarginColor    *DOMRGBA                    `json:"shapeMarginColor,omitempty"`    // The shape margin fill color (default: transparent).
-	CssGridColor        *DOMRGBA                    `json:"cssGridColor,omitempty"`        // The grid layout color (default: transparent).
-	ColorFormat         string                      `json:"colorFormat,omitempty"`         // The color format used to format color styles (default: hex). enum values: rgb, hsl, hex
-	GridHighlightConfig *OverlayGridHighlightConfig `json:"gridHighlightConfig,omitempty"` // The grid layout highlight configuration (default: all transparent).
+	ShowInfo              bool                        `json:"showInfo,omitempty"`              // Whether the node info tooltip should be shown (default: false).
+	ShowStyles            bool                        `json:"showStyles,omitempty"`            // Whether the node styles in the tooltip (default: false).
+	ShowRulers            bool                        `json:"showRulers,omitempty"`            // Whether the rulers should be shown (default: false).
+	ShowAccessibilityInfo bool                        `json:"showAccessibilityInfo,omitempty"` // Whether the a11y info should be shown (default: true).
+	ShowExtensionLines    bool                        `json:"showExtensionLines,omitempty"`    // Whether the extension lines from node to the rulers should be shown (default: false).
+	ContentColor          *DOMRGBA                    `json:"contentColor,omitempty"`          // The content box highlight fill color (default: transparent).
+	PaddingColor          *DOMRGBA                    `json:"paddingColor,omitempty"`          // The padding highlight fill color (default: transparent).
+	BorderColor           *DOMRGBA                    `json:"borderColor,omitempty"`           // The border highlight fill color (default: transparent).
+	MarginColor           *DOMRGBA                    `json:"marginColor,omitempty"`           // The margin highlight fill color (default: transparent).
+	EventTargetColor      *DOMRGBA                    `json:"eventTargetColor,omitempty"`      // The event target element highlight fill color (default: transparent).
+	ShapeColor            *DOMRGBA                    `json:"shapeColor,omitempty"`            // The shape outside fill color (default: transparent).
+	ShapeMarginColor      *DOMRGBA                    `json:"shapeMarginColor,omitempty"`      // The shape margin fill color (default: transparent).
+	CssGridColor          *DOMRGBA                    `json:"cssGridColor,omitempty"`          // The grid layout color (default: transparent).
+	ColorFormat           string                      `json:"colorFormat,omitempty"`           // The color format used to format color styles (default: hex). enum values: rgb, hsl, hex
+	GridHighlightConfig   *OverlayGridHighlightConfig `json:"gridHighlightConfig,omitempty"`   // The grid layout highlight configuration (default: all transparent).
 }
 
 // Configuration for dual screen hinge
@@ -96,8 +99,10 @@ type OverlayGetHighlightObjectForTestParams struct {
 	IncludeDistance bool `json:"includeDistance,omitempty"`
 	// Whether to include style info.
 	IncludeStyle bool `json:"includeStyle,omitempty"`
-	// The color format to get config with (default: hex) enum values: rgb, hsl, hex
+	// The color format to get config with (default: hex). enum values: rgb, hsl, hex
 	ColorFormat string `json:"colorFormat,omitempty"`
+	// Whether to show accessibility info (default: true).
+	ShowAccessibilityInfo bool `json:"showAccessibilityInfo,omitempty"`
 }
 
 // GetHighlightObjectForTestWithParams - For testing.
@@ -136,14 +141,16 @@ func (c *Overlay) GetHighlightObjectForTestWithParams(v *OverlayGetHighlightObje
 // nodeId - Id of the node to get highlight object for.
 // includeDistance - Whether to include distance info.
 // includeStyle - Whether to include style info.
-// colorFormat - The color format to get config with (default: hex) enum values: rgb, hsl, hex
+// colorFormat - The color format to get config with (default: hex). enum values: rgb, hsl, hex
+// showAccessibilityInfo - Whether to show accessibility info (default: true).
 // Returns -  highlight - Highlight data for the node.
-func (c *Overlay) GetHighlightObjectForTest(nodeId int, includeDistance bool, includeStyle bool, colorFormat string) (map[string]interface{}, error) {
+func (c *Overlay) GetHighlightObjectForTest(nodeId int, includeDistance bool, includeStyle bool, colorFormat string, showAccessibilityInfo bool) (map[string]interface{}, error) {
 	var v OverlayGetHighlightObjectForTestParams
 	v.NodeId = nodeId
 	v.IncludeDistance = includeDistance
 	v.IncludeStyle = includeStyle
 	v.ColorFormat = colorFormat
+	v.ShowAccessibilityInfo = showAccessibilityInfo
 	return c.GetHighlightObjectForTestWithParams(&v)
 }
 

@@ -1,5 +1,6 @@
 # Changelog (2020)
 
+- July 2nd: Fix SendCustomReturn to timeout properly if send failed. Upgrade to latest gcd /protocol.json file for 83.0.4103.116
 - May 19th: Replace websocket code with github.com/gobwas/ws and fixed a terrible bug in handling websocket reads. Performance should be significantly improved.
 - May 18th: Replace encoding/json with https://github.com/json-iterator/go, heavy DOM usage should see reduction of memory by half. Updated to latest gcd / protocol.json file for 81.0.4044.138
 - April 19th: Fix bad merge

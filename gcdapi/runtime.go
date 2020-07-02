@@ -445,6 +445,8 @@ type RuntimeEvaluateParams struct {
 	DisableBreaks bool `json:"disableBreaks,omitempty"`
 	// Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
 	ReplMode bool `json:"replMode,omitempty"`
+	// The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
+	AllowUnsafeEvalBlockedByCSP bool `json:"allowUnsafeEvalBlockedByCSP,omitempty"`
 }
 
 // EvaluateWithParams - Evaluates expression on global object.
@@ -494,8 +496,9 @@ func (c *Runtime) EvaluateWithParams(v *RuntimeEvaluateParams) (*RuntimeRemoteOb
 // timeout - Terminate execution after timing out (number of milliseconds).
 // disableBreaks - Disable breakpoints during execution.
 // replMode - Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
+// allowUnsafeEvalBlockedByCSP - The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
 	v.Expression = expression
 	v.ObjectGroup = objectGroup
@@ -510,6 +513,7 @@ func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommand
 	v.Timeout = timeout
 	v.DisableBreaks = disableBreaks
 	v.ReplMode = replMode
+	v.AllowUnsafeEvalBlockedByCSP = allowUnsafeEvalBlockedByCSP
 	return c.EvaluateWithParams(&v)
 }
 

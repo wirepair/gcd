@@ -268,6 +268,10 @@ func (c *Target) ExposeDevToolsProtocol(targetId string, bindingName string) (*g
 type TargetCreateBrowserContextParams struct {
 	// If specified, disposes this context when debugging session disconnects.
 	DisposeOnDetach bool `json:"disposeOnDetach,omitempty"`
+	// Proxy server, similar to the one passed to --proxy-server
+	ProxyServer string `json:"proxyServer,omitempty"`
+	// Proxy bypass list, similar to the one passed to --proxy-bypass-list
+	ProxyBypassList string `json:"proxyBypassList,omitempty"`
 }
 
 // CreateBrowserContextWithParams - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
@@ -304,10 +308,14 @@ func (c *Target) CreateBrowserContextWithParams(v *TargetCreateBrowserContextPar
 
 // CreateBrowserContext - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
 // disposeOnDetach - If specified, disposes this context when debugging session disconnects.
+// proxyServer - Proxy server, similar to the one passed to --proxy-server
+// proxyBypassList - Proxy bypass list, similar to the one passed to --proxy-bypass-list
 // Returns -  browserContextId - The id of the context created.
-func (c *Target) CreateBrowserContext(disposeOnDetach bool) (string, error) {
+func (c *Target) CreateBrowserContext(disposeOnDetach bool, proxyServer string, proxyBypassList string) (string, error) {
 	var v TargetCreateBrowserContextParams
 	v.DisposeOnDetach = disposeOnDetach
+	v.ProxyServer = proxyServer
+	v.ProxyBypassList = proxyBypassList
 	return c.CreateBrowserContextWithParams(&v)
 }
 
