@@ -131,6 +131,7 @@ func SendCustomReturn(target ChromeTargeter, sendCh chan<- *Message, paramReques
 	select {
 	case sendCh <- sendMsg:
 	case <-timeout.C:
+		return nil, &ChromeApiTimeoutErr{}
 	case <-target.GetDoneCh():
 		return nil, &ChromeDoneErr{}
 	}
