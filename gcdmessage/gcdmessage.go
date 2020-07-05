@@ -125,22 +125,17 @@ func SendCustomReturn(target ChromeTargeter, sendCh chan<- *Message, paramReques
 	recvCh := make(chan *Message, 1)
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
 
-	timeout := time.NewTimer(target.GetApiTimeout())
-	defer timeout.Stop()
-
 	select {
 	case sendCh <- sendMsg:
-	case <-timeout.C:
+	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
 	case <-target.GetDoneCh():
 		return nil, &ChromeDoneErr{}
 	}
 
-	timeout.Reset(target.GetApiTimeout())
-
 	var resp *Message
 	select {
-	case <-timeout.C:
+	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
 	case <-target.GetDoneCh():
@@ -161,26 +156,19 @@ func SendDefaultRequest(target ChromeTargeter, sendCh chan<- *Message, paramRequ
 	recvCh := make(chan *Message, 1)
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
 
-	timeout := time.NewTimer(target.GetApiTimeout())
-	defer timeout.Stop()
-
 	select {
 	case sendCh <- sendMsg:
-		timeout.Stop()
-	case <-timeout.C:
+	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
 	case <-target.GetDoneCh():
 		return nil, &ChromeDoneErr{}
 	}
 
-	timeout.Reset(target.GetApiTimeout())
-
 	var resp *Message
 	select {
-	case <-timeout.C:
+	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
-		timeout.Stop()
 	case <-target.GetDoneCh():
 		return nil, &ChromeDoneErr{}
 	}
