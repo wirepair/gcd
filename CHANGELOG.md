@@ -1,6 +1,6 @@
 # Changelog (2020)
 
-
+- July 5th: Fix more timeout issues and wsConnsize was set to 1mb which is insufficient
 - July 2nd: Fix SendCustomReturn to timeout properly if send failed. Upgrade to latest gcd /protocol.json file for 83.0.4103.116
 - May 30th: Fix wsconn.Close, add retries for tabs and updated to latest gcd/ protocol.json file for 83.0.4103.61
 - May 19th: Replace websocket code with github.com/gobwas/ws and fixed a terrible bug in handling websocket reads. Performance should be significantly improved.

@@ -31,7 +31,7 @@ func newWsConnDial(ctx context.Context, url string) (*wsConn, error) {
 		panic("br should be nil")
 	}
 	wconn.conn = conn
-	wconn.writer = *wsutil.NewWriterBufferSize(conn, ws.StateClientSide, ws.OpText, 1<<20)
+	wconn.writer = *wsutil.NewWriterBufferSize(conn, ws.StateClientSide, ws.OpText, writeSize)
 	return wconn, nil
 }
 
