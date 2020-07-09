@@ -121,8 +121,8 @@ type ChromeTarget struct {
 }
 
 // openChromeTarget creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
-func openChromeTarget(ctx context.Context, addr string, target *TargetInfo) (*ChromeTarget, error) {
-	conn, err := wsConnection(ctx, target.WebSocketDebuggerUrl)
+func openChromeTarget(ctx context.Context, addr string, writeSize int, target *TargetInfo) (*ChromeTarget, error) {
+	conn, err := wsConnection(ctx, writeSize, target.WebSocketDebuggerUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -390,8 +390,8 @@ func (c *ChromeTarget) checkTargetDisconnected(method string) {
 }
 
 // Connects to the tab/process for sending/recv'ing debug events
-func wsConnection(ctx context.Context, url string) (*wsConn, error) {
-	client, err := newWsConnDial(ctx, url)
+func wsConnection(ctx context.Context, writeSize int, url string) (*wsConn, error) {
+	client, err := newWsConnDial(ctx, writeSize, url)
 	if err != nil {
 		return nil, err
 	}

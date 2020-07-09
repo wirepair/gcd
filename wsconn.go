@@ -13,15 +13,13 @@ import (
 	"github.com/gobwas/ws/wsutil"
 )
 
-const writeSize = 15000000 // 15mb
-
 // adapted from https://github.com/chromedp/chromedp/blob/8e0a16689423d48d8907c62a543c7ea468059228/conn.go
 type wsConn struct {
 	conn   net.Conn
 	writer wsutil.Writer
 }
 
-func newWsConnDial(ctx context.Context, url string) (*wsConn, error) {
+func newWsConnDial(ctx context.Context, writeSize int, url string) (*wsConn, error) {
 	wconn := &wsConn{}
 	conn, br, _, err := ws.Dial(ctx, url)
 	if err != nil {
