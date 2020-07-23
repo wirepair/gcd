@@ -26,6 +26,7 @@ package gcd
 
 import (
 	"context"
+	"io"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -282,10 +283,13 @@ func (c *ChromeTarget) listenRead() {
 		for {
 			var msg []byte
 			err := c.conn.Read(c.ctx, &msg)
-			if err != nil {
+			if err != nil && err == io.EOF {
 				c.debugf("error in ws read: %s\n", err)
 				close(writeClosed)
 				return
+			} else if err != nil {
+				c.debugf("error in ws read: %s\n", err)
+				continue
 			} else {
 				select {
 				case <-c.ctx.Done():
