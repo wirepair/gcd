@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -67,26 +68,26 @@ type DOMStorageClearParams struct {
 }
 
 // ClearWithParams -
-func (c *DOMStorage) ClearWithParams(v *DOMStorageClearParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.clear", Params: v})
+func (c *DOMStorage) ClearWithParams(ctx context.Context, v *DOMStorageClearParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.clear", Params: v})
 }
 
 // Clear -
 // storageId -
-func (c *DOMStorage) Clear(storageId *DOMStorageStorageId) (*gcdmessage.ChromeResponse, error) {
+func (c *DOMStorage) Clear(ctx context.Context, storageId *DOMStorageStorageId) (*gcdmessage.ChromeResponse, error) {
 	var v DOMStorageClearParams
 	v.StorageId = storageId
-	return c.ClearWithParams(&v)
+	return c.ClearWithParams(ctx, &v)
 }
 
 // Disables storage tracking, prevents storage events from being sent to the client.
-func (c *DOMStorage) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.disable"})
+func (c *DOMStorage) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.disable"})
 }
 
 // Enables storage tracking, storage events will now be delivered to the client.
-func (c *DOMStorage) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.enable"})
+func (c *DOMStorage) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.enable"})
 }
 
 type DOMStorageGetDOMStorageItemsParams struct {
@@ -96,8 +97,8 @@ type DOMStorageGetDOMStorageItemsParams struct {
 
 // GetDOMStorageItemsWithParams -
 // Returns -  entries -
-func (c *DOMStorage) GetDOMStorageItemsWithParams(v *DOMStorageGetDOMStorageItemsParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems", Params: v})
+func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMStorageGetDOMStorageItemsParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -129,10 +130,10 @@ func (c *DOMStorage) GetDOMStorageItemsWithParams(v *DOMStorageGetDOMStorageItem
 // GetDOMStorageItems -
 // storageId -
 // Returns -  entries -
-func (c *DOMStorage) GetDOMStorageItems(storageId *DOMStorageStorageId) ([]string, error) {
+func (c *DOMStorage) GetDOMStorageItems(ctx context.Context, storageId *DOMStorageStorageId) ([]string, error) {
 	var v DOMStorageGetDOMStorageItemsParams
 	v.StorageId = storageId
-	return c.GetDOMStorageItemsWithParams(&v)
+	return c.GetDOMStorageItemsWithParams(ctx, &v)
 }
 
 type DOMStorageRemoveDOMStorageItemParams struct {
@@ -143,18 +144,18 @@ type DOMStorageRemoveDOMStorageItemParams struct {
 }
 
 // RemoveDOMStorageItemWithParams -
-func (c *DOMStorage) RemoveDOMStorageItemWithParams(v *DOMStorageRemoveDOMStorageItemParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.removeDOMStorageItem", Params: v})
+func (c *DOMStorage) RemoveDOMStorageItemWithParams(ctx context.Context, v *DOMStorageRemoveDOMStorageItemParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.removeDOMStorageItem", Params: v})
 }
 
 // RemoveDOMStorageItem -
 // storageId -
 // key -
-func (c *DOMStorage) RemoveDOMStorageItem(storageId *DOMStorageStorageId, key string) (*gcdmessage.ChromeResponse, error) {
+func (c *DOMStorage) RemoveDOMStorageItem(ctx context.Context, storageId *DOMStorageStorageId, key string) (*gcdmessage.ChromeResponse, error) {
 	var v DOMStorageRemoveDOMStorageItemParams
 	v.StorageId = storageId
 	v.Key = key
-	return c.RemoveDOMStorageItemWithParams(&v)
+	return c.RemoveDOMStorageItemWithParams(ctx, &v)
 }
 
 type DOMStorageSetDOMStorageItemParams struct {
@@ -167,18 +168,18 @@ type DOMStorageSetDOMStorageItemParams struct {
 }
 
 // SetDOMStorageItemWithParams -
-func (c *DOMStorage) SetDOMStorageItemWithParams(v *DOMStorageSetDOMStorageItemParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.setDOMStorageItem", Params: v})
+func (c *DOMStorage) SetDOMStorageItemWithParams(ctx context.Context, v *DOMStorageSetDOMStorageItemParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.setDOMStorageItem", Params: v})
 }
 
 // SetDOMStorageItem -
 // storageId -
 // key -
 // value -
-func (c *DOMStorage) SetDOMStorageItem(storageId *DOMStorageStorageId, key string, value string) (*gcdmessage.ChromeResponse, error) {
+func (c *DOMStorage) SetDOMStorageItem(ctx context.Context, storageId *DOMStorageStorageId, key string, value string) (*gcdmessage.ChromeResponse, error) {
 	var v DOMStorageSetDOMStorageItemParams
 	v.StorageId = storageId
 	v.Key = key
 	v.Value = value
-	return c.SetDOMStorageItemWithParams(&v)
+	return c.SetDOMStorageItemWithParams(ctx, &v)
 }

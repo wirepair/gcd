@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -155,13 +156,13 @@ func NewDOMSnapshot(target gcdmessage.ChromeTargeter) *DOMSnapshot {
 }
 
 // Disables DOM snapshot agent for the given page.
-func (c *DOMSnapshot) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.disable"})
+func (c *DOMSnapshot) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.disable"})
 }
 
 // Enables DOM snapshot agent for the given page.
-func (c *DOMSnapshot) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.enable"})
+func (c *DOMSnapshot) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.enable"})
 }
 
 type DOMSnapshotGetSnapshotParams struct {
@@ -177,8 +178,8 @@ type DOMSnapshotGetSnapshotParams struct {
 
 // GetSnapshotWithParams - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
 // Returns -  domNodes - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. layoutTreeNodes - The nodes in the layout tree. computedStyles - Whitelisted ComputedStyle properties for each node in the layout tree.
-func (c *DOMSnapshot) GetSnapshotWithParams(v *DOMSnapshotGetSnapshotParams) ([]*DOMSnapshotDOMNode, []*DOMSnapshotLayoutTreeNode, []*DOMSnapshotComputedStyle, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.getSnapshot", Params: v})
+func (c *DOMSnapshot) GetSnapshotWithParams(ctx context.Context, v *DOMSnapshotGetSnapshotParams) ([]*DOMSnapshotDOMNode, []*DOMSnapshotLayoutTreeNode, []*DOMSnapshotComputedStyle, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.getSnapshot", Params: v})
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -215,13 +216,13 @@ func (c *DOMSnapshot) GetSnapshotWithParams(v *DOMSnapshotGetSnapshotParams) ([]
 // includePaintOrder - Whether to determine and include the paint order index of LayoutTreeNodes (default false).
 // includeUserAgentShadowTree - Whether to include UA shadow tree in the snapshot (default false).
 // Returns -  domNodes - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. layoutTreeNodes - The nodes in the layout tree. computedStyles - Whitelisted ComputedStyle properties for each node in the layout tree.
-func (c *DOMSnapshot) GetSnapshot(computedStyleWhitelist []string, includeEventListeners bool, includePaintOrder bool, includeUserAgentShadowTree bool) ([]*DOMSnapshotDOMNode, []*DOMSnapshotLayoutTreeNode, []*DOMSnapshotComputedStyle, error) {
+func (c *DOMSnapshot) GetSnapshot(ctx context.Context, computedStyleWhitelist []string, includeEventListeners bool, includePaintOrder bool, includeUserAgentShadowTree bool) ([]*DOMSnapshotDOMNode, []*DOMSnapshotLayoutTreeNode, []*DOMSnapshotComputedStyle, error) {
 	var v DOMSnapshotGetSnapshotParams
 	v.ComputedStyleWhitelist = computedStyleWhitelist
 	v.IncludeEventListeners = includeEventListeners
 	v.IncludePaintOrder = includePaintOrder
 	v.IncludeUserAgentShadowTree = includeUserAgentShadowTree
-	return c.GetSnapshotWithParams(&v)
+	return c.GetSnapshotWithParams(ctx, &v)
 }
 
 type DOMSnapshotCaptureSnapshotParams struct {
@@ -235,8 +236,8 @@ type DOMSnapshotCaptureSnapshotParams struct {
 
 // CaptureSnapshotWithParams - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
 // Returns -  documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. strings - Shared string table that all string properties refer to with indexes.
-func (c *DOMSnapshot) CaptureSnapshotWithParams(v *DOMSnapshotCaptureSnapshotParams) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.captureSnapshot", Params: v})
+func (c *DOMSnapshot) CaptureSnapshotWithParams(ctx context.Context, v *DOMSnapshotCaptureSnapshotParams) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.captureSnapshot", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -271,10 +272,10 @@ func (c *DOMSnapshot) CaptureSnapshotWithParams(v *DOMSnapshotCaptureSnapshotPar
 // includePaintOrder - Whether to include layout object paint orders into the snapshot.
 // includeDOMRects - Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
 // Returns -  documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. strings - Shared string table that all string properties refer to with indexes.
-func (c *DOMSnapshot) CaptureSnapshot(computedStyles []string, includePaintOrder bool, includeDOMRects bool) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
+func (c *DOMSnapshot) CaptureSnapshot(ctx context.Context, computedStyles []string, includePaintOrder bool, includeDOMRects bool) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
 	var v DOMSnapshotCaptureSnapshotParams
 	v.ComputedStyles = computedStyles
 	v.IncludePaintOrder = includePaintOrder
 	v.IncludeDOMRects = includeDOMRects
-	return c.CaptureSnapshotWithParams(&v)
+	return c.CaptureSnapshotWithParams(ctx, &v)
 }

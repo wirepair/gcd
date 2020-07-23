@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"github.com/wirepair/gcd"
 	"log"
 	"runtime"
+
+	"github.com/wirepair/gcd"
 )
 
 var path string
@@ -37,7 +39,7 @@ func main() {
 		log.Fatalf("error getting new tab: %s\n", err)
 	}
 	dom := target.DOM
-	r, err := dom.GetDocument(-1, true)
+	r, err := dom.GetDocument(context.Background(), -1, true)
 	if err != nil {
 		log.Fatalf("error: %s\n", err)
 	}

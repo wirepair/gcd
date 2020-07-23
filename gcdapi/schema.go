@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -25,8 +26,8 @@ func NewSchema(target gcdmessage.ChromeTargeter) *Schema {
 
 // GetDomains - Returns supported domains.
 // Returns -  domains - List of supported domains.
-func (c *Schema) GetDomains() ([]*SchemaDomain, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Schema.getDomains"})
+func (c *Schema) GetDomains(ctx context.Context) ([]*SchemaDomain, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Schema.getDomains"})
 	if err != nil {
 		return nil, err
 	}

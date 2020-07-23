@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -23,16 +24,16 @@ type IOCloseParams struct {
 }
 
 // CloseWithParams - Close the stream, discard any temporary backing storage.
-func (c *IO) CloseWithParams(v *IOCloseParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: v})
+func (c *IO) CloseWithParams(ctx context.Context, v *IOCloseParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: v})
 }
 
 // Close - Close the stream, discard any temporary backing storage.
 // handle - Handle of the stream to close.
-func (c *IO) Close(handle string) (*gcdmessage.ChromeResponse, error) {
+func (c *IO) Close(ctx context.Context, handle string) (*gcdmessage.ChromeResponse, error) {
 	var v IOCloseParams
 	v.Handle = handle
-	return c.CloseWithParams(&v)
+	return c.CloseWithParams(ctx, &v)
 }
 
 type IOReadParams struct {
@@ -46,8 +47,8 @@ type IOReadParams struct {
 
 // ReadWithParams - Read a chunk of the stream
 // Returns -  base64Encoded - Set if the data is base64-encoded data - Data that were read. eof - Set if the end-of-file condition occured while reading.
-func (c *IO) ReadWithParams(v *IOReadParams) (bool, string, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: v})
+func (c *IO) ReadWithParams(ctx context.Context, v *IOReadParams) (bool, string, bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: v})
 	if err != nil {
 		return false, "", false, err
 	}
@@ -83,12 +84,12 @@ func (c *IO) ReadWithParams(v *IOReadParams) (bool, string, bool, error) {
 // offset - Seek to the specified offset before reading (if not specificed, proceed with offset following the last read). Some types of streams may only support sequential reads.
 // size - Maximum number of bytes to read (left upon the agent discretion if not specified).
 // Returns -  base64Encoded - Set if the data is base64-encoded data - Data that were read. eof - Set if the end-of-file condition occured while reading.
-func (c *IO) Read(handle string, offset int, size int) (bool, string, bool, error) {
+func (c *IO) Read(ctx context.Context, handle string, offset int, size int) (bool, string, bool, error) {
 	var v IOReadParams
 	v.Handle = handle
 	v.Offset = offset
 	v.Size = size
-	return c.ReadWithParams(&v)
+	return c.ReadWithParams(ctx, &v)
 }
 
 type IOResolveBlobParams struct {
@@ -98,8 +99,8 @@ type IOResolveBlobParams struct {
 
 // ResolveBlobWithParams - Return UUID of Blob object specified by a remote object id.
 // Returns -  uuid - UUID of the specified Blob.
-func (c *IO) ResolveBlobWithParams(v *IOResolveBlobParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.resolveBlob", Params: v})
+func (c *IO) ResolveBlobWithParams(ctx context.Context, v *IOResolveBlobParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.resolveBlob", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -131,8 +132,8 @@ func (c *IO) ResolveBlobWithParams(v *IOResolveBlobParams) (string, error) {
 // ResolveBlob - Return UUID of Blob object specified by a remote object id.
 // objectId - Object id of a Blob object wrapper.
 // Returns -  uuid - UUID of the specified Blob.
-func (c *IO) ResolveBlob(objectId string) (string, error) {
+func (c *IO) ResolveBlob(ctx context.Context, objectId string) (string, error) {
 	var v IOResolveBlobParams
 	v.ObjectId = objectId
-	return c.ResolveBlobWithParams(&v)
+	return c.ResolveBlobWithParams(ctx, &v)
 }

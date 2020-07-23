@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -81,20 +82,20 @@ type IndexedDBClearObjectStoreParams struct {
 }
 
 // ClearObjectStoreWithParams - Clears all entries from an object store.
-func (c *IndexedDB) ClearObjectStoreWithParams(v *IndexedDBClearObjectStoreParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.clearObjectStore", Params: v})
+func (c *IndexedDB) ClearObjectStoreWithParams(ctx context.Context, v *IndexedDBClearObjectStoreParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.clearObjectStore", Params: v})
 }
 
 // ClearObjectStore - Clears all entries from an object store.
 // securityOrigin - Security origin.
 // databaseName - Database name.
 // objectStoreName - Object store name.
-func (c *IndexedDB) ClearObjectStore(securityOrigin string, databaseName string, objectStoreName string) (*gcdmessage.ChromeResponse, error) {
+func (c *IndexedDB) ClearObjectStore(ctx context.Context, securityOrigin string, databaseName string, objectStoreName string) (*gcdmessage.ChromeResponse, error) {
 	var v IndexedDBClearObjectStoreParams
 	v.SecurityOrigin = securityOrigin
 	v.DatabaseName = databaseName
 	v.ObjectStoreName = objectStoreName
-	return c.ClearObjectStoreWithParams(&v)
+	return c.ClearObjectStoreWithParams(ctx, &v)
 }
 
 type IndexedDBDeleteDatabaseParams struct {
@@ -105,18 +106,18 @@ type IndexedDBDeleteDatabaseParams struct {
 }
 
 // DeleteDatabaseWithParams - Deletes a database.
-func (c *IndexedDB) DeleteDatabaseWithParams(v *IndexedDBDeleteDatabaseParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.deleteDatabase", Params: v})
+func (c *IndexedDB) DeleteDatabaseWithParams(ctx context.Context, v *IndexedDBDeleteDatabaseParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.deleteDatabase", Params: v})
 }
 
 // DeleteDatabase - Deletes a database.
 // securityOrigin - Security origin.
 // databaseName - Database name.
-func (c *IndexedDB) DeleteDatabase(securityOrigin string, databaseName string) (*gcdmessage.ChromeResponse, error) {
+func (c *IndexedDB) DeleteDatabase(ctx context.Context, securityOrigin string, databaseName string) (*gcdmessage.ChromeResponse, error) {
 	var v IndexedDBDeleteDatabaseParams
 	v.SecurityOrigin = securityOrigin
 	v.DatabaseName = databaseName
-	return c.DeleteDatabaseWithParams(&v)
+	return c.DeleteDatabaseWithParams(ctx, &v)
 }
 
 type IndexedDBDeleteObjectStoreEntriesParams struct {
@@ -131,8 +132,8 @@ type IndexedDBDeleteObjectStoreEntriesParams struct {
 }
 
 // DeleteObjectStoreEntriesWithParams - Delete a range of entries from an object store
-func (c *IndexedDB) DeleteObjectStoreEntriesWithParams(v *IndexedDBDeleteObjectStoreEntriesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.deleteObjectStoreEntries", Params: v})
+func (c *IndexedDB) DeleteObjectStoreEntriesWithParams(ctx context.Context, v *IndexedDBDeleteObjectStoreEntriesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.deleteObjectStoreEntries", Params: v})
 }
 
 // DeleteObjectStoreEntries - Delete a range of entries from an object store
@@ -140,23 +141,23 @@ func (c *IndexedDB) DeleteObjectStoreEntriesWithParams(v *IndexedDBDeleteObjectS
 // databaseName -
 // objectStoreName -
 // keyRange - Range of entry keys to delete
-func (c *IndexedDB) DeleteObjectStoreEntries(securityOrigin string, databaseName string, objectStoreName string, keyRange *IndexedDBKeyRange) (*gcdmessage.ChromeResponse, error) {
+func (c *IndexedDB) DeleteObjectStoreEntries(ctx context.Context, securityOrigin string, databaseName string, objectStoreName string, keyRange *IndexedDBKeyRange) (*gcdmessage.ChromeResponse, error) {
 	var v IndexedDBDeleteObjectStoreEntriesParams
 	v.SecurityOrigin = securityOrigin
 	v.DatabaseName = databaseName
 	v.ObjectStoreName = objectStoreName
 	v.KeyRange = keyRange
-	return c.DeleteObjectStoreEntriesWithParams(&v)
+	return c.DeleteObjectStoreEntriesWithParams(ctx, &v)
 }
 
 // Disables events from backend.
-func (c *IndexedDB) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.disable"})
+func (c *IndexedDB) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.disable"})
 }
 
 // Enables events from backend.
-func (c *IndexedDB) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.enable"})
+func (c *IndexedDB) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.enable"})
 }
 
 type IndexedDBRequestDataParams struct {
@@ -178,8 +179,8 @@ type IndexedDBRequestDataParams struct {
 
 // RequestDataWithParams - Requests data from object store or index.
 // Returns -  objectStoreDataEntries - Array of object store data entries. hasMore - If true, there are more entries to fetch in the given range.
-func (c *IndexedDB) RequestDataWithParams(v *IndexedDBRequestDataParams) ([]*IndexedDBDataEntry, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestData", Params: v})
+func (c *IndexedDB) RequestDataWithParams(ctx context.Context, v *IndexedDBRequestDataParams) ([]*IndexedDBDataEntry, bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestData", Params: v})
 	if err != nil {
 		return nil, false, err
 	}
@@ -218,7 +219,7 @@ func (c *IndexedDB) RequestDataWithParams(v *IndexedDBRequestDataParams) ([]*Ind
 // pageSize - Number of records to fetch.
 // keyRange - Key range.
 // Returns -  objectStoreDataEntries - Array of object store data entries. hasMore - If true, there are more entries to fetch in the given range.
-func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, objectStoreName string, indexName string, skipCount int, pageSize int, keyRange *IndexedDBKeyRange) ([]*IndexedDBDataEntry, bool, error) {
+func (c *IndexedDB) RequestData(ctx context.Context, securityOrigin string, databaseName string, objectStoreName string, indexName string, skipCount int, pageSize int, keyRange *IndexedDBKeyRange) ([]*IndexedDBDataEntry, bool, error) {
 	var v IndexedDBRequestDataParams
 	v.SecurityOrigin = securityOrigin
 	v.DatabaseName = databaseName
@@ -227,7 +228,7 @@ func (c *IndexedDB) RequestData(securityOrigin string, databaseName string, obje
 	v.SkipCount = skipCount
 	v.PageSize = pageSize
 	v.KeyRange = keyRange
-	return c.RequestDataWithParams(&v)
+	return c.RequestDataWithParams(ctx, &v)
 }
 
 type IndexedDBGetMetadataParams struct {
@@ -241,8 +242,8 @@ type IndexedDBGetMetadataParams struct {
 
 // GetMetadataWithParams - Gets metadata of an object store
 // Returns -  entriesCount - the entries count keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
-func (c *IndexedDB) GetMetadataWithParams(v *IndexedDBGetMetadataParams) (float64, float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.getMetadata", Params: v})
+func (c *IndexedDB) GetMetadataWithParams(ctx context.Context, v *IndexedDBGetMetadataParams) (float64, float64, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.getMetadata", Params: v})
 	if err != nil {
 		return 0, 0, err
 	}
@@ -277,12 +278,12 @@ func (c *IndexedDB) GetMetadataWithParams(v *IndexedDBGetMetadataParams) (float6
 // databaseName - Database name.
 // objectStoreName - Object store name.
 // Returns -  entriesCount - the entries count keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
-func (c *IndexedDB) GetMetadata(securityOrigin string, databaseName string, objectStoreName string) (float64, float64, error) {
+func (c *IndexedDB) GetMetadata(ctx context.Context, securityOrigin string, databaseName string, objectStoreName string) (float64, float64, error) {
 	var v IndexedDBGetMetadataParams
 	v.SecurityOrigin = securityOrigin
 	v.DatabaseName = databaseName
 	v.ObjectStoreName = objectStoreName
-	return c.GetMetadataWithParams(&v)
+	return c.GetMetadataWithParams(ctx, &v)
 }
 
 type IndexedDBRequestDatabaseParams struct {
@@ -294,8 +295,8 @@ type IndexedDBRequestDatabaseParams struct {
 
 // RequestDatabaseWithParams - Requests database with given name in given frame.
 // Returns -  databaseWithObjectStores - Database with an array of object stores.
-func (c *IndexedDB) RequestDatabaseWithParams(v *IndexedDBRequestDatabaseParams) (*IndexedDBDatabaseWithObjectStores, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabase", Params: v})
+func (c *IndexedDB) RequestDatabaseWithParams(ctx context.Context, v *IndexedDBRequestDatabaseParams) (*IndexedDBDatabaseWithObjectStores, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabase", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -328,11 +329,11 @@ func (c *IndexedDB) RequestDatabaseWithParams(v *IndexedDBRequestDatabaseParams)
 // securityOrigin - Security origin.
 // databaseName - Database name.
 // Returns -  databaseWithObjectStores - Database with an array of object stores.
-func (c *IndexedDB) RequestDatabase(securityOrigin string, databaseName string) (*IndexedDBDatabaseWithObjectStores, error) {
+func (c *IndexedDB) RequestDatabase(ctx context.Context, securityOrigin string, databaseName string) (*IndexedDBDatabaseWithObjectStores, error) {
 	var v IndexedDBRequestDatabaseParams
 	v.SecurityOrigin = securityOrigin
 	v.DatabaseName = databaseName
-	return c.RequestDatabaseWithParams(&v)
+	return c.RequestDatabaseWithParams(ctx, &v)
 }
 
 type IndexedDBRequestDatabaseNamesParams struct {
@@ -342,8 +343,8 @@ type IndexedDBRequestDatabaseNamesParams struct {
 
 // RequestDatabaseNamesWithParams - Requests database names for given security origin.
 // Returns -  databaseNames - Database names for origin.
-func (c *IndexedDB) RequestDatabaseNamesWithParams(v *IndexedDBRequestDatabaseNamesParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabaseNames", Params: v})
+func (c *IndexedDB) RequestDatabaseNamesWithParams(ctx context.Context, v *IndexedDBRequestDatabaseNamesParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.requestDatabaseNames", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -375,8 +376,8 @@ func (c *IndexedDB) RequestDatabaseNamesWithParams(v *IndexedDBRequestDatabaseNa
 // RequestDatabaseNames - Requests database names for given security origin.
 // securityOrigin - Security origin.
 // Returns -  databaseNames - Database names for origin.
-func (c *IndexedDB) RequestDatabaseNames(securityOrigin string) ([]string, error) {
+func (c *IndexedDB) RequestDatabaseNames(ctx context.Context, securityOrigin string) ([]string, error) {
 	var v IndexedDBRequestDatabaseNamesParams
 	v.SecurityOrigin = securityOrigin
-	return c.RequestDatabaseNamesWithParams(&v)
+	return c.RequestDatabaseNamesWithParams(ctx, &v)
 }
