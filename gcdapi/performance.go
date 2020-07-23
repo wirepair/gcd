@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -33,8 +34,8 @@ func NewPerformance(target gcdmessage.ChromeTargeter) *Performance {
 }
 
 // Disable collecting and reporting metrics.
-func (c *Performance) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.disable"})
+func (c *Performance) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.disable"})
 }
 
 type PerformanceEnableParams struct {
@@ -43,16 +44,16 @@ type PerformanceEnableParams struct {
 }
 
 // EnableWithParams - Enable collecting and reporting metrics.
-func (c *Performance) EnableWithParams(v *PerformanceEnableParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.enable", Params: v})
+func (c *Performance) EnableWithParams(ctx context.Context, v *PerformanceEnableParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.enable", Params: v})
 }
 
 // Enable - Enable collecting and reporting metrics.
 // timeDomain - Time domain to use for collecting and reporting duration metrics.
-func (c *Performance) Enable(timeDomain string) (*gcdmessage.ChromeResponse, error) {
+func (c *Performance) Enable(ctx context.Context, timeDomain string) (*gcdmessage.ChromeResponse, error) {
 	var v PerformanceEnableParams
 	v.TimeDomain = timeDomain
-	return c.EnableWithParams(&v)
+	return c.EnableWithParams(ctx, &v)
 }
 
 type PerformanceSetTimeDomainParams struct {
@@ -61,22 +62,22 @@ type PerformanceSetTimeDomainParams struct {
 }
 
 // SetTimeDomainWithParams - Sets time domain to use for collecting and reporting duration metrics. Note that this must be called before enabling metrics collection. Calling this method while metrics collection is enabled returns an error.
-func (c *Performance) SetTimeDomainWithParams(v *PerformanceSetTimeDomainParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.setTimeDomain", Params: v})
+func (c *Performance) SetTimeDomainWithParams(ctx context.Context, v *PerformanceSetTimeDomainParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.setTimeDomain", Params: v})
 }
 
 // SetTimeDomain - Sets time domain to use for collecting and reporting duration metrics. Note that this must be called before enabling metrics collection. Calling this method while metrics collection is enabled returns an error.
 // timeDomain - Time domain
-func (c *Performance) SetTimeDomain(timeDomain string) (*gcdmessage.ChromeResponse, error) {
+func (c *Performance) SetTimeDomain(ctx context.Context, timeDomain string) (*gcdmessage.ChromeResponse, error) {
 	var v PerformanceSetTimeDomainParams
 	v.TimeDomain = timeDomain
-	return c.SetTimeDomainWithParams(&v)
+	return c.SetTimeDomainWithParams(ctx, &v)
 }
 
 // GetMetrics - Retrieve current values of run-time metrics.
 // Returns -  metrics - Current values for run-time metrics.
-func (c *Performance) GetMetrics() ([]*PerformanceMetric, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.getMetrics"})
+func (c *Performance) GetMetrics(ctx context.Context) ([]*PerformanceMetric, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.getMetrics"})
 	if err != nil {
 		return nil, err
 	}

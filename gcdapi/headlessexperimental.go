@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -44,8 +45,8 @@ type HeadlessExperimentalBeginFrameParams struct {
 
 // BeginFrameWithParams - Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a screenshot from the resulting frame. Requires that the target was created with enabled BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also https://goo.gl/3zHXhB for more background.
 // Returns -  hasDamage - Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future. screenshotData - Base64-encoded image data of the screenshot, if one was requested and successfully taken.
-func (c *HeadlessExperimental) BeginFrameWithParams(v *HeadlessExperimentalBeginFrameParams) (bool, string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.beginFrame", Params: v})
+func (c *HeadlessExperimental) BeginFrameWithParams(ctx context.Context, v *HeadlessExperimentalBeginFrameParams) (bool, string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.beginFrame", Params: v})
 	if err != nil {
 		return false, "", err
 	}
@@ -81,21 +82,21 @@ func (c *HeadlessExperimental) BeginFrameWithParams(v *HeadlessExperimentalBegin
 // noDisplayUpdates - Whether updates should not be committed and drawn onto the display. False by default. If true, only side effects of the BeginFrame will be run, such as layout and animations, but any visual updates may not be visible on the display or in screenshots.
 // screenshot - If set, a screenshot of the frame will be captured and returned in the response. Otherwise, no screenshot will be captured. Note that capturing a screenshot can fail, for example, during renderer initialization. In such a case, no screenshot data will be returned.
 // Returns -  hasDamage - Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future. screenshotData - Base64-encoded image data of the screenshot, if one was requested and successfully taken.
-func (c *HeadlessExperimental) BeginFrame(frameTimeTicks float64, interval float64, noDisplayUpdates bool, screenshot *HeadlessExperimentalScreenshotParams) (bool, string, error) {
+func (c *HeadlessExperimental) BeginFrame(ctx context.Context, frameTimeTicks float64, interval float64, noDisplayUpdates bool, screenshot *HeadlessExperimentalScreenshotParams) (bool, string, error) {
 	var v HeadlessExperimentalBeginFrameParams
 	v.FrameTimeTicks = frameTimeTicks
 	v.Interval = interval
 	v.NoDisplayUpdates = noDisplayUpdates
 	v.Screenshot = screenshot
-	return c.BeginFrameWithParams(&v)
+	return c.BeginFrameWithParams(ctx, &v)
 }
 
 // Disables headless events for the target.
-func (c *HeadlessExperimental) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.disable"})
+func (c *HeadlessExperimental) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.disable"})
 }
 
 // Enables headless events for the target.
-func (c *HeadlessExperimental) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.enable"})
+func (c *HeadlessExperimental) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeadlessExperimental.enable"})
 }

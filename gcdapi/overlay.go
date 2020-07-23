@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -13,6 +14,9 @@ type OverlayGridHighlightConfig struct {
 	ShowGridExtensionLines  bool     `json:"showGridExtensionLines,omitempty"`  // Whether the extension lines from grid cells to the rulers should be shown (default: false).
 	ShowPositiveLineNumbers bool     `json:"showPositiveLineNumbers,omitempty"` // Show Positive line number labels (default: false).
 	ShowNegativeLineNumbers bool     `json:"showNegativeLineNumbers,omitempty"` // Show Negative line number labels (default: false).
+	ShowAreaNames           bool     `json:"showAreaNames,omitempty"`           // Show area name labels (default: false).
+	ShowLineNames           bool     `json:"showLineNames,omitempty"`           // Show line name labels (default: false).
+	ShowTrackSizes          bool     `json:"showTrackSizes,omitempty"`          // Show track size labels (default: false).
 	GridBorderColor         *DOMRGBA `json:"gridBorderColor,omitempty"`         // The grid container border highlight color (default: transparent).
 	CellBorderColor         *DOMRGBA `json:"cellBorderColor,omitempty"`         // The cell border color (default: transparent).
 	GridBorderDash          bool     `json:"gridBorderDash,omitempty"`          // Whether the grid border is dashed (default: false).
@@ -21,6 +25,7 @@ type OverlayGridHighlightConfig struct {
 	RowHatchColor           *DOMRGBA `json:"rowHatchColor,omitempty"`           // The row gap hatching fill color (default: transparent).
 	ColumnGapColor          *DOMRGBA `json:"columnGapColor,omitempty"`          // The column gap highlight fill color (default: transparent).
 	ColumnHatchColor        *DOMRGBA `json:"columnHatchColor,omitempty"`        // The column gap hatching fill color (default: transparent).
+	AreaBorderColor         *DOMRGBA `json:"areaBorderColor,omitempty"`         // The named grid areas border color (Default: transparent).
 }
 
 // Configuration data for the highlighting of page elements.
@@ -40,6 +45,12 @@ type OverlayHighlightConfig struct {
 	CssGridColor          *DOMRGBA                    `json:"cssGridColor,omitempty"`          // The grid layout color (default: transparent).
 	ColorFormat           string                      `json:"colorFormat,omitempty"`           // The color format used to format color styles (default: hex). enum values: rgb, hsl, hex
 	GridHighlightConfig   *OverlayGridHighlightConfig `json:"gridHighlightConfig,omitempty"`   // The grid layout highlight configuration (default: all transparent).
+}
+
+// Configurations for Persistent Grid Highlight
+type OverlayGridNodeHighlightConfig struct {
+	GridHighlightConfig *OverlayGridHighlightConfig `json:"gridHighlightConfig"` // A descriptor for the highlight appearance.
+	NodeId              int                         `json:"nodeId"`              // Identifier of the node to highlight.
 }
 
 // Configuration for dual screen hinge
@@ -83,13 +94,13 @@ func NewOverlay(target gcdmessage.ChromeTargeter) *Overlay {
 }
 
 // Disables domain notifications.
-func (c *Overlay) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.disable"})
+func (c *Overlay) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.disable"})
 }
 
 // Enables domain notifications.
-func (c *Overlay) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.enable"})
+func (c *Overlay) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.enable"})
 }
 
 type OverlayGetHighlightObjectForTestParams struct {
@@ -107,8 +118,8 @@ type OverlayGetHighlightObjectForTestParams struct {
 
 // GetHighlightObjectForTestWithParams - For testing.
 // Returns -  highlight - Highlight data for the node.
-func (c *Overlay) GetHighlightObjectForTestWithParams(v *OverlayGetHighlightObjectForTestParams) (map[string]interface{}, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.getHighlightObjectForTest", Params: v})
+func (c *Overlay) GetHighlightObjectForTestWithParams(ctx context.Context, v *OverlayGetHighlightObjectForTestParams) (map[string]interface{}, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.getHighlightObjectForTest", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -144,19 +155,65 @@ func (c *Overlay) GetHighlightObjectForTestWithParams(v *OverlayGetHighlightObje
 // colorFormat - The color format to get config with (default: hex). enum values: rgb, hsl, hex
 // showAccessibilityInfo - Whether to show accessibility info (default: true).
 // Returns -  highlight - Highlight data for the node.
-func (c *Overlay) GetHighlightObjectForTest(nodeId int, includeDistance bool, includeStyle bool, colorFormat string, showAccessibilityInfo bool) (map[string]interface{}, error) {
+func (c *Overlay) GetHighlightObjectForTest(ctx context.Context, nodeId int, includeDistance bool, includeStyle bool, colorFormat string, showAccessibilityInfo bool) (map[string]interface{}, error) {
 	var v OverlayGetHighlightObjectForTestParams
 	v.NodeId = nodeId
 	v.IncludeDistance = includeDistance
 	v.IncludeStyle = includeStyle
 	v.ColorFormat = colorFormat
 	v.ShowAccessibilityInfo = showAccessibilityInfo
-	return c.GetHighlightObjectForTestWithParams(&v)
+	return c.GetHighlightObjectForTestWithParams(ctx, &v)
+}
+
+type OverlayGetGridHighlightObjectsForTestParams struct {
+	// Ids of the node to get highlight object for.
+	NodeIds []int `json:"nodeIds"`
+}
+
+// GetGridHighlightObjectsForTestWithParams - For Persistent Grid testing.
+// Returns -  highlights - Grid Highlight data for the node ids provided.
+func (c *Overlay) GetGridHighlightObjectsForTestWithParams(ctx context.Context, v *OverlayGetGridHighlightObjectsForTestParams) (map[string]interface{}, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.getGridHighlightObjectsForTest", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Highlights map[string]interface{}
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Highlights, nil
+}
+
+// GetGridHighlightObjectsForTest - For Persistent Grid testing.
+// nodeIds - Ids of the node to get highlight object for.
+// Returns -  highlights - Grid Highlight data for the node ids provided.
+func (c *Overlay) GetGridHighlightObjectsForTest(ctx context.Context, nodeIds []int) (map[string]interface{}, error) {
+	var v OverlayGetGridHighlightObjectsForTestParams
+	v.NodeIds = nodeIds
+	return c.GetGridHighlightObjectsForTestWithParams(ctx, &v)
 }
 
 // Hides any highlight.
-func (c *Overlay) HideHighlight() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.hideHighlight"})
+func (c *Overlay) HideHighlight(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.hideHighlight"})
 }
 
 type OverlayHighlightFrameParams struct {
@@ -169,20 +226,20 @@ type OverlayHighlightFrameParams struct {
 }
 
 // HighlightFrameWithParams - Highlights owner element of the frame with given id.
-func (c *Overlay) HighlightFrameWithParams(v *OverlayHighlightFrameParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightFrame", Params: v})
+func (c *Overlay) HighlightFrameWithParams(ctx context.Context, v *OverlayHighlightFrameParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightFrame", Params: v})
 }
 
 // HighlightFrame - Highlights owner element of the frame with given id.
 // frameId - Identifier of the frame to highlight.
 // contentColor - The content box highlight fill color (default: transparent).
 // contentOutlineColor - The content box highlight outline color (default: transparent).
-func (c *Overlay) HighlightFrame(frameId string, contentColor *DOMRGBA, contentOutlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) HighlightFrame(ctx context.Context, frameId string, contentColor *DOMRGBA, contentOutlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
 	var v OverlayHighlightFrameParams
 	v.FrameId = frameId
 	v.ContentColor = contentColor
 	v.ContentOutlineColor = contentOutlineColor
-	return c.HighlightFrameWithParams(&v)
+	return c.HighlightFrameWithParams(ctx, &v)
 }
 
 type OverlayHighlightNodeParams struct {
@@ -199,8 +256,8 @@ type OverlayHighlightNodeParams struct {
 }
 
 // HighlightNodeWithParams - Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified.
-func (c *Overlay) HighlightNodeWithParams(v *OverlayHighlightNodeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightNode", Params: v})
+func (c *Overlay) HighlightNodeWithParams(ctx context.Context, v *OverlayHighlightNodeParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightNode", Params: v})
 }
 
 // HighlightNode - Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified.
@@ -209,14 +266,14 @@ func (c *Overlay) HighlightNodeWithParams(v *OverlayHighlightNodeParams) (*gcdme
 // backendNodeId - Identifier of the backend node to highlight.
 // objectId - JavaScript object id of the node to be highlighted.
 // selector - Selectors to highlight relevant nodes.
-func (c *Overlay) HighlightNode(highlightConfig *OverlayHighlightConfig, nodeId int, backendNodeId int, objectId string, selector string) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) HighlightNode(ctx context.Context, highlightConfig *OverlayHighlightConfig, nodeId int, backendNodeId int, objectId string, selector string) (*gcdmessage.ChromeResponse, error) {
 	var v OverlayHighlightNodeParams
 	v.HighlightConfig = highlightConfig
 	v.NodeId = nodeId
 	v.BackendNodeId = backendNodeId
 	v.ObjectId = objectId
 	v.Selector = selector
-	return c.HighlightNodeWithParams(&v)
+	return c.HighlightNodeWithParams(ctx, &v)
 }
 
 type OverlayHighlightQuadParams struct {
@@ -229,20 +286,20 @@ type OverlayHighlightQuadParams struct {
 }
 
 // HighlightQuadWithParams - Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
-func (c *Overlay) HighlightQuadWithParams(v *OverlayHighlightQuadParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightQuad", Params: v})
+func (c *Overlay) HighlightQuadWithParams(ctx context.Context, v *OverlayHighlightQuadParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightQuad", Params: v})
 }
 
 // HighlightQuad - Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
 // quad - Quad to highlight
 // color - The highlight fill color (default: transparent).
 // outlineColor - The highlight outline color (default: transparent).
-func (c *Overlay) HighlightQuad(quad []float64, color *DOMRGBA, outlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) HighlightQuad(ctx context.Context, quad []float64, color *DOMRGBA, outlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
 	var v OverlayHighlightQuadParams
 	v.Quad = quad
 	v.Color = color
 	v.OutlineColor = outlineColor
-	return c.HighlightQuadWithParams(&v)
+	return c.HighlightQuadWithParams(ctx, &v)
 }
 
 type OverlayHighlightRectParams struct {
@@ -261,8 +318,8 @@ type OverlayHighlightRectParams struct {
 }
 
 // HighlightRectWithParams - Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
-func (c *Overlay) HighlightRectWithParams(v *OverlayHighlightRectParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightRect", Params: v})
+func (c *Overlay) HighlightRectWithParams(ctx context.Context, v *OverlayHighlightRectParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightRect", Params: v})
 }
 
 // HighlightRect - Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
@@ -272,7 +329,7 @@ func (c *Overlay) HighlightRectWithParams(v *OverlayHighlightRectParams) (*gcdme
 // height - Rectangle height
 // color - The highlight fill color (default: transparent).
 // outlineColor - The highlight outline color (default: transparent).
-func (c *Overlay) HighlightRect(x int, y int, width int, height int, color *DOMRGBA, outlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) HighlightRect(ctx context.Context, x int, y int, width int, height int, color *DOMRGBA, outlineColor *DOMRGBA) (*gcdmessage.ChromeResponse, error) {
 	var v OverlayHighlightRectParams
 	v.X = x
 	v.Y = y
@@ -280,7 +337,7 @@ func (c *Overlay) HighlightRect(x int, y int, width int, height int, color *DOMR
 	v.Height = height
 	v.Color = color
 	v.OutlineColor = outlineColor
-	return c.HighlightRectWithParams(&v)
+	return c.HighlightRectWithParams(ctx, &v)
 }
 
 type OverlaySetInspectModeParams struct {
@@ -291,18 +348,18 @@ type OverlaySetInspectModeParams struct {
 }
 
 // SetInspectModeWithParams - Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection.
-func (c *Overlay) SetInspectModeWithParams(v *OverlaySetInspectModeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setInspectMode", Params: v})
+func (c *Overlay) SetInspectModeWithParams(ctx context.Context, v *OverlaySetInspectModeParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setInspectMode", Params: v})
 }
 
 // SetInspectMode - Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection.
 // mode - Set an inspection mode. enum values: searchForNode, searchForUAShadowDOM, captureAreaScreenshot, showDistances, none
 // highlightConfig - A descriptor for the highlight appearance of hovered-over nodes. May be omitted if `enabled == false`.
-func (c *Overlay) SetInspectMode(mode string, highlightConfig *OverlayHighlightConfig) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetInspectMode(ctx context.Context, mode string, highlightConfig *OverlayHighlightConfig) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetInspectModeParams
 	v.Mode = mode
 	v.HighlightConfig = highlightConfig
-	return c.SetInspectModeWithParams(&v)
+	return c.SetInspectModeWithParams(ctx, &v)
 }
 
 type OverlaySetShowAdHighlightsParams struct {
@@ -311,16 +368,16 @@ type OverlaySetShowAdHighlightsParams struct {
 }
 
 // SetShowAdHighlightsWithParams - Highlights owner element of all frames detected to be ads.
-func (c *Overlay) SetShowAdHighlightsWithParams(v *OverlaySetShowAdHighlightsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowAdHighlights", Params: v})
+func (c *Overlay) SetShowAdHighlightsWithParams(ctx context.Context, v *OverlaySetShowAdHighlightsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowAdHighlights", Params: v})
 }
 
 // SetShowAdHighlights - Highlights owner element of all frames detected to be ads.
 // show - True for showing ad highlights
-func (c *Overlay) SetShowAdHighlights(show bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowAdHighlights(ctx context.Context, show bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowAdHighlightsParams
 	v.Show = show
-	return c.SetShowAdHighlightsWithParams(&v)
+	return c.SetShowAdHighlightsWithParams(ctx, &v)
 }
 
 type OverlaySetPausedInDebuggerMessageParams struct {
@@ -329,16 +386,16 @@ type OverlaySetPausedInDebuggerMessageParams struct {
 }
 
 // SetPausedInDebuggerMessageWithParams -
-func (c *Overlay) SetPausedInDebuggerMessageWithParams(v *OverlaySetPausedInDebuggerMessageParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setPausedInDebuggerMessage", Params: v})
+func (c *Overlay) SetPausedInDebuggerMessageWithParams(ctx context.Context, v *OverlaySetPausedInDebuggerMessageParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setPausedInDebuggerMessage", Params: v})
 }
 
 // SetPausedInDebuggerMessage -
 // message - The message to display, also triggers resume and step over controls.
-func (c *Overlay) SetPausedInDebuggerMessage(message string) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetPausedInDebuggerMessage(ctx context.Context, message string) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetPausedInDebuggerMessageParams
 	v.Message = message
-	return c.SetPausedInDebuggerMessageWithParams(&v)
+	return c.SetPausedInDebuggerMessageWithParams(ctx, &v)
 }
 
 type OverlaySetShowDebugBordersParams struct {
@@ -347,16 +404,16 @@ type OverlaySetShowDebugBordersParams struct {
 }
 
 // SetShowDebugBordersWithParams - Requests that backend shows debug borders on layers
-func (c *Overlay) SetShowDebugBordersWithParams(v *OverlaySetShowDebugBordersParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowDebugBorders", Params: v})
+func (c *Overlay) SetShowDebugBordersWithParams(ctx context.Context, v *OverlaySetShowDebugBordersParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowDebugBorders", Params: v})
 }
 
 // SetShowDebugBorders - Requests that backend shows debug borders on layers
 // show - True for showing debug borders
-func (c *Overlay) SetShowDebugBorders(show bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowDebugBorders(ctx context.Context, show bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowDebugBordersParams
 	v.Show = show
-	return c.SetShowDebugBordersWithParams(&v)
+	return c.SetShowDebugBordersWithParams(ctx, &v)
 }
 
 type OverlaySetShowFPSCounterParams struct {
@@ -365,16 +422,34 @@ type OverlaySetShowFPSCounterParams struct {
 }
 
 // SetShowFPSCounterWithParams - Requests that backend shows the FPS counter
-func (c *Overlay) SetShowFPSCounterWithParams(v *OverlaySetShowFPSCounterParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowFPSCounter", Params: v})
+func (c *Overlay) SetShowFPSCounterWithParams(ctx context.Context, v *OverlaySetShowFPSCounterParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowFPSCounter", Params: v})
 }
 
 // SetShowFPSCounter - Requests that backend shows the FPS counter
 // show - True for showing the FPS counter
-func (c *Overlay) SetShowFPSCounter(show bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowFPSCounter(ctx context.Context, show bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowFPSCounterParams
 	v.Show = show
-	return c.SetShowFPSCounterWithParams(&v)
+	return c.SetShowFPSCounterWithParams(ctx, &v)
+}
+
+type OverlaySetShowGridOverlaysParams struct {
+	// An array of node identifiers and descriptors for the highlight appearance.
+	GridNodeHighlightConfigs []*OverlayGridNodeHighlightConfig `json:"gridNodeHighlightConfigs"`
+}
+
+// SetShowGridOverlaysWithParams - Highlight multiple elements with the CSS Grid overlay.
+func (c *Overlay) SetShowGridOverlaysWithParams(ctx context.Context, v *OverlaySetShowGridOverlaysParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowGridOverlays", Params: v})
+}
+
+// SetShowGridOverlays - Highlight multiple elements with the CSS Grid overlay.
+// gridNodeHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
+func (c *Overlay) SetShowGridOverlays(ctx context.Context, gridNodeHighlightConfigs []*OverlayGridNodeHighlightConfig) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowGridOverlaysParams
+	v.GridNodeHighlightConfigs = gridNodeHighlightConfigs
+	return c.SetShowGridOverlaysWithParams(ctx, &v)
 }
 
 type OverlaySetShowPaintRectsParams struct {
@@ -383,16 +458,16 @@ type OverlaySetShowPaintRectsParams struct {
 }
 
 // SetShowPaintRectsWithParams - Requests that backend shows paint rectangles
-func (c *Overlay) SetShowPaintRectsWithParams(v *OverlaySetShowPaintRectsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowPaintRects", Params: v})
+func (c *Overlay) SetShowPaintRectsWithParams(ctx context.Context, v *OverlaySetShowPaintRectsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowPaintRects", Params: v})
 }
 
 // SetShowPaintRects - Requests that backend shows paint rectangles
 // result - True for showing paint rectangles
-func (c *Overlay) SetShowPaintRects(result bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowPaintRects(ctx context.Context, result bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowPaintRectsParams
 	v.Result = result
-	return c.SetShowPaintRectsWithParams(&v)
+	return c.SetShowPaintRectsWithParams(ctx, &v)
 }
 
 type OverlaySetShowLayoutShiftRegionsParams struct {
@@ -401,16 +476,16 @@ type OverlaySetShowLayoutShiftRegionsParams struct {
 }
 
 // SetShowLayoutShiftRegionsWithParams - Requests that backend shows layout shift regions
-func (c *Overlay) SetShowLayoutShiftRegionsWithParams(v *OverlaySetShowLayoutShiftRegionsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowLayoutShiftRegions", Params: v})
+func (c *Overlay) SetShowLayoutShiftRegionsWithParams(ctx context.Context, v *OverlaySetShowLayoutShiftRegionsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowLayoutShiftRegions", Params: v})
 }
 
 // SetShowLayoutShiftRegions - Requests that backend shows layout shift regions
 // result - True for showing layout shift regions
-func (c *Overlay) SetShowLayoutShiftRegions(result bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowLayoutShiftRegions(ctx context.Context, result bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowLayoutShiftRegionsParams
 	v.Result = result
-	return c.SetShowLayoutShiftRegionsWithParams(&v)
+	return c.SetShowLayoutShiftRegionsWithParams(ctx, &v)
 }
 
 type OverlaySetShowScrollBottleneckRectsParams struct {
@@ -419,16 +494,16 @@ type OverlaySetShowScrollBottleneckRectsParams struct {
 }
 
 // SetShowScrollBottleneckRectsWithParams - Requests that backend shows scroll bottleneck rects
-func (c *Overlay) SetShowScrollBottleneckRectsWithParams(v *OverlaySetShowScrollBottleneckRectsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowScrollBottleneckRects", Params: v})
+func (c *Overlay) SetShowScrollBottleneckRectsWithParams(ctx context.Context, v *OverlaySetShowScrollBottleneckRectsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowScrollBottleneckRects", Params: v})
 }
 
 // SetShowScrollBottleneckRects - Requests that backend shows scroll bottleneck rects
 // show - True for showing scroll bottleneck rects
-func (c *Overlay) SetShowScrollBottleneckRects(show bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowScrollBottleneckRects(ctx context.Context, show bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowScrollBottleneckRectsParams
 	v.Show = show
-	return c.SetShowScrollBottleneckRectsWithParams(&v)
+	return c.SetShowScrollBottleneckRectsWithParams(ctx, &v)
 }
 
 type OverlaySetShowHitTestBordersParams struct {
@@ -437,16 +512,16 @@ type OverlaySetShowHitTestBordersParams struct {
 }
 
 // SetShowHitTestBordersWithParams - Requests that backend shows hit-test borders on layers
-func (c *Overlay) SetShowHitTestBordersWithParams(v *OverlaySetShowHitTestBordersParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowHitTestBorders", Params: v})
+func (c *Overlay) SetShowHitTestBordersWithParams(ctx context.Context, v *OverlaySetShowHitTestBordersParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowHitTestBorders", Params: v})
 }
 
 // SetShowHitTestBorders - Requests that backend shows hit-test borders on layers
 // show - True for showing hit-test borders
-func (c *Overlay) SetShowHitTestBorders(show bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowHitTestBorders(ctx context.Context, show bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowHitTestBordersParams
 	v.Show = show
-	return c.SetShowHitTestBordersWithParams(&v)
+	return c.SetShowHitTestBordersWithParams(ctx, &v)
 }
 
 type OverlaySetShowViewportSizeOnResizeParams struct {
@@ -455,16 +530,16 @@ type OverlaySetShowViewportSizeOnResizeParams struct {
 }
 
 // SetShowViewportSizeOnResizeWithParams - Paints viewport size upon main frame resize.
-func (c *Overlay) SetShowViewportSizeOnResizeWithParams(v *OverlaySetShowViewportSizeOnResizeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowViewportSizeOnResize", Params: v})
+func (c *Overlay) SetShowViewportSizeOnResizeWithParams(ctx context.Context, v *OverlaySetShowViewportSizeOnResizeParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowViewportSizeOnResize", Params: v})
 }
 
 // SetShowViewportSizeOnResize - Paints viewport size upon main frame resize.
 // show - Whether to paint size or not.
-func (c *Overlay) SetShowViewportSizeOnResize(show bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowViewportSizeOnResize(ctx context.Context, show bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowViewportSizeOnResizeParams
 	v.Show = show
-	return c.SetShowViewportSizeOnResizeWithParams(&v)
+	return c.SetShowViewportSizeOnResizeWithParams(ctx, &v)
 }
 
 type OverlaySetShowHingeParams struct {
@@ -473,14 +548,14 @@ type OverlaySetShowHingeParams struct {
 }
 
 // SetShowHingeWithParams - Add a dual screen device hinge
-func (c *Overlay) SetShowHingeWithParams(v *OverlaySetShowHingeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowHinge", Params: v})
+func (c *Overlay) SetShowHingeWithParams(ctx context.Context, v *OverlaySetShowHingeParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowHinge", Params: v})
 }
 
 // SetShowHinge - Add a dual screen device hinge
 // hingeConfig - hinge data, null means hideHinge
-func (c *Overlay) SetShowHinge(hingeConfig *OverlayHingeConfig) (*gcdmessage.ChromeResponse, error) {
+func (c *Overlay) SetShowHinge(ctx context.Context, hingeConfig *OverlayHingeConfig) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowHingeParams
 	v.HingeConfig = hingeConfig
-	return c.SetShowHingeWithParams(&v)
+	return c.SetShowHingeWithParams(ctx, &v)
 }

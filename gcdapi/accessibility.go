@@ -5,6 +5,7 @@
 package gcdapi
 
 import (
+	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -66,13 +67,13 @@ func NewAccessibility(target gcdmessage.ChromeTargeter) *Accessibility {
 }
 
 // Disables the accessibility domain.
-func (c *Accessibility) Disable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.disable"})
+func (c *Accessibility) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.disable"})
 }
 
 // Enables the accessibility domain which causes `AXNodeId`s to remain consistent between method calls. This turns on accessibility for the page, which can impact performance until accessibility is disabled.
-func (c *Accessibility) Enable() (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.enable"})
+func (c *Accessibility) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.enable"})
 }
 
 type AccessibilityGetPartialAXTreeParams struct {
@@ -88,8 +89,8 @@ type AccessibilityGetPartialAXTreeParams struct {
 
 // GetPartialAXTreeWithParams - Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
 // Returns -  nodes - The `Accessibility.AXNode` for this DOM node, if it exists, plus its ancestors, siblings and children, if requested.
-func (c *Accessibility) GetPartialAXTreeWithParams(v *AccessibilityGetPartialAXTreeParams) ([]*AccessibilityAXNode, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getPartialAXTree", Params: v})
+func (c *Accessibility) GetPartialAXTreeWithParams(ctx context.Context, v *AccessibilityGetPartialAXTreeParams) ([]*AccessibilityAXNode, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getPartialAXTree", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -124,19 +125,19 @@ func (c *Accessibility) GetPartialAXTreeWithParams(v *AccessibilityGetPartialAXT
 // objectId - JavaScript object id of the node wrapper to get the partial accessibility tree for.
 // fetchRelatives - Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
 // Returns -  nodes - The `Accessibility.AXNode` for this DOM node, if it exists, plus its ancestors, siblings and children, if requested.
-func (c *Accessibility) GetPartialAXTree(nodeId int, backendNodeId int, objectId string, fetchRelatives bool) ([]*AccessibilityAXNode, error) {
+func (c *Accessibility) GetPartialAXTree(ctx context.Context, nodeId int, backendNodeId int, objectId string, fetchRelatives bool) ([]*AccessibilityAXNode, error) {
 	var v AccessibilityGetPartialAXTreeParams
 	v.NodeId = nodeId
 	v.BackendNodeId = backendNodeId
 	v.ObjectId = objectId
 	v.FetchRelatives = fetchRelatives
-	return c.GetPartialAXTreeWithParams(&v)
+	return c.GetPartialAXTreeWithParams(ctx, &v)
 }
 
 // GetFullAXTree - Fetches the entire accessibility tree
 // Returns -  nodes -
-func (c *Accessibility) GetFullAXTree() ([]*AccessibilityAXNode, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getFullAXTree"})
+func (c *Accessibility) GetFullAXTree(ctx context.Context) ([]*AccessibilityAXNode, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getFullAXTree"})
 	if err != nil {
 		return nil, err
 	}

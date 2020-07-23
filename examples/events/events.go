@@ -6,6 +6,7 @@ the Remote Chrome Debugger
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -41,6 +42,7 @@ func main() {
 	debugger := startGcd()
 	defer debugger.ExitProcess()
 
+	ctx := context.Background()
 	target := startTarget(debugger)
 
 	// subscribe to page loaded event
@@ -50,7 +52,7 @@ func main() {
 
 	// navigate
 	navigateParams := &gcdapi.PageNavigateParams{Url: testServerAddr + "top.html"}
-	_, _, _, err := target.Page.NavigateWithParams(navigateParams)
+	_, _, _, err := target.Page.NavigateWithParams(ctx, navigateParams)
 	if err != nil {
 		log.Fatalf("error: %s\n", err)
 	}
@@ -58,7 +60,7 @@ func main() {
 	// wait for navigation to finish
 	<-navigatedCh
 	// get the document node
-	doc, err := target.DOM.GetDocument(-1, true)
+	doc, err := target.DOM.GetDocument(ctx, -1, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,7 +68,7 @@ func main() {
 	// request child nodes, this will come in as DOM.setChildNode events
 	for i := 0; i < 3; i++ {
 		log.Printf("requesting child nodes...")
-		_, err = target.DOM.RequestChildNodes(doc.NodeId, -1, true)
+		_, err = target.DOM.RequestChildNodes(ctx, doc.NodeId, -1, true)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -96,7 +98,7 @@ func main() {
 	//time.Sleep(5 * time.Second)
 
 	// get iframe node id
-	iframe, err := target.DOM.QuerySelector(doc.NodeId, "#iframe")
+	iframe, err := target.DOM.QuerySelector(ctx, doc.NodeId, "#iframe")
 	if err != nil {
 		log.Fatalf("error looking for frame")
 	}
@@ -108,9 +110,10 @@ func main() {
 }
 
 func checkContentDocument(targ *gcd.ChromeTarget, v *gcdapi.DOMNode) {
+	ctx := context.Background()
 	if v.ContentDocument != nil {
 		iframeDocId := v.ContentDocument.NodeId
-		targ.DOM.RequestChildNodes(iframeDocId, -1, true)
+		targ.DOM.RequestChildNodes(ctx, iframeDocId, -1, true)
 		//nodes, _ := targ.DOM.QuerySelectorAll(iframeDocId, "div")
 		log.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!got iframe nodes.\n")
 	} else {
@@ -133,10 +136,11 @@ func startTarget(debugger *gcd.Gcd) *gcd.ChromeTarget {
 	if err != nil {
 		log.Fatalf("error getting new tab: %s\n", err)
 	}
+	ctx := context.Background()
 	target.DebugEvents(true)
-	target.DOM.Enable()
-	target.Console.Enable()
-	target.Page.Enable()
+	target.DOM.Enable(ctx)
+	target.Console.Enable(ctx)
+	target.Page.Enable(ctx)
 	//target.Debugger.Enable()
 	return target
 

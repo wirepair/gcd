@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"flag"
 	"fmt"
@@ -45,7 +46,7 @@ func init() {
 func main() {
 	var err error
 	urls := []string{"http://www.google.com", "http://www.veracode.com", "http://www.microsoft.com", "http://bbc.co.uk", "http://www.reddit.com/r/golang"}
-
+	ctx := context.Background()
 	flag.Parse()
 
 	debugger = gcd.NewChromeDebugger()
@@ -61,11 +62,11 @@ func main() {
 			log.Fatalf("error getting targets")
 		}
 		page := targets[i].Page
-		page.Enable()
+		page.Enable(ctx)
 		targets[i].Subscribe("Page.loadEventFired", pageLoaded)
 		// navigate
 		navigateParams := &gcdapi.PageNavigateParams{Url: urls[i]}
-		_, _, _, err := page.NavigateWithParams(navigateParams)
+		_, _, _, err := page.NavigateWithParams(ctx, navigateParams)
 		if err != nil {
 			log.Fatalf("error: %s\n", err)
 		}
@@ -82,9 +83,10 @@ func pageLoaded(target *gcd.ChromeTarget, event []byte) {
 }
 
 func takeScreenShot(target *gcd.ChromeTarget) {
+	ctx := context.Background()
 	dom := target.DOM
 	page := target.Page
-	doc, err := dom.GetDocument(-1, true)
+	doc, err := dom.GetDocument(ctx, -1, true)
 	if err != nil {
 		fmt.Printf("error getting doc: %s\n", err)
 		return
@@ -100,7 +102,7 @@ func takeScreenShot(target *gcd.ChromeTarget) {
 
 	fmt.Printf("Taking screen shot of: %s\n", u.Host)
 	screenShotParams := &gcdapi.PageCaptureScreenshotParams{Format: "png", FromSurface: true}
-	img, errCap := page.CaptureScreenshotWithParams(screenShotParams)
+	img, errCap := page.CaptureScreenshotWithParams(ctx, screenShotParams)
 	if errCap != nil {
 		fmt.Printf("error getting doc: %s\n", errCap)
 		return
