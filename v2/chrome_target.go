@@ -32,6 +32,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/wirepair/gcd/v2/gcdapi"
 	"github.com/wirepair/gcd/v2/gcdmessage"
 )
@@ -288,6 +289,7 @@ func (c *ChromeTarget) listenRead() {
 				close(writeClosed)
 				return
 			} else if err != nil {
+				spew.Dump(err)
 				c.debugf("error in ws read: %s\n", err)
 				continue
 			} else {
