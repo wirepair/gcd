@@ -1,5 +1,6 @@
 # Changelog (2020)
 
+- July 24th: Return proper error if context is done.
 - July 23rd: Finally move to using context.Context for all messages, this is a breaking change so updated to v2.0.0. Going forward you'll need to go get github.com/wirepair/gcd/v2
 - July 5th: Fix more timeout issues and wsConnsize was set to 1mb which is insufficient
 - July 2nd: Fix SendCustomReturn to timeout properly if send failed. Upgrade to latest gcd /protocol.json file for 83.0.4103.116

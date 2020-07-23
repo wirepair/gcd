@@ -135,7 +135,7 @@ func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- 
 
 	select {
 	case <-ctx.Done():
-		return nil, &ChromeDoneErr{}
+		return nil, &ChromeCtxDoneErr{}
 	case sendCh <- sendMsg:
 	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
@@ -146,7 +146,7 @@ func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- 
 	var resp *Message
 	select {
 	case <-ctx.Done():
-		return nil, &ChromeDoneErr{}
+		return nil, &ChromeCtxDoneErr{}
 	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
@@ -170,7 +170,7 @@ func SendDefaultRequest(target ChromeTargeter, ctx context.Context, sendCh chan<
 
 	select {
 	case <-ctx.Done():
-		return nil, &ChromeDoneErr{}
+		return nil, &ChromeCtxDoneErr{}
 	case sendCh <- sendMsg:
 	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
@@ -181,7 +181,7 @@ func SendDefaultRequest(target ChromeTargeter, ctx context.Context, sendCh chan<
 	var resp *Message
 	select {
 	case <-ctx.Done():
-		return nil, &ChromeDoneErr{}
+		return nil, &ChromeCtxDoneErr{}
 	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
