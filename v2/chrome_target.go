@@ -28,11 +28,13 @@ import (
 	"context"
 	"io"
 	"log"
+	"net"
+	"os"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/wirepair/gcd/v2/gcdapi"
 	"github.com/wirepair/gcd/v2/gcdmessage"
 )
@@ -284,14 +286,20 @@ func (c *ChromeTarget) listenRead() {
 		for {
 			var msg []byte
 			err := c.conn.Read(c.ctx, &msg)
-			if err != nil && err == io.EOF {
-				c.debugf("error in ws read: %s\n", err)
-				close(writeClosed)
-				return
-			} else if err != nil {
-				spew.Dump(err)
-				c.debugf("error in ws read: %s\n", err)
-				continue
+			if err != nil {
+				if opErr, ok := err.(*net.OpError); ok {
+					if syscallErr, ok := opErr.Err.(*os.SyscallError); ok {
+						if syscallErr.Err == syscall.ECONNRESET {
+							c.debugf("error in ws read ECONNRESET: %s\n", err)
+							close(writeClosed)
+							return
+						}
+					}
+				} else if err == io.EOF {
+					c.debugf("error in ws read EOF: %s\n", err)
+					close(writeClosed)
+					return
+				}
 			} else {
 				select {
 				case <-c.ctx.Done():
