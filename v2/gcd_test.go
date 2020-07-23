@@ -270,6 +270,26 @@ func TestSimpleReturn(t *testing.T) {
 	}
 }
 
+// Tests that the ctx canceled doesn't cause the wsconn to get stuck in a loop in windows
+func TestCtxCancel(t *testing.T) {
+	t.Skip()
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+
+	target, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error getting new tab: %s\n", err)
+	}
+	network := target.Network
+	if _, err := network.Enable(testCtx, -1, -1, -1); err != nil {
+		t.Fatalf("error enabling network")
+	}
+	ctx, cancel := context.WithCancel(testCtx)
+	cancel()
+	network.CanClearBrowserCache(ctx)
+	network.CanClearBrowserCache(ctx)
+}
+
 func TestSimpleReturnWithParams(t *testing.T) {
 	var ret bool
 	testDefaultStartup(t)

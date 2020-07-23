@@ -289,7 +289,7 @@ func (c *ChromeTarget) listenRead() {
 			if err != nil {
 				if opErr, ok := err.(*net.OpError); ok {
 					if syscallErr, ok := opErr.Err.(*os.SyscallError); ok {
-						if syscallErr.Err == syscall.ECONNRESET {
+						if syscallErr.Err == syscall.ECONNRESET || syscallErr.Err == syscall.WSAECONNRESET {
 							c.debugf("error in ws read ECONNRESET: %s\n", err)
 							close(writeClosed)
 							return
