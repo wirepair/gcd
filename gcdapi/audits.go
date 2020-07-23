@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -63,19 +62,11 @@ type AuditsHeavyAdIssueDetails struct {
 }
 
 // No Description.
-type AuditsSourceCodeLocation struct {
-	Url          string `json:"url"`          //
-	LineNumber   int    `json:"lineNumber"`   //
-	ColumnNumber int    `json:"columnNumber"` //
-}
-
-// No Description.
 type AuditsContentSecurityPolicyIssueDetails struct {
-	BlockedURL                         string                    `json:"blockedURL,omitempty"`               // The url not included in allowed sources.
-	ViolatedDirective                  string                    `json:"violatedDirective"`                  // Specific directive that is violated, causing the CSP issue.
-	ContentSecurityPolicyViolationType string                    `json:"contentSecurityPolicyViolationType"` //  enum values: kInlineViolation, kEvalViolation, kURLViolation, kTrustedTypesSinkViolation, kTrustedTypesPolicyViolation
-	FrameAncestor                      *AuditsAffectedFrame      `json:"frameAncestor,omitempty"`            //
-	SourceCodeLocation                 *AuditsSourceCodeLocation `json:"sourceCodeLocation,omitempty"`       //
+	BlockedURL                         string               `json:"blockedURL,omitempty"`               // The url not included in allowed sources.
+	ViolatedDirective                  string               `json:"violatedDirective"`                  // Specific directive that is violated, causing the CSP issue.
+	ContentSecurityPolicyViolationType string               `json:"contentSecurityPolicyViolationType"` //  enum values: kInlineViolation, kEvalViolation, kURLViolation, kTrustedTypesSinkViolation, kTrustedTypesPolicyViolation
+	FrameAncestor                      *AuditsAffectedFrame `json:"frameAncestor,omitempty"`            //
 }
 
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
@@ -123,8 +114,8 @@ type AuditsGetEncodedResponseParams struct {
 
 // GetEncodedResponseWithParams - Returns the response body and size if it were re-encoded with the specified settings. Only applies to images.
 // Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
-func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetEncodedResponseParams) (string, int, int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.getEncodedResponse", Params: v})
+func (c *Audits) GetEncodedResponseWithParams(v *AuditsGetEncodedResponseParams) (string, int, int, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.getEncodedResponse", Params: v})
 	if err != nil {
 		return "", 0, 0, err
 	}
@@ -161,21 +152,21 @@ func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetE
 // quality - The quality of the encoding (0-1). (defaults to 1)
 // sizeOnly - Whether to only return the size information (defaults to false).
 // Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
-func (c *Audits) GetEncodedResponse(ctx context.Context, requestId string, encoding string, quality float64, sizeOnly bool) (string, int, int, error) {
+func (c *Audits) GetEncodedResponse(requestId string, encoding string, quality float64, sizeOnly bool) (string, int, int, error) {
 	var v AuditsGetEncodedResponseParams
 	v.RequestId = requestId
 	v.Encoding = encoding
 	v.Quality = quality
 	v.SizeOnly = sizeOnly
-	return c.GetEncodedResponseWithParams(ctx, &v)
+	return c.GetEncodedResponseWithParams(&v)
 }
 
 // Disables issues domain, prevents further issues from being reported to the client.
-func (c *Audits) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.disable"})
+func (c *Audits) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.disable"})
 }
 
 // Enables issues domain, sends the issues collected so far to the client by means of the `issueAdded` event.
-func (c *Audits) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.enable"})
+func (c *Audits) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.enable"})
 }

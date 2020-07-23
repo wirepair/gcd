@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -52,14 +51,14 @@ func NewTracing(target gcdmessage.ChromeTargeter) *Tracing {
 }
 
 // Stop trace events collection.
-func (c *Tracing) End(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.end"})
+func (c *Tracing) End() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.end"})
 }
 
 // GetCategories - Gets supported tracing categories.
 // Returns -  categories - A list of supported tracing categories.
-func (c *Tracing) GetCategories(ctx context.Context) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.getCategories"})
+func (c *Tracing) GetCategories() ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.getCategories"})
 	if err != nil {
 		return nil, err
 	}
@@ -94,16 +93,16 @@ type TracingRecordClockSyncMarkerParams struct {
 }
 
 // RecordClockSyncMarkerWithParams - Record a clock sync marker in the trace.
-func (c *Tracing) RecordClockSyncMarkerWithParams(ctx context.Context, v *TracingRecordClockSyncMarkerParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.recordClockSyncMarker", Params: v})
+func (c *Tracing) RecordClockSyncMarkerWithParams(v *TracingRecordClockSyncMarkerParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.recordClockSyncMarker", Params: v})
 }
 
 // RecordClockSyncMarker - Record a clock sync marker in the trace.
 // syncId - The ID of this clock sync marker
-func (c *Tracing) RecordClockSyncMarker(ctx context.Context, syncId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Tracing) RecordClockSyncMarker(syncId string) (*gcdmessage.ChromeResponse, error) {
 	var v TracingRecordClockSyncMarkerParams
 	v.SyncId = syncId
-	return c.RecordClockSyncMarkerWithParams(ctx, &v)
+	return c.RecordClockSyncMarkerWithParams(&v)
 }
 
 type TracingRequestMemoryDumpParams struct {
@@ -113,8 +112,8 @@ type TracingRequestMemoryDumpParams struct {
 
 // RequestMemoryDumpWithParams - Request a global memory dump.
 // Returns -  dumpGuid - GUID of the resulting global memory dump. success - True iff the global memory dump succeeded.
-func (c *Tracing) RequestMemoryDumpWithParams(ctx context.Context, v *TracingRequestMemoryDumpParams) (string, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.requestMemoryDump", Params: v})
+func (c *Tracing) RequestMemoryDumpWithParams(v *TracingRequestMemoryDumpParams) (string, bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.requestMemoryDump", Params: v})
 	if err != nil {
 		return "", false, err
 	}
@@ -147,10 +146,10 @@ func (c *Tracing) RequestMemoryDumpWithParams(ctx context.Context, v *TracingReq
 // RequestMemoryDump - Request a global memory dump.
 // deterministic - Enables more deterministic results by forcing garbage collection
 // Returns -  dumpGuid - GUID of the resulting global memory dump. success - True iff the global memory dump succeeded.
-func (c *Tracing) RequestMemoryDump(ctx context.Context, deterministic bool) (string, bool, error) {
+func (c *Tracing) RequestMemoryDump(deterministic bool) (string, bool, error) {
 	var v TracingRequestMemoryDumpParams
 	v.Deterministic = deterministic
-	return c.RequestMemoryDumpWithParams(ctx, &v)
+	return c.RequestMemoryDumpWithParams(&v)
 }
 
 type TracingStartParams struct {
@@ -171,8 +170,8 @@ type TracingStartParams struct {
 }
 
 // StartWithParams - Start trace events collection.
-func (c *Tracing) StartWithParams(ctx context.Context, v *TracingStartParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.start", Params: v})
+func (c *Tracing) StartWithParams(v *TracingStartParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.start", Params: v})
 }
 
 // Start - Start trace events collection.
@@ -183,7 +182,7 @@ func (c *Tracing) StartWithParams(ctx context.Context, v *TracingStartParams) (*
 // streamFormat - Trace data format to use. This only applies when using `ReturnAsStream` transfer mode (defaults to `json`). enum values: json, proto
 // streamCompression - Compression format to use. This only applies when using `ReturnAsStream` transfer mode (defaults to `none`) enum values: none, gzip
 // traceConfig -
-func (c *Tracing) Start(ctx context.Context, categories string, options string, bufferUsageReportingInterval float64, transferMode string, streamFormat string, streamCompression string, traceConfig *TracingTraceConfig) (*gcdmessage.ChromeResponse, error) {
+func (c *Tracing) Start(categories string, options string, bufferUsageReportingInterval float64, transferMode string, streamFormat string, streamCompression string, traceConfig *TracingTraceConfig) (*gcdmessage.ChromeResponse, error) {
 	var v TracingStartParams
 	v.Categories = categories
 	v.Options = options
@@ -192,5 +191,5 @@ func (c *Tracing) Start(ctx context.Context, categories string, options string, 
 	v.StreamFormat = streamFormat
 	v.StreamCompression = streamCompression
 	v.TraceConfig = traceConfig
-	return c.StartWithParams(ctx, &v)
+	return c.StartWithParams(&v)
 }

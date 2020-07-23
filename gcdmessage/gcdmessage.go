@@ -27,7 +27,6 @@ THE SOFTWARE.
 package gcdmessage
 
 import (
-	"context"
 	"strconv"
 	"time"
 
@@ -109,13 +108,6 @@ func (cerr *ChromeDoneErr) Error() string {
 	return "tab is shutting down"
 }
 
-type ChromeCtxDoneErr struct {
-}
-
-func (cerr *ChromeCtxDoneErr) Error() string {
-	return "context.Context done"
-}
-
 // default request object that has parameters.
 type ParamRequest struct {
 	Id     int64       `json:"id"`
@@ -124,7 +116,7 @@ type ParamRequest struct {
 }
 
 // Takes in a ParamRequest and gives back a response channel so the caller can decode as necessary.
-func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- *Message, paramRequest *ParamRequest) (*Message, error) {
+func SendCustomReturn(target ChromeTargeter, sendCh chan<- *Message, paramRequest *ParamRequest) (*Message, error) {
 	data, err := json.Marshal(paramRequest)
 	if err != nil {
 		return nil, err
@@ -134,8 +126,6 @@ func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- 
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
 
 	select {
-	case <-ctx.Done():
-		return nil, &ChromeDoneErr{}
 	case sendCh <- sendMsg:
 	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
@@ -145,8 +135,6 @@ func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- 
 
 	var resp *Message
 	select {
-	case <-ctx.Done():
-		return nil, &ChromeDoneErr{}
 	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
@@ -158,7 +146,7 @@ func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- 
 
 // Sends a generic request that gets back a generic response, or error. This returns a ChromeResponse
 // object.
-func SendDefaultRequest(target ChromeTargeter, ctx context.Context, sendCh chan<- *Message, paramRequest *ParamRequest) (*ChromeResponse, error) {
+func SendDefaultRequest(target ChromeTargeter, sendCh chan<- *Message, paramRequest *ParamRequest) (*ChromeResponse, error) {
 	req := &ChromeRequest{Id: paramRequest.Id, Method: paramRequest.Method, Params: paramRequest.Params}
 	data, err := json.Marshal(req)
 	if err != nil {
@@ -169,8 +157,6 @@ func SendDefaultRequest(target ChromeTargeter, ctx context.Context, sendCh chan<
 	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
 
 	select {
-	case <-ctx.Done():
-		return nil, &ChromeDoneErr{}
 	case sendCh <- sendMsg:
 	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
@@ -180,8 +166,6 @@ func SendDefaultRequest(target ChromeTargeter, ctx context.Context, sendCh chan<
 
 	var resp *Message
 	select {
-	case <-ctx.Done():
-		return nil, &ChromeDoneErr{}
 	case <-time.After(target.GetApiTimeout()):
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:

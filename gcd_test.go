@@ -1,7 +1,6 @@
 package gcd
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -23,7 +22,6 @@ var (
 	testDir                  string
 	testPort                 string
 	testServerAddr           string
-	testCtx                  = context.Background()
 )
 
 func init() {
@@ -133,7 +131,6 @@ DONE:
 }
 
 func TestTargetCrashed(t *testing.T) {
-
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
@@ -150,11 +147,11 @@ func TestTargetCrashed(t *testing.T) {
 		t.Fatalf("error creating new tab")
 	}
 
-	tab.Inspector.Enable(testCtx)
+	tab.Inspector.Enable()
 	tab.Subscribe("Inspector.targetCrashed", targetCrashedFn)
 
 	navParams := &gcdapi.PageNavigateParams{Url: "chrome://crash", TransitionType: "typed"}
-	tab.Page.NavigateWithParams(testCtx, navParams)
+	tab.Page.NavigateWithParams(navParams)
 	<-doneCh
 }
 
@@ -182,13 +179,13 @@ func TestEvents(t *testing.T) {
 		close(doneCh)
 	})
 
-	_, err = console.Enable(testCtx)
+	_, err = console.Enable()
 	if err != nil {
 		t.Fatalf("error sending enable: %s\n", err)
 	}
 
 	navParams := &gcdapi.PageNavigateParams{Url: testServerAddr + "console_log.html", TransitionType: "typed"}
-	if _, _, _, err := target.Page.NavigateWithParams(testCtx, navParams); err != nil {
+	if _, _, _, err := target.Page.NavigateWithParams(navParams); err != nil {
 		t.Fatalf("error attempting to navigate: %s\n", err)
 	}
 
@@ -227,7 +224,7 @@ func TestEvaluate(t *testing.T) {
 		generatePreview := true
 		userGestures := true
 		evalParams := &gcdapi.RuntimeEvaluateParams{Expression: scriptSource, ObjectGroup: objectGroup, IncludeCommandLineAPI: includeCommandLineAPI, Silent: silent, ContextId: contextId, ReturnByValue: returnByValue, GeneratePreview: generatePreview, UserGesture: userGestures, AwaitPromise: awaitPromise}
-		rro, exception, err := target.Runtime.EvaluateWithParams(testCtx, evalParams)
+		rro, exception, err := target.Runtime.EvaluateWithParams(evalParams)
 		if err != nil {
 			t.Fatalf("error evaluating: %s %#v\n", err, exception)
 		}
@@ -241,10 +238,10 @@ func TestEvaluate(t *testing.T) {
 		}
 		close(doneCh)
 	})
-	target.Runtime.Enable(testCtx)
+	target.Runtime.Enable()
 
 	navParams := &gcdapi.PageNavigateParams{Url: testServerAddr, TransitionType: "typed"}
-	target.Page.NavigateWithParams(testCtx, navParams)
+	target.Page.NavigateWithParams(navParams)
 	<-doneCh
 }
 
@@ -258,10 +255,10 @@ func TestSimpleReturn(t *testing.T) {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
 	network := target.Network
-	if _, err := network.Enable(testCtx, -1, -1, -1); err != nil {
+	if _, err := network.Enable(-1, -1, -1); err != nil {
 		t.Fatalf("error enabling network")
 	}
-	ret, err = network.CanClearBrowserCache(testCtx)
+	ret, err = network.CanClearBrowserCache()
 	if err != nil {
 		t.Fatalf("error getting response to clearing browser cache: %s\n", err)
 	}
@@ -286,10 +283,10 @@ func TestSimpleReturnWithParams(t *testing.T) {
 		MaxResourceBufferSize: -1,
 	}
 
-	if _, err := network.EnableWithParams(testCtx, networkParams); err != nil {
+	if _, err := network.EnableWithParams(networkParams); err != nil {
 		t.Fatalf("error enabling network")
 	}
-	ret, err = network.CanClearBrowserCache(testCtx)
+	ret, err = network.CanClearBrowserCache()
 	if err != nil {
 		t.Fatalf("error getting response to clearing browser cache: %s\n", err)
 	}
@@ -310,18 +307,18 @@ func TestComplexReturn(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
-	if _, err := target.Network.Enable(testCtx, -1, -1, -1); err != nil {
+	if _, err := target.Network.Enable(-1, -1, -1); err != nil {
 		t.Fatalf("error enabling network %s\n", err)
 	}
 
-	if _, err := target.Page.Enable(testCtx); err != nil {
+	if _, err := target.Page.Enable(); err != nil {
 		t.Fatalf("error enabling page: %s\n", err)
 	}
 
 	target.Subscribe("Page.loadEventFired", func(target *ChromeTarget, payload []byte) {
 		var ok bool
 		t.Logf("page load event fired\n")
-		cookies, err := target.Network.GetCookies(testCtx, []string{testServerAddr})
+		cookies, err := target.Network.GetCookies([]string{testServerAddr})
 		if err != nil {
 			t.Fatalf("error getting cookies!")
 		}
@@ -339,7 +336,7 @@ func TestComplexReturn(t *testing.T) {
 	})
 
 	navParams := &gcdapi.PageNavigateParams{Url: testServerAddr + "cookie.html", TransitionType: "typed"}
-	_, _, _, err = target.Page.NavigateWithParams(testCtx, navParams)
+	_, _, _, err = target.Page.NavigateWithParams(navParams)
 	if err != nil {
 		t.Fatalf("error navigating to cookie page: %s\n", err)
 	}
@@ -391,7 +388,7 @@ func TestLocalExtension(t *testing.T) {
 		t.Fatalf("error creating new tab")
 	}
 
-	if _, err := target.Page.Enable(testCtx); err != nil {
+	if _, err := target.Page.Enable(); err != nil {
 		t.Fatalf("error enabling page: %s\n", err)
 	}
 
@@ -400,12 +397,12 @@ func TestLocalExtension(t *testing.T) {
 		close(doneCh)
 	})
 
-	if _, err := target.Network.Enable(testCtx, -1, -1, -1); err != nil {
+	if _, err := target.Network.Enable(-1, -1, -1); err != nil {
 		t.Fatalf("error enabling network: %s\n", err)
 	}
 
 	params := &gcdapi.PageNavigateParams{Url: "http://www.google.com"}
-	_, _, _, err = target.Page.NavigateWithParams(testCtx, params)
+	_, _, _, err = target.Page.NavigateWithParams(params)
 	if err != nil {
 		t.Fatalf("error navigating: %s\n", err)
 	}
@@ -437,14 +434,14 @@ func TestNetworkIntercept(t *testing.T) {
 		MaxResourceBufferSize: -1,
 	}
 
-	if _, err := network.EnableWithParams(testCtx, networkParams); err != nil {
+	if _, err := network.EnableWithParams(networkParams); err != nil {
 		t.Fatalf("error enabling network")
 	}
 	patterns := make([]*gcdapi.NetworkRequestPattern, 1)
 	patterns[0] = &gcdapi.NetworkRequestPattern{UrlPattern: "*", ResourceType: "Document"}
 	interceptParams := &gcdapi.NetworkSetRequestInterceptionParams{Patterns: patterns}
 
-	if _, err := network.SetRequestInterceptionWithParams(testCtx, interceptParams); err != nil {
+	if _, err := network.SetRequestInterceptionWithParams(interceptParams); err != nil {
 		t.Fatalf("unable to set interception enabled: %s\n", err)
 	}
 
@@ -455,7 +452,7 @@ func TestNetworkIntercept(t *testing.T) {
 	})
 
 	params := &gcdapi.PageNavigateParams{Url: "http://www.example.com"}
-	_, _, _, err = target.Page.NavigateWithParams(testCtx, params)
+	_, _, _, err = target.Page.NavigateWithParams(params)
 	if err != nil {
 		t.Fatalf("error navigating: %s\n", err)
 	}

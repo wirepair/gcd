@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -107,13 +106,13 @@ func NewSecurity(target gcdmessage.ChromeTargeter) *Security {
 }
 
 // Disables tracking security state changes.
-func (c *Security) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.disable"})
+func (c *Security) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.disable"})
 }
 
 // Enables tracking security state changes.
-func (c *Security) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.enable"})
+func (c *Security) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.enable"})
 }
 
 type SecuritySetIgnoreCertificateErrorsParams struct {
@@ -122,16 +121,16 @@ type SecuritySetIgnoreCertificateErrorsParams struct {
 }
 
 // SetIgnoreCertificateErrorsWithParams - Enable/disable whether all certificate errors should be ignored.
-func (c *Security) SetIgnoreCertificateErrorsWithParams(ctx context.Context, v *SecuritySetIgnoreCertificateErrorsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.setIgnoreCertificateErrors", Params: v})
+func (c *Security) SetIgnoreCertificateErrorsWithParams(v *SecuritySetIgnoreCertificateErrorsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.setIgnoreCertificateErrors", Params: v})
 }
 
 // SetIgnoreCertificateErrors - Enable/disable whether all certificate errors should be ignored.
 // ignore - If true, all certificate errors will be ignored.
-func (c *Security) SetIgnoreCertificateErrors(ctx context.Context, ignore bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Security) SetIgnoreCertificateErrors(ignore bool) (*gcdmessage.ChromeResponse, error) {
 	var v SecuritySetIgnoreCertificateErrorsParams
 	v.Ignore = ignore
-	return c.SetIgnoreCertificateErrorsWithParams(ctx, &v)
+	return c.SetIgnoreCertificateErrorsWithParams(&v)
 }
 
 type SecurityHandleCertificateErrorParams struct {
@@ -142,18 +141,18 @@ type SecurityHandleCertificateErrorParams struct {
 }
 
 // HandleCertificateErrorWithParams - Handles a certificate error that fired a certificateError event.
-func (c *Security) HandleCertificateErrorWithParams(ctx context.Context, v *SecurityHandleCertificateErrorParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.handleCertificateError", Params: v})
+func (c *Security) HandleCertificateErrorWithParams(v *SecurityHandleCertificateErrorParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.handleCertificateError", Params: v})
 }
 
 // HandleCertificateError - Handles a certificate error that fired a certificateError event.
 // eventId - The ID of the event.
 // action - The action to take on the certificate error. enum values: continue, cancel
-func (c *Security) HandleCertificateError(ctx context.Context, eventId int, action string) (*gcdmessage.ChromeResponse, error) {
+func (c *Security) HandleCertificateError(eventId int, action string) (*gcdmessage.ChromeResponse, error) {
 	var v SecurityHandleCertificateErrorParams
 	v.EventId = eventId
 	v.Action = action
-	return c.HandleCertificateErrorWithParams(ctx, &v)
+	return c.HandleCertificateErrorWithParams(&v)
 }
 
 type SecuritySetOverrideCertificateErrorsParams struct {
@@ -162,14 +161,14 @@ type SecuritySetOverrideCertificateErrorsParams struct {
 }
 
 // SetOverrideCertificateErrorsWithParams - Enable/disable overriding certificate errors. If enabled, all certificate error events need to be handled by the DevTools client and should be answered with `handleCertificateError` commands.
-func (c *Security) SetOverrideCertificateErrorsWithParams(ctx context.Context, v *SecuritySetOverrideCertificateErrorsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.setOverrideCertificateErrors", Params: v})
+func (c *Security) SetOverrideCertificateErrorsWithParams(v *SecuritySetOverrideCertificateErrorsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Security.setOverrideCertificateErrors", Params: v})
 }
 
 // SetOverrideCertificateErrors - Enable/disable overriding certificate errors. If enabled, all certificate error events need to be handled by the DevTools client and should be answered with `handleCertificateError` commands.
 // override - If true, certificate errors will be overridden.
-func (c *Security) SetOverrideCertificateErrors(ctx context.Context, override bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Security) SetOverrideCertificateErrors(override bool) (*gcdmessage.ChromeResponse, error) {
 	var v SecuritySetOverrideCertificateErrorsParams
 	v.Override = override
-	return c.SetOverrideCertificateErrorsWithParams(ctx, &v)
+	return c.SetOverrideCertificateErrorsWithParams(&v)
 }

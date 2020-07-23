@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
 	"runtime"
@@ -42,7 +41,6 @@ func main() {
 	debugger.StartProcess(path, dir, port)
 	defer debugger.ExitProcess() // exit when done
 
-	ctx := context.Background()
 	target, err := debugger.NewTab()
 	if err != nil {
 		log.Fatalf("error opening new tab: %s\n", err)
@@ -50,7 +48,7 @@ func main() {
 
 	//subscribe to page load
 	target.Subscribe("Page.loadEventFired", func(targ *gcd.ChromeTarget, v []byte) {
-		doc, err := target.DOM.GetDocument(ctx, -1, true)
+		doc, err := target.DOM.GetDocument(-1, true)
 		if err == nil {
 			log.Printf("%s\n", doc.DocumentURL)
 		}
@@ -59,12 +57,12 @@ func main() {
 	})
 
 	// get the Page API and enable it
-	if _, err := target.Page.Enable(ctx); err != nil {
+	if _, err := target.Page.Enable(); err != nil {
 		log.Fatalf("error getting page: %s\n", err)
 	}
 
 	navigateParams := &gcdapi.PageNavigateParams{Url: "http://www.veracode.com"}
-	ret, _, _, err := target.Page.NavigateWithParams(ctx, navigateParams) // navigate
+	ret, _, _, err := target.Page.NavigateWithParams(navigateParams) // navigate
 	if err != nil {
 		log.Fatalf("Error navigating: %s\n", err)
 	}

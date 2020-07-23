@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -63,8 +62,8 @@ type BrowserSetPermissionParams struct {
 }
 
 // SetPermissionWithParams - Set permission settings for given origin.
-func (c *Browser) SetPermissionWithParams(ctx context.Context, v *BrowserSetPermissionParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setPermission", Params: v})
+func (c *Browser) SetPermissionWithParams(v *BrowserSetPermissionParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setPermission", Params: v})
 }
 
 // SetPermission - Set permission settings for given origin.
@@ -72,13 +71,13 @@ func (c *Browser) SetPermissionWithParams(ctx context.Context, v *BrowserSetPerm
 // setting - Setting of the permission. enum values: granted, denied, prompt
 // origin - Origin the permission applies to, all origins if not specified.
 // browserContextId - Context to override. When omitted, default browser context is used.
-func (c *Browser) SetPermission(ctx context.Context, permission *BrowserPermissionDescriptor, setting string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Browser) SetPermission(permission *BrowserPermissionDescriptor, setting string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserSetPermissionParams
 	v.Permission = permission
 	v.Setting = setting
 	v.Origin = origin
 	v.BrowserContextId = browserContextId
-	return c.SetPermissionWithParams(ctx, &v)
+	return c.SetPermissionWithParams(&v)
 }
 
 type BrowserGrantPermissionsParams struct {
@@ -91,20 +90,20 @@ type BrowserGrantPermissionsParams struct {
 }
 
 // GrantPermissionsWithParams - Grant specific permissions to the given origin and reject all others.
-func (c *Browser) GrantPermissionsWithParams(ctx context.Context, v *BrowserGrantPermissionsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.grantPermissions", Params: v})
+func (c *Browser) GrantPermissionsWithParams(v *BrowserGrantPermissionsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.grantPermissions", Params: v})
 }
 
 // GrantPermissions - Grant specific permissions to the given origin and reject all others.
 // permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
 // origin - Origin the permission applies to, all origins if not specified.
 // browserContextId - BrowserContext to override permissions. When omitted, default browser context is used.
-func (c *Browser) GrantPermissions(ctx context.Context, permissions []string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Browser) GrantPermissions(permissions []string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserGrantPermissionsParams
 	v.Permissions = permissions
 	v.Origin = origin
 	v.BrowserContextId = browserContextId
-	return c.GrantPermissionsWithParams(ctx, &v)
+	return c.GrantPermissionsWithParams(&v)
 }
 
 type BrowserResetPermissionsParams struct {
@@ -113,16 +112,16 @@ type BrowserResetPermissionsParams struct {
 }
 
 // ResetPermissionsWithParams - Reset all permission management for all origins.
-func (c *Browser) ResetPermissionsWithParams(ctx context.Context, v *BrowserResetPermissionsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.resetPermissions", Params: v})
+func (c *Browser) ResetPermissionsWithParams(v *BrowserResetPermissionsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.resetPermissions", Params: v})
 }
 
 // ResetPermissions - Reset all permission management for all origins.
 // browserContextId - BrowserContext to reset permissions. When omitted, default browser context is used.
-func (c *Browser) ResetPermissions(ctx context.Context, browserContextId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Browser) ResetPermissions(browserContextId string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserResetPermissionsParams
 	v.BrowserContextId = browserContextId
-	return c.ResetPermissionsWithParams(ctx, &v)
+	return c.ResetPermissionsWithParams(&v)
 }
 
 type BrowserSetDownloadBehaviorParams struct {
@@ -135,41 +134,41 @@ type BrowserSetDownloadBehaviorParams struct {
 }
 
 // SetDownloadBehaviorWithParams - Set the behavior when downloading a file.
-func (c *Browser) SetDownloadBehaviorWithParams(ctx context.Context, v *BrowserSetDownloadBehaviorParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDownloadBehavior", Params: v})
+func (c *Browser) SetDownloadBehaviorWithParams(v *BrowserSetDownloadBehaviorParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDownloadBehavior", Params: v})
 }
 
 // SetDownloadBehavior - Set the behavior when downloading a file.
 // behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
 // browserContextId - BrowserContext to set download behavior. When omitted, default browser context is used.
 // downloadPath - The default path to save downloaded files to. This is requred if behavior is set to 'allow' or 'allowAndName'.
-func (c *Browser) SetDownloadBehavior(ctx context.Context, behavior string, browserContextId string, downloadPath string) (*gcdmessage.ChromeResponse, error) {
+func (c *Browser) SetDownloadBehavior(behavior string, browserContextId string, downloadPath string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserSetDownloadBehaviorParams
 	v.Behavior = behavior
 	v.BrowserContextId = browserContextId
 	v.DownloadPath = downloadPath
-	return c.SetDownloadBehaviorWithParams(ctx, &v)
+	return c.SetDownloadBehaviorWithParams(&v)
 }
 
 // Close browser gracefully.
-func (c *Browser) Close(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.close"})
+func (c *Browser) Close() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.close"})
 }
 
 // Crashes browser on the main thread.
-func (c *Browser) Crash(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.crash"})
+func (c *Browser) Crash() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.crash"})
 }
 
 // Crashes GPU process.
-func (c *Browser) CrashGpuProcess(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.crashGpuProcess"})
+func (c *Browser) CrashGpuProcess() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.crashGpuProcess"})
 }
 
 // GetVersion - Returns version information.
 // Returns -  protocolVersion - Protocol version. product - Product name. revision - Product revision. userAgent - User-Agent. jsVersion - V8 version.
-func (c *Browser) GetVersion(ctx context.Context) (string, string, string, string, string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getVersion"})
+func (c *Browser) GetVersion() (string, string, string, string, string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getVersion"})
 	if err != nil {
 		return "", "", "", "", "", err
 	}
@@ -204,8 +203,8 @@ func (c *Browser) GetVersion(ctx context.Context) (string, string, string, strin
 
 // GetBrowserCommandLine - Returns the command line switches for the browser process if, and only if --enable-automation is on the commandline.
 // Returns -  arguments - Commandline parameters
-func (c *Browser) GetBrowserCommandLine(ctx context.Context) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getBrowserCommandLine"})
+func (c *Browser) GetBrowserCommandLine() ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getBrowserCommandLine"})
 	if err != nil {
 		return nil, err
 	}
@@ -243,8 +242,8 @@ type BrowserGetHistogramsParams struct {
 
 // GetHistogramsWithParams - Get Chrome histograms.
 // Returns -  histograms - Histograms.
-func (c *Browser) GetHistogramsWithParams(ctx context.Context, v *BrowserGetHistogramsParams) ([]*BrowserHistogram, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getHistograms", Params: v})
+func (c *Browser) GetHistogramsWithParams(v *BrowserGetHistogramsParams) ([]*BrowserHistogram, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getHistograms", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -277,11 +276,11 @@ func (c *Browser) GetHistogramsWithParams(ctx context.Context, v *BrowserGetHist
 // query - Requested substring in name. Only histograms which have query as a substring in their name are extracted. An empty or absent query returns all histograms.
 // delta - If true, retrieve delta since last call.
 // Returns -  histograms - Histograms.
-func (c *Browser) GetHistograms(ctx context.Context, query string, delta bool) ([]*BrowserHistogram, error) {
+func (c *Browser) GetHistograms(query string, delta bool) ([]*BrowserHistogram, error) {
 	var v BrowserGetHistogramsParams
 	v.Query = query
 	v.Delta = delta
-	return c.GetHistogramsWithParams(ctx, &v)
+	return c.GetHistogramsWithParams(&v)
 }
 
 type BrowserGetHistogramParams struct {
@@ -293,8 +292,8 @@ type BrowserGetHistogramParams struct {
 
 // GetHistogramWithParams - Get a Chrome histogram by name.
 // Returns -  histogram - Histogram.
-func (c *Browser) GetHistogramWithParams(ctx context.Context, v *BrowserGetHistogramParams) (*BrowserHistogram, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getHistogram", Params: v})
+func (c *Browser) GetHistogramWithParams(v *BrowserGetHistogramParams) (*BrowserHistogram, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getHistogram", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -327,11 +326,11 @@ func (c *Browser) GetHistogramWithParams(ctx context.Context, v *BrowserGetHisto
 // name - Requested histogram name.
 // delta - If true, retrieve delta since last call.
 // Returns -  histogram - Histogram.
-func (c *Browser) GetHistogram(ctx context.Context, name string, delta bool) (*BrowserHistogram, error) {
+func (c *Browser) GetHistogram(name string, delta bool) (*BrowserHistogram, error) {
 	var v BrowserGetHistogramParams
 	v.Name = name
 	v.Delta = delta
-	return c.GetHistogramWithParams(ctx, &v)
+	return c.GetHistogramWithParams(&v)
 }
 
 type BrowserGetWindowBoundsParams struct {
@@ -341,8 +340,8 @@ type BrowserGetWindowBoundsParams struct {
 
 // GetWindowBoundsWithParams - Get position and size of the browser window.
 // Returns -  bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
-func (c *Browser) GetWindowBoundsWithParams(ctx context.Context, v *BrowserGetWindowBoundsParams) (*BrowserBounds, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowBounds", Params: v})
+func (c *Browser) GetWindowBoundsWithParams(v *BrowserGetWindowBoundsParams) (*BrowserBounds, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowBounds", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -374,10 +373,10 @@ func (c *Browser) GetWindowBoundsWithParams(ctx context.Context, v *BrowserGetWi
 // GetWindowBounds - Get position and size of the browser window.
 // windowId - Browser window id.
 // Returns -  bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
-func (c *Browser) GetWindowBounds(ctx context.Context, windowId int) (*BrowserBounds, error) {
+func (c *Browser) GetWindowBounds(windowId int) (*BrowserBounds, error) {
 	var v BrowserGetWindowBoundsParams
 	v.WindowId = windowId
-	return c.GetWindowBoundsWithParams(ctx, &v)
+	return c.GetWindowBoundsWithParams(&v)
 }
 
 type BrowserGetWindowForTargetParams struct {
@@ -387,8 +386,8 @@ type BrowserGetWindowForTargetParams struct {
 
 // GetWindowForTargetWithParams - Get the browser window that contains the devtools target.
 // Returns -  windowId - Browser window id. bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
-func (c *Browser) GetWindowForTargetWithParams(ctx context.Context, v *BrowserGetWindowForTargetParams) (int, *BrowserBounds, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowForTarget", Params: v})
+func (c *Browser) GetWindowForTargetWithParams(v *BrowserGetWindowForTargetParams) (int, *BrowserBounds, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowForTarget", Params: v})
 	if err != nil {
 		return 0, nil, err
 	}
@@ -421,10 +420,10 @@ func (c *Browser) GetWindowForTargetWithParams(ctx context.Context, v *BrowserGe
 // GetWindowForTarget - Get the browser window that contains the devtools target.
 // targetId - Devtools agent host id. If called as a part of the session, associated targetId is used.
 // Returns -  windowId - Browser window id. bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
-func (c *Browser) GetWindowForTarget(ctx context.Context, targetId string) (int, *BrowserBounds, error) {
+func (c *Browser) GetWindowForTarget(targetId string) (int, *BrowserBounds, error) {
 	var v BrowserGetWindowForTargetParams
 	v.TargetId = targetId
-	return c.GetWindowForTargetWithParams(ctx, &v)
+	return c.GetWindowForTargetWithParams(&v)
 }
 
 type BrowserSetWindowBoundsParams struct {
@@ -435,18 +434,18 @@ type BrowserSetWindowBoundsParams struct {
 }
 
 // SetWindowBoundsWithParams - Set position and/or size of the browser window.
-func (c *Browser) SetWindowBoundsWithParams(ctx context.Context, v *BrowserSetWindowBoundsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setWindowBounds", Params: v})
+func (c *Browser) SetWindowBoundsWithParams(v *BrowserSetWindowBoundsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setWindowBounds", Params: v})
 }
 
 // SetWindowBounds - Set position and/or size of the browser window.
 // windowId - Browser window id.
 // bounds - New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
-func (c *Browser) SetWindowBounds(ctx context.Context, windowId int, bounds *BrowserBounds) (*gcdmessage.ChromeResponse, error) {
+func (c *Browser) SetWindowBounds(windowId int, bounds *BrowserBounds) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserSetWindowBoundsParams
 	v.WindowId = windowId
 	v.Bounds = bounds
-	return c.SetWindowBoundsWithParams(ctx, &v)
+	return c.SetWindowBoundsWithParams(&v)
 }
 
 type BrowserSetDockTileParams struct {
@@ -457,16 +456,16 @@ type BrowserSetDockTileParams struct {
 }
 
 // SetDockTileWithParams - Set dock tile details, platform-specific.
-func (c *Browser) SetDockTileWithParams(ctx context.Context, v *BrowserSetDockTileParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDockTile", Params: v})
+func (c *Browser) SetDockTileWithParams(v *BrowserSetDockTileParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDockTile", Params: v})
 }
 
 // SetDockTile - Set dock tile details, platform-specific.
 // badgeLabel -
 // image - Png encoded image.
-func (c *Browser) SetDockTile(ctx context.Context, badgeLabel string, image string) (*gcdmessage.ChromeResponse, error) {
+func (c *Browser) SetDockTile(badgeLabel string, image string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserSetDockTileParams
 	v.BadgeLabel = badgeLabel
 	v.Image = image
-	return c.SetDockTileWithParams(ctx, &v)
+	return c.SetDockTileWithParams(&v)
 }

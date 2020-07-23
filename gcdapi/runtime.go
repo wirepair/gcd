@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -218,8 +217,8 @@ type RuntimeAwaitPromiseParams struct {
 
 // AwaitPromiseWithParams - Add handler to promise with given promise object id.
 // Returns -  result - Promise result. Will contain rejected value if promise was rejected. exceptionDetails - Exception details if stack strace is available.
-func (c *Runtime) AwaitPromiseWithParams(ctx context.Context, v *RuntimeAwaitPromiseParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.awaitPromise", Params: v})
+func (c *Runtime) AwaitPromiseWithParams(v *RuntimeAwaitPromiseParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.awaitPromise", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -254,12 +253,12 @@ func (c *Runtime) AwaitPromiseWithParams(ctx context.Context, v *RuntimeAwaitPro
 // returnByValue - Whether the result is expected to be a JSON object that should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
 // Returns -  result - Promise result. Will contain rejected value if promise was rejected. exceptionDetails - Exception details if stack strace is available.
-func (c *Runtime) AwaitPromise(ctx context.Context, promiseObjectId string, returnByValue bool, generatePreview bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) AwaitPromise(promiseObjectId string, returnByValue bool, generatePreview bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeAwaitPromiseParams
 	v.PromiseObjectId = promiseObjectId
 	v.ReturnByValue = returnByValue
 	v.GeneratePreview = generatePreview
-	return c.AwaitPromiseWithParams(ctx, &v)
+	return c.AwaitPromiseWithParams(&v)
 }
 
 type RuntimeCallFunctionOnParams struct {
@@ -287,8 +286,8 @@ type RuntimeCallFunctionOnParams struct {
 
 // CallFunctionOnWithParams - Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
 // Returns -  result - Call result. exceptionDetails - Exception details.
-func (c *Runtime) CallFunctionOnWithParams(ctx context.Context, v *RuntimeCallFunctionOnParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.callFunctionOn", Params: v})
+func (c *Runtime) CallFunctionOnWithParams(v *RuntimeCallFunctionOnParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.callFunctionOn", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -330,7 +329,7 @@ func (c *Runtime) CallFunctionOnWithParams(ctx context.Context, v *RuntimeCallFu
 // executionContextId - Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
 // objectGroup - Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
 // Returns -  result - Call result. exceptionDetails - Exception details.
-func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) CallFunctionOn(functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeCallFunctionOnParams
 	v.FunctionDeclaration = functionDeclaration
 	v.ObjectId = objectId
@@ -342,7 +341,7 @@ func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string
 	v.AwaitPromise = awaitPromise
 	v.ExecutionContextId = executionContextId
 	v.ObjectGroup = objectGroup
-	return c.CallFunctionOnWithParams(ctx, &v)
+	return c.CallFunctionOnWithParams(&v)
 }
 
 type RuntimeCompileScriptParams struct {
@@ -358,8 +357,8 @@ type RuntimeCompileScriptParams struct {
 
 // CompileScriptWithParams - Compiles expression.
 // Returns -  scriptId - Id of the script. exceptionDetails - Exception details.
-func (c *Runtime) CompileScriptWithParams(ctx context.Context, v *RuntimeCompileScriptParams) (string, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.compileScript", Params: v})
+func (c *Runtime) CompileScriptWithParams(v *RuntimeCompileScriptParams) (string, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.compileScript", Params: v})
 	if err != nil {
 		return "", nil, err
 	}
@@ -395,28 +394,28 @@ func (c *Runtime) CompileScriptWithParams(ctx context.Context, v *RuntimeCompile
 // persistScript - Specifies whether the compiled script should be persisted.
 // executionContextId - Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
 // Returns -  scriptId - Id of the script. exceptionDetails - Exception details.
-func (c *Runtime) CompileScript(ctx context.Context, expression string, sourceURL string, persistScript bool, executionContextId int) (string, *RuntimeExceptionDetails, error) {
+func (c *Runtime) CompileScript(expression string, sourceURL string, persistScript bool, executionContextId int) (string, *RuntimeExceptionDetails, error) {
 	var v RuntimeCompileScriptParams
 	v.Expression = expression
 	v.SourceURL = sourceURL
 	v.PersistScript = persistScript
 	v.ExecutionContextId = executionContextId
-	return c.CompileScriptWithParams(ctx, &v)
+	return c.CompileScriptWithParams(&v)
 }
 
 // Disables reporting of execution contexts creation.
-func (c *Runtime) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.disable"})
+func (c *Runtime) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.disable"})
 }
 
 // Discards collected exceptions and console API calls.
-func (c *Runtime) DiscardConsoleEntries(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.discardConsoleEntries"})
+func (c *Runtime) DiscardConsoleEntries() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.discardConsoleEntries"})
 }
 
 // Enables reporting of execution contexts creation by means of `executionContextCreated` event. When the reporting gets enabled the event will be sent immediately for each existing execution context.
-func (c *Runtime) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.enable"})
+func (c *Runtime) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.enable"})
 }
 
 type RuntimeEvaluateParams struct {
@@ -452,8 +451,8 @@ type RuntimeEvaluateParams struct {
 
 // EvaluateWithParams - Evaluates expression on global object.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) EvaluateWithParams(ctx context.Context, v *RuntimeEvaluateParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.evaluate", Params: v})
+func (c *Runtime) EvaluateWithParams(v *RuntimeEvaluateParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.evaluate", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -499,7 +498,7 @@ func (c *Runtime) EvaluateWithParams(ctx context.Context, v *RuntimeEvaluatePara
 // replMode - Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
 // allowUnsafeEvalBlockedByCSP - The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) Evaluate(expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
 	v.Expression = expression
 	v.ObjectGroup = objectGroup
@@ -515,13 +514,13 @@ func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup s
 	v.DisableBreaks = disableBreaks
 	v.ReplMode = replMode
 	v.AllowUnsafeEvalBlockedByCSP = allowUnsafeEvalBlockedByCSP
-	return c.EvaluateWithParams(ctx, &v)
+	return c.EvaluateWithParams(&v)
 }
 
 // GetIsolateId - Returns the isolate id.
 // Returns -  id - The isolate id.
-func (c *Runtime) GetIsolateId(ctx context.Context) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getIsolateId"})
+func (c *Runtime) GetIsolateId() (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getIsolateId"})
 	if err != nil {
 		return "", err
 	}
@@ -552,8 +551,8 @@ func (c *Runtime) GetIsolateId(ctx context.Context) (string, error) {
 
 // GetHeapUsage - Returns the JavaScript heap usage. It is the total usage of the corresponding isolate not scoped to a particular Runtime.
 // Returns -  usedSize - Used heap size in bytes. totalSize - Allocated heap size in bytes.
-func (c *Runtime) GetHeapUsage(ctx context.Context) (float64, float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getHeapUsage"})
+func (c *Runtime) GetHeapUsage() (float64, float64, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getHeapUsage"})
 	if err != nil {
 		return 0, 0, err
 	}
@@ -596,8 +595,8 @@ type RuntimeGetPropertiesParams struct {
 
 // GetPropertiesWithParams - Returns properties of a given object. Object group of the result is inherited from the target object.
 // Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). privateProperties - Object private properties. exceptionDetails - Exception details.
-func (c *Runtime) GetPropertiesWithParams(ctx context.Context, v *RuntimeGetPropertiesParams) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getProperties", Params: v})
+func (c *Runtime) GetPropertiesWithParams(v *RuntimeGetPropertiesParams) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getProperties", Params: v})
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -635,13 +634,13 @@ func (c *Runtime) GetPropertiesWithParams(ctx context.Context, v *RuntimeGetProp
 // accessorPropertiesOnly - If true, returns accessor properties (with getter/setter) only; internal properties are not returned either.
 // generatePreview - Whether preview should be generated for the results.
 // Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). privateProperties - Object private properties. exceptionDetails - Exception details.
-func (c *Runtime) GetProperties(ctx context.Context, objectId string, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
+func (c *Runtime) GetProperties(objectId string, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
 	var v RuntimeGetPropertiesParams
 	v.ObjectId = objectId
 	v.OwnProperties = ownProperties
 	v.AccessorPropertiesOnly = accessorPropertiesOnly
 	v.GeneratePreview = generatePreview
-	return c.GetPropertiesWithParams(ctx, &v)
+	return c.GetPropertiesWithParams(&v)
 }
 
 type RuntimeGlobalLexicalScopeNamesParams struct {
@@ -651,8 +650,8 @@ type RuntimeGlobalLexicalScopeNamesParams struct {
 
 // GlobalLexicalScopeNamesWithParams - Returns all let, const and class variables from global scope.
 // Returns -  names -
-func (c *Runtime) GlobalLexicalScopeNamesWithParams(ctx context.Context, v *RuntimeGlobalLexicalScopeNamesParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.globalLexicalScopeNames", Params: v})
+func (c *Runtime) GlobalLexicalScopeNamesWithParams(v *RuntimeGlobalLexicalScopeNamesParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.globalLexicalScopeNames", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -684,10 +683,10 @@ func (c *Runtime) GlobalLexicalScopeNamesWithParams(ctx context.Context, v *Runt
 // GlobalLexicalScopeNames - Returns all let, const and class variables from global scope.
 // executionContextId - Specifies in which execution context to lookup global scope variables.
 // Returns -  names -
-func (c *Runtime) GlobalLexicalScopeNames(ctx context.Context, executionContextId int) ([]string, error) {
+func (c *Runtime) GlobalLexicalScopeNames(executionContextId int) ([]string, error) {
 	var v RuntimeGlobalLexicalScopeNamesParams
 	v.ExecutionContextId = executionContextId
-	return c.GlobalLexicalScopeNamesWithParams(ctx, &v)
+	return c.GlobalLexicalScopeNamesWithParams(&v)
 }
 
 type RuntimeQueryObjectsParams struct {
@@ -699,8 +698,8 @@ type RuntimeQueryObjectsParams struct {
 
 // QueryObjectsWithParams -
 // Returns -  objects - Array with objects.
-func (c *Runtime) QueryObjectsWithParams(ctx context.Context, v *RuntimeQueryObjectsParams) (*RuntimeRemoteObject, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.queryObjects", Params: v})
+func (c *Runtime) QueryObjectsWithParams(v *RuntimeQueryObjectsParams) (*RuntimeRemoteObject, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.queryObjects", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -733,11 +732,11 @@ func (c *Runtime) QueryObjectsWithParams(ctx context.Context, v *RuntimeQueryObj
 // prototypeObjectId - Identifier of the prototype to return objects for.
 // objectGroup - Symbolic group name that can be used to release the results.
 // Returns -  objects - Array with objects.
-func (c *Runtime) QueryObjects(ctx context.Context, prototypeObjectId string, objectGroup string) (*RuntimeRemoteObject, error) {
+func (c *Runtime) QueryObjects(prototypeObjectId string, objectGroup string) (*RuntimeRemoteObject, error) {
 	var v RuntimeQueryObjectsParams
 	v.PrototypeObjectId = prototypeObjectId
 	v.ObjectGroup = objectGroup
-	return c.QueryObjectsWithParams(ctx, &v)
+	return c.QueryObjectsWithParams(&v)
 }
 
 type RuntimeReleaseObjectParams struct {
@@ -746,16 +745,16 @@ type RuntimeReleaseObjectParams struct {
 }
 
 // ReleaseObjectWithParams - Releases remote object with given id.
-func (c *Runtime) ReleaseObjectWithParams(ctx context.Context, v *RuntimeReleaseObjectParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObject", Params: v})
+func (c *Runtime) ReleaseObjectWithParams(v *RuntimeReleaseObjectParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObject", Params: v})
 }
 
 // ReleaseObject - Releases remote object with given id.
 // objectId - Identifier of the object to release.
-func (c *Runtime) ReleaseObject(ctx context.Context, objectId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Runtime) ReleaseObject(objectId string) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeReleaseObjectParams
 	v.ObjectId = objectId
-	return c.ReleaseObjectWithParams(ctx, &v)
+	return c.ReleaseObjectWithParams(&v)
 }
 
 type RuntimeReleaseObjectGroupParams struct {
@@ -764,21 +763,21 @@ type RuntimeReleaseObjectGroupParams struct {
 }
 
 // ReleaseObjectGroupWithParams - Releases all remote objects that belong to a given group.
-func (c *Runtime) ReleaseObjectGroupWithParams(ctx context.Context, v *RuntimeReleaseObjectGroupParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObjectGroup", Params: v})
+func (c *Runtime) ReleaseObjectGroupWithParams(v *RuntimeReleaseObjectGroupParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.releaseObjectGroup", Params: v})
 }
 
 // ReleaseObjectGroup - Releases all remote objects that belong to a given group.
 // objectGroup - Symbolic object group name.
-func (c *Runtime) ReleaseObjectGroup(ctx context.Context, objectGroup string) (*gcdmessage.ChromeResponse, error) {
+func (c *Runtime) ReleaseObjectGroup(objectGroup string) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeReleaseObjectGroupParams
 	v.ObjectGroup = objectGroup
-	return c.ReleaseObjectGroupWithParams(ctx, &v)
+	return c.ReleaseObjectGroupWithParams(&v)
 }
 
 // Tells inspected instance to run if it was waiting for debugger to attach.
-func (c *Runtime) RunIfWaitingForDebugger(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.runIfWaitingForDebugger"})
+func (c *Runtime) RunIfWaitingForDebugger() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.runIfWaitingForDebugger"})
 }
 
 type RuntimeRunScriptParams struct {
@@ -802,8 +801,8 @@ type RuntimeRunScriptParams struct {
 
 // RunScriptWithParams - Runs script with given id in a given context.
 // Returns -  result - Run result. exceptionDetails - Exception details.
-func (c *Runtime) RunScriptWithParams(ctx context.Context, v *RuntimeRunScriptParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.runScript", Params: v})
+func (c *Runtime) RunScriptWithParams(v *RuntimeRunScriptParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.runScript", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -843,7 +842,7 @@ func (c *Runtime) RunScriptWithParams(ctx context.Context, v *RuntimeRunScriptPa
 // generatePreview - Whether preview should be generated for the result.
 // awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
 // Returns -  result - Run result. exceptionDetails - Exception details.
-func (c *Runtime) RunScript(ctx context.Context, scriptId string, executionContextId int, objectGroup string, silent bool, includeCommandLineAPI bool, returnByValue bool, generatePreview bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) RunScript(scriptId string, executionContextId int, objectGroup string, silent bool, includeCommandLineAPI bool, returnByValue bool, generatePreview bool, awaitPromise bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeRunScriptParams
 	v.ScriptId = scriptId
 	v.ExecutionContextId = executionContextId
@@ -853,7 +852,7 @@ func (c *Runtime) RunScript(ctx context.Context, scriptId string, executionConte
 	v.ReturnByValue = returnByValue
 	v.GeneratePreview = generatePreview
 	v.AwaitPromise = awaitPromise
-	return c.RunScriptWithParams(ctx, &v)
+	return c.RunScriptWithParams(&v)
 }
 
 type RuntimeSetAsyncCallStackDepthParams struct {
@@ -862,16 +861,16 @@ type RuntimeSetAsyncCallStackDepthParams struct {
 }
 
 // SetAsyncCallStackDepthWithParams - Enables or disables async call stacks tracking.
-func (c *Runtime) SetAsyncCallStackDepthWithParams(ctx context.Context, v *RuntimeSetAsyncCallStackDepthParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setAsyncCallStackDepth", Params: v})
+func (c *Runtime) SetAsyncCallStackDepthWithParams(v *RuntimeSetAsyncCallStackDepthParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setAsyncCallStackDepth", Params: v})
 }
 
 // SetAsyncCallStackDepth - Enables or disables async call stacks tracking.
 // maxDepth - Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async call stacks (default).
-func (c *Runtime) SetAsyncCallStackDepth(ctx context.Context, maxDepth int) (*gcdmessage.ChromeResponse, error) {
+func (c *Runtime) SetAsyncCallStackDepth(maxDepth int) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeSetAsyncCallStackDepthParams
 	v.MaxDepth = maxDepth
-	return c.SetAsyncCallStackDepthWithParams(ctx, &v)
+	return c.SetAsyncCallStackDepthWithParams(&v)
 }
 
 type RuntimeSetCustomObjectFormatterEnabledParams struct {
@@ -880,16 +879,16 @@ type RuntimeSetCustomObjectFormatterEnabledParams struct {
 }
 
 // SetCustomObjectFormatterEnabledWithParams -
-func (c *Runtime) SetCustomObjectFormatterEnabledWithParams(ctx context.Context, v *RuntimeSetCustomObjectFormatterEnabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setCustomObjectFormatterEnabled", Params: v})
+func (c *Runtime) SetCustomObjectFormatterEnabledWithParams(v *RuntimeSetCustomObjectFormatterEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setCustomObjectFormatterEnabled", Params: v})
 }
 
 // SetCustomObjectFormatterEnabled -
 // enabled -
-func (c *Runtime) SetCustomObjectFormatterEnabled(ctx context.Context, enabled bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Runtime) SetCustomObjectFormatterEnabled(enabled bool) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeSetCustomObjectFormatterEnabledParams
 	v.Enabled = enabled
-	return c.SetCustomObjectFormatterEnabledWithParams(ctx, &v)
+	return c.SetCustomObjectFormatterEnabledWithParams(&v)
 }
 
 type RuntimeSetMaxCallStackSizeToCaptureParams struct {
@@ -898,21 +897,21 @@ type RuntimeSetMaxCallStackSizeToCaptureParams struct {
 }
 
 // SetMaxCallStackSizeToCaptureWithParams -
-func (c *Runtime) SetMaxCallStackSizeToCaptureWithParams(ctx context.Context, v *RuntimeSetMaxCallStackSizeToCaptureParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setMaxCallStackSizeToCapture", Params: v})
+func (c *Runtime) SetMaxCallStackSizeToCaptureWithParams(v *RuntimeSetMaxCallStackSizeToCaptureParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.setMaxCallStackSizeToCapture", Params: v})
 }
 
 // SetMaxCallStackSizeToCapture -
 // size -
-func (c *Runtime) SetMaxCallStackSizeToCapture(ctx context.Context, size int) (*gcdmessage.ChromeResponse, error) {
+func (c *Runtime) SetMaxCallStackSizeToCapture(size int) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeSetMaxCallStackSizeToCaptureParams
 	v.Size = size
-	return c.SetMaxCallStackSizeToCaptureWithParams(ctx, &v)
+	return c.SetMaxCallStackSizeToCaptureWithParams(&v)
 }
 
 // Terminate current or next JavaScript execution. Will cancel the termination when the outer-most script execution ends.
-func (c *Runtime) TerminateExecution(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.terminateExecution"})
+func (c *Runtime) TerminateExecution() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.terminateExecution"})
 }
 
 type RuntimeAddBindingParams struct {
@@ -923,18 +922,18 @@ type RuntimeAddBindingParams struct {
 }
 
 // AddBindingWithParams - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. If executionContextId is specified, adds binding only on global object of given execution context. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
-func (c *Runtime) AddBindingWithParams(ctx context.Context, v *RuntimeAddBindingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.addBinding", Params: v})
+func (c *Runtime) AddBindingWithParams(v *RuntimeAddBindingParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.addBinding", Params: v})
 }
 
 // AddBinding - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. If executionContextId is specified, adds binding only on global object of given execution context. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
 // name -
 // executionContextId -
-func (c *Runtime) AddBinding(ctx context.Context, name string, executionContextId int) (*gcdmessage.ChromeResponse, error) {
+func (c *Runtime) AddBinding(name string, executionContextId int) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeAddBindingParams
 	v.Name = name
 	v.ExecutionContextId = executionContextId
-	return c.AddBindingWithParams(ctx, &v)
+	return c.AddBindingWithParams(&v)
 }
 
 type RuntimeRemoveBindingParams struct {
@@ -943,14 +942,14 @@ type RuntimeRemoveBindingParams struct {
 }
 
 // RemoveBindingWithParams - This method does not remove binding function from global object but unsubscribes current runtime agent from Runtime.bindingCalled notifications.
-func (c *Runtime) RemoveBindingWithParams(ctx context.Context, v *RuntimeRemoveBindingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.removeBinding", Params: v})
+func (c *Runtime) RemoveBindingWithParams(v *RuntimeRemoveBindingParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.removeBinding", Params: v})
 }
 
 // RemoveBinding - This method does not remove binding function from global object but unsubscribes current runtime agent from Runtime.bindingCalled notifications.
 // name -
-func (c *Runtime) RemoveBinding(ctx context.Context, name string) (*gcdmessage.ChromeResponse, error) {
+func (c *Runtime) RemoveBinding(name string) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeRemoveBindingParams
 	v.Name = name
-	return c.RemoveBindingWithParams(ctx, &v)
+	return c.RemoveBindingWithParams(&v)
 }

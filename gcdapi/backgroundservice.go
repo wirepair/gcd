@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -58,16 +57,16 @@ type BackgroundServiceStartObservingParams struct {
 }
 
 // StartObservingWithParams - Enables event updates for the service.
-func (c *BackgroundService) StartObservingWithParams(ctx context.Context, v *BackgroundServiceStartObservingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.startObserving", Params: v})
+func (c *BackgroundService) StartObservingWithParams(v *BackgroundServiceStartObservingParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.startObserving", Params: v})
 }
 
 // StartObserving - Enables event updates for the service.
 // service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-func (c *BackgroundService) StartObserving(ctx context.Context, service string) (*gcdmessage.ChromeResponse, error) {
+func (c *BackgroundService) StartObserving(service string) (*gcdmessage.ChromeResponse, error) {
 	var v BackgroundServiceStartObservingParams
 	v.Service = service
-	return c.StartObservingWithParams(ctx, &v)
+	return c.StartObservingWithParams(&v)
 }
 
 type BackgroundServiceStopObservingParams struct {
@@ -76,16 +75,16 @@ type BackgroundServiceStopObservingParams struct {
 }
 
 // StopObservingWithParams - Disables event updates for the service.
-func (c *BackgroundService) StopObservingWithParams(ctx context.Context, v *BackgroundServiceStopObservingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.stopObserving", Params: v})
+func (c *BackgroundService) StopObservingWithParams(v *BackgroundServiceStopObservingParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.stopObserving", Params: v})
 }
 
 // StopObserving - Disables event updates for the service.
 // service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-func (c *BackgroundService) StopObserving(ctx context.Context, service string) (*gcdmessage.ChromeResponse, error) {
+func (c *BackgroundService) StopObserving(service string) (*gcdmessage.ChromeResponse, error) {
 	var v BackgroundServiceStopObservingParams
 	v.Service = service
-	return c.StopObservingWithParams(ctx, &v)
+	return c.StopObservingWithParams(&v)
 }
 
 type BackgroundServiceSetRecordingParams struct {
@@ -96,18 +95,18 @@ type BackgroundServiceSetRecordingParams struct {
 }
 
 // SetRecordingWithParams - Set the recording state for the service.
-func (c *BackgroundService) SetRecordingWithParams(ctx context.Context, v *BackgroundServiceSetRecordingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.setRecording", Params: v})
+func (c *BackgroundService) SetRecordingWithParams(v *BackgroundServiceSetRecordingParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.setRecording", Params: v})
 }
 
 // SetRecording - Set the recording state for the service.
 // shouldRecord -
 // service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-func (c *BackgroundService) SetRecording(ctx context.Context, shouldRecord bool, service string) (*gcdmessage.ChromeResponse, error) {
+func (c *BackgroundService) SetRecording(shouldRecord bool, service string) (*gcdmessage.ChromeResponse, error) {
 	var v BackgroundServiceSetRecordingParams
 	v.ShouldRecord = shouldRecord
 	v.Service = service
-	return c.SetRecordingWithParams(ctx, &v)
+	return c.SetRecordingWithParams(&v)
 }
 
 type BackgroundServiceClearEventsParams struct {
@@ -116,14 +115,14 @@ type BackgroundServiceClearEventsParams struct {
 }
 
 // ClearEventsWithParams - Clears all stored data for the service.
-func (c *BackgroundService) ClearEventsWithParams(ctx context.Context, v *BackgroundServiceClearEventsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.clearEvents", Params: v})
+func (c *BackgroundService) ClearEventsWithParams(v *BackgroundServiceClearEventsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.clearEvents", Params: v})
 }
 
 // ClearEvents - Clears all stored data for the service.
 // service -  enum values: backgroundFetch, backgroundSync, pushMessaging, notifications, paymentHandler, periodicBackgroundSync
-func (c *BackgroundService) ClearEvents(ctx context.Context, service string) (*gcdmessage.ChromeResponse, error) {
+func (c *BackgroundService) ClearEvents(service string) (*gcdmessage.ChromeResponse, error) {
 	var v BackgroundServiceClearEventsParams
 	v.Service = service
-	return c.ClearEventsWithParams(ctx, &v)
+	return c.ClearEventsWithParams(&v)
 }

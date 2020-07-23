@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -47,18 +46,18 @@ func NewLog(target gcdmessage.ChromeTargeter) *Log {
 }
 
 // Clears the log.
-func (c *Log) Clear(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.clear"})
+func (c *Log) Clear() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.clear"})
 }
 
 // Disables log domain, prevents further log entries from being reported to the client.
-func (c *Log) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.disable"})
+func (c *Log) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.disable"})
 }
 
 // Enables log domain, sends the entries collected so far to the client by means of the `entryAdded` notification.
-func (c *Log) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.enable"})
+func (c *Log) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.enable"})
 }
 
 type LogStartViolationsReportParams struct {
@@ -67,19 +66,19 @@ type LogStartViolationsReportParams struct {
 }
 
 // StartViolationsReportWithParams - start violation reporting.
-func (c *Log) StartViolationsReportWithParams(ctx context.Context, v *LogStartViolationsReportParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.startViolationsReport", Params: v})
+func (c *Log) StartViolationsReportWithParams(v *LogStartViolationsReportParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.startViolationsReport", Params: v})
 }
 
 // StartViolationsReport - start violation reporting.
 // config - Configuration for violations.
-func (c *Log) StartViolationsReport(ctx context.Context, config []*LogViolationSetting) (*gcdmessage.ChromeResponse, error) {
+func (c *Log) StartViolationsReport(config []*LogViolationSetting) (*gcdmessage.ChromeResponse, error) {
 	var v LogStartViolationsReportParams
 	v.Config = config
-	return c.StartViolationsReportWithParams(ctx, &v)
+	return c.StartViolationsReportWithParams(&v)
 }
 
 // Stop violation reporting.
-func (c *Log) StopViolationsReport(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.stopViolationsReport"})
+func (c *Log) StopViolationsReport() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Log.stopViolationsReport"})
 }

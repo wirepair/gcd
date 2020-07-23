@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -79,8 +78,8 @@ func NewSystemInfo(target gcdmessage.ChromeTargeter) *SystemInfo {
 
 // GetInfo - Returns information about the system.
 // Returns -  gpu - Information about the GPUs on the system. modelName - A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported. modelVersion - A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported. commandLine - The command line string used to launch the browser. Will be the empty string if not supported.
-func (c *SystemInfo) GetInfo(ctx context.Context) (*SystemInfoGPUInfo, string, string, string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "SystemInfo.getInfo"})
+func (c *SystemInfo) GetInfo() (*SystemInfoGPUInfo, string, string, string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "SystemInfo.getInfo"})
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -114,8 +113,8 @@ func (c *SystemInfo) GetInfo(ctx context.Context) (*SystemInfoGPUInfo, string, s
 
 // GetProcessInfo - Returns information about all running processes.
 // Returns -  processInfo - An array of process info blocks.
-func (c *SystemInfo) GetProcessInfo(ctx context.Context) ([]*SystemInfoProcessInfo, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "SystemInfo.getProcessInfo"})
+func (c *SystemInfo) GetProcessInfo() ([]*SystemInfoProcessInfo, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "SystemInfo.getProcessInfo"})
 	if err != nil {
 		return nil, err
 	}

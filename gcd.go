@@ -42,7 +42,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.0.0"
+var GCDVERSION = "v1.0.15"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -84,7 +84,6 @@ type Gcd struct {
 	flags             []string
 	env               []string
 	chomeApiVersion   string
-	wsWriteSize       int
 	ctx               context.Context
 }
 
@@ -92,7 +91,6 @@ type Gcd struct {
 func NewChromeDebugger() *Gcd {
 	c := &Gcd{}
 	c.timeout = 15
-	c.wsWriteSize = 3000000 // 3mb
 	c.host = "localhost"
 	c.readyCh = make(chan struct{})
 	c.terminatedHandler = nil
@@ -110,13 +108,6 @@ func (c *Gcd) SetTerminationHandler(handler TerminatedHandler) {
 // SetTimeout for how long we should wait for debug port to become available.
 func (c *Gcd) SetTimeout(timeout time.Duration) {
 	c.timeout = timeout
-}
-
-// SetWSWriteSize sets the ws conn write size, this can have huge impact
-// on memory allocation, so start small-ish and adjust up if messages are
-// getting blocked
-func (c *Gcd) SetWSWriteSize(newSize int) {
-	c.wsWriteSize = newSize
 }
 
 // Port that the debugger is listening on
@@ -273,7 +264,7 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 	chromeTargets := make([]*ChromeTarget, 0)
 	for _, v := range connectableTargets {
 		if _, ok := knownIds[v.Id]; !ok {
-			target, err := openChromeTarget(c.ctx, c.addr, c.wsWriteSize, v)
+			target, err := openChromeTarget(c.ctx, c.addr, v)
 			if err != nil {
 				return nil, err
 			}
@@ -336,7 +327,7 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	if err != nil {
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
-	return openChromeTarget(c.ctx, c.addr, c.wsWriteSize, tabTarget)
+	return openChromeTarget(c.ctx, c.addr, tabTarget)
 }
 
 // GetFirstTab returns the first tab created, to be called when
@@ -348,7 +339,7 @@ func (c *Gcd) GetFirstTab() (*ChromeTarget, error) {
 	}
 	for _, tabTarget := range connectableTargets {
 		if tabTarget.Type == "page" {
-			return openChromeTarget(c.ctx, c.addr, c.wsWriteSize, tabTarget)
+			return openChromeTarget(c.ctx, c.addr, tabTarget)
 		}
 	}
 	return nil, ErrNoTabAvailable

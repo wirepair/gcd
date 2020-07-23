@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -190,13 +189,13 @@ func NewWebAudio(target gcdmessage.ChromeTargeter) *WebAudio {
 }
 
 // Enables the WebAudio domain and starts sending context lifetime events.
-func (c *WebAudio) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.enable"})
+func (c *WebAudio) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.enable"})
 }
 
 // Disables the WebAudio domain.
-func (c *WebAudio) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.disable"})
+func (c *WebAudio) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.disable"})
 }
 
 type WebAudioGetRealtimeDataParams struct {
@@ -206,8 +205,8 @@ type WebAudioGetRealtimeDataParams struct {
 
 // GetRealtimeDataWithParams - Fetch the realtime data from the registered contexts.
 // Returns -  realtimeData -
-func (c *WebAudio) GetRealtimeDataWithParams(ctx context.Context, v *WebAudioGetRealtimeDataParams) (*WebAudioContextRealtimeData, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.getRealtimeData", Params: v})
+func (c *WebAudio) GetRealtimeDataWithParams(v *WebAudioGetRealtimeDataParams) (*WebAudioContextRealtimeData, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.getRealtimeData", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -239,8 +238,8 @@ func (c *WebAudio) GetRealtimeDataWithParams(ctx context.Context, v *WebAudioGet
 // GetRealtimeData - Fetch the realtime data from the registered contexts.
 // contextId -
 // Returns -  realtimeData -
-func (c *WebAudio) GetRealtimeData(ctx context.Context, contextId string) (*WebAudioContextRealtimeData, error) {
+func (c *WebAudio) GetRealtimeData(contextId string) (*WebAudioContextRealtimeData, error) {
 	var v WebAudioGetRealtimeDataParams
 	v.ContextId = contextId
-	return c.GetRealtimeDataWithParams(ctx, &v)
+	return c.GetRealtimeDataWithParams(&v)
 }

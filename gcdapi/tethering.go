@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -33,16 +32,16 @@ type TetheringBindParams struct {
 }
 
 // BindWithParams - Request browser port binding.
-func (c *Tethering) BindWithParams(ctx context.Context, v *TetheringBindParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.bind", Params: v})
+func (c *Tethering) BindWithParams(v *TetheringBindParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.bind", Params: v})
 }
 
 // Bind - Request browser port binding.
 // port - Port number to bind.
-func (c *Tethering) Bind(ctx context.Context, port int) (*gcdmessage.ChromeResponse, error) {
+func (c *Tethering) Bind(port int) (*gcdmessage.ChromeResponse, error) {
 	var v TetheringBindParams
 	v.Port = port
-	return c.BindWithParams(ctx, &v)
+	return c.BindWithParams(&v)
 }
 
 type TetheringUnbindParams struct {
@@ -51,14 +50,14 @@ type TetheringUnbindParams struct {
 }
 
 // UnbindWithParams - Request browser port unbinding.
-func (c *Tethering) UnbindWithParams(ctx context.Context, v *TetheringUnbindParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.unbind", Params: v})
+func (c *Tethering) UnbindWithParams(v *TetheringUnbindParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.unbind", Params: v})
 }
 
 // Unbind - Request browser port unbinding.
 // port - Port number to unbind.
-func (c *Tethering) Unbind(ctx context.Context, port int) (*gcdmessage.ChromeResponse, error) {
+func (c *Tethering) Unbind(port int) (*gcdmessage.ChromeResponse, error) {
 	var v TetheringUnbindParams
 	v.Port = port
-	return c.UnbindWithParams(ctx, &v)
+	return c.UnbindWithParams(&v)
 }

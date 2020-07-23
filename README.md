@@ -6,7 +6,7 @@ This is primarly an auto-generated client library for communicating with a Googl
 
 Because I'm lazy and there are hundereds of different custom types and API methods, this library has been automatically generated using their [protocol.json](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/devtools/protocol.json&q=protocol.json&sq=package:chromium&type=cs).
 
-The [gcdapigen](https://github.com/wirepair/gcd/tree/master/gcdapigen) program was created to generate types, event types and commands for gcd.
+The [gcdapigen](https://github.com/wirepair/gcd/tree/master/v2/gcdapigen) program was created to generate types, event types and commands for gcd.
 
 # Changelog
 
@@ -14,7 +14,7 @@ See the [CHANGELOG](https://github.com/wirepair/gcd/tree/master/CHANGELOG.md).
 
 ## Dependencies
 
-gcd requires the [gcdapi](https://github.com/wirepair/gcd/tree/master/gcdapi) and [gcdmessage](https://github.com/wirepair/gcd/tree/master/gcdmessage) packages. gcdapi is the auto-generated API. gcdmessage is the glue between gcd and gcdapi so we can keep the packages clean.
+gcd requires the [gcdapi](https://github.com/wirepair/gcd/tree/master/v2/gcdapi) and [gcdmessage](https://github.com/wirepair/gcd/tree/master/v2/gcdmessage) packages. gcdapi is the auto-generated API. gcdmessage is the glue between gcd and gcdapi so we can keep the packages clean.
 
 ## The API
 
@@ -45,11 +45,11 @@ The API consists of of synchronous requests, asynchronous requests / events. Syn
 
 ## Usage
 
-For a full list of api methods, types, event types & godocs: [Documentation](https://godoc.org/github.com/wirepair/gcd/gcdapi)
+For a full list of api methods, types, event types & godocs: [Documentation](https://godoc.org/github.com/wirepair/gcd/v2/gcdapi)
 
 ## Examples
 
-See [examples](https://github.com/wirepair/gcd/tree/master/examples)
+See [examples](https://github.com/wirepair/gcd/tree/master/v2/examples)
 
 ## Licensing
 

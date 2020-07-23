@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -63,8 +62,8 @@ type InputDispatchKeyEventParams struct {
 }
 
 // DispatchKeyEventWithParams - Dispatches a key event to the page.
-func (c *Input) DispatchKeyEventWithParams(ctx context.Context, v *InputDispatchKeyEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchKeyEvent", Params: v})
+func (c *Input) DispatchKeyEventWithParams(v *InputDispatchKeyEventParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchKeyEvent", Params: v})
 }
 
 // DispatchKeyEvent - Dispatches a key event to the page.
@@ -83,7 +82,7 @@ func (c *Input) DispatchKeyEventWithParams(ctx context.Context, v *InputDispatch
 // isSystemKey - Whether the event was a system key event (default: false).
 // location - Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default: 0).
 // commands - Editing commands to send with the key event (e.g., 'selectAll') (default: []). These are related to but not equal the command names used in `document.execCommand` and NSStandardKeyBindingResponding. See https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h for valid command names.
-func (c *Input) DispatchKeyEvent(ctx context.Context, theType string, modifiers int, timestamp float64, text string, unmodifiedText string, keyIdentifier string, code string, key string, windowsVirtualKeyCode int, nativeVirtualKeyCode int, autoRepeat bool, isKeypad bool, isSystemKey bool, location int, commands []string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) DispatchKeyEvent(theType string, modifiers int, timestamp float64, text string, unmodifiedText string, keyIdentifier string, code string, key string, windowsVirtualKeyCode int, nativeVirtualKeyCode int, autoRepeat bool, isKeypad bool, isSystemKey bool, location int, commands []string) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchKeyEventParams
 	v.TheType = theType
 	v.Modifiers = modifiers
@@ -100,7 +99,7 @@ func (c *Input) DispatchKeyEvent(ctx context.Context, theType string, modifiers 
 	v.IsSystemKey = isSystemKey
 	v.Location = location
 	v.Commands = commands
-	return c.DispatchKeyEventWithParams(ctx, &v)
+	return c.DispatchKeyEventWithParams(&v)
 }
 
 type InputInsertTextParams struct {
@@ -109,16 +108,16 @@ type InputInsertTextParams struct {
 }
 
 // InsertTextWithParams - This method emulates inserting text that doesn't come from a key press, for example an emoji keyboard or an IME.
-func (c *Input) InsertTextWithParams(ctx context.Context, v *InputInsertTextParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.insertText", Params: v})
+func (c *Input) InsertTextWithParams(v *InputInsertTextParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.insertText", Params: v})
 }
 
 // InsertText - This method emulates inserting text that doesn't come from a key press, for example an emoji keyboard or an IME.
 // text - The text to insert.
-func (c *Input) InsertText(ctx context.Context, text string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) InsertText(text string) (*gcdmessage.ChromeResponse, error) {
 	var v InputInsertTextParams
 	v.Text = text
-	return c.InsertTextWithParams(ctx, &v)
+	return c.InsertTextWithParams(&v)
 }
 
 type InputDispatchMouseEventParams struct {
@@ -147,8 +146,8 @@ type InputDispatchMouseEventParams struct {
 }
 
 // DispatchMouseEventWithParams - Dispatches a mouse event to the page.
-func (c *Input) DispatchMouseEventWithParams(ctx context.Context, v *InputDispatchMouseEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchMouseEvent", Params: v})
+func (c *Input) DispatchMouseEventWithParams(v *InputDispatchMouseEventParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchMouseEvent", Params: v})
 }
 
 // DispatchMouseEvent - Dispatches a mouse event to the page.
@@ -163,7 +162,7 @@ func (c *Input) DispatchMouseEventWithParams(ctx context.Context, v *InputDispat
 // deltaX - X delta in CSS pixels for mouse wheel event (default: 0).
 // deltaY - Y delta in CSS pixels for mouse wheel event (default: 0).
 // pointerType - Pointer type (default: "mouse").
-func (c *Input) DispatchMouseEvent(ctx context.Context, theType string, x float64, y float64, modifiers int, timestamp float64, button string, buttons int, clickCount int, deltaX float64, deltaY float64, pointerType string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) DispatchMouseEvent(theType string, x float64, y float64, modifiers int, timestamp float64, button string, buttons int, clickCount int, deltaX float64, deltaY float64, pointerType string) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchMouseEventParams
 	v.TheType = theType
 	v.X = x
@@ -176,7 +175,7 @@ func (c *Input) DispatchMouseEvent(ctx context.Context, theType string, x float6
 	v.DeltaX = deltaX
 	v.DeltaY = deltaY
 	v.PointerType = pointerType
-	return c.DispatchMouseEventWithParams(ctx, &v)
+	return c.DispatchMouseEventWithParams(&v)
 }
 
 type InputDispatchTouchEventParams struct {
@@ -191,8 +190,8 @@ type InputDispatchTouchEventParams struct {
 }
 
 // DispatchTouchEventWithParams - Dispatches a touch event to the page.
-func (c *Input) DispatchTouchEventWithParams(ctx context.Context, v *InputDispatchTouchEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchTouchEvent", Params: v})
+func (c *Input) DispatchTouchEventWithParams(v *InputDispatchTouchEventParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchTouchEvent", Params: v})
 }
 
 // DispatchTouchEvent - Dispatches a touch event to the page.
@@ -200,13 +199,13 @@ func (c *Input) DispatchTouchEventWithParams(ctx context.Context, v *InputDispat
 // touchPoints - Active touch points on the touch device. One event per any changed point (compared to previous touch event in a sequence) is generated, emulating pressing/moving/releasing points one by one.
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // timestamp - Time at which the event occurred.
-func (c *Input) DispatchTouchEvent(ctx context.Context, theType string, touchPoints []*InputTouchPoint, modifiers int, timestamp float64) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) DispatchTouchEvent(theType string, touchPoints []*InputTouchPoint, modifiers int, timestamp float64) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchTouchEventParams
 	v.TheType = theType
 	v.TouchPoints = touchPoints
 	v.Modifiers = modifiers
 	v.Timestamp = timestamp
-	return c.DispatchTouchEventWithParams(ctx, &v)
+	return c.DispatchTouchEventWithParams(&v)
 }
 
 type InputEmulateTouchFromMouseEventParams struct {
@@ -231,8 +230,8 @@ type InputEmulateTouchFromMouseEventParams struct {
 }
 
 // EmulateTouchFromMouseEventWithParams - Emulates touch event from the mouse event parameters.
-func (c *Input) EmulateTouchFromMouseEventWithParams(ctx context.Context, v *InputEmulateTouchFromMouseEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.emulateTouchFromMouseEvent", Params: v})
+func (c *Input) EmulateTouchFromMouseEventWithParams(v *InputEmulateTouchFromMouseEventParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.emulateTouchFromMouseEvent", Params: v})
 }
 
 // EmulateTouchFromMouseEvent - Emulates touch event from the mouse event parameters.
@@ -245,7 +244,7 @@ func (c *Input) EmulateTouchFromMouseEventWithParams(ctx context.Context, v *Inp
 // deltaY - Y delta in DIP for mouse wheel event (default: 0).
 // modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 // clickCount - Number of times the mouse button was clicked (default: 0).
-func (c *Input) EmulateTouchFromMouseEvent(ctx context.Context, theType string, x int, y int, button string, timestamp float64, deltaX float64, deltaY float64, modifiers int, clickCount int) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) EmulateTouchFromMouseEvent(theType string, x int, y int, button string, timestamp float64, deltaX float64, deltaY float64, modifiers int, clickCount int) (*gcdmessage.ChromeResponse, error) {
 	var v InputEmulateTouchFromMouseEventParams
 	v.TheType = theType
 	v.X = x
@@ -256,7 +255,7 @@ func (c *Input) EmulateTouchFromMouseEvent(ctx context.Context, theType string, 
 	v.DeltaY = deltaY
 	v.Modifiers = modifiers
 	v.ClickCount = clickCount
-	return c.EmulateTouchFromMouseEventWithParams(ctx, &v)
+	return c.EmulateTouchFromMouseEventWithParams(&v)
 }
 
 type InputSetIgnoreInputEventsParams struct {
@@ -265,16 +264,16 @@ type InputSetIgnoreInputEventsParams struct {
 }
 
 // SetIgnoreInputEventsWithParams - Ignores input events (useful while auditing page).
-func (c *Input) SetIgnoreInputEventsWithParams(ctx context.Context, v *InputSetIgnoreInputEventsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.setIgnoreInputEvents", Params: v})
+func (c *Input) SetIgnoreInputEventsWithParams(v *InputSetIgnoreInputEventsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.setIgnoreInputEvents", Params: v})
 }
 
 // SetIgnoreInputEvents - Ignores input events (useful while auditing page).
 // ignore - Ignores input events processing when set to true.
-func (c *Input) SetIgnoreInputEvents(ctx context.Context, ignore bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) SetIgnoreInputEvents(ignore bool) (*gcdmessage.ChromeResponse, error) {
 	var v InputSetIgnoreInputEventsParams
 	v.Ignore = ignore
-	return c.SetIgnoreInputEventsWithParams(ctx, &v)
+	return c.SetIgnoreInputEventsWithParams(&v)
 }
 
 type InputSynthesizePinchGestureParams struct {
@@ -291,8 +290,8 @@ type InputSynthesizePinchGestureParams struct {
 }
 
 // SynthesizePinchGestureWithParams - Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
-func (c *Input) SynthesizePinchGestureWithParams(ctx context.Context, v *InputSynthesizePinchGestureParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizePinchGesture", Params: v})
+func (c *Input) SynthesizePinchGestureWithParams(v *InputSynthesizePinchGestureParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizePinchGesture", Params: v})
 }
 
 // SynthesizePinchGesture - Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
@@ -301,14 +300,14 @@ func (c *Input) SynthesizePinchGestureWithParams(ctx context.Context, v *InputSy
 // scaleFactor - Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out).
 // relativeSpeed - Relative pointer speed in pixels per second (default: 800).
 // gestureSourceType - Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type). enum values: default, touch, mouse
-func (c *Input) SynthesizePinchGesture(ctx context.Context, x float64, y float64, scaleFactor float64, relativeSpeed int, gestureSourceType string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) SynthesizePinchGesture(x float64, y float64, scaleFactor float64, relativeSpeed int, gestureSourceType string) (*gcdmessage.ChromeResponse, error) {
 	var v InputSynthesizePinchGestureParams
 	v.X = x
 	v.Y = y
 	v.ScaleFactor = scaleFactor
 	v.RelativeSpeed = relativeSpeed
 	v.GestureSourceType = gestureSourceType
-	return c.SynthesizePinchGestureWithParams(ctx, &v)
+	return c.SynthesizePinchGestureWithParams(&v)
 }
 
 type InputSynthesizeScrollGestureParams struct {
@@ -339,8 +338,8 @@ type InputSynthesizeScrollGestureParams struct {
 }
 
 // SynthesizeScrollGestureWithParams - Synthesizes a scroll gesture over a time period by issuing appropriate touch events.
-func (c *Input) SynthesizeScrollGestureWithParams(ctx context.Context, v *InputSynthesizeScrollGestureParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeScrollGesture", Params: v})
+func (c *Input) SynthesizeScrollGestureWithParams(v *InputSynthesizeScrollGestureParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeScrollGesture", Params: v})
 }
 
 // SynthesizeScrollGesture - Synthesizes a scroll gesture over a time period by issuing appropriate touch events.
@@ -356,7 +355,7 @@ func (c *Input) SynthesizeScrollGestureWithParams(ctx context.Context, v *InputS
 // repeatCount - The number of times to repeat the gesture (default: 0).
 // repeatDelayMs - The number of milliseconds delay between each repeat. (default: 250).
 // interactionMarkerName - The name of the interaction markers to generate, if not empty (default: "").
-func (c *Input) SynthesizeScrollGesture(ctx context.Context, x float64, y float64, xDistance float64, yDistance float64, xOverscroll float64, yOverscroll float64, preventFling bool, speed int, gestureSourceType string, repeatCount int, repeatDelayMs int, interactionMarkerName string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) SynthesizeScrollGesture(x float64, y float64, xDistance float64, yDistance float64, xOverscroll float64, yOverscroll float64, preventFling bool, speed int, gestureSourceType string, repeatCount int, repeatDelayMs int, interactionMarkerName string) (*gcdmessage.ChromeResponse, error) {
 	var v InputSynthesizeScrollGestureParams
 	v.X = x
 	v.Y = y
@@ -370,7 +369,7 @@ func (c *Input) SynthesizeScrollGesture(ctx context.Context, x float64, y float6
 	v.RepeatCount = repeatCount
 	v.RepeatDelayMs = repeatDelayMs
 	v.InteractionMarkerName = interactionMarkerName
-	return c.SynthesizeScrollGestureWithParams(ctx, &v)
+	return c.SynthesizeScrollGestureWithParams(&v)
 }
 
 type InputSynthesizeTapGestureParams struct {
@@ -387,8 +386,8 @@ type InputSynthesizeTapGestureParams struct {
 }
 
 // SynthesizeTapGestureWithParams - Synthesizes a tap gesture over a time period by issuing appropriate touch events.
-func (c *Input) SynthesizeTapGestureWithParams(ctx context.Context, v *InputSynthesizeTapGestureParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeTapGesture", Params: v})
+func (c *Input) SynthesizeTapGestureWithParams(v *InputSynthesizeTapGestureParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeTapGesture", Params: v})
 }
 
 // SynthesizeTapGesture - Synthesizes a tap gesture over a time period by issuing appropriate touch events.
@@ -397,12 +396,12 @@ func (c *Input) SynthesizeTapGestureWithParams(ctx context.Context, v *InputSynt
 // duration - Duration between touchdown and touchup events in ms (default: 50).
 // tapCount - Number of times to perform the tap (e.g. 2 for double tap, default: 1).
 // gestureSourceType - Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type). enum values: default, touch, mouse
-func (c *Input) SynthesizeTapGesture(ctx context.Context, x float64, y float64, duration int, tapCount int, gestureSourceType string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) SynthesizeTapGesture(x float64, y float64, duration int, tapCount int, gestureSourceType string) (*gcdmessage.ChromeResponse, error) {
 	var v InputSynthesizeTapGestureParams
 	v.X = x
 	v.Y = y
 	v.Duration = duration
 	v.TapCount = tapCount
 	v.GestureSourceType = gestureSourceType
-	return c.SynthesizeTapGestureWithParams(ctx, &v)
+	return c.SynthesizeTapGestureWithParams(&v)
 }

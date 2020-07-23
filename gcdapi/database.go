@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -41,13 +40,13 @@ func NewDatabase(target gcdmessage.ChromeTargeter) *Database {
 }
 
 // Disables database tracking, prevents database events from being sent to the client.
-func (c *Database) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.disable"})
+func (c *Database) Disable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.disable"})
 }
 
 // Enables database tracking, database events will now be delivered to the client.
-func (c *Database) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.enable"})
+func (c *Database) Enable() (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.enable"})
 }
 
 type DatabaseExecuteSQLParams struct {
@@ -59,8 +58,8 @@ type DatabaseExecuteSQLParams struct {
 
 // ExecuteSQLWithParams -
 // Returns -  columnNames -  values -  sqlError -
-func (c *Database) ExecuteSQLWithParams(ctx context.Context, v *DatabaseExecuteSQLParams) ([]string, []interface{}, *DatabaseError, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: v})
+func (c *Database) ExecuteSQLWithParams(v *DatabaseExecuteSQLParams) ([]string, []interface{}, *DatabaseError, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: v})
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -95,11 +94,11 @@ func (c *Database) ExecuteSQLWithParams(ctx context.Context, v *DatabaseExecuteS
 // databaseId -
 // query -
 // Returns -  columnNames -  values -  sqlError -
-func (c *Database) ExecuteSQL(ctx context.Context, databaseId string, query string) ([]string, []interface{}, *DatabaseError, error) {
+func (c *Database) ExecuteSQL(databaseId string, query string) ([]string, []interface{}, *DatabaseError, error) {
 	var v DatabaseExecuteSQLParams
 	v.DatabaseId = databaseId
 	v.Query = query
-	return c.ExecuteSQLWithParams(ctx, &v)
+	return c.ExecuteSQLWithParams(&v)
 }
 
 type DatabaseGetDatabaseTableNamesParams struct {
@@ -109,8 +108,8 @@ type DatabaseGetDatabaseTableNamesParams struct {
 
 // GetDatabaseTableNamesWithParams -
 // Returns -  tableNames -
-func (c *Database) GetDatabaseTableNamesWithParams(ctx context.Context, v *DatabaseGetDatabaseTableNamesParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: v})
+func (c *Database) GetDatabaseTableNamesWithParams(v *DatabaseGetDatabaseTableNamesParams) ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -142,8 +141,8 @@ func (c *Database) GetDatabaseTableNamesWithParams(ctx context.Context, v *Datab
 // GetDatabaseTableNames -
 // databaseId -
 // Returns -  tableNames -
-func (c *Database) GetDatabaseTableNames(ctx context.Context, databaseId string) ([]string, error) {
+func (c *Database) GetDatabaseTableNames(databaseId string) ([]string, error) {
 	var v DatabaseGetDatabaseTableNamesParams
 	v.DatabaseId = databaseId
-	return c.GetDatabaseTableNamesWithParams(ctx, &v)
+	return c.GetDatabaseTableNamesWithParams(&v)
 }

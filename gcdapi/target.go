@@ -5,7 +5,6 @@
 package gcdapi
 
 import (
-	"context"
 	"github.com/wirepair/gcd/gcdmessage"
 )
 
@@ -104,16 +103,16 @@ type TargetActivateTargetParams struct {
 }
 
 // ActivateTargetWithParams - Activates (focuses) the target.
-func (c *Target) ActivateTargetWithParams(ctx context.Context, v *TargetActivateTargetParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.activateTarget", Params: v})
+func (c *Target) ActivateTargetWithParams(v *TargetActivateTargetParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.activateTarget", Params: v})
 }
 
 // ActivateTarget - Activates (focuses) the target.
 // targetId -
-func (c *Target) ActivateTarget(ctx context.Context, targetId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) ActivateTarget(targetId string) (*gcdmessage.ChromeResponse, error) {
 	var v TargetActivateTargetParams
 	v.TargetId = targetId
-	return c.ActivateTargetWithParams(ctx, &v)
+	return c.ActivateTargetWithParams(&v)
 }
 
 type TargetAttachToTargetParams struct {
@@ -125,8 +124,8 @@ type TargetAttachToTargetParams struct {
 
 // AttachToTargetWithParams - Attaches to the target with given id.
 // Returns -  sessionId - Id assigned to the session.
-func (c *Target) AttachToTargetWithParams(ctx context.Context, v *TargetAttachToTargetParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.attachToTarget", Params: v})
+func (c *Target) AttachToTargetWithParams(v *TargetAttachToTargetParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.attachToTarget", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -159,17 +158,17 @@ func (c *Target) AttachToTargetWithParams(ctx context.Context, v *TargetAttachTo
 // targetId -
 // flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
 // Returns -  sessionId - Id assigned to the session.
-func (c *Target) AttachToTarget(ctx context.Context, targetId string, flatten bool) (string, error) {
+func (c *Target) AttachToTarget(targetId string, flatten bool) (string, error) {
 	var v TargetAttachToTargetParams
 	v.TargetId = targetId
 	v.Flatten = flatten
-	return c.AttachToTargetWithParams(ctx, &v)
+	return c.AttachToTargetWithParams(&v)
 }
 
 // AttachToBrowserTarget - Attaches to the browser target, only uses flat sessionId mode.
 // Returns -  sessionId - Id assigned to the session.
-func (c *Target) AttachToBrowserTarget(ctx context.Context) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.attachToBrowserTarget"})
+func (c *Target) AttachToBrowserTarget() (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.attachToBrowserTarget"})
 	if err != nil {
 		return "", err
 	}
@@ -205,8 +204,8 @@ type TargetCloseTargetParams struct {
 
 // CloseTargetWithParams - Closes the target. If the target is a page that gets closed too.
 // Returns -  success -
-func (c *Target) CloseTargetWithParams(ctx context.Context, v *TargetCloseTargetParams) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.closeTarget", Params: v})
+func (c *Target) CloseTargetWithParams(v *TargetCloseTargetParams) (bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.closeTarget", Params: v})
 	if err != nil {
 		return false, err
 	}
@@ -238,10 +237,10 @@ func (c *Target) CloseTargetWithParams(ctx context.Context, v *TargetCloseTarget
 // CloseTarget - Closes the target. If the target is a page that gets closed too.
 // targetId -
 // Returns -  success -
-func (c *Target) CloseTarget(ctx context.Context, targetId string) (bool, error) {
+func (c *Target) CloseTarget(targetId string) (bool, error) {
 	var v TargetCloseTargetParams
 	v.TargetId = targetId
-	return c.CloseTargetWithParams(ctx, &v)
+	return c.CloseTargetWithParams(&v)
 }
 
 type TargetExposeDevToolsProtocolParams struct {
@@ -252,18 +251,18 @@ type TargetExposeDevToolsProtocolParams struct {
 }
 
 // ExposeDevToolsProtocolWithParams - Inject object to the target's main frame that provides a communication channel with browser target.  Injected object will be available as `window[bindingName]`.  The object has the follwing API: - `binding.send(json)` - a method to send messages over the remote debugging protocol - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
-func (c *Target) ExposeDevToolsProtocolWithParams(ctx context.Context, v *TargetExposeDevToolsProtocolParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.exposeDevToolsProtocol", Params: v})
+func (c *Target) ExposeDevToolsProtocolWithParams(v *TargetExposeDevToolsProtocolParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.exposeDevToolsProtocol", Params: v})
 }
 
 // ExposeDevToolsProtocol - Inject object to the target's main frame that provides a communication channel with browser target.  Injected object will be available as `window[bindingName]`.  The object has the follwing API: - `binding.send(json)` - a method to send messages over the remote debugging protocol - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
 // targetId -
 // bindingName - Binding name, 'cdp' if not specified.
-func (c *Target) ExposeDevToolsProtocol(ctx context.Context, targetId string, bindingName string) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) ExposeDevToolsProtocol(targetId string, bindingName string) (*gcdmessage.ChromeResponse, error) {
 	var v TargetExposeDevToolsProtocolParams
 	v.TargetId = targetId
 	v.BindingName = bindingName
-	return c.ExposeDevToolsProtocolWithParams(ctx, &v)
+	return c.ExposeDevToolsProtocolWithParams(&v)
 }
 
 type TargetCreateBrowserContextParams struct {
@@ -277,8 +276,8 @@ type TargetCreateBrowserContextParams struct {
 
 // CreateBrowserContextWithParams - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
 // Returns -  browserContextId - The id of the context created.
-func (c *Target) CreateBrowserContextWithParams(ctx context.Context, v *TargetCreateBrowserContextParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.createBrowserContext", Params: v})
+func (c *Target) CreateBrowserContextWithParams(v *TargetCreateBrowserContextParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.createBrowserContext", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -312,18 +311,18 @@ func (c *Target) CreateBrowserContextWithParams(ctx context.Context, v *TargetCr
 // proxyServer - Proxy server, similar to the one passed to --proxy-server
 // proxyBypassList - Proxy bypass list, similar to the one passed to --proxy-bypass-list
 // Returns -  browserContextId - The id of the context created.
-func (c *Target) CreateBrowserContext(ctx context.Context, disposeOnDetach bool, proxyServer string, proxyBypassList string) (string, error) {
+func (c *Target) CreateBrowserContext(disposeOnDetach bool, proxyServer string, proxyBypassList string) (string, error) {
 	var v TargetCreateBrowserContextParams
 	v.DisposeOnDetach = disposeOnDetach
 	v.ProxyServer = proxyServer
 	v.ProxyBypassList = proxyBypassList
-	return c.CreateBrowserContextWithParams(ctx, &v)
+	return c.CreateBrowserContextWithParams(&v)
 }
 
 // GetBrowserContexts - Returns all browser contexts created with `Target.createBrowserContext` method.
 // Returns -  browserContextIds - An array of browser context ids.
-func (c *Target) GetBrowserContexts(ctx context.Context) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getBrowserContexts"})
+func (c *Target) GetBrowserContexts() ([]string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getBrowserContexts"})
 	if err != nil {
 		return nil, err
 	}
@@ -371,8 +370,8 @@ type TargetCreateTargetParams struct {
 
 // CreateTargetWithParams - Creates a new page.
 // Returns -  targetId - The id of the page opened.
-func (c *Target) CreateTargetWithParams(ctx context.Context, v *TargetCreateTargetParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.createTarget", Params: v})
+func (c *Target) CreateTargetWithParams(v *TargetCreateTargetParams) (string, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.createTarget", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -410,7 +409,7 @@ func (c *Target) CreateTargetWithParams(ctx context.Context, v *TargetCreateTarg
 // newWindow - Whether to create a new Window or Tab (chrome-only, false by default).
 // background - Whether to create the target in background or foreground (chrome-only, false by default).
 // Returns -  targetId - The id of the page opened.
-func (c *Target) CreateTarget(ctx context.Context, url string, width int, height int, browserContextId string, enableBeginFrameControl bool, newWindow bool, background bool) (string, error) {
+func (c *Target) CreateTarget(url string, width int, height int, browserContextId string, enableBeginFrameControl bool, newWindow bool, background bool) (string, error) {
 	var v TargetCreateTargetParams
 	v.Url = url
 	v.Width = width
@@ -419,7 +418,7 @@ func (c *Target) CreateTarget(ctx context.Context, url string, width int, height
 	v.EnableBeginFrameControl = enableBeginFrameControl
 	v.NewWindow = newWindow
 	v.Background = background
-	return c.CreateTargetWithParams(ctx, &v)
+	return c.CreateTargetWithParams(&v)
 }
 
 type TargetDetachFromTargetParams struct {
@@ -430,18 +429,18 @@ type TargetDetachFromTargetParams struct {
 }
 
 // DetachFromTargetWithParams - Detaches session with given id.
-func (c *Target) DetachFromTargetWithParams(ctx context.Context, v *TargetDetachFromTargetParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.detachFromTarget", Params: v})
+func (c *Target) DetachFromTargetWithParams(v *TargetDetachFromTargetParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.detachFromTarget", Params: v})
 }
 
 // DetachFromTarget - Detaches session with given id.
 // sessionId - Session to detach.
 // targetId - Deprecated.
-func (c *Target) DetachFromTarget(ctx context.Context, sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) DetachFromTarget(sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
 	var v TargetDetachFromTargetParams
 	v.SessionId = sessionId
 	v.TargetId = targetId
-	return c.DetachFromTargetWithParams(ctx, &v)
+	return c.DetachFromTargetWithParams(&v)
 }
 
 type TargetDisposeBrowserContextParams struct {
@@ -450,16 +449,16 @@ type TargetDisposeBrowserContextParams struct {
 }
 
 // DisposeBrowserContextWithParams - Deletes a BrowserContext. All the belonging pages will be closed without calling their beforeunload hooks.
-func (c *Target) DisposeBrowserContextWithParams(ctx context.Context, v *TargetDisposeBrowserContextParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.disposeBrowserContext", Params: v})
+func (c *Target) DisposeBrowserContextWithParams(v *TargetDisposeBrowserContextParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.disposeBrowserContext", Params: v})
 }
 
 // DisposeBrowserContext - Deletes a BrowserContext. All the belonging pages will be closed without calling their beforeunload hooks.
 // browserContextId -
-func (c *Target) DisposeBrowserContext(ctx context.Context, browserContextId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) DisposeBrowserContext(browserContextId string) (*gcdmessage.ChromeResponse, error) {
 	var v TargetDisposeBrowserContextParams
 	v.BrowserContextId = browserContextId
-	return c.DisposeBrowserContextWithParams(ctx, &v)
+	return c.DisposeBrowserContextWithParams(&v)
 }
 
 type TargetGetTargetInfoParams struct {
@@ -469,8 +468,8 @@ type TargetGetTargetInfoParams struct {
 
 // GetTargetInfoWithParams - Returns information about a target.
 // Returns -  targetInfo -
-func (c *Target) GetTargetInfoWithParams(ctx context.Context, v *TargetGetTargetInfoParams) (*TargetTargetInfo, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getTargetInfo", Params: v})
+func (c *Target) GetTargetInfoWithParams(v *TargetGetTargetInfoParams) (*TargetTargetInfo, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getTargetInfo", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -502,16 +501,16 @@ func (c *Target) GetTargetInfoWithParams(ctx context.Context, v *TargetGetTarget
 // GetTargetInfo - Returns information about a target.
 // targetId -
 // Returns -  targetInfo -
-func (c *Target) GetTargetInfo(ctx context.Context, targetId string) (*TargetTargetInfo, error) {
+func (c *Target) GetTargetInfo(targetId string) (*TargetTargetInfo, error) {
 	var v TargetGetTargetInfoParams
 	v.TargetId = targetId
-	return c.GetTargetInfoWithParams(ctx, &v)
+	return c.GetTargetInfoWithParams(&v)
 }
 
 // GetTargets - Retrieves a list of available targets.
 // Returns -  targetInfos - The list of targets.
-func (c *Target) GetTargets(ctx context.Context) ([]*TargetTargetInfo, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getTargets"})
+func (c *Target) GetTargets() ([]*TargetTargetInfo, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getTargets"})
 	if err != nil {
 		return nil, err
 	}
@@ -550,20 +549,20 @@ type TargetSendMessageToTargetParams struct {
 }
 
 // SendMessageToTargetWithParams - Sends protocol message over session with given id. Consider using flat mode instead; see commands attachToTarget, setAutoAttach, and crbug.com/991325.
-func (c *Target) SendMessageToTargetWithParams(ctx context.Context, v *TargetSendMessageToTargetParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.sendMessageToTarget", Params: v})
+func (c *Target) SendMessageToTargetWithParams(v *TargetSendMessageToTargetParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.sendMessageToTarget", Params: v})
 }
 
 // SendMessageToTarget - Sends protocol message over session with given id. Consider using flat mode instead; see commands attachToTarget, setAutoAttach, and crbug.com/991325.
 // message -
 // sessionId - Identifier of the session.
 // targetId - Deprecated.
-func (c *Target) SendMessageToTarget(ctx context.Context, message string, sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) SendMessageToTarget(message string, sessionId string, targetId string) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSendMessageToTargetParams
 	v.Message = message
 	v.SessionId = sessionId
 	v.TargetId = targetId
-	return c.SendMessageToTargetWithParams(ctx, &v)
+	return c.SendMessageToTargetWithParams(&v)
 }
 
 type TargetSetAutoAttachParams struct {
@@ -576,20 +575,20 @@ type TargetSetAutoAttachParams struct {
 }
 
 // SetAutoAttachWithParams - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
-func (c *Target) SetAutoAttachWithParams(ctx context.Context, v *TargetSetAutoAttachParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setAutoAttach", Params: v})
+func (c *Target) SetAutoAttachWithParams(v *TargetSetAutoAttachParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setAutoAttach", Params: v})
 }
 
 // SetAutoAttach - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
 // autoAttach - Whether to auto-attach to related targets.
 // waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
 // flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
-func (c *Target) SetAutoAttach(ctx context.Context, autoAttach bool, waitForDebuggerOnStart bool, flatten bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) SetAutoAttach(autoAttach bool, waitForDebuggerOnStart bool, flatten bool) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSetAutoAttachParams
 	v.AutoAttach = autoAttach
 	v.WaitForDebuggerOnStart = waitForDebuggerOnStart
 	v.Flatten = flatten
-	return c.SetAutoAttachWithParams(ctx, &v)
+	return c.SetAutoAttachWithParams(&v)
 }
 
 type TargetSetDiscoverTargetsParams struct {
@@ -598,16 +597,16 @@ type TargetSetDiscoverTargetsParams struct {
 }
 
 // SetDiscoverTargetsWithParams - Controls whether to discover available targets and notify via `targetCreated/targetInfoChanged/targetDestroyed` events.
-func (c *Target) SetDiscoverTargetsWithParams(ctx context.Context, v *TargetSetDiscoverTargetsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setDiscoverTargets", Params: v})
+func (c *Target) SetDiscoverTargetsWithParams(v *TargetSetDiscoverTargetsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setDiscoverTargets", Params: v})
 }
 
 // SetDiscoverTargets - Controls whether to discover available targets and notify via `targetCreated/targetInfoChanged/targetDestroyed` events.
 // discover - Whether to discover available targets.
-func (c *Target) SetDiscoverTargets(ctx context.Context, discover bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) SetDiscoverTargets(discover bool) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSetDiscoverTargetsParams
 	v.Discover = discover
-	return c.SetDiscoverTargetsWithParams(ctx, &v)
+	return c.SetDiscoverTargetsWithParams(&v)
 }
 
 type TargetSetRemoteLocationsParams struct {
@@ -616,14 +615,14 @@ type TargetSetRemoteLocationsParams struct {
 }
 
 // SetRemoteLocationsWithParams - Enables target discovery for the specified locations, when `setDiscoverTargets` was set to `true`.
-func (c *Target) SetRemoteLocationsWithParams(ctx context.Context, v *TargetSetRemoteLocationsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setRemoteLocations", Params: v})
+func (c *Target) SetRemoteLocationsWithParams(v *TargetSetRemoteLocationsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setRemoteLocations", Params: v})
 }
 
 // SetRemoteLocations - Enables target discovery for the specified locations, when `setDiscoverTargets` was set to `true`.
 // locations - List of remote locations.
-func (c *Target) SetRemoteLocations(ctx context.Context, locations []*TargetRemoteLocation) (*gcdmessage.ChromeResponse, error) {
+func (c *Target) SetRemoteLocations(locations []*TargetRemoteLocation) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSetRemoteLocationsParams
 	v.Locations = locations
-	return c.SetRemoteLocationsWithParams(ctx, &v)
+	return c.SetRemoteLocationsWithParams(&v)
 }
