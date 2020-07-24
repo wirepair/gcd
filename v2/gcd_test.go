@@ -280,6 +280,8 @@ func TestCtxCancel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
+	target.Debug(true)
+	target.DebugEvents(true)
 	network := target.Network
 	if _, err := network.Enable(testCtx, -1, -1, -1); err != nil {
 		t.Fatalf("error enabling network")
