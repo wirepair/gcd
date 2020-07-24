@@ -35,6 +35,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/wirepair/gcd/v2/gcdapi"
 	"github.com/wirepair/gcd/v2/gcdmessage"
 )
@@ -287,8 +288,11 @@ func (c *ChromeTarget) listenRead() {
 			var msg []byte
 			err := c.conn.Read(c.ctx, &msg)
 			if err != nil {
+				spew.Dump(err)
 				if opErr, ok := err.(*net.OpError); ok {
+					spew.Dump(opErr)
 					if syscallErr, ok := opErr.Err.(*os.SyscallError); ok {
+						spew.Dump(syscallErr)
 						if syscallErr.Err == syscall.ECONNRESET || syscallErr.Err == syscall.WSAECONNRESET {
 							c.debugf("error in ws read ECONNRESET: %s\n", err)
 							close(writeClosed)
