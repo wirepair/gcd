@@ -26,13 +26,10 @@ package gcd
 
 import (
 	"context"
-	"io"
 	"log"
 	"net"
-	"os"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"github.com/wirepair/gcd/v2/gcdapi"
@@ -288,18 +285,13 @@ func (c *ChromeTarget) listenRead() {
 			err := c.conn.Read(c.ctx, &msg)
 			if err != nil {
 				if opErr, ok := err.(*net.OpError); ok {
-					if syscallErr, ok := opErr.Err.(*os.SyscallError); ok {
-						if syscallErr.Err == syscall.ECONNRESET || syscallErr.Err == syscall.WSAECONNRESET {
-							c.debugf("error in ws read ECONNRESET: %s\n", err)
-							close(writeClosed)
-							return
-						}
+					if opErr.Temporary() || opErr.Timeout() {
+						continue
 					}
-				} else if err == io.EOF {
-					c.debugf("error in ws read EOF: %s\n", err)
-					close(writeClosed)
-					return
 				}
+				c.debugf("error in ws read: %s\n", err)
+				close(writeClosed)
+				return
 			} else {
 				select {
 				case <-c.ctx.Done():
