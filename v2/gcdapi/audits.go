@@ -31,7 +31,7 @@ type AuditsAffectedFrame struct {
 type AuditsSameSiteCookieIssueDetails struct {
 	Cookie                 *AuditsAffectedCookie  `json:"cookie"`                   //
 	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteStrictLaxDowngradeStrict, WarnSameSiteStrictCrossDowngradeStrict, WarnSameSiteStrictCrossDowngradeLax, WarnSameSiteLaxCrossDowngradeStrict, WarnSameSiteLaxCrossDowngradeLax
-	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure
+	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict
 	Operation              string                 `json:"operation"`                // Optionally identifies the site-for-cookies and the cookie url, which may be used by the front-end as additional context. enum values: SetCookie, ReadCookie
 	SiteForCookies         string                 `json:"siteForCookies,omitempty"` //
 	CookieUrl              string                 `json:"cookieUrl,omitempty"`      //
@@ -50,9 +50,10 @@ type AuditsMixedContentIssueDetails struct {
 
 // Details for a request that has been blocked with the BLOCKED_BY_RESPONSE code. Currently only used for COEP/COOP, but may be extended to include some CSP errors in the future.
 type AuditsBlockedByResponseIssueDetails struct {
-	Request *AuditsAffectedRequest `json:"request"`         //
-	Frame   *AuditsAffectedFrame   `json:"frame,omitempty"` //
-	Reason  string                 `json:"reason"`          //  enum values: CoepFrameResourceNeedsCoepHeader, CoopSandboxedIFrameCannotNavigateToCoopPage, CorpNotSameOrigin, CorpNotSameOriginAfterDefaultedToSameOriginByCoep, CorpNotSameSite
+	Request      *AuditsAffectedRequest `json:"request"`                //
+	ParentFrame  *AuditsAffectedFrame   `json:"parentFrame,omitempty"`  //
+	BlockedFrame *AuditsAffectedFrame   `json:"blockedFrame,omitempty"` //
+	Reason       string                 `json:"reason"`                 //  enum values: CoepFrameResourceNeedsCoepHeader, CoopSandboxedIFrameCannotNavigateToCoopPage, CorpNotSameOrigin, CorpNotSameOriginAfterDefaultedToSameOriginByCoep, CorpNotSameSite
 }
 
 // No Description.
@@ -76,6 +77,7 @@ type AuditsContentSecurityPolicyIssueDetails struct {
 	ContentSecurityPolicyViolationType string                    `json:"contentSecurityPolicyViolationType"` //  enum values: kInlineViolation, kEvalViolation, kURLViolation, kTrustedTypesSinkViolation, kTrustedTypesPolicyViolation
 	FrameAncestor                      *AuditsAffectedFrame      `json:"frameAncestor,omitempty"`            //
 	SourceCodeLocation                 *AuditsSourceCodeLocation `json:"sourceCodeLocation,omitempty"`       //
+	ViolatingNodeId                    int                       `json:"violatingNodeId,omitempty"`          //
 }
 
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.

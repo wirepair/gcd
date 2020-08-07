@@ -345,6 +345,33 @@ func (c *Emulation) SetGeolocationOverride(ctx context.Context, latitude float64
 	return c.SetGeolocationOverrideWithParams(ctx, &v)
 }
 
+type EmulationSetIdleOverrideParams struct {
+	// Mock isUserActive
+	IsUserActive bool `json:"isUserActive"`
+	// Mock isScreenUnlocked
+	IsScreenUnlocked bool `json:"isScreenUnlocked"`
+}
+
+// SetIdleOverrideWithParams - Overrides the Idle state.
+func (c *Emulation) SetIdleOverrideWithParams(ctx context.Context, v *EmulationSetIdleOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setIdleOverride", Params: v})
+}
+
+// SetIdleOverride - Overrides the Idle state.
+// isUserActive - Mock isUserActive
+// isScreenUnlocked - Mock isScreenUnlocked
+func (c *Emulation) SetIdleOverride(ctx context.Context, isUserActive bool, isScreenUnlocked bool) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetIdleOverrideParams
+	v.IsUserActive = isUserActive
+	v.IsScreenUnlocked = isScreenUnlocked
+	return c.SetIdleOverrideWithParams(ctx, &v)
+}
+
+// Clears Idle state overrides.
+func (c *Emulation) ClearIdleOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearIdleOverride"})
+}
+
 type EmulationSetNavigatorOverridesParams struct {
 	// The platform navigator.platform should return.
 	Platform string `json:"platform"`

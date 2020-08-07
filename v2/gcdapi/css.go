@@ -728,6 +728,56 @@ func (c *CSS) GetStyleSheetText(ctx context.Context, styleSheetId string) (strin
 	return c.GetStyleSheetTextWithParams(ctx, &v)
 }
 
+type CSSTrackComputedStyleUpdatesParams struct {
+	//
+	PropertiesToTrack []*CSSCSSComputedStyleProperty `json:"propertiesToTrack"`
+}
+
+// TrackComputedStyleUpdatesWithParams - Starts tracking the given computed styles for updates. The specified array of properties replaces the one previously specified. Pass empty array to disable tracking. Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified. The changes to computed style properties are only tracked for nodes pushed to the front-end by the DOM agent. If no changes to the tracked properties occur after the node has been pushed to the front-end, no updates will be issued for the node.
+func (c *CSS) TrackComputedStyleUpdatesWithParams(ctx context.Context, v *CSSTrackComputedStyleUpdatesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.trackComputedStyleUpdates", Params: v})
+}
+
+// TrackComputedStyleUpdates - Starts tracking the given computed styles for updates. The specified array of properties replaces the one previously specified. Pass empty array to disable tracking. Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified. The changes to computed style properties are only tracked for nodes pushed to the front-end by the DOM agent. If no changes to the tracked properties occur after the node has been pushed to the front-end, no updates will be issued for the node.
+// propertiesToTrack -
+func (c *CSS) TrackComputedStyleUpdates(ctx context.Context, propertiesToTrack []*CSSCSSComputedStyleProperty) (*gcdmessage.ChromeResponse, error) {
+	var v CSSTrackComputedStyleUpdatesParams
+	v.PropertiesToTrack = propertiesToTrack
+	return c.TrackComputedStyleUpdatesWithParams(ctx, &v)
+}
+
+// TakeComputedStyleUpdates - Polls the next batch of computed style updates.
+// Returns -  nodeIds - The list of node Ids that have their tracked computed styles updated
+func (c *CSS) TakeComputedStyleUpdates(ctx context.Context) ([]int, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeComputedStyleUpdates"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			NodeIds []int
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.NodeIds, nil
+}
+
 type CSSSetEffectivePropertyValueForNodeParams struct {
 	// The element id for which to set property.
 	NodeId int `json:"nodeId"`

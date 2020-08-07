@@ -9,6 +9,12 @@ import (
 	"github.com/wirepair/gcd/v2/gcdmessage"
 )
 
+// Configuration data for drawing the source order of an elements children.
+type OverlaySourceOrderConfig struct {
+	ParentOutlineColor *DOMRGBA `json:"parentOutlineColor"` // the color to outline the givent element in.
+	ChildOutlineColor  *DOMRGBA `json:"childOutlineColor"`  // the color to outline the child elements in.
+}
+
 // Configuration data for the highlighting of Grid elements.
 type OverlayGridHighlightConfig struct {
 	ShowGridExtensionLines  bool     `json:"showGridExtensionLines,omitempty"`  // Whether the extension lines from grid cells to the rulers should be shown (default: false).
@@ -18,9 +24,13 @@ type OverlayGridHighlightConfig struct {
 	ShowLineNames           bool     `json:"showLineNames,omitempty"`           // Show line name labels (default: false).
 	ShowTrackSizes          bool     `json:"showTrackSizes,omitempty"`          // Show track size labels (default: false).
 	GridBorderColor         *DOMRGBA `json:"gridBorderColor,omitempty"`         // The grid container border highlight color (default: transparent).
-	CellBorderColor         *DOMRGBA `json:"cellBorderColor,omitempty"`         // The cell border color (default: transparent).
+	CellBorderColor         *DOMRGBA `json:"cellBorderColor,omitempty"`         // The cell border color (default: transparent). Deprecated, please use rowLineColor and columnLineColor instead.
+	RowLineColor            *DOMRGBA `json:"rowLineColor,omitempty"`            // The row line color (default: transparent).
+	ColumnLineColor         *DOMRGBA `json:"columnLineColor,omitempty"`         // The column line color (default: transparent).
 	GridBorderDash          bool     `json:"gridBorderDash,omitempty"`          // Whether the grid border is dashed (default: false).
-	CellBorderDash          bool     `json:"cellBorderDash,omitempty"`          // Whether the cell border is dashed (default: false).
+	CellBorderDash          bool     `json:"cellBorderDash,omitempty"`          // Whether the cell border is dashed (default: false). Deprecated, please us rowLineDash and columnLineDash instead.
+	RowLineDash             bool     `json:"rowLineDash,omitempty"`             // Whether row lines are dashed (default: false).
+	ColumnLineDash          bool     `json:"columnLineDash,omitempty"`          // Whether column lines are dashed (default: false).
 	RowGapColor             *DOMRGBA `json:"rowGapColor,omitempty"`             // The row gap highlight fill color (default: transparent).
 	RowHatchColor           *DOMRGBA `json:"rowHatchColor,omitempty"`           // The row gap hatching fill color (default: transparent).
 	ColumnGapColor          *DOMRGBA `json:"columnGapColor,omitempty"`          // The column gap highlight fill color (default: transparent).
@@ -211,6 +221,52 @@ func (c *Overlay) GetGridHighlightObjectsForTest(ctx context.Context, nodeIds []
 	return c.GetGridHighlightObjectsForTestWithParams(ctx, &v)
 }
 
+type OverlayGetSourceOrderHighlightObjectForTestParams struct {
+	// Id of the node to highlight.
+	NodeId int `json:"nodeId"`
+}
+
+// GetSourceOrderHighlightObjectForTestWithParams - For Source Order Viewer testing.
+// Returns -  highlight - Source order highlight data for the node id provided.
+func (c *Overlay) GetSourceOrderHighlightObjectForTestWithParams(ctx context.Context, v *OverlayGetSourceOrderHighlightObjectForTestParams) (map[string]interface{}, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.getSourceOrderHighlightObjectForTest", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Highlight map[string]interface{}
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Highlight, nil
+}
+
+// GetSourceOrderHighlightObjectForTest - For Source Order Viewer testing.
+// nodeId - Id of the node to highlight.
+// Returns -  highlight - Source order highlight data for the node id provided.
+func (c *Overlay) GetSourceOrderHighlightObjectForTest(ctx context.Context, nodeId int) (map[string]interface{}, error) {
+	var v OverlayGetSourceOrderHighlightObjectForTestParams
+	v.NodeId = nodeId
+	return c.GetSourceOrderHighlightObjectForTestWithParams(ctx, &v)
+}
+
 // Hides any highlight.
 func (c *Overlay) HideHighlight(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.hideHighlight"})
@@ -338,6 +394,36 @@ func (c *Overlay) HighlightRect(ctx context.Context, x int, y int, width int, he
 	v.Color = color
 	v.OutlineColor = outlineColor
 	return c.HighlightRectWithParams(ctx, &v)
+}
+
+type OverlayHighlightSourceOrderParams struct {
+	// A descriptor for the appearance of the overlay drawing.
+	SourceOrderConfig *OverlaySourceOrderConfig `json:"sourceOrderConfig"`
+	// Identifier of the node to highlight.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node to highlight.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node to be highlighted.
+	ObjectId string `json:"objectId,omitempty"`
+}
+
+// HighlightSourceOrderWithParams - Highlights the source order of the children of the DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified.
+func (c *Overlay) HighlightSourceOrderWithParams(ctx context.Context, v *OverlayHighlightSourceOrderParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightSourceOrder", Params: v})
+}
+
+// HighlightSourceOrder - Highlights the source order of the children of the DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified.
+// sourceOrderConfig - A descriptor for the appearance of the overlay drawing.
+// nodeId - Identifier of the node to highlight.
+// backendNodeId - Identifier of the backend node to highlight.
+// objectId - JavaScript object id of the node to be highlighted.
+func (c *Overlay) HighlightSourceOrder(ctx context.Context, sourceOrderConfig *OverlaySourceOrderConfig, nodeId int, backendNodeId int, objectId string) (*gcdmessage.ChromeResponse, error) {
+	var v OverlayHighlightSourceOrderParams
+	v.SourceOrderConfig = sourceOrderConfig
+	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
+	return c.HighlightSourceOrderWithParams(ctx, &v)
 }
 
 type OverlaySetInspectModeParams struct {
