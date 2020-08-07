@@ -22,6 +22,13 @@ type DebuggerScriptPosition struct {
 	ColumnNumber int `json:"columnNumber"` //
 }
 
+// Location range within one script.
+type DebuggerLocationRange struct {
+	ScriptId string                  `json:"scriptId"` //
+	Start    *DebuggerScriptPosition `json:"start"`    //
+	End      *DebuggerScriptPosition `json:"end"`      //
+}
+
 // JavaScript call frame. Array of call frames form the call stack.
 type DebuggerCallFrame struct {
 	CallFrameId      string               `json:"callFrameId"`                // Call frame identifier. This identifier is only valid while the virtual machine is paused.
@@ -106,6 +113,7 @@ type DebuggerScriptFailedToParseEvent struct {
 		StackTrace              *RuntimeStackTrace     `json:"stackTrace,omitempty"`              // JavaScript top stack frame of where the script parsed event was triggered if available.
 		CodeOffset              int                    `json:"codeOffset,omitempty"`              // If the scriptLanguage is WebAssembly, the code section offset in the module.
 		ScriptLanguage          string                 `json:"scriptLanguage,omitempty"`          // The language of the script. enum values: JavaScript, WebAssembly
+		EmbedderName            string                 `json:"embedderName,omitempty"`            // The name the embedder supplied for this script.
 	} `json:"Params,omitempty"`
 }
 
@@ -131,6 +139,7 @@ type DebuggerScriptParsedEvent struct {
 		CodeOffset              int                    `json:"codeOffset,omitempty"`              // If the scriptLanguage is WebAssembly, the code section offset in the module.
 		ScriptLanguage          string                 `json:"scriptLanguage,omitempty"`          // The language of the script. enum values: JavaScript, WebAssembly
 		DebugSymbols            *DebuggerDebugSymbols  `json:"debugSymbols,omitempty"`            // If the scriptLanguage is WebASsembly, the source of debug symbols for the module.
+		EmbedderName            string                 `json:"embedderName,omitempty"`            // The name the embedder supplied for this script.
 	} `json:"Params,omitempty"`
 }
 
@@ -1143,6 +1152,8 @@ func (c *Debugger) SetVariableValue(ctx context.Context, scopeNumber int, variab
 type DebuggerStepIntoParams struct {
 	// Debugger will pause on the execution of the first async task which was scheduled before next pause.
 	BreakOnAsyncCall bool `json:"breakOnAsyncCall,omitempty"`
+	// The skipList specifies location ranges that should be skipped on step into.
+	SkipList []*DebuggerLocationRange `json:"skipList,omitempty"`
 }
 
 // StepIntoWithParams - Steps into the function call.
@@ -1152,9 +1163,11 @@ func (c *Debugger) StepIntoWithParams(ctx context.Context, v *DebuggerStepIntoPa
 
 // StepInto - Steps into the function call.
 // breakOnAsyncCall - Debugger will pause on the execution of the first async task which was scheduled before next pause.
-func (c *Debugger) StepInto(ctx context.Context, breakOnAsyncCall bool) (*gcdmessage.ChromeResponse, error) {
+// skipList - The skipList specifies location ranges that should be skipped on step into.
+func (c *Debugger) StepInto(ctx context.Context, breakOnAsyncCall bool, skipList []*DebuggerLocationRange) (*gcdmessage.ChromeResponse, error) {
 	var v DebuggerStepIntoParams
 	v.BreakOnAsyncCall = breakOnAsyncCall
+	v.SkipList = skipList
 	return c.StepIntoWithParams(ctx, &v)
 }
 
@@ -1163,7 +1176,20 @@ func (c *Debugger) StepOut(ctx context.Context) (*gcdmessage.ChromeResponse, err
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOut"})
 }
 
-// Steps over the statement.
-func (c *Debugger) StepOver(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOver"})
+type DebuggerStepOverParams struct {
+	// The skipList specifies location ranges that should be skipped on step over.
+	SkipList []*DebuggerLocationRange `json:"skipList,omitempty"`
+}
+
+// StepOverWithParams - Steps over the statement.
+func (c *Debugger) StepOverWithParams(ctx context.Context, v *DebuggerStepOverParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOver", Params: v})
+}
+
+// StepOver - Steps over the statement.
+// skipList - The skipList specifies location ranges that should be skipped on step over.
+func (c *Debugger) StepOver(ctx context.Context, skipList []*DebuggerLocationRange) (*gcdmessage.ChromeResponse, error) {
+	var v DebuggerStepOverParams
+	v.SkipList = skipList
+	return c.StepOverWithParams(ctx, &v)
 }

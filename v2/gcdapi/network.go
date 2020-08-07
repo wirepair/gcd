@@ -796,7 +796,7 @@ func (c *Network) GetCertificate(ctx context.Context, origin string) ([]string, 
 }
 
 type NetworkGetCookiesParams struct {
-	// The list of URLs for which applicable cookies will be fetched
+	// The list of URLs for which applicable cookies will be fetched. If not specified, it's assumed to be set to the list containing the URLs of the page and all of its subframes.
 	Urls []string `json:"urls,omitempty"`
 }
 
@@ -833,7 +833,7 @@ func (c *Network) GetCookiesWithParams(ctx context.Context, v *NetworkGetCookies
 }
 
 // GetCookies - Returns all browser cookies for the current URL. Depending on the backend support, will return detailed cookie information in the `cookies` field.
-// urls - The list of URLs for which applicable cookies will be fetched
+// urls - The list of URLs for which applicable cookies will be fetched. If not specified, it's assumed to be set to the list containing the URLs of the page and all of its subframes.
 // Returns -  cookies - Array of cookie objects.
 func (c *Network) GetCookies(ctx context.Context, urls []string) ([]*NetworkCookie, error) {
 	var v NetworkGetCookiesParams

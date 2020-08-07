@@ -204,7 +204,8 @@ func TestEvaluate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
-
+	target.Debug(true)
+	target.DebugEvents(true)
 	doneCh := make(chan struct{}, 1)
 	target.Subscribe("Runtime.executionContextCreated", func(target *ChromeTarget, v []byte) {
 		//target.Unsubscribe("Console.messageAdded")

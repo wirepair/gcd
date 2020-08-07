@@ -17,6 +17,7 @@ type TargetTargetInfo struct {
 	Url              string `json:"url"`                        //
 	Attached         bool   `json:"attached"`                   // Whether the target has an attached client.
 	OpenerId         string `json:"openerId,omitempty"`         // Opener target Id
+	CanAccessOpener  bool   `json:"canAccessOpener"`            // Whether the opened window has access to the originating window.
 	BrowserContextId string `json:"browserContextId,omitempty"` //
 }
 
