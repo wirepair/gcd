@@ -230,7 +230,10 @@ func (c *Gcd) ExitProcess() error {
 
 // PID of the started process
 func (c *Gcd) PID() int {
-	return c.chromeProcess.Pid
+	c.processLock.Lock()
+	pid := c.chromeProcess.Pid
+	c.processLock.Unlock()
+	return pid
 }
 
 // removeProfileDir if deleteProfile is true
