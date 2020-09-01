@@ -11,17 +11,19 @@ import (
 
 // Information about the Frame on the page.
 type PageFrame struct {
-	Id                string `json:"id"`                       // Frame unique identifier.
-	ParentId          string `json:"parentId,omitempty"`       // Parent frame identifier.
-	LoaderId          string `json:"loaderId"`                 // Identifier of the loader associated with this frame.
-	Name              string `json:"name,omitempty"`           // Frame's name as specified in the tag.
-	Url               string `json:"url"`                      // Frame document's URL without fragment.
-	UrlFragment       string `json:"urlFragment,omitempty"`    // Frame document's URL fragment including the '#'.
-	DomainAndRegistry string `json:"domainAndRegistry"`        // Frame document's registered domain, taking the public suffixes list into account. Extracted from the Frame's url. Example URLs: http://www.google.com/file.html -> "google.com"               http://a.b.co.uk/file.html      -> "b.co.uk"
-	SecurityOrigin    string `json:"securityOrigin"`           // Frame document's security origin.
-	MimeType          string `json:"mimeType"`                 // Frame document's mimeType as determined by the browser.
-	UnreachableUrl    string `json:"unreachableUrl,omitempty"` // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
-	AdFrameType       string `json:"adFrameType,omitempty"`    // Indicates whether this frame was tagged as an ad. enum values: none, child, root
+	Id                             string `json:"id"`                             // Frame unique identifier.
+	ParentId                       string `json:"parentId,omitempty"`             // Parent frame identifier.
+	LoaderId                       string `json:"loaderId"`                       // Identifier of the loader associated with this frame.
+	Name                           string `json:"name,omitempty"`                 // Frame's name as specified in the tag.
+	Url                            string `json:"url"`                            // Frame document's URL without fragment.
+	UrlFragment                    string `json:"urlFragment,omitempty"`          // Frame document's URL fragment including the '#'.
+	DomainAndRegistry              string `json:"domainAndRegistry"`              // Frame document's registered domain, taking the public suffixes list into account. Extracted from the Frame's url. Example URLs: http://www.google.com/file.html -> "google.com"               http://a.b.co.uk/file.html      -> "b.co.uk"
+	SecurityOrigin                 string `json:"securityOrigin"`                 // Frame document's security origin.
+	MimeType                       string `json:"mimeType"`                       // Frame document's mimeType as determined by the browser.
+	UnreachableUrl                 string `json:"unreachableUrl,omitempty"`       // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
+	AdFrameType                    string `json:"adFrameType,omitempty"`          // Indicates whether this frame was tagged as an ad. enum values: none, child, root
+	SecureContextType              string `json:"secureContextType"`              // Indicates whether the main document is a secure context and explains why that is the case. enum values: Secure, SecureLocalhost, InsecureScheme, InsecureAncestor
+	CrossOriginIsolatedContextType string `json:"crossOriginIsolatedContextType"` // Indicates whether this is a cross origin isolated context. enum values: Isolated, NotIsolated, NotIsolatedFeatureDisabled
 }
 
 // Information about the Resource on the page.

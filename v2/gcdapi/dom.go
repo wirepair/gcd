@@ -82,6 +82,12 @@ type DOMRect struct {
 	Height float64 `json:"height"` // Rectangle height
 }
 
+// No Description.
+type DOMCSSComputedStyleProperty struct {
+	Name  string `json:"name"`  // Computed style property name.
+	Value string `json:"value"` // Computed style property value.
+}
+
 // Fired when `Element`'s attribute is modified.
 type DOMAttributeModifiedEvent struct {
 	Method string `json:"method"`
@@ -707,6 +713,60 @@ func (c *DOM) GetFlattenedDocument(ctx context.Context, depth int, pierce bool) 
 	v.Depth = depth
 	v.Pierce = pierce
 	return c.GetFlattenedDocumentWithParams(ctx, &v)
+}
+
+type DOMGetNodesForSubtreeByStyleParams struct {
+	// Node ID pointing to the root of a subtree.
+	NodeId int `json:"nodeId"`
+	// The style to filter nodes by (includes nodes if any of properties matches).
+	ComputedStyles []*DOMCSSComputedStyleProperty `json:"computedStyles"`
+	// Whether or not iframes and shadow roots in the same target should be traversed when returning the results (default is false).
+	Pierce bool `json:"pierce,omitempty"`
+}
+
+// GetNodesForSubtreeByStyleWithParams - Finds nodes with a given computed style in a subtree.
+// Returns -  nodeIds - Resulting nodes.
+func (c *DOM) GetNodesForSubtreeByStyleWithParams(ctx context.Context, v *DOMGetNodesForSubtreeByStyleParams) ([]int, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodesForSubtreeByStyle", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			NodeIds []int
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.NodeIds, nil
+}
+
+// GetNodesForSubtreeByStyle - Finds nodes with a given computed style in a subtree.
+// nodeId - Node ID pointing to the root of a subtree.
+// computedStyles - The style to filter nodes by (includes nodes if any of properties matches).
+// pierce - Whether or not iframes and shadow roots in the same target should be traversed when returning the results (default is false).
+// Returns -  nodeIds - Resulting nodes.
+func (c *DOM) GetNodesForSubtreeByStyle(ctx context.Context, nodeId int, computedStyles []*DOMCSSComputedStyleProperty, pierce bool) ([]int, error) {
+	var v DOMGetNodesForSubtreeByStyleParams
+	v.NodeId = nodeId
+	v.ComputedStyles = computedStyles
+	v.Pierce = pierce
+	return c.GetNodesForSubtreeByStyleWithParams(ctx, &v)
 }
 
 type DOMGetNodeForLocationParams struct {
