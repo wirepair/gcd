@@ -246,6 +246,22 @@ type NetworkSignedExchangeInfo struct {
 	Errors          []*NetworkSignedExchangeError `json:"errors,omitempty"`          // Errors occurred while handling the signed exchagne.
 }
 
+// No Description.
+type NetworkCrossOriginOpenerPolicyStatus struct {
+	Value string `json:"value"` //  enum values: SameOrigin, SameOriginAllowPopups, UnsafeNone, SameOriginPlusCoep
+}
+
+// No Description.
+type NetworkCrossOriginEmbedderPolicyStatus struct {
+	Value string `json:"value"` //  enum values: None, RequireCorp
+}
+
+// No Description.
+type NetworkSecurityIsolationStatus struct {
+	Coop *NetworkCrossOriginOpenerPolicyStatus   `json:"coop"` //
+	Coep *NetworkCrossOriginEmbedderPolicyStatus `json:"coep"` //
+}
+
 // Fired when data chunk was received over the network.
 type NetworkDataReceivedEvent struct {
 	Method string `json:"method"`
@@ -1297,6 +1313,24 @@ func (c *Network) SetExtraHTTPHeaders(ctx context.Context, headers map[string]in
 	return c.SetExtraHTTPHeadersWithParams(ctx, &v)
 }
 
+type NetworkSetAttachDebugHeaderParams struct {
+	// Whether to send a debug header.
+	Enabled bool `json:"enabled"`
+}
+
+// SetAttachDebugHeaderWithParams - Specifies whether to sned a debug header to all outgoing requests.
+func (c *Network) SetAttachDebugHeaderWithParams(ctx context.Context, v *NetworkSetAttachDebugHeaderParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setAttachDebugHeader", Params: v})
+}
+
+// SetAttachDebugHeader - Specifies whether to sned a debug header to all outgoing requests.
+// enabled - Whether to send a debug header.
+func (c *Network) SetAttachDebugHeader(ctx context.Context, enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v NetworkSetAttachDebugHeaderParams
+	v.Enabled = enabled
+	return c.SetAttachDebugHeaderWithParams(ctx, &v)
+}
+
 type NetworkSetRequestInterceptionParams struct {
 	// Requests matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call.
 	Patterns []*NetworkRequestPattern `json:"patterns"`
@@ -1343,4 +1377,50 @@ func (c *Network) SetUserAgentOverride(ctx context.Context, userAgent string, ac
 	v.Platform = platform
 	v.UserAgentMetadata = userAgentMetadata
 	return c.SetUserAgentOverrideWithParams(ctx, &v)
+}
+
+type NetworkGetSecurityIsolationStatusParams struct {
+	// If no frameId is provided, the status of the target is provided.
+	FrameId string `json:"frameId,omitempty"`
+}
+
+// GetSecurityIsolationStatusWithParams - Returns information about the COEP/COOP isolation status.
+// Returns -  status -
+func (c *Network) GetSecurityIsolationStatusWithParams(ctx context.Context, v *NetworkGetSecurityIsolationStatusParams) (*NetworkSecurityIsolationStatus, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getSecurityIsolationStatus", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Status *NetworkSecurityIsolationStatus
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Status, nil
+}
+
+// GetSecurityIsolationStatus - Returns information about the COEP/COOP isolation status.
+// frameId - If no frameId is provided, the status of the target is provided.
+// Returns -  status -
+func (c *Network) GetSecurityIsolationStatus(ctx context.Context, frameId string) (*NetworkSecurityIsolationStatus, error) {
+	var v NetworkGetSecurityIsolationStatusParams
+	v.FrameId = frameId
+	return c.GetSecurityIsolationStatusWithParams(ctx, &v)
 }

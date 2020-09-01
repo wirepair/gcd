@@ -33,6 +33,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -42,7 +43,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.0.5"
+var GCDVERSION = "v2.0.6"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -70,6 +71,8 @@ type TerminatedHandler func(reason string)
 
 // The Google Chrome Debugger
 type Gcd struct {
+	processLock *sync.RWMutex // make go -race detection happy for process
+
 	timeout           time.Duration // how much time to wait for debugger port to open up
 	chromeProcess     *os.Process
 	chromeCmd         *exec.Cmd
@@ -90,7 +93,7 @@ type Gcd struct {
 
 // Give it a friendly name.
 func NewChromeDebugger() *Gcd {
-	c := &Gcd{}
+	c := &Gcd{processLock: &sync.RWMutex{}}
 	c.timeout = 15
 	c.wsWriteSize = 3000000 // 3mb
 	c.host = "localhost"
@@ -192,7 +195,9 @@ func (c *Gcd) startProcess() error {
 				log.Println(msg)
 			}
 		}
+		c.processLock.Lock()
 		c.chromeProcess = c.chromeCmd.Process
+		c.processLock.Unlock()
 		err = c.chromeCmd.Wait()
 
 		c.removeProfileDir()
@@ -217,12 +222,18 @@ func (c *Gcd) startProcess() error {
 
 // ExitProcess kills the process
 func (c *Gcd) ExitProcess() error {
-	return c.chromeProcess.Kill()
+	c.processLock.Lock()
+	err := c.chromeProcess.Kill()
+	c.processLock.Unlock()
+	return err
 }
 
 // PID of the started process
 func (c *Gcd) PID() int {
-	return c.chromeProcess.Pid
+	c.processLock.Lock()
+	pid := c.chromeProcess.Pid
+	c.processLock.Unlock()
+	return pid
 }
 
 // removeProfileDir if deleteProfile is true

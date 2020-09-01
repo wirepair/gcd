@@ -1,5 +1,6 @@
 # Changelog (2020)
 
+- September 1st: Update to chrome version 85.0.4183.83, add a lock around process for -race.
 - August 7th: Update to chrome version 84.0.4147.105
 - July 24th: Fix only closing wsconn in the event of specific ws errors, not io/timeout which would happen if context was canceled.
 - July 24th: Return proper error if context is done.
