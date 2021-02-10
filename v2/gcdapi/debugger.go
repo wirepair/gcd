@@ -307,7 +307,7 @@ func (c *Debugger) EvaluateOnCallFrame(ctx context.Context, callFrameId string, 
 type DebuggerExecuteWasmEvaluatorParams struct {
 	// WebAssembly call frame identifier to evaluate on.
 	CallFrameId string `json:"callFrameId"`
-	// Code of the evaluator module.
+	// Code of the evaluator module. (Encoded as a base64 string when passed over JSON)
 	Evaluator string `json:"evaluator"`
 	// Terminate execution after timing out (number of milliseconds).
 	Timeout float64 `json:"timeout,omitempty"`
@@ -348,7 +348,7 @@ func (c *Debugger) ExecuteWasmEvaluatorWithParams(ctx context.Context, v *Debugg
 
 // ExecuteWasmEvaluator - Execute a Wasm Evaluator module on a given call frame.
 // callFrameId - WebAssembly call frame identifier to evaluate on.
-// evaluator - Code of the evaluator module.
+// evaluator - Code of the evaluator module. (Encoded as a base64 string when passed over JSON)
 // timeout - Terminate execution after timing out (number of milliseconds).
 // Returns -  result - Object wrapper for the evaluation result. exceptionDetails - Exception details.
 func (c *Debugger) ExecuteWasmEvaluator(ctx context.Context, callFrameId string, evaluator string, timeout float64) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
@@ -419,7 +419,7 @@ type DebuggerGetScriptSourceParams struct {
 }
 
 // GetScriptSourceWithParams - Returns source for the script with given id.
-// Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode.
+// Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode. (Encoded as a base64 string when passed over JSON)
 func (c *Debugger) GetScriptSourceWithParams(ctx context.Context, v *DebuggerGetScriptSourceParams) (string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource", Params: v})
 	if err != nil {
@@ -453,7 +453,7 @@ func (c *Debugger) GetScriptSourceWithParams(ctx context.Context, v *DebuggerGet
 
 // GetScriptSource - Returns source for the script with given id.
 // scriptId - Id of the script to get source for.
-// Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode.
+// Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode. (Encoded as a base64 string when passed over JSON)
 func (c *Debugger) GetScriptSource(ctx context.Context, scriptId string) (string, string, error) {
 	var v DebuggerGetScriptSourceParams
 	v.ScriptId = scriptId
@@ -466,7 +466,7 @@ type DebuggerGetWasmBytecodeParams struct {
 }
 
 // GetWasmBytecodeWithParams - This command is deprecated. Use getScriptSource instead.
-// Returns -  bytecode - Script source.
+// Returns -  bytecode - Script source. (Encoded as a base64 string when passed over JSON)
 func (c *Debugger) GetWasmBytecodeWithParams(ctx context.Context, v *DebuggerGetWasmBytecodeParams) (string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getWasmBytecode", Params: v})
 	if err != nil {
@@ -499,7 +499,7 @@ func (c *Debugger) GetWasmBytecodeWithParams(ctx context.Context, v *DebuggerGet
 
 // GetWasmBytecode - This command is deprecated. Use getScriptSource instead.
 // scriptId - Id of the Wasm script to get source for.
-// Returns -  bytecode - Script source.
+// Returns -  bytecode - Script source. (Encoded as a base64 string when passed over JSON)
 func (c *Debugger) GetWasmBytecode(ctx context.Context, scriptId string) (string, error) {
 	var v DebuggerGetWasmBytecodeParams
 	v.ScriptId = scriptId

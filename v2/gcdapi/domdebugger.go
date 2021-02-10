@@ -166,6 +166,24 @@ func (c *DOMDebugger) RemoveXHRBreakpoint(ctx context.Context, url string) (*gcd
 	return c.RemoveXHRBreakpointWithParams(ctx, &v)
 }
 
+type DOMDebuggerSetBreakOnCSPViolationParams struct {
+	// CSP Violations to stop upon. enum values: trustedtype-sink-violation, trustedtype-policy-violation
+	ViolationTypes []string `json:"violationTypes"`
+}
+
+// SetBreakOnCSPViolationWithParams - Sets breakpoint on particular CSP violations.
+func (c *DOMDebugger) SetBreakOnCSPViolationWithParams(ctx context.Context, v *DOMDebuggerSetBreakOnCSPViolationParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setBreakOnCSPViolation", Params: v})
+}
+
+// SetBreakOnCSPViolation - Sets breakpoint on particular CSP violations.
+// violationTypes - CSP Violations to stop upon. enum values: trustedtype-sink-violation, trustedtype-policy-violation
+func (c *DOMDebugger) SetBreakOnCSPViolation(ctx context.Context, violationTypes []string) (*gcdmessage.ChromeResponse, error) {
+	var v DOMDebuggerSetBreakOnCSPViolationParams
+	v.ViolationTypes = violationTypes
+	return c.SetBreakOnCSPViolationWithParams(ctx, &v)
+}
+
 type DOMDebuggerSetDOMBreakpointParams struct {
 	// Identifier of the node to set breakpoint on.
 	NodeId int `json:"nodeId"`

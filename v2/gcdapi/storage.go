@@ -15,6 +15,12 @@ type StorageUsageForType struct {
 	Usage       float64 `json:"usage"`       // Storage usage (bytes).
 }
 
+// Pair of issuer origin and number of available (signed, but not used) Trust Tokens from that issuer.
+type StorageTrustTokens struct {
+	IssuerOrigin string  `json:"issuerOrigin"` //
+	Count        float64 `json:"count"`        //
+}
+
 // A cache's contents have been modified.
 type StorageCacheStorageContentUpdatedEvent struct {
 	Method string `json:"method"`
@@ -173,46 +179,69 @@ type StorageGetUsageAndQuotaParams struct {
 }
 
 // GetUsageAndQuotaWithParams - Returns usage and quota in bytes.
-// Returns -  usage - Storage usage (bytes). quota - Storage quota (bytes). usageBreakdown - Storage usage per type (bytes).
-func (c *Storage) GetUsageAndQuotaWithParams(ctx context.Context, v *StorageGetUsageAndQuotaParams) (float64, float64, []*StorageUsageForType, error) {
+// Returns -  usage - Storage usage (bytes). quota - Storage quota (bytes). overrideActive - Whether or not the origin has an active storage quota override usageBreakdown - Storage usage per type (bytes).
+func (c *Storage) GetUsageAndQuotaWithParams(ctx context.Context, v *StorageGetUsageAndQuotaParams) (float64, float64, bool, []*StorageUsageForType, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getUsageAndQuota", Params: v})
 	if err != nil {
-		return 0, 0, nil, err
+		return 0, 0, false, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
 			Usage          float64
 			Quota          float64
+			OverrideActive bool
 			UsageBreakdown []*StorageUsageForType
 		}
 	}
 
 	if resp == nil {
-		return 0, 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return 0, 0, false, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return 0, 0, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return 0, 0, false, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, 0, nil, err
+		return 0, 0, false, nil, err
 	}
 
-	return chromeData.Result.Usage, chromeData.Result.Quota, chromeData.Result.UsageBreakdown, nil
+	return chromeData.Result.Usage, chromeData.Result.Quota, chromeData.Result.OverrideActive, chromeData.Result.UsageBreakdown, nil
 }
 
 // GetUsageAndQuota - Returns usage and quota in bytes.
 // origin - Security origin.
-// Returns -  usage - Storage usage (bytes). quota - Storage quota (bytes). usageBreakdown - Storage usage per type (bytes).
-func (c *Storage) GetUsageAndQuota(ctx context.Context, origin string) (float64, float64, []*StorageUsageForType, error) {
+// Returns -  usage - Storage usage (bytes). quota - Storage quota (bytes). overrideActive - Whether or not the origin has an active storage quota override usageBreakdown - Storage usage per type (bytes).
+func (c *Storage) GetUsageAndQuota(ctx context.Context, origin string) (float64, float64, bool, []*StorageUsageForType, error) {
 	var v StorageGetUsageAndQuotaParams
 	v.Origin = origin
 	return c.GetUsageAndQuotaWithParams(ctx, &v)
+}
+
+type StorageOverrideQuotaForOriginParams struct {
+	// Security origin.
+	Origin string `json:"origin"`
+	// The quota size (in bytes) to override the original quota with. If this is called multiple times, the overriden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
+	QuotaSize float64 `json:"quotaSize,omitempty"`
+}
+
+// OverrideQuotaForOriginWithParams - Override quota for the specified origin
+func (c *Storage) OverrideQuotaForOriginWithParams(ctx context.Context, v *StorageOverrideQuotaForOriginParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.overrideQuotaForOrigin", Params: v})
+}
+
+// OverrideQuotaForOrigin - Override quota for the specified origin
+// origin - Security origin.
+// quotaSize - The quota size (in bytes) to override the original quota with. If this is called multiple times, the overriden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
+func (c *Storage) OverrideQuotaForOrigin(ctx context.Context, origin string, quotaSize float64) (*gcdmessage.ChromeResponse, error) {
+	var v StorageOverrideQuotaForOriginParams
+	v.Origin = origin
+	v.QuotaSize = quotaSize
+	return c.OverrideQuotaForOriginWithParams(ctx, &v)
 }
 
 type StorageTrackCacheStorageForOriginParams struct {
@@ -285,4 +314,36 @@ func (c *Storage) UntrackIndexedDBForOrigin(ctx context.Context, origin string) 
 	var v StorageUntrackIndexedDBForOriginParams
 	v.Origin = origin
 	return c.UntrackIndexedDBForOriginWithParams(ctx, &v)
+}
+
+// GetTrustTokens - Returns the number of stored Trust Tokens per issuer for the current browsing context.
+// Returns -  tokens -
+func (c *Storage) GetTrustTokens(ctx context.Context) ([]*StorageTrustTokens, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getTrustTokens"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Tokens []*StorageTrustTokens
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Tokens, nil
 }

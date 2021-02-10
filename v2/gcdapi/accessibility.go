@@ -16,7 +16,7 @@ type AccessibilityAXValueSource struct {
 	Attribute         string                `json:"attribute,omitempty"`         // The name of the relevant attribute, if any.
 	AttributeValue    *AccessibilityAXValue `json:"attributeValue,omitempty"`    // The value of the relevant attribute, if any.
 	Superseded        bool                  `json:"superseded,omitempty"`        // Whether this source is superseded by a higher priority source.
-	NativeSource      string                `json:"nativeSource,omitempty"`      // The native markup source for this value, e.g. a <label> element. enum values: figcaption, label, labelfor, labelwrapped, legend, tablecaption, title, other
+	NativeSource      string                `json:"nativeSource,omitempty"`      // The native markup source for this value, e.g. a <label> element. enum values: figcaption, label, labelfor, labelwrapped, legend, rubyannotation, tablecaption, title, other
 	NativeSourceValue *AccessibilityAXValue `json:"nativeSourceValue,omitempty"` // The value, such as a node or node list, of the native source.
 	Invalid           bool                  `json:"invalid,omitempty"`           // Whether the value for this property is invalid.
 	InvalidReason     string                `json:"invalidReason,omitempty"`     // Reason for the value being invalid, if it is.
@@ -134,10 +134,15 @@ func (c *Accessibility) GetPartialAXTree(ctx context.Context, nodeId int, backen
 	return c.GetPartialAXTreeWithParams(ctx, &v)
 }
 
-// GetFullAXTree - Fetches the entire accessibility tree
+type AccessibilityGetFullAXTreeParams struct {
+	// The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
+	Max_depth int `json:"max_depth,omitempty"`
+}
+
+// GetFullAXTreeWithParams - Fetches the entire accessibility tree for the root Document
 // Returns -  nodes -
-func (c *Accessibility) GetFullAXTree(ctx context.Context) ([]*AccessibilityAXNode, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getFullAXTree"})
+func (c *Accessibility) GetFullAXTreeWithParams(ctx context.Context, v *AccessibilityGetFullAXTreeParams) ([]*AccessibilityAXNode, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getFullAXTree", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -164,4 +169,121 @@ func (c *Accessibility) GetFullAXTree(ctx context.Context) ([]*AccessibilityAXNo
 	}
 
 	return chromeData.Result.Nodes, nil
+}
+
+// GetFullAXTree - Fetches the entire accessibility tree for the root Document
+// max_depth - The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
+// Returns -  nodes -
+func (c *Accessibility) GetFullAXTree(ctx context.Context, max_depth int) ([]*AccessibilityAXNode, error) {
+	var v AccessibilityGetFullAXTreeParams
+	v.Max_depth = max_depth
+	return c.GetFullAXTreeWithParams(ctx, &v)
+}
+
+type AccessibilityGetChildAXNodesParams struct {
+	//
+	Id string `json:"id"`
+}
+
+// GetChildAXNodesWithParams - Fetches a particular accessibility node by AXNodeId. Requires `enable()` to have been called previously.
+// Returns -  nodes -
+func (c *Accessibility) GetChildAXNodesWithParams(ctx context.Context, v *AccessibilityGetChildAXNodesParams) ([]*AccessibilityAXNode, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getChildAXNodes", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Nodes []*AccessibilityAXNode
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Nodes, nil
+}
+
+// GetChildAXNodes - Fetches a particular accessibility node by AXNodeId. Requires `enable()` to have been called previously.
+// id -
+// Returns -  nodes -
+func (c *Accessibility) GetChildAXNodes(ctx context.Context, id string) ([]*AccessibilityAXNode, error) {
+	var v AccessibilityGetChildAXNodesParams
+	v.Id = id
+	return c.GetChildAXNodesWithParams(ctx, &v)
+}
+
+type AccessibilityQueryAXTreeParams struct {
+	// Identifier of the node for the root to query.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node for the root to query.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper for the root to query.
+	ObjectId string `json:"objectId,omitempty"`
+	// Find nodes with this computed name.
+	AccessibleName string `json:"accessibleName,omitempty"`
+	// Find nodes with this computed role.
+	Role string `json:"role,omitempty"`
+}
+
+// QueryAXTreeWithParams - Query a DOM node's accessibility subtree for accessible name and role. This command computes the name and role for all nodes in the subtree, including those that are ignored for accessibility, and returns those that mactch the specified name and role. If no DOM node is specified, or the DOM node does not exist, the command returns an error. If neither `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
+// Returns -  nodes - A list of `Accessibility.AXNode` matching the specified attributes, including nodes that are ignored for accessibility.
+func (c *Accessibility) QueryAXTreeWithParams(ctx context.Context, v *AccessibilityQueryAXTreeParams) ([]*AccessibilityAXNode, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.queryAXTree", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Nodes []*AccessibilityAXNode
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Nodes, nil
+}
+
+// QueryAXTree - Query a DOM node's accessibility subtree for accessible name and role. This command computes the name and role for all nodes in the subtree, including those that are ignored for accessibility, and returns those that mactch the specified name and role. If no DOM node is specified, or the DOM node does not exist, the command returns an error. If neither `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
+// nodeId - Identifier of the node for the root to query.
+// backendNodeId - Identifier of the backend node for the root to query.
+// objectId - JavaScript object id of the node wrapper for the root to query.
+// accessibleName - Find nodes with this computed name.
+// role - Find nodes with this computed role.
+// Returns -  nodes - A list of `Accessibility.AXNode` matching the specified attributes, including nodes that are ignored for accessibility.
+func (c *Accessibility) QueryAXTree(ctx context.Context, nodeId int, backendNodeId int, objectId string, accessibleName string, role string) ([]*AccessibilityAXNode, error) {
+	var v AccessibilityQueryAXTreeParams
+	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
+	v.AccessibleName = accessibleName
+	v.Role = role
+	return c.QueryAXTreeWithParams(ctx, &v)
 }

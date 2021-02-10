@@ -36,31 +36,72 @@ type OverlayGridHighlightConfig struct {
 	ColumnGapColor          *DOMRGBA `json:"columnGapColor,omitempty"`          // The column gap highlight fill color (default: transparent).
 	ColumnHatchColor        *DOMRGBA `json:"columnHatchColor,omitempty"`        // The column gap hatching fill color (default: transparent).
 	AreaBorderColor         *DOMRGBA `json:"areaBorderColor,omitempty"`         // The named grid areas border color (Default: transparent).
+	GridBackgroundColor     *DOMRGBA `json:"gridBackgroundColor,omitempty"`     // The grid container background color (Default: transparent).
+}
+
+// Configuration data for the highlighting of Flex container elements.
+type OverlayFlexContainerHighlightConfig struct {
+	ContainerBorder       *OverlayLineStyle `json:"containerBorder,omitempty"`       // The style of the container border
+	LineSeparator         *OverlayLineStyle `json:"lineSeparator,omitempty"`         // The style of the separator between lines
+	ItemSeparator         *OverlayLineStyle `json:"itemSeparator,omitempty"`         // The style of the separator between items
+	MainDistributedSpace  *OverlayBoxStyle  `json:"mainDistributedSpace,omitempty"`  // Style of content-distribution space on the main axis (justify-content).
+	CrossDistributedSpace *OverlayBoxStyle  `json:"crossDistributedSpace,omitempty"` // Style of content-distribution space on the cross axis (align-content).
+	RowGapSpace           *OverlayBoxStyle  `json:"rowGapSpace,omitempty"`           // Style of empty space caused by row gaps (gap/row-gap).
+	ColumnGapSpace        *OverlayBoxStyle  `json:"columnGapSpace,omitempty"`        // Style of empty space caused by columns gaps (gap/column-gap).
+	CrossAlignment        *OverlayLineStyle `json:"crossAlignment,omitempty"`        // Style of the self-alignment line (align-items).
+}
+
+// Configuration data for the highlighting of Flex item elements.
+type OverlayFlexItemHighlightConfig struct {
+	BaseSizeBox      *OverlayBoxStyle  `json:"baseSizeBox,omitempty"`      // Style of the box representing the item's base size
+	BaseSizeBorder   *OverlayLineStyle `json:"baseSizeBorder,omitempty"`   // Style of the border around the box representing the item's base size
+	FlexibilityArrow *OverlayLineStyle `json:"flexibilityArrow,omitempty"` // Style of the arrow representing if the item grew or shrank
+}
+
+// Style information for drawing a line.
+type OverlayLineStyle struct {
+	Color   *DOMRGBA `json:"color,omitempty"`   // The color of the line (default: transparent)
+	Pattern string   `json:"pattern,omitempty"` // The line pattern (default: solid)
+}
+
+// Style information for drawing a box.
+type OverlayBoxStyle struct {
+	FillColor  *DOMRGBA `json:"fillColor,omitempty"`  // The background color for the box (default: transparent)
+	HatchColor *DOMRGBA `json:"hatchColor,omitempty"` // The hatching color for the box (default: transparent)
 }
 
 // Configuration data for the highlighting of page elements.
 type OverlayHighlightConfig struct {
-	ShowInfo              bool                        `json:"showInfo,omitempty"`              // Whether the node info tooltip should be shown (default: false).
-	ShowStyles            bool                        `json:"showStyles,omitempty"`            // Whether the node styles in the tooltip (default: false).
-	ShowRulers            bool                        `json:"showRulers,omitempty"`            // Whether the rulers should be shown (default: false).
-	ShowAccessibilityInfo bool                        `json:"showAccessibilityInfo,omitempty"` // Whether the a11y info should be shown (default: true).
-	ShowExtensionLines    bool                        `json:"showExtensionLines,omitempty"`    // Whether the extension lines from node to the rulers should be shown (default: false).
-	ContentColor          *DOMRGBA                    `json:"contentColor,omitempty"`          // The content box highlight fill color (default: transparent).
-	PaddingColor          *DOMRGBA                    `json:"paddingColor,omitempty"`          // The padding highlight fill color (default: transparent).
-	BorderColor           *DOMRGBA                    `json:"borderColor,omitempty"`           // The border highlight fill color (default: transparent).
-	MarginColor           *DOMRGBA                    `json:"marginColor,omitempty"`           // The margin highlight fill color (default: transparent).
-	EventTargetColor      *DOMRGBA                    `json:"eventTargetColor,omitempty"`      // The event target element highlight fill color (default: transparent).
-	ShapeColor            *DOMRGBA                    `json:"shapeColor,omitempty"`            // The shape outside fill color (default: transparent).
-	ShapeMarginColor      *DOMRGBA                    `json:"shapeMarginColor,omitempty"`      // The shape margin fill color (default: transparent).
-	CssGridColor          *DOMRGBA                    `json:"cssGridColor,omitempty"`          // The grid layout color (default: transparent).
-	ColorFormat           string                      `json:"colorFormat,omitempty"`           // The color format used to format color styles (default: hex). enum values: rgb, hsl, hex
-	GridHighlightConfig   *OverlayGridHighlightConfig `json:"gridHighlightConfig,omitempty"`   // The grid layout highlight configuration (default: all transparent).
+	ShowInfo                     bool                                 `json:"showInfo,omitempty"`                     // Whether the node info tooltip should be shown (default: false).
+	ShowStyles                   bool                                 `json:"showStyles,omitempty"`                   // Whether the node styles in the tooltip (default: false).
+	ShowRulers                   bool                                 `json:"showRulers,omitempty"`                   // Whether the rulers should be shown (default: false).
+	ShowAccessibilityInfo        bool                                 `json:"showAccessibilityInfo,omitempty"`        // Whether the a11y info should be shown (default: true).
+	ShowExtensionLines           bool                                 `json:"showExtensionLines,omitempty"`           // Whether the extension lines from node to the rulers should be shown (default: false).
+	ContentColor                 *DOMRGBA                             `json:"contentColor,omitempty"`                 // The content box highlight fill color (default: transparent).
+	PaddingColor                 *DOMRGBA                             `json:"paddingColor,omitempty"`                 // The padding highlight fill color (default: transparent).
+	BorderColor                  *DOMRGBA                             `json:"borderColor,omitempty"`                  // The border highlight fill color (default: transparent).
+	MarginColor                  *DOMRGBA                             `json:"marginColor,omitempty"`                  // The margin highlight fill color (default: transparent).
+	EventTargetColor             *DOMRGBA                             `json:"eventTargetColor,omitempty"`             // The event target element highlight fill color (default: transparent).
+	ShapeColor                   *DOMRGBA                             `json:"shapeColor,omitempty"`                   // The shape outside fill color (default: transparent).
+	ShapeMarginColor             *DOMRGBA                             `json:"shapeMarginColor,omitempty"`             // The shape margin fill color (default: transparent).
+	CssGridColor                 *DOMRGBA                             `json:"cssGridColor,omitempty"`                 // The grid layout color (default: transparent).
+	ColorFormat                  string                               `json:"colorFormat,omitempty"`                  // The color format used to format color styles (default: hex). enum values: rgb, hsl, hex
+	GridHighlightConfig          *OverlayGridHighlightConfig          `json:"gridHighlightConfig,omitempty"`          // The grid layout highlight configuration (default: all transparent).
+	FlexContainerHighlightConfig *OverlayFlexContainerHighlightConfig `json:"flexContainerHighlightConfig,omitempty"` // The flex container highlight configuration (default: all transparent).
+	FlexItemHighlightConfig      *OverlayFlexItemHighlightConfig      `json:"flexItemHighlightConfig,omitempty"`      // The flex item highlight configuration (default: all transparent).
+	ContrastAlgorithm            string                               `json:"contrastAlgorithm,omitempty"`            // The contrast algorithm to use for the contrast ratio (default: aa). enum values: aa, aaa, apca
 }
 
 // Configurations for Persistent Grid Highlight
 type OverlayGridNodeHighlightConfig struct {
 	GridHighlightConfig *OverlayGridHighlightConfig `json:"gridHighlightConfig"` // A descriptor for the highlight appearance.
 	NodeId              int                         `json:"nodeId"`              // Identifier of the node to highlight.
+}
+
+// No Description.
+type OverlayFlexNodeHighlightConfig struct {
+	FlexContainerHighlightConfig *OverlayFlexContainerHighlightConfig `json:"flexContainerHighlightConfig"` // A descriptor for the highlight appearance of flex containers.
+	NodeId                       int                                  `json:"nodeId"`                       // Identifier of the node to highlight.
 }
 
 // Configuration for dual screen hinge
@@ -538,6 +579,24 @@ func (c *Overlay) SetShowGridOverlays(ctx context.Context, gridNodeHighlightConf
 	return c.SetShowGridOverlaysWithParams(ctx, &v)
 }
 
+type OverlaySetShowFlexOverlaysParams struct {
+	// An array of node identifiers and descriptors for the highlight appearance.
+	FlexNodeHighlightConfigs []*OverlayFlexNodeHighlightConfig `json:"flexNodeHighlightConfigs"`
+}
+
+// SetShowFlexOverlaysWithParams -
+func (c *Overlay) SetShowFlexOverlaysWithParams(ctx context.Context, v *OverlaySetShowFlexOverlaysParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowFlexOverlays", Params: v})
+}
+
+// SetShowFlexOverlays -
+// flexNodeHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
+func (c *Overlay) SetShowFlexOverlays(ctx context.Context, flexNodeHighlightConfigs []*OverlayFlexNodeHighlightConfig) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowFlexOverlaysParams
+	v.FlexNodeHighlightConfigs = flexNodeHighlightConfigs
+	return c.SetShowFlexOverlaysWithParams(ctx, &v)
+}
+
 type OverlaySetShowPaintRectsParams struct {
 	// True for showing paint rectangles
 	Result bool `json:"result"`
@@ -608,6 +667,24 @@ func (c *Overlay) SetShowHitTestBorders(ctx context.Context, show bool) (*gcdmes
 	var v OverlaySetShowHitTestBordersParams
 	v.Show = show
 	return c.SetShowHitTestBordersWithParams(ctx, &v)
+}
+
+type OverlaySetShowWebVitalsParams struct {
+	//
+	Show bool `json:"show"`
+}
+
+// SetShowWebVitalsWithParams - Request that backend shows an overlay with web vital metrics.
+func (c *Overlay) SetShowWebVitalsWithParams(ctx context.Context, v *OverlaySetShowWebVitalsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowWebVitals", Params: v})
+}
+
+// SetShowWebVitals - Request that backend shows an overlay with web vital metrics.
+// show -
+func (c *Overlay) SetShowWebVitals(ctx context.Context, show bool) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowWebVitalsParams
+	v.Show = show
+	return c.SetShowWebVitalsWithParams(ctx, &v)
 }
 
 type OverlaySetShowViewportSizeOnResizeParams struct {

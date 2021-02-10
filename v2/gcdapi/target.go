@@ -17,7 +17,8 @@ type TargetTargetInfo struct {
 	Url              string `json:"url"`                        //
 	Attached         bool   `json:"attached"`                   // Whether the target has an attached client.
 	OpenerId         string `json:"openerId,omitempty"`         // Opener target Id
-	CanAccessOpener  bool   `json:"canAccessOpener"`            // Whether the opened window has access to the originating window.
+	CanAccessOpener  bool   `json:"canAccessOpener"`            // Whether the target has access to the originating window.
+	OpenerFrameId    string `json:"openerFrameId,omitempty"`    // Frame id of originating window (is only set if target has an opener).
 	BrowserContextId string `json:"browserContextId,omitempty"` //
 }
 
@@ -205,7 +206,7 @@ type TargetCloseTargetParams struct {
 }
 
 // CloseTargetWithParams - Closes the target. If the target is a page that gets closed too.
-// Returns -  success -
+// Returns -  success - Always set to true. If an error occurs, the response indicates protocol error.
 func (c *Target) CloseTargetWithParams(ctx context.Context, v *TargetCloseTargetParams) (bool, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.closeTarget", Params: v})
 	if err != nil {
@@ -238,7 +239,7 @@ func (c *Target) CloseTargetWithParams(ctx context.Context, v *TargetCloseTarget
 
 // CloseTarget - Closes the target. If the target is a page that gets closed too.
 // targetId -
-// Returns -  success -
+// Returns -  success - Always set to true. If an error occurs, the response indicates protocol error.
 func (c *Target) CloseTarget(ctx context.Context, targetId string) (bool, error) {
 	var v TargetCloseTargetParams
 	v.TargetId = targetId

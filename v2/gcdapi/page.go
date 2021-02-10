@@ -11,25 +11,26 @@ import (
 
 // Information about the Frame on the page.
 type PageFrame struct {
-	Id                             string `json:"id"`                             // Frame unique identifier.
-	ParentId                       string `json:"parentId,omitempty"`             // Parent frame identifier.
-	LoaderId                       string `json:"loaderId"`                       // Identifier of the loader associated with this frame.
-	Name                           string `json:"name,omitempty"`                 // Frame's name as specified in the tag.
-	Url                            string `json:"url"`                            // Frame document's URL without fragment.
-	UrlFragment                    string `json:"urlFragment,omitempty"`          // Frame document's URL fragment including the '#'.
-	DomainAndRegistry              string `json:"domainAndRegistry"`              // Frame document's registered domain, taking the public suffixes list into account. Extracted from the Frame's url. Example URLs: http://www.google.com/file.html -> "google.com"               http://a.b.co.uk/file.html      -> "b.co.uk"
-	SecurityOrigin                 string `json:"securityOrigin"`                 // Frame document's security origin.
-	MimeType                       string `json:"mimeType"`                       // Frame document's mimeType as determined by the browser.
-	UnreachableUrl                 string `json:"unreachableUrl,omitempty"`       // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
-	AdFrameType                    string `json:"adFrameType,omitempty"`          // Indicates whether this frame was tagged as an ad. enum values: none, child, root
-	SecureContextType              string `json:"secureContextType"`              // Indicates whether the main document is a secure context and explains why that is the case. enum values: Secure, SecureLocalhost, InsecureScheme, InsecureAncestor
-	CrossOriginIsolatedContextType string `json:"crossOriginIsolatedContextType"` // Indicates whether this is a cross origin isolated context. enum values: Isolated, NotIsolated, NotIsolatedFeatureDisabled
+	Id                             string   `json:"id"`                             // Frame unique identifier.
+	ParentId                       string   `json:"parentId,omitempty"`             // Parent frame identifier.
+	LoaderId                       string   `json:"loaderId"`                       // Identifier of the loader associated with this frame.
+	Name                           string   `json:"name,omitempty"`                 // Frame's name as specified in the tag.
+	Url                            string   `json:"url"`                            // Frame document's URL without fragment.
+	UrlFragment                    string   `json:"urlFragment,omitempty"`          // Frame document's URL fragment including the '#'.
+	DomainAndRegistry              string   `json:"domainAndRegistry"`              // Frame document's registered domain, taking the public suffixes list into account. Extracted from the Frame's url. Example URLs: http://www.google.com/file.html -> "google.com"               http://a.b.co.uk/file.html      -> "b.co.uk"
+	SecurityOrigin                 string   `json:"securityOrigin"`                 // Frame document's security origin.
+	MimeType                       string   `json:"mimeType"`                       // Frame document's mimeType as determined by the browser.
+	UnreachableUrl                 string   `json:"unreachableUrl,omitempty"`       // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
+	AdFrameType                    string   `json:"adFrameType,omitempty"`          // Indicates whether this frame was tagged as an ad. enum values: none, child, root
+	SecureContextType              string   `json:"secureContextType"`              // Indicates whether the main document is a secure context and explains why that is the case. enum values: Secure, SecureLocalhost, InsecureScheme, InsecureAncestor
+	CrossOriginIsolatedContextType string   `json:"crossOriginIsolatedContextType"` // Indicates whether this is a cross origin isolated context. enum values: Isolated, NotIsolated, NotIsolatedFeatureDisabled
+	GatedAPIFeatures               []string `json:"gatedAPIFeatures"`               // Indicated which gated APIs / features are available. enum values: SharedArrayBuffers, SharedArrayBuffersTransferAllowed, PerformanceMeasureMemory, PerformanceProfile
 }
 
 // Information about the Resource on the page.
 type PageFrameResource struct {
 	Url          string  `json:"url"`                    // Resource URL.
-	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
+	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 	MimeType     string  `json:"mimeType"`               // Resource mimeType as determined by the browser.
 	LastModified float64 `json:"lastModified,omitempty"` // last-modified timestamp as reported by server.
 	ContentSize  float64 `json:"contentSize,omitempty"`  // Resource content size.
@@ -182,11 +183,20 @@ type PageFrameDetachedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId string `json:"frameId"` // Id of the frame that has been detached.
+		Reason  string `json:"reason"`  //
 	} `json:"Params,omitempty"`
 }
 
 // Fired once navigation of the frame has completed. Frame is now associated with the new loader.
 type PageFrameNavigatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Frame *PageFrame `json:"frame"` // Frame object.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when opening document to write to.
+type PageDocumentOpenedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Frame *PageFrame `json:"frame"` // Frame object.
@@ -306,7 +316,7 @@ type PageNavigatedWithinDocumentEvent struct {
 type PageScreencastFrameEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Data      string                       `json:"data"`      // Base64-encoded compressed image.
+		Data      string                       `json:"data"`      // Base64-encoded compressed image. (Encoded as a base64 string when passed over JSON)
 		Metadata  *PageScreencastFrameMetadata `json:"metadata"`  // Screencast frame metadata.
 		SessionId int                          `json:"sessionId"` // Frame number.
 	} `json:"Params,omitempty"`
@@ -336,7 +346,7 @@ type PageCompilationCacheProducedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Url  string `json:"url"`  //
-		Data string `json:"data"` // Base64-encoded data
+		Data string `json:"data"` // Base64-encoded data (Encoded as a base64 string when passed over JSON)
 	} `json:"Params,omitempty"`
 }
 
@@ -459,10 +469,12 @@ type PageCaptureScreenshotParams struct {
 	Clip *PageViewport `json:"clip,omitempty"`
 	// Capture the screenshot from the surface, rather than the view. Defaults to true.
 	FromSurface bool `json:"fromSurface,omitempty"`
+	// Capture the screenshot beyond the viewport. Defaults to false.
+	CaptureBeyondViewport bool `json:"captureBeyondViewport,omitempty"`
 }
 
 // CaptureScreenshotWithParams - Capture page screenshot.
-// Returns -  data - Base64-encoded image data.
+// Returns -  data - Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
 func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureScreenshotParams) (string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.captureScreenshot", Params: v})
 	if err != nil {
@@ -498,13 +510,15 @@ func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureSc
 // quality - Compression quality from range [0..100] (jpeg only).
 // clip - Capture the screenshot of a given region only.
 // fromSurface - Capture the screenshot from the surface, rather than the view. Defaults to true.
-// Returns -  data - Base64-encoded image data.
-func (c *Page) CaptureScreenshot(ctx context.Context, format string, quality int, clip *PageViewport, fromSurface bool) (string, error) {
+// captureBeyondViewport - Capture the screenshot beyond the viewport. Defaults to false.
+// Returns -  data - Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
+func (c *Page) CaptureScreenshot(ctx context.Context, format string, quality int, clip *PageViewport, fromSurface bool, captureBeyondViewport bool) (string, error) {
 	var v PageCaptureScreenshotParams
 	v.Format = format
 	v.Quality = quality
 	v.Clip = clip
 	v.FromSurface = fromSurface
+	v.CaptureBeyondViewport = captureBeyondViewport
 	return c.CaptureScreenshotWithParams(ctx, &v)
 }
 
@@ -1113,7 +1127,7 @@ type PagePrintToPDFParams struct {
 }
 
 // PrintToPDFWithParams - Print page as PDF.
-// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. stream - A handle of the stream that holds resulting PDF data.
+// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON) stream - A handle of the stream that holds resulting PDF data.
 func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams) (string, string, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.printToPDF", Params: v})
 	if err != nil {
@@ -1162,7 +1176,7 @@ func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams
 // footerTemplate - HTML template for the print footer. Should use the same format as the `headerTemplate`.
 // preferCSSPageSize - Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
 // transferMode - return as stream
-// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. stream - A handle of the stream that holds resulting PDF data.
+// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON) stream - A handle of the stream that holds resulting PDF data.
 func (c *Page) PrintToPDF(ctx context.Context, landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool, headerTemplate string, footerTemplate string, preferCSSPageSize bool, transferMode string) (string, string, error) {
 	var v PagePrintToPDFParams
 	v.Landscape = landscape
@@ -1685,7 +1699,7 @@ func (c *Page) SetProduceCompilationCache(ctx context.Context, enabled bool) (*g
 type PageAddCompilationCacheParams struct {
 	//
 	Url string `json:"url"`
-	// Base64-encoded data
+	// Base64-encoded data (Encoded as a base64 string when passed over JSON)
 	Data string `json:"data"`
 }
 
@@ -1696,7 +1710,7 @@ func (c *Page) AddCompilationCacheWithParams(ctx context.Context, v *PageAddComp
 
 // AddCompilationCache - Seeds compilation cache for given url. Compilation cache does not survive cross-process navigation.
 // url -
-// data - Base64-encoded data
+// data - Base64-encoded data (Encoded as a base64 string when passed over JSON)
 func (c *Page) AddCompilationCache(ctx context.Context, url string, data string) (*gcdmessage.ChromeResponse, error) {
 	var v PageAddCompilationCacheParams
 	v.Url = url

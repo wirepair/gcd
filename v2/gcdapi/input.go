@@ -11,13 +11,17 @@ import (
 
 // No Description.
 type InputTouchPoint struct {
-	X             float64 `json:"x"`                       // X coordinate of the event relative to the main frame's viewport in CSS pixels.
-	Y             float64 `json:"y"`                       // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
-	RadiusX       float64 `json:"radiusX,omitempty"`       // X radius of the touch area (default: 1.0).
-	RadiusY       float64 `json:"radiusY,omitempty"`       // Y radius of the touch area (default: 1.0).
-	RotationAngle float64 `json:"rotationAngle,omitempty"` // Rotation angle (default: 0.0).
-	Force         float64 `json:"force,omitempty"`         // Force (default: 1.0).
-	Id            float64 `json:"id,omitempty"`            // Identifier used to track touch sources between events, must be unique within an event.
+	X                  float64 `json:"x"`                            // X coordinate of the event relative to the main frame's viewport in CSS pixels.
+	Y                  float64 `json:"y"`                            // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+	RadiusX            float64 `json:"radiusX,omitempty"`            // X radius of the touch area (default: 1.0).
+	RadiusY            float64 `json:"radiusY,omitempty"`            // Y radius of the touch area (default: 1.0).
+	RotationAngle      float64 `json:"rotationAngle,omitempty"`      // Rotation angle (default: 0.0).
+	Force              float64 `json:"force,omitempty"`              // Force (default: 1.0).
+	TangentialPressure float64 `json:"tangentialPressure,omitempty"` // The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+	TiltX              int     `json:"tiltX,omitempty"`              // The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)
+	TiltY              int     `json:"tiltY,omitempty"`              // The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+	Twist              int     `json:"twist,omitempty"`              // The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
+	Id                 float64 `json:"id,omitempty"`                 // Identifier used to track touch sources between events, must be unique within an event.
 }
 
 type Input struct {
@@ -138,6 +142,16 @@ type InputDispatchMouseEventParams struct {
 	Buttons int `json:"buttons,omitempty"`
 	// Number of times the mouse button was clicked (default: 0).
 	ClickCount int `json:"clickCount,omitempty"`
+	// The normalized pressure, which has a range of [0,1] (default: 0).
+	Force float64 `json:"force,omitempty"`
+	// The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+	TangentialPressure float64 `json:"tangentialPressure,omitempty"`
+	// The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0).
+	TiltX int `json:"tiltX,omitempty"`
+	// The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+	TiltY int `json:"tiltY,omitempty"`
+	// The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
+	Twist int `json:"twist,omitempty"`
 	// X delta in CSS pixels for mouse wheel event (default: 0).
 	DeltaX float64 `json:"deltaX,omitempty"`
 	// Y delta in CSS pixels for mouse wheel event (default: 0).
@@ -160,10 +174,15 @@ func (c *Input) DispatchMouseEventWithParams(ctx context.Context, v *InputDispat
 // button - Mouse button (default: "none"). enum values: none, left, middle, right, back, forward
 // buttons - A number indicating which buttons are pressed on the mouse when a mouse event is triggered. Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
 // clickCount - Number of times the mouse button was clicked (default: 0).
+// force - The normalized pressure, which has a range of [0,1] (default: 0).
+// tangentialPressure - The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+// tiltX - The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0).
+// tiltY - The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+// twist - The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
 // deltaX - X delta in CSS pixels for mouse wheel event (default: 0).
 // deltaY - Y delta in CSS pixels for mouse wheel event (default: 0).
 // pointerType - Pointer type (default: "mouse").
-func (c *Input) DispatchMouseEvent(ctx context.Context, theType string, x float64, y float64, modifiers int, timestamp float64, button string, buttons int, clickCount int, deltaX float64, deltaY float64, pointerType string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) DispatchMouseEvent(ctx context.Context, theType string, x float64, y float64, modifiers int, timestamp float64, button string, buttons int, clickCount int, force float64, tangentialPressure float64, tiltX int, tiltY int, twist int, deltaX float64, deltaY float64, pointerType string) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchMouseEventParams
 	v.TheType = theType
 	v.X = x
@@ -173,6 +192,11 @@ func (c *Input) DispatchMouseEvent(ctx context.Context, theType string, x float6
 	v.Button = button
 	v.Buttons = buttons
 	v.ClickCount = clickCount
+	v.Force = force
+	v.TangentialPressure = tangentialPressure
+	v.TiltX = tiltX
+	v.TiltY = tiltY
+	v.Twist = twist
 	v.DeltaX = deltaX
 	v.DeltaY = deltaY
 	v.PointerType = pointerType
