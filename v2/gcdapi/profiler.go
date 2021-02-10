@@ -79,6 +79,13 @@ type ProfilerCounterInfo struct {
 	Value int    `json:"value"` // Counter value.
 }
 
+// Runtime call counter information.
+type ProfilerRuntimeCallCounterInfo struct {
+	Name  string  `json:"name"`  // Counter name.
+	Value float64 `json:"value"` // Counter value.
+	Time  float64 `json:"time"`  // Counter time in seconds.
+}
+
 //
 type ProfilerConsoleProfileFinishedEvent struct {
 	Method string `json:"method"`
@@ -350,6 +357,48 @@ func (c *Profiler) TakeTypeProfile(ctx context.Context) ([]*ProfilerScriptTypePr
 	return chromeData.Result.Result, nil
 }
 
+// Enable counters collection.
+func (c *Profiler) EnableCounters(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableCounters"})
+}
+
+// Disable counters collection.
+func (c *Profiler) DisableCounters(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disableCounters"})
+}
+
+// GetCounters - Retrieve counters.
+// Returns -  result - Collected counters information.
+func (c *Profiler) GetCounters(ctx context.Context) ([]*ProfilerCounterInfo, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getCounters"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Result []*ProfilerCounterInfo
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Result, nil
+}
+
 // Enable run time call stats collection.
 func (c *Profiler) EnableRuntimeCallStats(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableRuntimeCallStats"})
@@ -361,8 +410,8 @@ func (c *Profiler) DisableRuntimeCallStats(ctx context.Context) (*gcdmessage.Chr
 }
 
 // GetRuntimeCallStats - Retrieve run time call stats.
-// Returns -  result - Collected counter information.
-func (c *Profiler) GetRuntimeCallStats(ctx context.Context) ([]*ProfilerCounterInfo, error) {
+// Returns -  result - Collected runtime call counter information.
+func (c *Profiler) GetRuntimeCallStats(ctx context.Context) ([]*ProfilerRuntimeCallCounterInfo, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getRuntimeCallStats"})
 	if err != nil {
 		return nil, err
@@ -370,7 +419,7 @@ func (c *Profiler) GetRuntimeCallStats(ctx context.Context) ([]*ProfilerCounterI
 
 	var chromeData struct {
 		Result struct {
-			Result []*ProfilerCounterInfo
+			Result []*ProfilerRuntimeCallCounterInfo
 		}
 	}
 

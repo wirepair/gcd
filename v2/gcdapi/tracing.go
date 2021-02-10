@@ -109,6 +109,8 @@ func (c *Tracing) RecordClockSyncMarker(ctx context.Context, syncId string) (*gc
 type TracingRequestMemoryDumpParams struct {
 	// Enables more deterministic results by forcing garbage collection
 	Deterministic bool `json:"deterministic,omitempty"`
+	// Specifies level of details in memory dump. Defaults to "detailed". enum values: background, light, detailed
+	LevelOfDetail string `json:"levelOfDetail,omitempty"`
 }
 
 // RequestMemoryDumpWithParams - Request a global memory dump.
@@ -146,10 +148,12 @@ func (c *Tracing) RequestMemoryDumpWithParams(ctx context.Context, v *TracingReq
 
 // RequestMemoryDump - Request a global memory dump.
 // deterministic - Enables more deterministic results by forcing garbage collection
+// levelOfDetail - Specifies level of details in memory dump. Defaults to "detailed". enum values: background, light, detailed
 // Returns -  dumpGuid - GUID of the resulting global memory dump. success - True iff the global memory dump succeeded.
-func (c *Tracing) RequestMemoryDump(ctx context.Context, deterministic bool) (string, bool, error) {
+func (c *Tracing) RequestMemoryDump(ctx context.Context, deterministic bool, levelOfDetail string) (string, bool, error) {
 	var v TracingRequestMemoryDumpParams
 	v.Deterministic = deterministic
+	v.LevelOfDetail = levelOfDetail
 	return c.RequestMemoryDumpWithParams(ctx, &v)
 }
 
@@ -168,6 +172,8 @@ type TracingStartParams struct {
 	StreamCompression string `json:"streamCompression,omitempty"`
 	//
 	TraceConfig *TracingTraceConfig `json:"traceConfig,omitempty"`
+	// Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters `categories`, `options`, `traceConfig` are ignored. (Encoded as a base64 string when passed over JSON)
+	PerfettoConfig string `json:"perfettoConfig,omitempty"`
 }
 
 // StartWithParams - Start trace events collection.
@@ -183,7 +189,8 @@ func (c *Tracing) StartWithParams(ctx context.Context, v *TracingStartParams) (*
 // streamFormat - Trace data format to use. This only applies when using `ReturnAsStream` transfer mode (defaults to `json`). enum values: json, proto
 // streamCompression - Compression format to use. This only applies when using `ReturnAsStream` transfer mode (defaults to `none`) enum values: none, gzip
 // traceConfig -
-func (c *Tracing) Start(ctx context.Context, categories string, options string, bufferUsageReportingInterval float64, transferMode string, streamFormat string, streamCompression string, traceConfig *TracingTraceConfig) (*gcdmessage.ChromeResponse, error) {
+// perfettoConfig - Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters `categories`, `options`, `traceConfig` are ignored. (Encoded as a base64 string when passed over JSON)
+func (c *Tracing) Start(ctx context.Context, categories string, options string, bufferUsageReportingInterval float64, transferMode string, streamFormat string, streamCompression string, traceConfig *TracingTraceConfig, perfettoConfig string) (*gcdmessage.ChromeResponse, error) {
 	var v TracingStartParams
 	v.Categories = categories
 	v.Options = options
@@ -192,5 +199,6 @@ func (c *Tracing) Start(ctx context.Context, categories string, options string, 
 	v.StreamFormat = streamFormat
 	v.StreamCompression = streamCompression
 	v.TraceConfig = traceConfig
+	v.PerfettoConfig = perfettoConfig
 	return c.StartWithParams(ctx, &v)
 }

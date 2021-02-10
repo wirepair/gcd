@@ -27,7 +27,7 @@ type LayerTreeStickyPositionConstraint struct {
 type LayerTreePictureTile struct {
 	X       float64 `json:"x"`       // Offset from owning layer left boundary
 	Y       float64 `json:"y"`       // Offset from owning layer top boundary
-	Picture string  `json:"picture"` // Base64-encoded snapshot data.
+	Picture string  `json:"picture"` // Base64-encoded snapshot data. (Encoded as a base64 string when passed over JSON)
 }
 
 // Information about a compositing layer.

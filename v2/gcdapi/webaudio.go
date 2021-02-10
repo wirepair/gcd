@@ -28,7 +28,7 @@ type WebAudioBaseAudioContext struct {
 	SampleRate            float64                      `json:"sampleRate"`             // Context sample rate.
 }
 
-// Protocol object for AudioListner
+// Protocol object for AudioListener
 type WebAudioAudioListener struct {
 	ListenerId string `json:"listenerId"` //
 	ContextId  string `json:"contextId"`  //

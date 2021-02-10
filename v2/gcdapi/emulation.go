@@ -34,15 +34,15 @@ type EmulationUserAgentBrandVersion struct {
 	Version string `json:"version"` //
 }
 
-// Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+// Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints Missing optional values will be filled in by the target with what it would normally use.
 type EmulationUserAgentMetadata struct {
-	Brands          []*EmulationUserAgentBrandVersion `json:"brands"`          //
-	FullVersion     string                            `json:"fullVersion"`     //
-	Platform        string                            `json:"platform"`        //
-	PlatformVersion string                            `json:"platformVersion"` //
-	Architecture    string                            `json:"architecture"`    //
-	Model           string                            `json:"model"`           //
-	Mobile          bool                              `json:"mobile"`          //
+	Brands          []*EmulationUserAgentBrandVersion `json:"brands,omitempty"`      //
+	FullVersion     string                            `json:"fullVersion,omitempty"` //
+	Platform        string                            `json:"platform"`              //
+	PlatformVersion string                            `json:"platformVersion"`       //
+	Architecture    string                            `json:"architecture"`          //
+	Model           string                            `json:"model"`                 //
+	Mobile          bool                              `json:"mobile"`                //
 }
 
 type Emulation struct {
@@ -566,6 +566,24 @@ func (c *Emulation) SetVisibleSize(ctx context.Context, width int, height int) (
 	v.Width = width
 	v.Height = height
 	return c.SetVisibleSizeWithParams(ctx, &v)
+}
+
+type EmulationSetDisabledImageTypesParams struct {
+	// Image types to disable. enum values: avif, webp
+	ImageTypes []string `json:"imageTypes"`
+}
+
+// SetDisabledImageTypesWithParams -
+func (c *Emulation) SetDisabledImageTypesWithParams(ctx context.Context, v *EmulationSetDisabledImageTypesParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDisabledImageTypes", Params: v})
+}
+
+// SetDisabledImageTypes -
+// imageTypes - Image types to disable. enum values: avif, webp
+func (c *Emulation) SetDisabledImageTypes(ctx context.Context, imageTypes []string) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetDisabledImageTypesParams
+	v.ImageTypes = imageTypes
+	return c.SetDisabledImageTypesWithParams(ctx, &v)
 }
 
 type EmulationSetUserAgentOverrideParams struct {

@@ -11,7 +11,7 @@ import (
 
 // CSS rule collection for a single pseudo style.
 type CSSPseudoElementMatches struct {
-	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
 	Matches    []*CSSRuleMatch `json:"matches"`    // Matches of CSS rules applicable to the pseudo style.
 }
 
@@ -41,22 +41,23 @@ type CSSSelectorList struct {
 
 // CSS stylesheet metainformation.
 type CSSCSSStyleSheetHeader struct {
-	StyleSheetId string  `json:"styleSheetId"`           // The stylesheet identifier.
-	FrameId      string  `json:"frameId"`                // Owner frame identifier.
-	SourceURL    string  `json:"sourceURL"`              // Stylesheet resource URL.
-	SourceMapURL string  `json:"sourceMapURL,omitempty"` // URL of source map associated with the stylesheet (if any).
-	Origin       string  `json:"origin"`                 // Stylesheet origin. enum values: injected, user-agent, inspector, regular
-	Title        string  `json:"title"`                  // Stylesheet title.
-	OwnerNode    int     `json:"ownerNode,omitempty"`    // The backend id for the owner node of the stylesheet.
-	Disabled     bool    `json:"disabled"`               // Denotes whether the stylesheet is disabled.
-	HasSourceURL bool    `json:"hasSourceURL,omitempty"` // Whether the sourceURL field value comes from the sourceURL comment.
-	IsInline     bool    `json:"isInline"`               // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
-	IsMutable    bool    `json:"isMutable"`              // Whether this stylesheet is mutable. Inline stylesheets become mutable after they have been modified via CSSOM API. <link> element's stylesheets are never mutable. Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
-	StartLine    float64 `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
-	StartColumn  float64 `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
-	Length       float64 `json:"length"`                 // Size of the content (in characters).
-	EndLine      float64 `json:"endLine"`                // Line offset of the end of the stylesheet within the resource (zero based).
-	EndColumn    float64 `json:"endColumn"`              // Column offset of the end of the stylesheet within the resource (zero based).
+	StyleSheetId  string  `json:"styleSheetId"`           // The stylesheet identifier.
+	FrameId       string  `json:"frameId"`                // Owner frame identifier.
+	SourceURL     string  `json:"sourceURL"`              // Stylesheet resource URL.
+	SourceMapURL  string  `json:"sourceMapURL,omitempty"` // URL of source map associated with the stylesheet (if any).
+	Origin        string  `json:"origin"`                 // Stylesheet origin. enum values: injected, user-agent, inspector, regular
+	Title         string  `json:"title"`                  // Stylesheet title.
+	OwnerNode     int     `json:"ownerNode,omitempty"`    // The backend id for the owner node of the stylesheet.
+	Disabled      bool    `json:"disabled"`               // Denotes whether the stylesheet is disabled.
+	HasSourceURL  bool    `json:"hasSourceURL,omitempty"` // Whether the sourceURL field value comes from the sourceURL comment.
+	IsInline      bool    `json:"isInline"`               // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
+	IsMutable     bool    `json:"isMutable"`              // Whether this stylesheet is mutable. Inline stylesheets become mutable after they have been modified via CSSOM API. <link> element's stylesheets become mutable only if DevTools modifies them. Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
+	IsConstructed bool    `json:"isConstructed"`          // Whether this stylesheet is a constructed stylesheet (created using new CSSStyleSheet()).
+	StartLine     float64 `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
+	StartColumn   float64 `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
+	Length        float64 `json:"length"`                 // Size of the content (in characters).
+	EndLine       float64 `json:"endLine"`                // Line offset of the end of the stylesheet within the resource (zero based).
+	EndColumn     float64 `json:"endColumn"`              // Column offset of the end of the stylesheet within the resource (zero based).
 }
 
 // CSS rule representation.

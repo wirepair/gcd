@@ -98,6 +98,7 @@ type ChromeTarget struct {
 	Overlay              *gcdapi.Overlay
 	Page                 *gcdapi.Page
 	Performance          *gcdapi.Performance // if stable channel you'll need to uncomment
+	PerformanceTimeline  *gcdapi.PerformanceTimeline
 	Profiler             *gcdapi.Profiler
 	Runtime              *gcdapi.Runtime
 	Schema               *gcdapi.Schema
@@ -183,6 +184,7 @@ func (c *ChromeTarget) Init() {
 	c.Tethering = gcdapi.NewTethering(c)
 	c.HeadlessExperimental = gcdapi.NewHeadlessExperimental(c)
 	c.Performance = gcdapi.NewPerformance(c)
+	c.PerformanceTimeline = gcdapi.NewPerformanceTimeline(c)
 	c.Fetch = gcdapi.NewFetch(c)
 	c.Cast = gcdapi.NewCast(c)
 	c.Media = gcdapi.NewMedia(c)

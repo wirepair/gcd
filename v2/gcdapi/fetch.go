@@ -12,7 +12,7 @@ import (
 // No Description.
 type FetchRequestPattern struct {
 	UrlPattern   string `json:"urlPattern,omitempty"`   // Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to "*".
-	ResourceType string `json:"resourceType,omitempty"` // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
+	ResourceType string `json:"resourceType,omitempty"` // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 	RequestStage string `json:"requestStage,omitempty"` // Stage at wich to begin intercepting requests. Default is Request. enum values: Request, Response
 }
 
@@ -44,7 +44,7 @@ type FetchRequestPausedEvent struct {
 		RequestId           string              `json:"requestId"`                     // Each request the page makes will have a unique id.
 		Request             *NetworkRequest     `json:"request"`                       // The details of the request.
 		FrameId             string              `json:"frameId"`                       // The id of the frame that initiated the request.
-		ResourceType        string              `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
+		ResourceType        string              `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		ResponseErrorReason string              `json:"responseErrorReason,omitempty"` // Response error if intercepted at response stage. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable, BlockedByClient, BlockedByResponse
 		ResponseStatusCode  int                 `json:"responseStatusCode,omitempty"`  // Response code if intercepted at response stage.
 		ResponseHeaders     []*FetchHeaderEntry `json:"responseHeaders,omitempty"`     // Response headers if intercepted at the response stage.
@@ -59,7 +59,7 @@ type FetchAuthRequiredEvent struct {
 		RequestId     string              `json:"requestId"`     // Each request the page makes will have a unique id.
 		Request       *NetworkRequest     `json:"request"`       // The details of the request.
 		FrameId       string              `json:"frameId"`       // The id of the frame that initiated the request.
-		ResourceType  string              `json:"resourceType"`  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Other
+		ResourceType  string              `json:"resourceType"`  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		AuthChallenge *FetchAuthChallenge `json:"authChallenge"` // Details of the Authorization Challenge encountered. If this is set, client should respond with continueRequest that contains AuthChallengeResponse.
 	} `json:"Params,omitempty"`
 }
@@ -129,9 +129,9 @@ type FetchFulfillRequestParams struct {
 	ResponseCode int `json:"responseCode"`
 	// Response headers.
 	ResponseHeaders []*FetchHeaderEntry `json:"responseHeaders,omitempty"`
-	// Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text.
+	// Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text. (Encoded as a base64 string when passed over JSON)
 	BinaryResponseHeaders string `json:"binaryResponseHeaders,omitempty"`
-	// A response body.
+	// A response body. (Encoded as a base64 string when passed over JSON)
 	Body string `json:"body,omitempty"`
 	// A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
 	ResponsePhrase string `json:"responsePhrase,omitempty"`
@@ -146,8 +146,8 @@ func (c *Fetch) FulfillRequestWithParams(ctx context.Context, v *FetchFulfillReq
 // requestId - An id the client received in requestPaused event.
 // responseCode - An HTTP response code.
 // responseHeaders - Response headers.
-// binaryResponseHeaders - Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text.
-// body - A response body.
+// binaryResponseHeaders - Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text. (Encoded as a base64 string when passed over JSON)
+// body - A response body. (Encoded as a base64 string when passed over JSON)
 // responsePhrase - A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
 func (c *Fetch) FulfillRequest(ctx context.Context, requestId string, responseCode int, responseHeaders []*FetchHeaderEntry, binaryResponseHeaders string, body string, responsePhrase string) (*gcdmessage.ChromeResponse, error) {
 	var v FetchFulfillRequestParams
@@ -167,7 +167,7 @@ type FetchContinueRequestParams struct {
 	Url string `json:"url,omitempty"`
 	// If set, the request method is overridden.
 	Method string `json:"method,omitempty"`
-	// If set, overrides the post data in the request.
+	// If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
 	PostData string `json:"postData,omitempty"`
 	// If set, overrides the request headers.
 	Headers []*FetchHeaderEntry `json:"headers,omitempty"`
@@ -182,7 +182,7 @@ func (c *Fetch) ContinueRequestWithParams(ctx context.Context, v *FetchContinueR
 // requestId - An id the client received in requestPaused event.
 // url - If set, the request url will be modified in a way that's not observable by page.
 // method - If set, the request method is overridden.
-// postData - If set, overrides the post data in the request.
+// postData - If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
 // headers - If set, overrides the request headers.
 func (c *Fetch) ContinueRequest(ctx context.Context, requestId string, url string, method string, postData string, headers []*FetchHeaderEntry) (*gcdmessage.ChromeResponse, error) {
 	var v FetchContinueRequestParams

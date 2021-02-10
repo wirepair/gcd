@@ -65,19 +65,48 @@ type AuditsHeavyAdIssueDetails struct {
 
 // No Description.
 type AuditsSourceCodeLocation struct {
-	Url          string `json:"url"`          //
-	LineNumber   int    `json:"lineNumber"`   //
-	ColumnNumber int    `json:"columnNumber"` //
+	ScriptId     string `json:"scriptId,omitempty"` //
+	Url          string `json:"url"`                //
+	LineNumber   int    `json:"lineNumber"`         //
+	ColumnNumber int    `json:"columnNumber"`       //
 }
 
 // No Description.
 type AuditsContentSecurityPolicyIssueDetails struct {
 	BlockedURL                         string                    `json:"blockedURL,omitempty"`               // The url not included in allowed sources.
 	ViolatedDirective                  string                    `json:"violatedDirective"`                  // Specific directive that is violated, causing the CSP issue.
+	IsReportOnly                       bool                      `json:"isReportOnly"`                       //
 	ContentSecurityPolicyViolationType string                    `json:"contentSecurityPolicyViolationType"` //  enum values: kInlineViolation, kEvalViolation, kURLViolation, kTrustedTypesSinkViolation, kTrustedTypesPolicyViolation
 	FrameAncestor                      *AuditsAffectedFrame      `json:"frameAncestor,omitempty"`            //
 	SourceCodeLocation                 *AuditsSourceCodeLocation `json:"sourceCodeLocation,omitempty"`       //
 	ViolatingNodeId                    int                       `json:"violatingNodeId,omitempty"`          //
+}
+
+// Details for a request that has been blocked with the BLOCKED_BY_RESPONSE code. Currently only used for COEP/COOP, but may be extended to include some CSP errors in the future.
+type AuditsSharedArrayBufferIssueDetails struct {
+	SourceCodeLocation *AuditsSourceCodeLocation `json:"sourceCodeLocation"` //
+	IsWarning          bool                      `json:"isWarning"`          //
+	Type               string                    `json:"type"`               //  enum values: TransferIssue, CreationIssue
+}
+
+// No Description.
+type AuditsTrustedWebActivityIssueDetails struct {
+	Url            string `json:"url"`                      // The url that triggers the violation.
+	ViolationType  string `json:"violationType"`            //  enum values: kHttpError, kUnavailableOffline, kDigitalAssetLinks
+	HttpStatusCode int    `json:"httpStatusCode,omitempty"` //
+	PackageName    string `json:"packageName,omitempty"`    // The package name of the Trusted Web Activity client app. This field is only used when violation type is kDigitalAssetLinks.
+	Signature      string `json:"signature,omitempty"`      // The signature of the Trusted Web Activity client app. This field is only used when violation type is kDigitalAssetLinks.
+}
+
+// No Description.
+type AuditsLowTextContrastIssueDetails struct {
+	ViolatingNodeId       int     `json:"violatingNodeId"`       //
+	ViolatingNodeSelector string  `json:"violatingNodeSelector"` //
+	ContrastRatio         float64 `json:"contrastRatio"`         //
+	ThresholdAA           float64 `json:"thresholdAA"`           //
+	ThresholdAAA          float64 `json:"thresholdAAA"`          //
+	FontSize              string  `json:"fontSize"`              //
+	FontWeight            string  `json:"fontWeight"`            //
 }
 
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
@@ -87,11 +116,14 @@ type AuditsInspectorIssueDetails struct {
 	BlockedByResponseIssueDetails     *AuditsBlockedByResponseIssueDetails     `json:"blockedByResponseIssueDetails,omitempty"`     //
 	HeavyAdIssueDetails               *AuditsHeavyAdIssueDetails               `json:"heavyAdIssueDetails,omitempty"`               //
 	ContentSecurityPolicyIssueDetails *AuditsContentSecurityPolicyIssueDetails `json:"contentSecurityPolicyIssueDetails,omitempty"` //
+	SharedArrayBufferIssueDetails     *AuditsSharedArrayBufferIssueDetails     `json:"sharedArrayBufferIssueDetails,omitempty"`     //
+	TwaQualityEnforcementDetails      *AuditsTrustedWebActivityIssueDetails    `json:"twaQualityEnforcementDetails,omitempty"`      //
+	LowTextContrastIssueDetails       *AuditsLowTextContrastIssueDetails       `json:"lowTextContrastIssueDetails,omitempty"`       //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue
+	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue
 	Details *AuditsInspectorIssueDetails `json:"details"` //
 }
 
@@ -124,7 +156,7 @@ type AuditsGetEncodedResponseParams struct {
 }
 
 // GetEncodedResponseWithParams - Returns the response body and size if it were re-encoded with the specified settings. Only applies to images.
-// Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
+// Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. (Encoded as a base64 string when passed over JSON) originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
 func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetEncodedResponseParams) (string, int, int, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.getEncodedResponse", Params: v})
 	if err != nil {
@@ -162,7 +194,7 @@ func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetE
 // encoding - The encoding to use.
 // quality - The quality of the encoding (0-1). (defaults to 1)
 // sizeOnly - Whether to only return the size information (defaults to false).
-// Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
+// Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. (Encoded as a base64 string when passed over JSON) originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
 func (c *Audits) GetEncodedResponse(ctx context.Context, requestId string, encoding string, quality float64, sizeOnly bool) (string, int, int, error) {
 	var v AuditsGetEncodedResponseParams
 	v.RequestId = requestId
@@ -180,4 +212,9 @@ func (c *Audits) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error
 // Enables issues domain, sends the issues collected so far to the client by means of the `issueAdded` event.
 func (c *Audits) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.enable"})
+}
+
+// Runs the contrast check for the target page. Found issues are reported using Audits.issueAdded event.
+func (c *Audits) CheckContrast(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.checkContrast"})
 }

@@ -24,6 +24,7 @@ type BrowserPermissionDescriptor struct {
 	Sysex                    bool   `json:"sysex,omitempty"`                    // For "midi" permission, may also specify sysex control.
 	UserVisibleOnly          bool   `json:"userVisibleOnly,omitempty"`          // For "push" permission, may specify userVisibleOnly. Note that userVisibleOnly = true is the only currently supported type.
 	AllowWithoutSanitization bool   `json:"allowWithoutSanitization,omitempty"` // For "clipboard" permission, may specify allowWithoutSanitization.
+	PanTiltZoom              bool   `json:"panTiltZoom,omitempty"`              // For "camera" permission, may specify panTiltZoom.
 }
 
 // Chrome histogram bucket.
@@ -81,7 +82,7 @@ func (c *Browser) SetPermission(ctx context.Context, permission *BrowserPermissi
 }
 
 type BrowserGrantPermissionsParams struct {
-	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, videoCapturePanTiltZoom, idleDetection, wakeLockScreen, wakeLockSystem
 	Permissions []string `json:"permissions"`
 	// Origin the permission applies to, all origins if not specified.
 	Origin string `json:"origin,omitempty"`
@@ -95,7 +96,7 @@ func (c *Browser) GrantPermissionsWithParams(ctx context.Context, v *BrowserGran
 }
 
 // GrantPermissions - Grant specific permissions to the given origin and reject all others.
-// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, idleDetection, wakeLockScreen, wakeLockSystem
+// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, videoCapturePanTiltZoom, idleDetection, wakeLockScreen, wakeLockSystem
 // origin - Origin the permission applies to, all origins if not specified.
 // browserContextId - BrowserContext to override permissions. When omitted, default browser context is used.
 func (c *Browser) GrantPermissions(ctx context.Context, permissions []string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
@@ -451,7 +452,7 @@ func (c *Browser) SetWindowBounds(ctx context.Context, windowId int, bounds *Bro
 type BrowserSetDockTileParams struct {
 	//
 	BadgeLabel string `json:"badgeLabel,omitempty"`
-	// Png encoded image.
+	// Png encoded image. (Encoded as a base64 string when passed over JSON)
 	Image string `json:"image,omitempty"`
 }
 
@@ -462,10 +463,28 @@ func (c *Browser) SetDockTileWithParams(ctx context.Context, v *BrowserSetDockTi
 
 // SetDockTile - Set dock tile details, platform-specific.
 // badgeLabel -
-// image - Png encoded image.
+// image - Png encoded image. (Encoded as a base64 string when passed over JSON)
 func (c *Browser) SetDockTile(ctx context.Context, badgeLabel string, image string) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserSetDockTileParams
 	v.BadgeLabel = badgeLabel
 	v.Image = image
 	return c.SetDockTileWithParams(ctx, &v)
+}
+
+type BrowserExecuteBrowserCommandParams struct {
+	//  enum values: openTabSearch, closeTabSearch
+	CommandId string `json:"commandId"`
+}
+
+// ExecuteBrowserCommandWithParams - Invoke custom browser commands used by telemetry.
+func (c *Browser) ExecuteBrowserCommandWithParams(ctx context.Context, v *BrowserExecuteBrowserCommandParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.executeBrowserCommand", Params: v})
+}
+
+// ExecuteBrowserCommand - Invoke custom browser commands used by telemetry.
+// commandId -  enum values: openTabSearch, closeTabSearch
+func (c *Browser) ExecuteBrowserCommand(ctx context.Context, commandId string) (*gcdmessage.ChromeResponse, error) {
+	var v BrowserExecuteBrowserCommandParams
+	v.CommandId = commandId
+	return c.ExecuteBrowserCommandWithParams(ctx, &v)
 }

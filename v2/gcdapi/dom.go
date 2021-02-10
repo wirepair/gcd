@@ -36,7 +36,7 @@ type DOMNode struct {
 	XmlVersion       string            `json:"xmlVersion,omitempty"`       // `Document`'s XML version in case of XML documents.
 	Name             string            `json:"name,omitempty"`             // `Attr`'s name.
 	Value            string            `json:"value,omitempty"`            // `Attr`'s value.
-	PseudoType       string            `json:"pseudoType,omitempty"`       // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType       string            `json:"pseudoType,omitempty"`       // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
 	ShadowRootType   string            `json:"shadowRootType,omitempty"`   // Shadow root type. enum values: user-agent, open, closed
 	FrameId          string            `json:"frameId,omitempty"`          // Frame ID for frame owner elements.
 	ContentDocument  *DOMNode          `json:"contentDocument,omitempty"`  // Content document for frame owner elements.
