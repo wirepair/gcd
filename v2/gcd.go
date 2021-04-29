@@ -28,7 +28,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -89,7 +88,6 @@ type Gcd struct {
 	chomeApiVersion   string
 	ctx               context.Context
 	logger            Log
-	replayLog         io.Writer
 	debugEvents       bool
 	debug             bool
 }
