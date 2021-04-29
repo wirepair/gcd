@@ -46,7 +46,7 @@ type IOReadParams struct {
 }
 
 // ReadWithParams - Read a chunk of the stream
-// Returns -  base64Encoded - Set if the data is base64-encoded data - Data that were read. eof - Set if the end-of-file condition occured while reading.
+// Returns -  base64Encoded - Set if the data is base64-encoded data - Data that were read. eof - Set if the end-of-file condition occurred while reading.
 func (c *IO) ReadWithParams(ctx context.Context, v *IOReadParams) (bool, string, bool, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: v})
 	if err != nil {
@@ -83,7 +83,7 @@ func (c *IO) ReadWithParams(ctx context.Context, v *IOReadParams) (bool, string,
 // handle - Handle of the stream to read.
 // offset - Seek to the specified offset before reading (if not specificed, proceed with offset following the last read). Some types of streams may only support sequential reads.
 // size - Maximum number of bytes to read (left upon the agent discretion if not specified).
-// Returns -  base64Encoded - Set if the data is base64-encoded data - Data that were read. eof - Set if the end-of-file condition occured while reading.
+// Returns -  base64Encoded - Set if the data is base64-encoded data - Data that were read. eof - Set if the end-of-file condition occurred while reading.
 func (c *IO) Read(ctx context.Context, handle string, offset int, size int) (bool, string, bool, error) {
 	var v IOReadParams
 	v.Handle = handle

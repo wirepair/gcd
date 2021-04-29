@@ -12,7 +12,7 @@ import (
 // Fields in AudioContext that change in real-time.
 type WebAudioContextRealtimeData struct {
 	CurrentTime              float64 `json:"currentTime"`              // The current context time in second in BaseAudioContext.
-	RenderCapacity           float64 `json:"renderCapacity"`           // The time spent on rendering graph divided by render qunatum duration, and multiplied by 100. 100 means the audio renderer reached the full capacity and glitch may occur.
+	RenderCapacity           float64 `json:"renderCapacity"`           // The time spent on rendering graph divided by render quantum duration, and multiplied by 100. 100 means the audio renderer reached the full capacity and glitch may occur.
 	CallbackIntervalMean     float64 `json:"callbackIntervalMean"`     // A running mean of callback interval.
 	CallbackIntervalVariance float64 `json:"callbackIntervalVariance"` // A running variance of callback interval.
 }

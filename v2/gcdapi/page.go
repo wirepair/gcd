@@ -9,6 +9,19 @@ import (
 	"github.com/wirepair/gcd/v2/gcdmessage"
 )
 
+// No Description.
+type PagePermissionsPolicyBlockLocator struct {
+	FrameId     string `json:"frameId"`     //
+	BlockReason string `json:"blockReason"` //  enum values: Header, IframeAttribute
+}
+
+// No Description.
+type PagePermissionsPolicyFeatureState struct {
+	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, autoplay, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-lang, ch-rtt, ch-ua, ch-ua-arch, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full-version, ch-ua-platform-version, ch-viewport-width, ch-width, clipboard-read, clipboard-write, conversion-measurement, cross-origin-isolated, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, screen-wake-lock, serial, storage-access-api, sync-xhr, trust-token-redemption, usb, vertical-scroll, web-share, xr-spatial-tracking
+	Allowed bool                               `json:"allowed"`           //
+	Locator *PagePermissionsPolicyBlockLocator `json:"locator,omitempty"` //
+}
+
 // Information about the Frame on the page.
 type PageFrame struct {
 	Id                             string   `json:"id"`                             // Frame unique identifier.
@@ -142,6 +155,12 @@ type PageInstallabilityError struct {
 	ErrorArguments []*PageInstallabilityErrorArgument `json:"errorArguments"` // The list of error arguments (e.g. {name:'minimum-icon-size-in-pixels', value:'64'}).
 }
 
+// Per-script compilation cache parameters for `Page.produceCompilationCache`
+type PageCompilationCacheParams struct {
+	Url   string `json:"url"`             // The URL of the script to produce a compilation cache entry for.
+	Eager bool   `json:"eager,omitempty"` // A hint to the backend whether eager compilation is recommended. (the actual compilation mode used is upon backend discretion).
+}
+
 //
 type PageDomContentEventFiredEvent struct {
 	Method string `json:"method"`
@@ -192,6 +211,7 @@ type PageFrameNavigatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Frame *PageFrame `json:"frame"` // Frame object.
+		Type  string     `json:"type"`  //  enum values: Navigation, BackForwardCacheRestore
 	} `json:"Params,omitempty"`
 }
 
@@ -241,7 +261,7 @@ type PageFrameStoppedLoadingEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Fired when page is about to start a download.
+// Fired when page is about to start a download. Deprecated. Use Browser.downloadWillBegin instead.
 type PageDownloadWillBeginEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -252,7 +272,7 @@ type PageDownloadWillBeginEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Fired when download makes progress. Last call has |done| == true.
+// Fired when download makes progress. Last call has |done| == true. Deprecated. Use Browser.downloadProgress instead.
 type PageDownloadProgressEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -292,6 +312,15 @@ type PageLifecycleEventEvent struct {
 		LoaderId  string  `json:"loaderId"`  // Loader identifier. Empty string if the request is fetched from worker.
 		Name      string  `json:"name"`      //
 		Timestamp float64 `json:"timestamp"` //
+	} `json:"Params,omitempty"`
+}
+
+// Fired for failed bfcache history navigations if BackForwardCache feature is enabled. Do not assume any ordering with the Page.frameNavigated event. This event is fired only for main-frame history navigation where the document changes (non-same-document navigations), when bfcache navigation fails.
+type PageBackForwardCacheNotUsedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		LoaderId string `json:"loaderId"` // The loader id for the associated navgation.
+		FrameId  string `json:"frameId"`  // The frame id of the associated frame.
 	} `json:"Params,omitempty"`
 }
 
@@ -568,7 +597,7 @@ func (c *Page) CaptureSnapshot(ctx context.Context, format string) (string, erro
 	return c.CaptureSnapshotWithParams(ctx, &v)
 }
 
-// Clears the overriden device metrics.
+// Clears the overridden device metrics.
 func (c *Page) ClearDeviceMetricsOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearDeviceMetricsOverride"})
 }
@@ -578,7 +607,7 @@ func (c *Page) ClearDeviceOrientationOverride(ctx context.Context) (*gcdmessage.
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearDeviceOrientationOverride"})
 }
 
-// Clears the overriden Geolocation Position and Error.
+// Clears the overridden Geolocation Position and Error.
 func (c *Page) ClearGeolocationOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearGeolocationOverride"})
 }
@@ -833,37 +862,40 @@ func (c *Page) GetFrameTree(ctx context.Context) (*PageFrameTree, error) {
 }
 
 // GetLayoutMetrics - Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
-// Returns -  layoutViewport - Metrics relating to the layout viewport. visualViewport - Metrics relating to the visual viewport. contentSize - Size of scrollable area.
-func (c *Page) GetLayoutMetrics(ctx context.Context) (*PageLayoutViewport, *PageVisualViewport, *DOMRect, error) {
+// Returns -  layoutViewport - Deprecated metrics relating to the layout viewport. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssLayoutViewport` instead. visualViewport - Deprecated metrics relating to the visual viewport. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssVisualViewport` instead. contentSize - Deprecated size of scrollable area. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssContentSize` instead. cssLayoutViewport - Metrics relating to the layout viewport in CSS pixels. cssVisualViewport - Metrics relating to the visual viewport in CSS pixels. cssContentSize - Size of scrollable area in CSS pixels.
+func (c *Page) GetLayoutMetrics(ctx context.Context) (*PageLayoutViewport, *PageVisualViewport, *DOMRect, *PageLayoutViewport, *PageVisualViewport, *DOMRect, error) {
 	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getLayoutMetrics"})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			LayoutViewport *PageLayoutViewport
-			VisualViewport *PageVisualViewport
-			ContentSize    *DOMRect
+			LayoutViewport    *PageLayoutViewport
+			VisualViewport    *PageVisualViewport
+			ContentSize       *DOMRect
+			CssLayoutViewport *PageLayoutViewport
+			CssVisualViewport *PageVisualViewport
+			CssContentSize    *DOMRect
 		}
 	}
 
 	if resp == nil {
-		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
-	return chromeData.Result.LayoutViewport, chromeData.Result.VisualViewport, chromeData.Result.ContentSize, nil
+	return chromeData.Result.LayoutViewport, chromeData.Result.VisualViewport, chromeData.Result.ContentSize, chromeData.Result.CssLayoutViewport, chromeData.Result.CssVisualViewport, chromeData.Result.CssContentSize, nil
 }
 
 // GetNavigationHistory - Returns navigation history for the current page.
@@ -1372,6 +1404,52 @@ func (c *Page) SetBypassCSP(ctx context.Context, enabled bool) (*gcdmessage.Chro
 	return c.SetBypassCSPWithParams(ctx, &v)
 }
 
+type PageGetPermissionsPolicyStateParams struct {
+	//
+	FrameId string `json:"frameId"`
+}
+
+// GetPermissionsPolicyStateWithParams - Get Permissions Policy state on given frame.
+// Returns -  states -
+func (c *Page) GetPermissionsPolicyStateWithParams(ctx context.Context, v *PageGetPermissionsPolicyStateParams) ([]*PagePermissionsPolicyFeatureState, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getPermissionsPolicyState", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			States []*PagePermissionsPolicyFeatureState
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.States, nil
+}
+
+// GetPermissionsPolicyState - Get Permissions Policy state on given frame.
+// frameId -
+// Returns -  states -
+func (c *Page) GetPermissionsPolicyState(ctx context.Context, frameId string) ([]*PagePermissionsPolicyFeatureState, error) {
+	var v PageGetPermissionsPolicyStateParams
+	v.FrameId = frameId
+	return c.GetPermissionsPolicyStateWithParams(ctx, &v)
+}
+
 type PageSetDeviceMetricsOverrideParams struct {
 	// Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
 	Width int `json:"width"`
@@ -1521,7 +1599,7 @@ func (c *Page) SetDocumentContent(ctx context.Context, frameId string, html stri
 type PageSetDownloadBehaviorParams struct {
 	// Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny).
 	Behavior string `json:"behavior"`
-	// The default path to save downloaded files to. This is requred if behavior is set to 'allow'
+	// The default path to save downloaded files to. This is required if behavior is set to 'allow'
 	DownloadPath string `json:"downloadPath,omitempty"`
 }
 
@@ -1532,7 +1610,7 @@ func (c *Page) SetDownloadBehaviorWithParams(ctx context.Context, v *PageSetDown
 
 // SetDownloadBehavior - Set the behavior when downloading a file.
 // behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny).
-// downloadPath - The default path to save downloaded files to. This is requred if behavior is set to 'allow'
+// downloadPath - The default path to save downloaded files to. This is required if behavior is set to 'allow'
 func (c *Page) SetDownloadBehavior(ctx context.Context, behavior string, downloadPath string) (*gcdmessage.ChromeResponse, error) {
 	var v PageSetDownloadBehaviorParams
 	v.Behavior = behavior
@@ -1683,17 +1761,35 @@ type PageSetProduceCompilationCacheParams struct {
 	Enabled bool `json:"enabled"`
 }
 
-// SetProduceCompilationCacheWithParams - Forces compilation cache to be generated for every subresource script.
+// SetProduceCompilationCacheWithParams - Forces compilation cache to be generated for every subresource script. See also: `Page.produceCompilationCache`.
 func (c *Page) SetProduceCompilationCacheWithParams(ctx context.Context, v *PageSetProduceCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setProduceCompilationCache", Params: v})
 }
 
-// SetProduceCompilationCache - Forces compilation cache to be generated for every subresource script.
+// SetProduceCompilationCache - Forces compilation cache to be generated for every subresource script. See also: `Page.produceCompilationCache`.
 // enabled -
 func (c *Page) SetProduceCompilationCache(ctx context.Context, enabled bool) (*gcdmessage.ChromeResponse, error) {
 	var v PageSetProduceCompilationCacheParams
 	v.Enabled = enabled
 	return c.SetProduceCompilationCacheWithParams(ctx, &v)
+}
+
+type PageProduceCompilationCacheParams struct {
+	//
+	Scripts []*PageCompilationCacheParams `json:"scripts"`
+}
+
+// ProduceCompilationCacheWithParams - Requests backend to produce compilation cache for the specified scripts. Unlike setProduceCompilationCache, this allows client to only produce cache for specific scripts. `scripts` are appeneded to the list of scripts for which the cache for would produced. Disabling compilation cache with `setProduceCompilationCache` would reset all pending cache requests. The list may also be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
+func (c *Page) ProduceCompilationCacheWithParams(ctx context.Context, v *PageProduceCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.produceCompilationCache", Params: v})
+}
+
+// ProduceCompilationCache - Requests backend to produce compilation cache for the specified scripts. Unlike setProduceCompilationCache, this allows client to only produce cache for specific scripts. `scripts` are appeneded to the list of scripts for which the cache for would produced. Disabling compilation cache with `setProduceCompilationCache` would reset all pending cache requests. The list may also be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
+// scripts -
+func (c *Page) ProduceCompilationCache(ctx context.Context, scripts []*PageCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
+	var v PageProduceCompilationCacheParams
+	v.Scripts = scripts
+	return c.ProduceCompilationCacheWithParams(ctx, &v)
 }
 
 type PageAddCompilationCacheParams struct {

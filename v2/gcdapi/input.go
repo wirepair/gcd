@@ -24,6 +24,28 @@ type InputTouchPoint struct {
 	Id                 float64 `json:"id,omitempty"`                 // Identifier used to track touch sources between events, must be unique within an event.
 }
 
+// No Description.
+type InputDragDataItem struct {
+	MimeType string `json:"mimeType"`          // Mime type of the dragged data.
+	Data     string `json:"data"`              // Depending of the value of `mimeType`, it contains the dragged link, text, HTML markup or any other data.
+	Title    string `json:"title,omitempty"`   // Title associated with a link. Only valid when `mimeType` == "text/uri-list".
+	BaseURL  string `json:"baseURL,omitempty"` // Stores the base URL for the contained markup. Only valid when `mimeType` == "text/html".
+}
+
+// No Description.
+type InputDragData struct {
+	Items              []*InputDragDataItem `json:"items"`              //
+	DragOperationsMask int                  `json:"dragOperationsMask"` // Bit field representing allowed drag operations. Copy = 1, Link = 2, Move = 16
+}
+
+// Emitted only when `Input.setInterceptDrags` is enabled. Use this data with `Input.dispatchDragEvent` to restore normal drag and drop behavior.
+type InputDragInterceptedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Data *InputDragData `json:"data"` //
+	} `json:"Params,omitempty"`
+}
+
 type Input struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -31,6 +53,40 @@ type Input struct {
 func NewInput(target gcdmessage.ChromeTargeter) *Input {
 	c := &Input{target: target}
 	return c
+}
+
+type InputDispatchDragEventParams struct {
+	// Type of the drag event.
+	TheType string `json:"type"`
+	// X coordinate of the event relative to the main frame's viewport in CSS pixels.
+	X float64 `json:"x"`
+	// Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+	Y float64 `json:"y"`
+	//
+	Data *InputDragData `json:"data"`
+	// Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+	Modifiers int `json:"modifiers,omitempty"`
+}
+
+// DispatchDragEventWithParams - Dispatches a drag event into the page.
+func (c *Input) DispatchDragEventWithParams(ctx context.Context, v *InputDispatchDragEventParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchDragEvent", Params: v})
+}
+
+// DispatchDragEvent - Dispatches a drag event into the page.
+// type - Type of the drag event.
+// x - X coordinate of the event relative to the main frame's viewport in CSS pixels.
+// y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+// data -
+// modifiers - Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+func (c *Input) DispatchDragEvent(ctx context.Context, theType string, x float64, y float64, data *InputDragData, modifiers int) (*gcdmessage.ChromeResponse, error) {
+	var v InputDispatchDragEventParams
+	v.TheType = theType
+	v.X = x
+	v.Y = y
+	v.Data = data
+	v.Modifiers = modifiers
+	return c.DispatchDragEventWithParams(ctx, &v)
 }
 
 type InputDispatchKeyEventParams struct {
@@ -299,6 +355,24 @@ func (c *Input) SetIgnoreInputEvents(ctx context.Context, ignore bool) (*gcdmess
 	var v InputSetIgnoreInputEventsParams
 	v.Ignore = ignore
 	return c.SetIgnoreInputEventsWithParams(ctx, &v)
+}
+
+type InputSetInterceptDragsParams struct {
+	//
+	Enabled bool `json:"enabled"`
+}
+
+// SetInterceptDragsWithParams - Prevents default drag and drop behavior and instead emits `Input.dragIntercepted` events. Drag and drop behavior can be directly controlled via `Input.dispatchDragEvent`.
+func (c *Input) SetInterceptDragsWithParams(ctx context.Context, v *InputSetInterceptDragsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.setInterceptDrags", Params: v})
+}
+
+// SetInterceptDrags - Prevents default drag and drop behavior and instead emits `Input.dragIntercepted` events. Drag and drop behavior can be directly controlled via `Input.dispatchDragEvent`.
+// enabled -
+func (c *Input) SetInterceptDrags(ctx context.Context, enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v InputSetInterceptDragsParams
+	v.Enabled = enabled
+	return c.SetInterceptDragsWithParams(ctx, &v)
 }
 
 type InputSynthesizePinchGestureParams struct {

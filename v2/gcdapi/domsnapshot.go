@@ -127,15 +127,17 @@ type DOMSnapshotNodeTreeSnapshot struct {
 
 // Table of details of an element in the DOM tree with a LayoutObject.
 type DOMSnapshotLayoutTreeSnapshot struct {
-	NodeIndex        []int                       `json:"nodeIndex"`             // Index of the corresponding node in the `NodeTreeSnapshot` array returned by `captureSnapshot`.
-	Styles           []int                       `json:"styles"`                // Array of indexes specifying computed style strings, filtered according to the `computedStyles` parameter passed to `captureSnapshot`.
-	Bounds           []float64                   `json:"bounds"`                // The absolute position bounding box.
-	Text             []int                       `json:"text"`                  // Contents of the LayoutText, if any.
-	StackingContexts *DOMSnapshotRareBooleanData `json:"stackingContexts"`      // Stacking context information.
-	PaintOrders      []int                       `json:"paintOrders,omitempty"` // Global paint order index, which is determined by the stacking order of the nodes. Nodes that are painted together will have the same index. Only provided if includePaintOrder in captureSnapshot was true.
-	OffsetRects      []float64                   `json:"offsetRects,omitempty"` // The offset rect of nodes. Only available when includeDOMRects is set to true
-	ScrollRects      []float64                   `json:"scrollRects,omitempty"` // The scroll rect of nodes. Only available when includeDOMRects is set to true
-	ClientRects      []float64                   `json:"clientRects,omitempty"` // The client rect of nodes. Only available when includeDOMRects is set to true
+	NodeIndex               []int                       `json:"nodeIndex"`                         // Index of the corresponding node in the `NodeTreeSnapshot` array returned by `captureSnapshot`.
+	Styles                  []int                       `json:"styles"`                            // Array of indexes specifying computed style strings, filtered according to the `computedStyles` parameter passed to `captureSnapshot`.
+	Bounds                  []float64                   `json:"bounds"`                            // The absolute position bounding box.
+	Text                    []int                       `json:"text"`                              // Contents of the LayoutText, if any.
+	StackingContexts        *DOMSnapshotRareBooleanData `json:"stackingContexts"`                  // Stacking context information.
+	PaintOrders             []int                       `json:"paintOrders,omitempty"`             // Global paint order index, which is determined by the stacking order of the nodes. Nodes that are painted together will have the same index. Only provided if includePaintOrder in captureSnapshot was true.
+	OffsetRects             []float64                   `json:"offsetRects,omitempty"`             // The offset rect of nodes. Only available when includeDOMRects is set to true
+	ScrollRects             []float64                   `json:"scrollRects,omitempty"`             // The scroll rect of nodes. Only available when includeDOMRects is set to true
+	ClientRects             []float64                   `json:"clientRects,omitempty"`             // The client rect of nodes. Only available when includeDOMRects is set to true
+	BlendedBackgroundColors []int                       `json:"blendedBackgroundColors,omitempty"` // The list of background colors that are blended with colors of overlapping elements.
+	TextColorOpacities      []float64                   `json:"textColorOpacities,omitempty"`      // The list of computed text opacities.
 }
 
 // Table of details of the post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.
@@ -232,6 +234,10 @@ type DOMSnapshotCaptureSnapshotParams struct {
 	IncludePaintOrder bool `json:"includePaintOrder,omitempty"`
 	// Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
 	IncludeDOMRects bool `json:"includeDOMRects,omitempty"`
+	// Whether to include blended background colors in the snapshot (default: false). Blended background color is achieved by blending background colors of all elements that overlap with the current element.
+	IncludeBlendedBackgroundColors bool `json:"includeBlendedBackgroundColors,omitempty"`
+	// Whether to include text color opacity in the snapshot (default: false). An element might have the opacity property set that affects the text color of the element. The final text color opacity is computed based on the opacity of all overlapping elements.
+	IncludeTextColorOpacities bool `json:"includeTextColorOpacities,omitempty"`
 }
 
 // CaptureSnapshotWithParams - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
@@ -271,11 +277,15 @@ func (c *DOMSnapshot) CaptureSnapshotWithParams(ctx context.Context, v *DOMSnaps
 // computedStyles - Whitelist of computed styles to return.
 // includePaintOrder - Whether to include layout object paint orders into the snapshot.
 // includeDOMRects - Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
+// includeBlendedBackgroundColors - Whether to include blended background colors in the snapshot (default: false). Blended background color is achieved by blending background colors of all elements that overlap with the current element.
+// includeTextColorOpacities - Whether to include text color opacity in the snapshot (default: false). An element might have the opacity property set that affects the text color of the element. The final text color opacity is computed based on the opacity of all overlapping elements.
 // Returns -  documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. strings - Shared string table that all string properties refer to with indexes.
-func (c *DOMSnapshot) CaptureSnapshot(ctx context.Context, computedStyles []string, includePaintOrder bool, includeDOMRects bool) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
+func (c *DOMSnapshot) CaptureSnapshot(ctx context.Context, computedStyles []string, includePaintOrder bool, includeDOMRects bool, includeBlendedBackgroundColors bool, includeTextColorOpacities bool) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
 	var v DOMSnapshotCaptureSnapshotParams
 	v.ComputedStyles = computedStyles
 	v.IncludePaintOrder = includePaintOrder
 	v.IncludeDOMRects = includeDOMRects
+	v.IncludeBlendedBackgroundColors = includeBlendedBackgroundColors
+	v.IncludeTextColorOpacities = includeTextColorOpacities
 	return c.CaptureSnapshotWithParams(ctx, &v)
 }

@@ -26,8 +26,6 @@ package gcd
 
 import (
 	"context"
-	"log"
-	"net"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -63,7 +61,7 @@ type ChromeTarget struct {
 	replyDispatcher map[int64]chan *gcdmessage.Message     // Replies to synch methods using a non-buffered channel
 	eventLock       sync.RWMutex                           // lock for dispatching events
 	eventDispatcher map[string]func(*ChromeTarget, []byte) // calls the function when events match the subscribed method
-	conn            *wsConn                                // the connection to the chrome debugger service for this tab/process
+	conn            *WebSocket                             // the connection to the chrome debugger service for this tab/process
 
 	// Chrome Debugger Domains
 	Accessibility        *gcdapi.Accessibility
@@ -113,30 +111,36 @@ type ChromeTarget struct {
 	WebAudio             *gcdapi.WebAudio
 	WebAuthn             *gcdapi.WebAuthn
 
-	Target      *TargetInfo              // The target information see, TargetInfo
-	sendCh      chan *gcdmessage.Message // The channel used for API components to send back to use
-	doneCh      chan struct{}            // we be donez.
-	apiTimeout  time.Duration            // A customizable timeout for waiting on Chrome to respond to us
-	debugEvents bool                     // flag for spitting out event data as a string which we have not subscribed to.
-	debug       bool                     // flag for printing internal debugging messages
-	stopped     bool                     // we are/have shutdown
+	Target     *TargetInfo              // The target information see, TargetInfo
+	sendCh     chan *gcdmessage.Message // The channel used for API components to send back to use
+	doneCh     chan struct{}            // we be donez.
+	apiTimeout time.Duration            // A customizable timeout for waiting on Chrome to respond to us
+	logger     Log
+	debugger   *Gcd
+	stopped    bool // we are/have shutdown
 }
 
 // openChromeTarget creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
-func openChromeTarget(ctx context.Context, addr string, writeSize int, target *TargetInfo) (*ChromeTarget, error) {
-	conn, err := wsConnection(ctx, writeSize, target.WebSocketDebuggerUrl)
+func openChromeTarget(debugger *Gcd, target *TargetInfo) (*ChromeTarget, error) {
+	conn, err := wsConnection(debugger.ctx, target.WebSocketDebuggerUrl)
 	if err != nil {
 		return nil, err
 	}
-	replier := make(map[int64]chan *gcdmessage.Message)
-	//var replyLock sync.RWMutex
-	//var eventLock sync.RWMutex
-	eventer := make(map[string]func(*ChromeTarget, []byte))
-	sendCh := make(chan *gcdmessage.Message)
-	doneCh := make(chan struct{})
-	chromeTarget := &ChromeTarget{conn: conn, Target: target, sendCh: sendCh, replyDispatcher: replier, eventDispatcher: eventer, doneCh: doneCh, sendId: 0}
-	chromeTarget.apiTimeout = 120 * time.Second // default 120 seconds to wait for chrome to respond to us
-	chromeTarget.ctx = ctx
+
+	chromeTarget := &ChromeTarget{
+		conn:            conn,
+		ctx:             debugger.ctx,
+		Target:          target,
+		apiTimeout:      120 * time.Second, // default 120 seconds to wait for chrome to respond to us
+		sendCh:          make(chan *gcdmessage.Message),
+		replyDispatcher: make(map[int64]chan *gcdmessage.Message),
+		eventDispatcher: make(map[string]func(*ChromeTarget, []byte)),
+		doneCh:          make(chan struct{}),
+		logger:          debugger.logger,
+		debugger:        debugger,
+		sendId:          0,
+	}
+
 	chromeTarget.Init()
 	chromeTarget.listen()
 	return chromeTarget, nil
@@ -191,7 +195,6 @@ func (c *ChromeTarget) Init() {
 	c.WebAudio = gcdapi.NewWebAudio(c)
 	c.WebAuthn = gcdapi.NewWebAuthn(c)
 	c.BackgroundService = gcdapi.NewBackgroundService(c)
-
 }
 
 // clean up this target
@@ -205,7 +208,7 @@ func (c *ChromeTarget) shutdown() {
 	close(c.doneCh)
 
 	// close websocket connection
-	c.conn.Close()
+	c.conn.close()
 }
 
 // SetApiTimeout for how long we should wait before giving up gcdmessages.
@@ -238,16 +241,6 @@ func (c *ChromeTarget) Unsubscribe(method string) {
 	c.eventLock.Unlock()
 }
 
-// DebugEvents to print out raw JSON event data when not Subscribed.
-func (c *ChromeTarget) DebugEvents(debug bool) {
-	c.debugEvents = debug
-}
-
-// Debug for printing various debug information
-func (c *ChromeTarget) Debug(debug bool) {
-	c.debug = debug
-}
-
 // Listens for API components wanting to send, and recv'ing data from the Chrome Debugger Service
 func (c *ChromeTarget) listen() {
 	go c.listenRead()
@@ -264,62 +257,32 @@ func (c *ChromeTarget) listenWrite() {
 			c.replyDispatcher[msg.Id] = msg.ReplyCh
 			c.replyLock.Unlock()
 
-			c.debugf("%d sending to chrome. %s\n", msg.Id, msg.Data)
-			err := c.conn.Write(c.ctx, msg.Data)
+			c.logger.Println(msg.Id, " sending to chrome: ", string(msg.Data))
+			err := c.conn.Send(msg.Data)
 			if err != nil {
-				c.debugf("error sending message: %s\n", err)
+				c.logger.Println("error sending websocket message: ", err)
 				return
 			}
 		// receive done from listenRead
 		case <-c.doneCh:
 			return
+		case <-c.ctx.Done():
+			return
 		}
 	}
+
 }
 
 // Listens for responses coming in from the Chrome Debugger Service.
 func (c *ChromeTarget) listenRead() {
-	readCh := make(chan []byte, 1)
-	writeClosed := make(chan struct{})
-	go func() {
-		for {
-			var msg []byte
-			err := c.conn.Read(c.ctx, &msg)
-			if err != nil {
-				if opErr, ok := err.(*net.OpError); ok {
-					if opErr.Temporary() || opErr.Timeout() {
-						continue
-					}
-				}
-				c.debugf("error in ws read: %s\n", err)
-				close(writeClosed)
-				return
-			} else {
-				select {
-				case <-c.ctx.Done():
-					return
-				case readCh <- msg:
-				}
-			}
-		}
-	}()
-
 	for {
-		select {
-		case <-writeClosed:
+		msg, err := c.conn.Read()
+		if err != nil {
+			c.shutdown()
 			return
-		// receive done from listenWrite
-		case <-c.doneCh:
-			return
-		case <-c.ctx.Done():
-			return
-		case msg := <-readCh:
-			if len(msg) != 0 {
-				c.dispatchResponse(msg)
-			}
 		}
+		c.dispatchResponse(msg)
 	}
-
 }
 
 type responseHeader struct {
@@ -334,7 +297,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	f := &responseHeader{}
 	err := json.Unmarshal(msg, f)
 	if err != nil {
-		c.debugf("error reading response data from chrome target: %v\n", err)
+		c.logger.Println("error reading response data from chrome target", err)
 	}
 
 	c.replyLock.Lock()
@@ -342,8 +305,8 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	if r, ok := c.replyDispatcher[f.Id]; ok {
 		delete(c.replyDispatcher, f.Id)
 		c.replyLock.Unlock()
-		c.debugf("%d dispatching\n", f.Id)
-		c.dispatchWithTimeout(r, f.Id, msg)
+		c.logDebug("dispatching response id:", f.Id)
+		go c.dispatchWithTimeout(r, f.Id, msg)
 		return
 	}
 	c.replyLock.Unlock()
@@ -353,16 +316,15 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	c.eventLock.RLock()
 	if r, ok := c.eventDispatcher[f.Method]; ok {
 		c.eventLock.RUnlock()
-		c.debugf("dispatching %s event: %s\n", f.Method, string(msg))
+		c.logDebug("dispatching", f.Method, "event: ", string(msg))
 		go r(c, msg)
 		return
 
 	}
 	c.eventLock.RUnlock()
 
-	if c.debugEvents == true {
-		log.Printf("\n\nno event recv bound for: %s\n", f.Method)
-		log.Printf("data: %s\n\n", string(msg))
+	if c.debugger.debugEvents {
+		c.logger.Println("no event reciever bound: ", f.Method, " data: ", string(msg))
 	}
 }
 
@@ -374,7 +336,7 @@ func (c *ChromeTarget) dispatchWithTimeout(r chan<- *gcdmessage.Message, id int6
 	case r <- &gcdmessage.Message{Id: id, Data: msg}:
 		timeout.Stop()
 	case <-timeout.C:
-		c.debugf("timed out dispatching request id: %d of msg: %s\n", id, msg)
+		c.logDebug("timed out dispatching request id: ", id, " of msg: ", msg)
 		close(r)
 		return
 	}
@@ -398,9 +360,9 @@ func (c *ChromeTarget) checkTargetDisconnected(method string) {
 }
 
 // Connects to the tab/process for sending/recv'ing debug events
-func wsConnection(ctx context.Context, writeSize int, url string) (*wsConn, error) {
-	client, err := newWsConnDial(ctx, writeSize, url)
-	if err != nil {
+func wsConnection(ctx context.Context, url string) (*WebSocket, error) {
+	client := &WebSocket{}
+	if err := client.Connect(ctx, url, nil); err != nil {
 		return nil, err
 	}
 	return client, nil
@@ -424,8 +386,8 @@ func (c *ChromeTarget) GetDoneCh() chan struct{} {
 	return c.doneCh
 }
 
-func (c *ChromeTarget) debugf(format string, args ...interface{}) {
-	if c.debug {
-		log.Printf(format, args...)
+func (c *ChromeTarget) logDebug(args ...interface{}) {
+	if c.debugger.debug {
+		c.logger.Println(args...)
 	}
 }

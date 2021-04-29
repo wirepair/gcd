@@ -225,7 +225,7 @@ func (c *Storage) GetUsageAndQuota(ctx context.Context, origin string) (float64,
 type StorageOverrideQuotaForOriginParams struct {
 	// Security origin.
 	Origin string `json:"origin"`
-	// The quota size (in bytes) to override the original quota with. If this is called multiple times, the overriden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
+	// The quota size (in bytes) to override the original quota with. If this is called multiple times, the overridden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
 	QuotaSize float64 `json:"quotaSize,omitempty"`
 }
 
@@ -236,7 +236,7 @@ func (c *Storage) OverrideQuotaForOriginWithParams(ctx context.Context, v *Stora
 
 // OverrideQuotaForOrigin - Override quota for the specified origin
 // origin - Security origin.
-// quotaSize - The quota size (in bytes) to override the original quota with. If this is called multiple times, the overriden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
+// quotaSize - The quota size (in bytes) to override the original quota with. If this is called multiple times, the overridden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
 func (c *Storage) OverrideQuotaForOrigin(ctx context.Context, origin string, quotaSize float64) (*gcdmessage.ChromeResponse, error) {
 	var v StorageOverrideQuotaForOriginParams
 	v.Origin = origin
@@ -346,4 +346,50 @@ func (c *Storage) GetTrustTokens(ctx context.Context) ([]*StorageTrustTokens, er
 	}
 
 	return chromeData.Result.Tokens, nil
+}
+
+type StorageClearTrustTokensParams struct {
+	//
+	IssuerOrigin string `json:"issuerOrigin"`
+}
+
+// ClearTrustTokensWithParams - Removes all Trust Tokens issued by the provided issuerOrigin. Leaves other stored data, including the issuer's Redemption Records, intact.
+// Returns -  didDeleteTokens - True if any tokens were deleted, false otherwise.
+func (c *Storage) ClearTrustTokensWithParams(ctx context.Context, v *StorageClearTrustTokensParams) (bool, error) {
+	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearTrustTokens", Params: v})
+	if err != nil {
+		return false, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			DidDeleteTokens bool
+		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return false, err
+	}
+
+	return chromeData.Result.DidDeleteTokens, nil
+}
+
+// ClearTrustTokens - Removes all Trust Tokens issued by the provided issuerOrigin. Leaves other stored data, including the issuer's Redemption Records, intact.
+// issuerOrigin -
+// Returns -  didDeleteTokens - True if any tokens were deleted, false otherwise.
+func (c *Storage) ClearTrustTokens(ctx context.Context, issuerOrigin string) (bool, error) {
+	var v StorageClearTrustTokensParams
+	v.IssuerOrigin = issuerOrigin
+	return c.ClearTrustTokensWithParams(ctx, &v)
 }

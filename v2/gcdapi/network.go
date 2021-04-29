@@ -163,18 +163,20 @@ type NetworkInitiator struct {
 
 // Cookie object
 type NetworkCookie struct {
-	Name      string  `json:"name"`               // Cookie name.
-	Value     string  `json:"value"`              // Cookie value.
-	Domain    string  `json:"domain"`             // Cookie domain.
-	Path      string  `json:"path"`               // Cookie path.
-	Expires   float64 `json:"expires"`            // Cookie expiration date as the number of seconds since the UNIX epoch.
-	Size      int     `json:"size"`               // Cookie size.
-	HttpOnly  bool    `json:"httpOnly"`           // True if cookie is http-only.
-	Secure    bool    `json:"secure"`             // True if cookie is secure.
-	Session   bool    `json:"session"`            // True in case of session cookie.
-	SameSite  string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, None
-	Priority  string  `json:"priority"`           // Cookie Priority enum values: Low, Medium, High
-	SameParty bool    `json:"sameParty"`          // True if cookie is SameParty.
+	Name         string  `json:"name"`               // Cookie name.
+	Value        string  `json:"value"`              // Cookie value.
+	Domain       string  `json:"domain"`             // Cookie domain.
+	Path         string  `json:"path"`               // Cookie path.
+	Expires      float64 `json:"expires"`            // Cookie expiration date as the number of seconds since the UNIX epoch.
+	Size         int     `json:"size"`               // Cookie size.
+	HttpOnly     bool    `json:"httpOnly"`           // True if cookie is http-only.
+	Secure       bool    `json:"secure"`             // True if cookie is secure.
+	Session      bool    `json:"session"`            // True in case of session cookie.
+	SameSite     string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, None
+	Priority     string  `json:"priority"`           // Cookie Priority enum values: Low, Medium, High
+	SameParty    bool    `json:"sameParty"`          // True if cookie is SameParty.
+	SourceScheme string  `json:"sourceScheme"`       // Cookie source scheme type. enum values: Unset, NonSecure, Secure
+	SourcePort   int     `json:"sourcePort"`         // Cookie source port. Valid values are {-1, [1, 65535]}, -1 indicates an unspecified port. An unspecified port value allows protocol clients to emulate legacy cookie scope for the port. This is a temporary ability and it will be removed in the future.
 }
 
 // A cookie which was not stored from a response with the corresponding reason.
@@ -192,16 +194,19 @@ type NetworkBlockedCookieWithReason struct {
 
 // Cookie parameter object
 type NetworkCookieParam struct {
-	Name     string  `json:"name"`               // Cookie name.
-	Value    string  `json:"value"`              // Cookie value.
-	Url      string  `json:"url,omitempty"`      // The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
-	Domain   string  `json:"domain,omitempty"`   // Cookie domain.
-	Path     string  `json:"path,omitempty"`     // Cookie path.
-	Secure   bool    `json:"secure,omitempty"`   // True if cookie is secure.
-	HttpOnly bool    `json:"httpOnly,omitempty"` // True if cookie is http-only.
-	SameSite string  `json:"sameSite,omitempty"` // Cookie SameSite type. enum values: Strict, Lax, None
-	Expires  float64 `json:"expires,omitempty"`  // Cookie expiration date, session cookie if not set
-	Priority string  `json:"priority,omitempty"` // Cookie Priority. enum values: Low, Medium, High
+	Name         string  `json:"name"`                   // Cookie name.
+	Value        string  `json:"value"`                  // Cookie value.
+	Url          string  `json:"url,omitempty"`          // The request-URI to associate with the setting of the cookie. This value can affect the default domain, path, source port, and source scheme values of the created cookie.
+	Domain       string  `json:"domain,omitempty"`       // Cookie domain.
+	Path         string  `json:"path,omitempty"`         // Cookie path.
+	Secure       bool    `json:"secure,omitempty"`       // True if cookie is secure.
+	HttpOnly     bool    `json:"httpOnly,omitempty"`     // True if cookie is http-only.
+	SameSite     string  `json:"sameSite,omitempty"`     // Cookie SameSite type. enum values: Strict, Lax, None
+	Expires      float64 `json:"expires,omitempty"`      // Cookie expiration date, session cookie if not set
+	Priority     string  `json:"priority,omitempty"`     // Cookie Priority. enum values: Low, Medium, High
+	SameParty    bool    `json:"sameParty,omitempty"`    // True if cookie is SameParty.
+	SourceScheme string  `json:"sourceScheme,omitempty"` // Cookie source scheme type. enum values: Unset, NonSecure, Secure
+	SourcePort   int     `json:"sourcePort,omitempty"`   // Cookie source port. Valid values are {-1, [1, 65535]}, -1 indicates an unspecified port. An unspecified port value allows protocol clients to emulate legacy cookie scope for the port. This is a temporary ability and it will be removed in the future.
 }
 
 // Authorization challenge for HTTP status code 401 or 407.
@@ -223,7 +228,7 @@ type NetworkAuthChallengeResponse struct {
 type NetworkRequestPattern struct {
 	UrlPattern        string `json:"urlPattern,omitempty"`        // Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to "*".
 	ResourceType      string `json:"resourceType,omitempty"`      // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
-	InterceptionStage string `json:"interceptionStage,omitempty"` // Stage at wich to begin intercepting requests. Default is Request. enum values: Request, HeadersReceived
+	InterceptionStage string `json:"interceptionStage,omitempty"` // Stage at which to begin intercepting requests. Default is Request. enum values: Request, HeadersReceived
 }
 
 // Information about a signed exchange signature. https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#rfc.section.3.1
@@ -267,7 +272,7 @@ type NetworkSignedExchangeInfo struct {
 type NetworkClientSecurityState struct {
 	InitiatorIsSecureContext    bool   `json:"initiatorIsSecureContext"`    //
 	InitiatorIPAddressSpace     string `json:"initiatorIPAddressSpace"`     //  enum values: Local, Private, Public, Unknown
-	PrivateNetworkRequestPolicy string `json:"privateNetworkRequestPolicy"` //  enum values: Allow, BlockFromInsecureToMorePrivate
+	PrivateNetworkRequestPolicy string `json:"privateNetworkRequestPolicy"` //  enum values: Allow, BlockFromInsecureToMorePrivate, WarnFromInsecureToMorePrivate
 }
 
 // No Description.
@@ -280,8 +285,8 @@ type NetworkCrossOriginOpenerPolicyStatus struct {
 
 // No Description.
 type NetworkCrossOriginEmbedderPolicyStatus struct {
-	Value                       string `json:"value"`                                 //  enum values: None, RequireCorp
-	ReportOnlyValue             string `json:"reportOnlyValue"`                       //  enum values: None, RequireCorp
+	Value                       string `json:"value"`                                 //  enum values: None, CorsOrCredentialless, RequireCorp
+	ReportOnlyValue             string `json:"reportOnlyValue"`                       //  enum values: None, CorsOrCredentialless, RequireCorp
 	ReportingEndpoint           string `json:"reportingEndpoint,omitempty"`           //
 	ReportOnlyReportingEndpoint string `json:"reportOnlyReportingEndpoint,omitempty"` //
 }
@@ -340,7 +345,7 @@ type NetworkLoadingFailedEvent struct {
 		Type            string                  `json:"type"`                      // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		ErrorText       string                  `json:"errorText"`                 // User friendly error message.
 		Canceled        bool                    `json:"canceled,omitempty"`        // True if loading was canceled.
-		BlockedReason   string                  `json:"blockedReason,omitempty"`   // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type, collapsed-by-client, coep-frame-resource-needs-coep-header, coop-sandboxed-iframe-cannot-navigate-to-coop-page, corp-not-same-origin, corp-not-same-origin-after-defaulted-to-same-origin-by-coep, corp-not-same-site
+		BlockedReason   string                  `json:"blockedReason,omitempty"`   // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type, coep-frame-resource-needs-coep-header, coop-sandboxed-iframe-cannot-navigate-to-coop-page, corp-not-same-origin, corp-not-same-origin-after-defaulted-to-same-origin-by-coep, corp-not-same-site
 		CorsErrorStatus *NetworkCorsErrorStatus `json:"corsErrorStatus,omitempty"` // The reason why loading was blocked by CORS, if any.
 	} `json:"Params,omitempty"`
 }
@@ -575,6 +580,29 @@ type Network struct {
 func NewNetwork(target gcdmessage.ChromeTargeter) *Network {
 	c := &Network{target: target}
 	return c
+}
+
+type NetworkSetAcceptedEncodingsParams struct {
+	// List of accepted content encodings. enum values: deflate, gzip, br
+	Encodings []string `json:"encodings"`
+}
+
+// SetAcceptedEncodingsWithParams - Sets a list of content encodings that will be accepted. Empty list means no encoding is accepted.
+func (c *Network) SetAcceptedEncodingsWithParams(ctx context.Context, v *NetworkSetAcceptedEncodingsParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setAcceptedEncodings", Params: v})
+}
+
+// SetAcceptedEncodings - Sets a list of content encodings that will be accepted. Empty list means no encoding is accepted.
+// encodings - List of accepted content encodings. enum values: deflate, gzip, br
+func (c *Network) SetAcceptedEncodings(ctx context.Context, encodings []string) (*gcdmessage.ChromeResponse, error) {
+	var v NetworkSetAcceptedEncodingsParams
+	v.Encodings = encodings
+	return c.SetAcceptedEncodingsWithParams(ctx, &v)
+}
+
+// Clears accepted encodings set by setAcceptedEncodings
+func (c *Network) ClearAcceptedEncodingsOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearAcceptedEncodingsOverride"})
 }
 
 // CanClearBrowserCache - Tells whether clearing browser cache is supported.
@@ -1269,7 +1297,7 @@ type NetworkSetCookieParams struct {
 	Name string `json:"name"`
 	// Cookie value.
 	Value string `json:"value"`
-	// The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
+	// The request-URI to associate with the setting of the cookie. This value can affect the default domain, path, source port, and source scheme values of the created cookie.
 	Url string `json:"url,omitempty"`
 	// Cookie domain.
 	Domain string `json:"domain,omitempty"`
@@ -1285,6 +1313,12 @@ type NetworkSetCookieParams struct {
 	Expires float64 `json:"expires,omitempty"`
 	// Cookie Priority type. enum values: Low, Medium, High
 	Priority string `json:"priority,omitempty"`
+	// True if cookie is SameParty.
+	SameParty bool `json:"sameParty,omitempty"`
+	// Cookie source scheme type. enum values: Unset, NonSecure, Secure
+	SourceScheme string `json:"sourceScheme,omitempty"`
+	// Cookie source port. Valid values are {-1, [1, 65535]}, -1 indicates an unspecified port. An unspecified port value allows protocol clients to emulate legacy cookie scope for the port. This is a temporary ability and it will be removed in the future.
+	SourcePort int `json:"sourcePort,omitempty"`
 }
 
 // SetCookieWithParams - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
@@ -1322,7 +1356,7 @@ func (c *Network) SetCookieWithParams(ctx context.Context, v *NetworkSetCookiePa
 // SetCookie - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
 // name - Cookie name.
 // value - Cookie value.
-// url - The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
+// url - The request-URI to associate with the setting of the cookie. This value can affect the default domain, path, source port, and source scheme values of the created cookie.
 // domain - Cookie domain.
 // path - Cookie path.
 // secure - True if cookie is secure.
@@ -1330,8 +1364,11 @@ func (c *Network) SetCookieWithParams(ctx context.Context, v *NetworkSetCookiePa
 // sameSite - Cookie SameSite type. enum values: Strict, Lax, None
 // expires - Cookie expiration date, session cookie if not set
 // priority - Cookie Priority type. enum values: Low, Medium, High
+// sameParty - True if cookie is SameParty.
+// sourceScheme - Cookie source scheme type. enum values: Unset, NonSecure, Secure
+// sourcePort - Cookie source port. Valid values are {-1, [1, 65535]}, -1 indicates an unspecified port. An unspecified port value allows protocol clients to emulate legacy cookie scope for the port. This is a temporary ability and it will be removed in the future.
 // Returns -  success - Always set to true. If an error occurs, the response indicates protocol error.
-func (c *Network) SetCookie(ctx context.Context, name string, value string, url string, domain string, path string, secure bool, httpOnly bool, sameSite string, expires float64, priority string) (bool, error) {
+func (c *Network) SetCookie(ctx context.Context, name string, value string, url string, domain string, path string, secure bool, httpOnly bool, sameSite string, expires float64, priority string, sameParty bool, sourceScheme string, sourcePort int) (bool, error) {
 	var v NetworkSetCookieParams
 	v.Name = name
 	v.Value = value
@@ -1343,6 +1380,9 @@ func (c *Network) SetCookie(ctx context.Context, name string, value string, url 
 	v.SameSite = sameSite
 	v.Expires = expires
 	v.Priority = priority
+	v.SameParty = sameParty
+	v.SourceScheme = sourceScheme
+	v.SourcePort = sourcePort
 	return c.SetCookieWithParams(ctx, &v)
 }
 

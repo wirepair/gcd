@@ -42,6 +42,28 @@ type BrowserHistogram struct {
 	Buckets []*BrowserBucket `json:"buckets"` // Buckets.
 }
 
+// Fired when page is about to start a download.
+type BrowserDownloadWillBeginEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		FrameId           string `json:"frameId"`           // Id of the frame that caused the download to begin.
+		Guid              string `json:"guid"`              // Global unique identifier of the download.
+		Url               string `json:"url"`               // URL of the resource being downloaded.
+		SuggestedFilename string `json:"suggestedFilename"` // Suggested file name of the resource (the actual name of the file saved on disk may differ).
+	} `json:"Params,omitempty"`
+}
+
+// Fired when download makes progress. Last call has |done| == true.
+type BrowserDownloadProgressEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Guid          string  `json:"guid"`          // Global unique identifier of the download.
+		TotalBytes    float64 `json:"totalBytes"`    // Total expected bytes to download.
+		ReceivedBytes float64 `json:"receivedBytes"` // Total bytes received.
+		State         string  `json:"state"`         // Download status.
+	} `json:"Params,omitempty"`
+}
+
 type Browser struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -130,8 +152,10 @@ type BrowserSetDownloadBehaviorParams struct {
 	Behavior string `json:"behavior"`
 	// BrowserContext to set download behavior. When omitted, default browser context is used.
 	BrowserContextId string `json:"browserContextId,omitempty"`
-	// The default path to save downloaded files to. This is requred if behavior is set to 'allow' or 'allowAndName'.
+	// The default path to save downloaded files to. This is required if behavior is set to 'allow' or 'allowAndName'.
 	DownloadPath string `json:"downloadPath,omitempty"`
+	// Whether to emit download events (defaults to false).
+	EventsEnabled bool `json:"eventsEnabled,omitempty"`
 }
 
 // SetDownloadBehaviorWithParams - Set the behavior when downloading a file.
@@ -142,13 +166,37 @@ func (c *Browser) SetDownloadBehaviorWithParams(ctx context.Context, v *BrowserS
 // SetDownloadBehavior - Set the behavior when downloading a file.
 // behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
 // browserContextId - BrowserContext to set download behavior. When omitted, default browser context is used.
-// downloadPath - The default path to save downloaded files to. This is requred if behavior is set to 'allow' or 'allowAndName'.
-func (c *Browser) SetDownloadBehavior(ctx context.Context, behavior string, browserContextId string, downloadPath string) (*gcdmessage.ChromeResponse, error) {
+// downloadPath - The default path to save downloaded files to. This is required if behavior is set to 'allow' or 'allowAndName'.
+// eventsEnabled - Whether to emit download events (defaults to false).
+func (c *Browser) SetDownloadBehavior(ctx context.Context, behavior string, browserContextId string, downloadPath string, eventsEnabled bool) (*gcdmessage.ChromeResponse, error) {
 	var v BrowserSetDownloadBehaviorParams
 	v.Behavior = behavior
 	v.BrowserContextId = browserContextId
 	v.DownloadPath = downloadPath
+	v.EventsEnabled = eventsEnabled
 	return c.SetDownloadBehaviorWithParams(ctx, &v)
+}
+
+type BrowserCancelDownloadParams struct {
+	// Global unique identifier of the download.
+	Guid string `json:"guid"`
+	// BrowserContext to perform the action in. When omitted, default browser context is used.
+	BrowserContextId string `json:"browserContextId,omitempty"`
+}
+
+// CancelDownloadWithParams - Cancel a download if in progress
+func (c *Browser) CancelDownloadWithParams(ctx context.Context, v *BrowserCancelDownloadParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.cancelDownload", Params: v})
+}
+
+// CancelDownload - Cancel a download if in progress
+// guid - Global unique identifier of the download.
+// browserContextId - BrowserContext to perform the action in. When omitted, default browser context is used.
+func (c *Browser) CancelDownload(ctx context.Context, guid string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
+	var v BrowserCancelDownloadParams
+	v.Guid = guid
+	v.BrowserContextId = browserContextId
+	return c.CancelDownloadWithParams(ctx, &v)
 }
 
 // Close browser gracefully.

@@ -304,61 +304,6 @@ func (c *Debugger) EvaluateOnCallFrame(ctx context.Context, callFrameId string, 
 	return c.EvaluateOnCallFrameWithParams(ctx, &v)
 }
 
-type DebuggerExecuteWasmEvaluatorParams struct {
-	// WebAssembly call frame identifier to evaluate on.
-	CallFrameId string `json:"callFrameId"`
-	// Code of the evaluator module. (Encoded as a base64 string when passed over JSON)
-	Evaluator string `json:"evaluator"`
-	// Terminate execution after timing out (number of milliseconds).
-	Timeout float64 `json:"timeout,omitempty"`
-}
-
-// ExecuteWasmEvaluatorWithParams - Execute a Wasm Evaluator module on a given call frame.
-// Returns -  result - Object wrapper for the evaluation result. exceptionDetails - Exception details.
-func (c *Debugger) ExecuteWasmEvaluatorWithParams(ctx context.Context, v *DebuggerExecuteWasmEvaluatorParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.executeWasmEvaluator", Params: v})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Result           *RuntimeRemoteObject
-			ExceptionDetails *RuntimeExceptionDetails
-		}
-	}
-
-	if resp == nil {
-		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, err
-	}
-
-	return chromeData.Result.Result, chromeData.Result.ExceptionDetails, nil
-}
-
-// ExecuteWasmEvaluator - Execute a Wasm Evaluator module on a given call frame.
-// callFrameId - WebAssembly call frame identifier to evaluate on.
-// evaluator - Code of the evaluator module. (Encoded as a base64 string when passed over JSON)
-// timeout - Terminate execution after timing out (number of milliseconds).
-// Returns -  result - Object wrapper for the evaluation result. exceptionDetails - Exception details.
-func (c *Debugger) ExecuteWasmEvaluator(ctx context.Context, callFrameId string, evaluator string, timeout float64) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	var v DebuggerExecuteWasmEvaluatorParams
-	v.CallFrameId = callFrameId
-	v.Evaluator = evaluator
-	v.Timeout = timeout
-	return c.ExecuteWasmEvaluatorWithParams(ctx, &v)
-}
-
 type DebuggerGetPossibleBreakpointsParams struct {
 	// Start of range to search possible breakpoint locations in.
 	Start *DebuggerLocation `json:"start"`

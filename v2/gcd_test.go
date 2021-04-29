@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -40,9 +41,6 @@ func init() {
 	}
 	flag.StringVar(&testPort, "port", "9222", "Debugger port")
 
-	// TODO: remove this once mainline chrome supports it.
-	flag.BoolVar(&testSkipNetworkIntercept, "intercept", true, "set to false to test network intercept, will fail if browser does not support yet.")
-
 }
 
 func TestMain(m *testing.M) {
@@ -63,8 +61,7 @@ func TestDeleteProfileOnExit(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("windows will hold on to the process handle too long")
 	}
-	debugger := NewChromeDebugger()
-	debugger.DeleteProfileOnExit()
+	debugger := NewChromeDebugger(WithDeleteProfileOnExit())
 
 	profileDir := testRandomTempDir(t)
 	err := debugger.StartProcess(testPath, profileDir, testRandomPort(t))
@@ -93,8 +90,7 @@ func TestGetPages(t *testing.T) {
 
 func TestEnv(t *testing.T) {
 	var ok bool
-	debugger = NewChromeDebugger()
-	debugger.AddEnvironmentVars([]string{"hello=youze", "zoinks=scoob"})
+	debugger = NewChromeDebugger(WithEnvironmentVars([]string{"hello=youze", "zoinks=scoob"}))
 	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
 	defer debugger.ExitProcess()
 
@@ -110,15 +106,16 @@ func TestEnv(t *testing.T) {
 }
 
 func TestProcessKilled(t *testing.T) {
-	testDefaultStartup(t)
 	doneCh := make(chan struct{})
-	shutdown := time.NewTimer(time.Second * 4)
-	timeout := time.NewTimer(time.Second * 10)
+
 	terminatedHandler := func(reason string) {
 		t.Logf("reason: %s\n", reason)
 		doneCh <- struct{}{}
 	}
-	debugger.SetTerminationHandler(terminatedHandler)
+
+	testDefaultStartup(t, WithTerminationHandler(terminatedHandler))
+	shutdown := time.NewTimer(time.Second * 4)
+	timeout := time.NewTimer(time.Second * 10)
 	for {
 		select {
 		case <-doneCh:
@@ -204,8 +201,7 @@ func TestEvaluate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
-	target.Debug(true)
-	target.DebugEvents(true)
+
 	doneCh := make(chan struct{}, 1)
 	target.Subscribe("Runtime.executionContextCreated", func(target *ChromeTarget, v []byte) {
 		//target.Unsubscribe("Console.messageAdded")
@@ -273,24 +269,27 @@ func TestSimpleReturn(t *testing.T) {
 
 // Tests that the ctx canceled doesn't cause the wsconn to get stuck in a loop in windows
 func TestCtxCancel(t *testing.T) {
-	t.Skip()
-	testDefaultStartup(t)
+	testDefaultStartup(t, WithEventDebugging(), WithEventDebugging())
 	defer debugger.ExitProcess()
 
 	target, err := debugger.NewTab()
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
-	target.Debug(true)
-	target.DebugEvents(true)
+
 	network := target.Network
 	if _, err := network.Enable(testCtx, -1, -1, -1); err != nil {
 		t.Fatalf("error enabling network")
 	}
 	ctx, cancel := context.WithCancel(testCtx)
 	cancel()
-	network.CanClearBrowserCache(ctx)
-	network.CanClearBrowserCache(ctx)
+	if _, err := network.CanClearBrowserCache(ctx); err == nil {
+		t.Fatal(err)
+	}
+
+	if _, err := network.CanClearBrowserCache(ctx); err == nil {
+		t.Fatal(err)
+	}
 }
 
 func TestSimpleReturnWithParams(t *testing.T) {
@@ -404,7 +403,10 @@ func TestConnectToInstance(t *testing.T) {
 
 func TestLocalExtension(t *testing.T) {
 	testExtensionStartup(t)
-	debugger.ConnectToInstance(debugger.host, debugger.port)
+	if err := debugger.ConnectToInstance(debugger.host, debugger.port); err != nil {
+		t.Fatalf("failed to connect: %s\n", err)
+	}
+
 	defer debugger.ExitProcess()
 
 	doneCh := make(chan struct{})
@@ -437,12 +439,30 @@ func TestLocalExtension(t *testing.T) {
 	<-doneCh
 }
 
-func TestNetworkIntercept(t *testing.T) {
-	if testSkipNetworkIntercept {
-		return
+func TestContextCancel(t *testing.T) {
+	testDefaultStartup(t, WithEventDebugging(), WithInternalDebugMessages(), WithLogger(&DebugLogger{}))
+	defer debugger.ExitProcess()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+
+	target, err := debugger.GetFirstTab()
+	if err != nil {
+		t.Fatalf("error getting first tab")
 	}
 
-	testDefaultStartup(t)
+	if _, err := target.Page.Enable(testCtx); err != nil {
+		t.Fatalf("error enabling page: %s\n", err)
+	}
+
+	if _, err := target.Page.WaitForDebugger(ctx); err == nil {
+		t.Fatalf("did not get cancelation")
+	}
+}
+
+func TestNetworkIntercept(t *testing.T) {
+
+	testDefaultStartup(t, WithEventDebugging(), WithInternalDebugMessages(), WithLogger(&DebugLogger{}))
 	defer debugger.ExitProcess()
 
 	doneCh := make(chan struct{})
@@ -453,28 +473,44 @@ func TestNetworkIntercept(t *testing.T) {
 	}
 
 	go testTimeoutListener(t, doneCh, 5, "timed out waiting for requestIntercepted")
-	network := target.Network
-
-	networkParams := &gcdapi.NetworkEnableParams{
-		MaxTotalBufferSize:    -1,
-		MaxResourceBufferSize: -1,
+	ctx := context.Background()
+	if _, err := target.Fetch.Enable(ctx, []*gcdapi.FetchRequestPattern{
+		{
+			UrlPattern:   "*",
+			RequestStage: "Request",
+		},
+	}, false); err != nil {
+		t.Fatalf("error enabling fetch: %s", err)
 	}
 
-	if _, err := network.EnableWithParams(testCtx, networkParams); err != nil {
-		t.Fatalf("error enabling network")
-	}
-	patterns := make([]*gcdapi.NetworkRequestPattern, 1)
-	patterns[0] = &gcdapi.NetworkRequestPattern{UrlPattern: "*", ResourceType: "Document"}
-	interceptParams := &gcdapi.NetworkSetRequestInterceptionParams{Patterns: patterns}
-
-	if _, err := network.SetRequestInterceptionWithParams(testCtx, interceptParams); err != nil {
-		t.Fatalf("unable to set interception enabled: %s\n", err)
-	}
-
-	target.Subscribe("Network.requestIntercepted", func(target *ChromeTarget, payload []byte) {
-		fmt.Printf("requestIntercepted event fired %s\n", string(payload))
-		t.Logf("requestIntercepted event fired %s\n", string(payload))
+	target.Subscribe("Fetch.requestPaused", func(target *ChromeTarget, payload []byte) {
 		close(doneCh)
+
+		pausedEvent := &gcdapi.FetchRequestPausedEvent{}
+		if err := json.Unmarshal(payload, pausedEvent); err != nil {
+			t.Fatalf("error unmarshal: %s\n", err)
+		}
+		requestHeaders := pausedEvent.Params.Request.Headers
+		fetchHeaders := make([]*gcdapi.FetchHeaderEntry, 0)
+		for k, v := range requestHeaders {
+			value := ""
+			switch t := v.(type) {
+			case string:
+				value = t
+			case []string:
+				value = strings.Join(t, "")
+			}
+			fetchHeaders = append(fetchHeaders, &gcdapi.FetchHeaderEntry{Name: k, Value: value})
+		}
+
+		p := &gcdapi.FetchContinueRequestParams{
+			RequestId: pausedEvent.Params.RequestId,
+			Url:       pausedEvent.Params.Request.Url,
+			Method:    pausedEvent.Method,
+			PostData:  pausedEvent.Params.Request.PostData,
+			Headers:   fetchHeaders,
+		}
+		target.Fetch.ContinueRequestWithParams(ctx, p)
 	})
 
 	params := &gcdapi.PageNavigateParams{Url: "http://www.example.com"}
@@ -507,25 +543,53 @@ func TestCloseTab(t *testing.T) {
 	}
 }
 
+type testLogger struct {
+	called bool
+}
+
+func (t *testLogger) Println(msg ...interface{}) {
+	t.called = true
+}
+
+func TestCustomLogger(t *testing.T) {
+	customLogger := &testLogger{}
+	testDefaultStartup(t, WithLogger(customLogger), WithEventDebugging())
+	defer debugger.ExitProcess()
+	tab, err := debugger.GetFirstTab()
+	if err != nil {
+		t.Fatalf("error getting first tab: %v\n", err)
+	}
+
+	if _, err = tab.Page.Enable(context.TODO()); err != nil {
+		t.Fatalf("error using custom logger")
+	}
+
+	if !customLogger.called {
+		t.Fatalf("custom logger was not called")
+	}
+}
+
 // UTILITY FUNCTIONS
 func testExtensionStartup(t *testing.T) {
-	debugger = NewChromeDebugger()
-	sep := string(os.PathSeparator)
-
 	path, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("error getting working directory: %s\n", err)
 	}
 
+	sep := string(os.PathSeparator)
 	extensionPath := "--load-extension=" + path + sep + "testdata" + sep + "extension" + sep
-	debugger.AddFlags([]string{extensionPath})
+	debugger = NewChromeDebugger(WithFlags([]string{extensionPath}))
+
 	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
 }
 
-func testDefaultStartup(t *testing.T) {
-	debugger = NewChromeDebugger()
-	debugger.DeleteProfileOnExit()
-	debugger.AddFlags([]string{"--headless"})
+func testDefaultStartup(t *testing.T, opts ...func(*Gcd)) {
+	mergedOpts := make([]func(*Gcd), 0)
+	mergedOpts = append(mergedOpts, WithDeleteProfileOnExit())
+	mergedOpts = append(mergedOpts, WithFlags([]string{"--headless"}))
+	mergedOpts = append(mergedOpts, opts...)
+	debugger = NewChromeDebugger(mergedOpts...)
+
 	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
 }
 

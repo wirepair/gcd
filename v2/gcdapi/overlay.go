@@ -104,6 +104,20 @@ type OverlayFlexNodeHighlightConfig struct {
 	NodeId                       int                                  `json:"nodeId"`                       // Identifier of the node to highlight.
 }
 
+// No Description.
+type OverlayScrollSnapContainerHighlightConfig struct {
+	SnapportBorder     *OverlayLineStyle `json:"snapportBorder,omitempty"`     // The style of the snapport border (default: transparent)
+	SnapAreaBorder     *OverlayLineStyle `json:"snapAreaBorder,omitempty"`     // The style of the snap area border (default: transparent)
+	ScrollMarginColor  *DOMRGBA          `json:"scrollMarginColor,omitempty"`  // The margin highlight fill color (default: transparent).
+	ScrollPaddingColor *DOMRGBA          `json:"scrollPaddingColor,omitempty"` // The padding highlight fill color (default: transparent).
+}
+
+// No Description.
+type OverlayScrollSnapHighlightConfig struct {
+	ScrollSnapContainerHighlightConfig *OverlayScrollSnapContainerHighlightConfig `json:"scrollSnapContainerHighlightConfig"` // A descriptor for the highlight appearance of scroll snap containers.
+	NodeId                             int                                        `json:"nodeId"`                             // Identifier of the node to highlight.
+}
+
 // Configuration for dual screen hinge
 type OverlayHingeConfig struct {
 	Rect         *DOMRect `json:"rect"`                   // A rectangle represent hinge
@@ -595,6 +609,24 @@ func (c *Overlay) SetShowFlexOverlays(ctx context.Context, flexNodeHighlightConf
 	var v OverlaySetShowFlexOverlaysParams
 	v.FlexNodeHighlightConfigs = flexNodeHighlightConfigs
 	return c.SetShowFlexOverlaysWithParams(ctx, &v)
+}
+
+type OverlaySetShowScrollSnapOverlaysParams struct {
+	// An array of node identifiers and descriptors for the highlight appearance.
+	ScrollSnapHighlightConfigs []*OverlayScrollSnapHighlightConfig `json:"scrollSnapHighlightConfigs"`
+}
+
+// SetShowScrollSnapOverlaysWithParams -
+func (c *Overlay) SetShowScrollSnapOverlaysWithParams(ctx context.Context, v *OverlaySetShowScrollSnapOverlaysParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowScrollSnapOverlays", Params: v})
+}
+
+// SetShowScrollSnapOverlays -
+// scrollSnapHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
+func (c *Overlay) SetShowScrollSnapOverlays(ctx context.Context, scrollSnapHighlightConfigs []*OverlayScrollSnapHighlightConfig) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowScrollSnapOverlaysParams
+	v.ScrollSnapHighlightConfigs = scrollSnapHighlightConfigs
+	return c.SetShowScrollSnapOverlaysWithParams(ctx, &v)
 }
 
 type OverlaySetShowPaintRectsParams struct {
