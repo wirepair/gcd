@@ -174,6 +174,8 @@ type TracingStartParams struct {
 	TraceConfig *TracingTraceConfig `json:"traceConfig,omitempty"`
 	// Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters `categories`, `options`, `traceConfig` are ignored. (Encoded as a base64 string when passed over JSON)
 	PerfettoConfig string `json:"perfettoConfig,omitempty"`
+	// Backend type (defaults to `auto`) enum values: auto, chrome, system
+	TracingBackend string `json:"tracingBackend,omitempty"`
 }
 
 // StartWithParams - Start trace events collection.
@@ -190,7 +192,8 @@ func (c *Tracing) StartWithParams(ctx context.Context, v *TracingStartParams) (*
 // streamCompression - Compression format to use. This only applies when using `ReturnAsStream` transfer mode (defaults to `none`) enum values: none, gzip
 // traceConfig -
 // perfettoConfig - Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters `categories`, `options`, `traceConfig` are ignored. (Encoded as a base64 string when passed over JSON)
-func (c *Tracing) Start(ctx context.Context, categories string, options string, bufferUsageReportingInterval float64, transferMode string, streamFormat string, streamCompression string, traceConfig *TracingTraceConfig, perfettoConfig string) (*gcdmessage.ChromeResponse, error) {
+// tracingBackend - Backend type (defaults to `auto`) enum values: auto, chrome, system
+func (c *Tracing) Start(ctx context.Context, categories string, options string, bufferUsageReportingInterval float64, transferMode string, streamFormat string, streamCompression string, traceConfig *TracingTraceConfig, perfettoConfig string, tracingBackend string) (*gcdmessage.ChromeResponse, error) {
 	var v TracingStartParams
 	v.Categories = categories
 	v.Options = options
@@ -200,5 +203,6 @@ func (c *Tracing) Start(ctx context.Context, categories string, options string, 
 	v.StreamCompression = streamCompression
 	v.TraceConfig = traceConfig
 	v.PerfettoConfig = perfettoConfig
+	v.TracingBackend = tracingBackend
 	return c.StartWithParams(ctx, &v)
 }

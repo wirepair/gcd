@@ -13,7 +13,7 @@ import (
 type FetchRequestPattern struct {
 	UrlPattern   string `json:"urlPattern,omitempty"`   // Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to "*".
 	ResourceType string `json:"resourceType,omitempty"` // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
-	RequestStage string `json:"requestStage,omitempty"` // Stage at wich to begin intercepting requests. Default is Request. enum values: Request, Response
+	RequestStage string `json:"requestStage,omitempty"` // Stage at which to begin intercepting requests. Default is Request. enum values: Request, Response
 }
 
 // Response HTTP header entry

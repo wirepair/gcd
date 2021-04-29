@@ -29,7 +29,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -43,7 +42,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.0.7"
+var GCDVERSION = "v2.1.1"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -87,39 +86,86 @@ type Gcd struct {
 	flags             []string
 	env               []string
 	chomeApiVersion   string
-	wsWriteSize       int
 	ctx               context.Context
+	logger            Log
+	debugEvents       bool
+	debug             bool
 }
 
 // Give it a friendly name.
-func NewChromeDebugger() *Gcd {
+func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 	c := &Gcd{processLock: &sync.RWMutex{}}
 	c.timeout = 15
-	c.wsWriteSize = 3000000 // 3mb
 	c.host = "localhost"
 	c.readyCh = make(chan struct{})
 	c.terminatedHandler = nil
 	c.flags = make([]string, 0)
 	c.env = make([]string, 0)
 	c.ctx = context.Background()
+	c.logger = LogDiscarder{}
+
+	for _, o := range opts {
+		o(c)
+	}
 	return c
 }
 
-// Pass a handler to be notified when the chrome process exits.
-func (c *Gcd) SetTerminationHandler(handler TerminatedHandler) {
-	c.terminatedHandler = handler
+// WithTerminationHandler Pass a handler to be notified when the chrome process exits.
+func WithTerminationHandler(handler TerminatedHandler) func(*Gcd) {
+	return func(g *Gcd) {
+		g.terminatedHandler = handler
+	}
 }
 
-// SetTimeout for how long we should wait for debug port to become available.
-func (c *Gcd) SetTimeout(timeout time.Duration) {
-	c.timeout = timeout
+// WithDebugPortTimeout for how long we should wait for debug port to become available.
+func WithDebugPortTimeout(timeout time.Duration) func(*Gcd) {
+	return func(g *Gcd) {
+		g.timeout = timeout
+	}
 }
 
-// SetWSWriteSize sets the ws conn write size, this can have huge impact
-// on memory allocation, so start small-ish and adjust up if messages are
-// getting blocked
-func (c *Gcd) SetWSWriteSize(newSize int) {
-	c.wsWriteSize = newSize
+// WithFlags allows caller to add additional startup flags to the chrome process
+func WithFlags(flags []string) func(*Gcd) {
+	return func(g *Gcd) {
+		g.flags = append(g.flags, flags...)
+	}
+}
+
+// WithEnvironmentVars for the chrome process, useful for Xvfb etc.
+func WithEnvironmentVars(vars []string) func(*Gcd) {
+	return func(g *Gcd) {
+		g.env = append(g.env, vars...)
+	}
+}
+
+func WithDeleteProfileOnExit() func(*Gcd) {
+	return func(g *Gcd) {
+		g.deleteProfile = true
+	}
+}
+
+func WithLogger(l Log) func(*Gcd) {
+	return func(g *Gcd) {
+		g.logger = l
+	}
+}
+
+func WithContext(ctx context.Context) func(*Gcd) {
+	return func(g *Gcd) {
+		g.ctx = ctx
+	}
+}
+
+func WithEventDebugging() func(*Gcd) {
+	return func(g *Gcd) {
+		g.debugEvents = true
+	}
+}
+
+func WithInternalDebugMessages() func(*Gcd) {
+	return func(g *Gcd) {
+		g.debug = true
+	}
 }
 
 // Port that the debugger is listening on
@@ -130,20 +176,6 @@ func (c *Gcd) Port() string {
 // Host that the debugger is listening on
 func (c *Gcd) Host() string {
 	return c.host
-}
-
-// AddFlags Allows caller to add additional startup flags to the chrome process
-func (c *Gcd) AddFlags(flags []string) {
-	c.flags = append(c.flags, flags...)
-}
-
-// AddEnvironmentVars for the chrome process, useful for Xvfb etc.
-func (c *Gcd) AddEnvironmentVars(vars []string) {
-	c.env = append(c.env, vars...)
-}
-
-func (c *Gcd) DeleteProfileOnExit() {
-	c.deleteProfile = true
 }
 
 // StartProcess the process
@@ -192,7 +224,7 @@ func (c *Gcd) startProcess() error {
 			if c.terminatedHandler != nil {
 				c.terminatedHandler(msg)
 			} else {
-				log.Println(msg)
+				c.logger.Println(msg)
 			}
 		}
 		c.processLock.Lock()
@@ -242,7 +274,7 @@ func (c *Gcd) removeProfileDir() {
 		// let chrome shutdown completely before deleting
 		time.Sleep(1 * time.Second)
 		if err := os.RemoveAll(c.profileDir); err != nil {
-			log.Printf("error deleting profile directory: %s\n", err)
+			c.logger.Println("error deleting profile directory", err)
 		}
 	}
 }
@@ -282,9 +314,9 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 	}
 
 	chromeTargets := make([]*ChromeTarget, 0)
-	for _, v := range connectableTargets {
-		if _, ok := knownIds[v.Id]; !ok {
-			target, err := openChromeTarget(c.ctx, c.addr, c.wsWriteSize, v)
+	for _, connectableTarget := range connectableTargets {
+		if _, ok := knownIds[connectableTarget.Id]; !ok {
+			target, err := openChromeTarget(c, connectableTarget)
 			if err != nil {
 				return nil, err
 			}
@@ -347,7 +379,7 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	if err != nil {
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
-	return openChromeTarget(c.ctx, c.addr, c.wsWriteSize, tabTarget)
+	return openChromeTarget(c, tabTarget)
 }
 
 // GetFirstTab returns the first tab created, to be called when
@@ -357,9 +389,10 @@ func (c *Gcd) GetFirstTab() (*ChromeTarget, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	for _, tabTarget := range connectableTargets {
 		if tabTarget.Type == "page" {
-			return openChromeTarget(c.ctx, c.addr, c.wsWriteSize, tabTarget)
+			return openChromeTarget(c, tabTarget)
 		}
 	}
 	return nil, ErrNoTabAvailable
@@ -372,7 +405,6 @@ func (c *Gcd) GetRevision() string {
 
 // CloseTab closes the target tab.
 func (c *Gcd) CloseTab(target *ChromeTarget) error {
-	target.shutdown() // close WS connection first
 	resp, err := http.Get(fmt.Sprintf("%s/close/%s", c.apiEndpoint, target.Target.Id))
 	if err != nil {
 		return err

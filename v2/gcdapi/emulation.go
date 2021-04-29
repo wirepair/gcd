@@ -86,12 +86,12 @@ func (c *Emulation) CanEmulate(ctx context.Context) (bool, error) {
 	return chromeData.Result.Result, nil
 }
 
-// Clears the overriden device metrics.
+// Clears the overridden device metrics.
 func (c *Emulation) ClearDeviceMetricsOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDeviceMetricsOverride"})
 }
 
-// Clears the overriden Geolocation Position and Error.
+// Clears the overridden Geolocation Position and Error.
 func (c *Emulation) ClearGeolocationOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearGeolocationOverride"})
 }
@@ -457,7 +457,7 @@ type EmulationSetVirtualTimePolicyParams struct {
 	MaxVirtualTimeTaskStarvationCount int `json:"maxVirtualTimeTaskStarvationCount,omitempty"`
 	// If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
 	WaitForNavigation bool `json:"waitForNavigation,omitempty"`
-	// If set, base::Time::Now will be overriden to initially return this value.
+	// If set, base::Time::Now will be overridden to initially return this value.
 	InitialVirtualTime float64 `json:"initialVirtualTime,omitempty"`
 }
 
@@ -498,7 +498,7 @@ func (c *Emulation) SetVirtualTimePolicyWithParams(ctx context.Context, v *Emula
 // budget - If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
 // maxVirtualTimeTaskStarvationCount - If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
 // waitForNavigation - If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
-// initialVirtualTime - If set, base::Time::Now will be overriden to initially return this value.
+// initialVirtualTime - If set, base::Time::Now will be overridden to initially return this value.
 // Returns -  virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
 func (c *Emulation) SetVirtualTimePolicy(ctx context.Context, policy string, budget float64, maxVirtualTimeTaskStarvationCount int, waitForNavigation bool, initialVirtualTime float64) (float64, error) {
 	var v EmulationSetVirtualTimePolicyParams
@@ -569,7 +569,7 @@ func (c *Emulation) SetVisibleSize(ctx context.Context, width int, height int) (
 }
 
 type EmulationSetDisabledImageTypesParams struct {
-	// Image types to disable. enum values: avif, webp
+	// Image types to disable. enum values: avif, jxl, webp
 	ImageTypes []string `json:"imageTypes"`
 }
 
@@ -579,7 +579,7 @@ func (c *Emulation) SetDisabledImageTypesWithParams(ctx context.Context, v *Emul
 }
 
 // SetDisabledImageTypes -
-// imageTypes - Image types to disable. enum values: avif, webp
+// imageTypes - Image types to disable. enum values: avif, jxl, webp
 func (c *Emulation) SetDisabledImageTypes(ctx context.Context, imageTypes []string) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetDisabledImageTypesParams
 	v.ImageTypes = imageTypes

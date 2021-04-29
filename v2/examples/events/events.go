@@ -125,8 +125,7 @@ func startGcd() *gcd.Gcd {
 	testDir = testRandomDir()
 	testPort = testRandomPort()
 	testServer() // start test web server
-	debugger := gcd.NewChromeDebugger()
-	debugger.AddFlags(testStartupFlags)
+	debugger := gcd.NewChromeDebugger(gcd.WithFlags(testStartupFlags), gcd.WithEventDebugging())
 	debugger.StartProcess(testPath, testDir, testPort)
 	return debugger
 }
@@ -137,7 +136,6 @@ func startTarget(debugger *gcd.Gcd) *gcd.ChromeTarget {
 		log.Fatalf("error getting new tab: %s\n", err)
 	}
 	ctx := context.Background()
-	target.DebugEvents(true)
 	target.DOM.Enable(ctx)
 	target.Console.Enable(ctx)
 	target.Page.Enable(ctx)

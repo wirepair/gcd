@@ -1,3 +1,10 @@
+# Changelog (2021)
+
+- 2.1.1 (April 29th): Update to chrome version 90.0.4430.93.
+  - Replaced websocket with [rod's](https://go-rod.github.io/#/) implementation (You should use their library!).
+  - Added functional opts for creating Gcd objects.
+  - Allow custom logger
+
 # Changelog (2020)
 
 - September 1st: Update to chrome version 85.0.4183.83, add a lock around process for -race.

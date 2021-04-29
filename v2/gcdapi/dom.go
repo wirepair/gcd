@@ -43,7 +43,7 @@ type DOMNode struct {
 	ShadowRoots      []*DOMNode        `json:"shadowRoots,omitempty"`      // Shadow root list for given element host.
 	TemplateContent  *DOMNode          `json:"templateContent,omitempty"`  // Content document fragment for template elements.
 	PseudoElements   []*DOMNode        `json:"pseudoElements,omitempty"`   // Pseudo elements associated with this node.
-	ImportedDocument *DOMNode          `json:"importedDocument,omitempty"` // Import document for the HTMLImport links.
+	ImportedDocument *DOMNode          `json:"importedDocument,omitempty"` // Deprecated, as the HTML Imports API has been removed (crbug.com/937746). This property used to return the imported document for the HTMLImport links. The property is always undefined now.
 	DistributedNodes []*DOMBackendNode `json:"distributedNodes,omitempty"` // Distributed nodes for given insertion point.
 	IsSVG            bool              `json:"isSVG,omitempty"`            // Whether the node is SVG.
 }
@@ -144,11 +144,11 @@ type DOMChildNodeRemovedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Called when distrubution is changed.
+// Called when distribution is changed.
 type DOMDistributedNodesUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		InsertionPointId int               `json:"insertionPointId"` // Insertion point where distrubuted nodes were updated.
+		InsertionPointId int               `json:"insertionPointId"` // Insertion point where distributed nodes were updated.
 		DistributedNodes []*DOMBackendNode `json:"distributedNodes"` // Distributed nodes for given insertion point.
 	} `json:"Params,omitempty"`
 }

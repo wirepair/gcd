@@ -82,7 +82,7 @@ type AuditsContentSecurityPolicyIssueDetails struct {
 	ViolatingNodeId                    int                       `json:"violatingNodeId,omitempty"`          //
 }
 
-// Details for a request that has been blocked with the BLOCKED_BY_RESPONSE code. Currently only used for COEP/COOP, but may be extended to include some CSP errors in the future.
+// Details for a issue arising from an SAB being instantiated in, or transferred to a context that is not cross-origin isolated.
 type AuditsSharedArrayBufferIssueDetails struct {
 	SourceCodeLocation *AuditsSourceCodeLocation `json:"sourceCodeLocation"` //
 	IsWarning          bool                      `json:"isWarning"`          //
@@ -109,6 +109,25 @@ type AuditsLowTextContrastIssueDetails struct {
 	FontWeight            string  `json:"fontWeight"`            //
 }
 
+// Details for a CORS related issue, e.g. a warning or error related to CORS RFC1918 enforcement.
+type AuditsCorsIssueDetails struct {
+	CorsErrorStatus        *NetworkCorsErrorStatus     `json:"corsErrorStatus"`                  //
+	IsWarning              bool                        `json:"isWarning"`                        //
+	Request                *AuditsAffectedRequest      `json:"request"`                          //
+	InitiatorOrigin        string                      `json:"initiatorOrigin,omitempty"`        //
+	ResourceIPAddressSpace string                      `json:"resourceIPAddressSpace,omitempty"` //  enum values: Local, Private, Public, Unknown
+	ClientSecurityState    *NetworkClientSecurityState `json:"clientSecurityState,omitempty"`    //
+}
+
+// Details for issues around "Attribution Reporting API" usage. Explainer: https://github.com/WICG/conversion-measurement-api
+type AuditsAttributionReportingIssueDetails struct {
+	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, InvalidAttributionSourceEventId, InvalidAttributionData, AttributionSourceUntrustworthyOrigin, AttributionUntrustworthyOrigin
+	Frame            *AuditsAffectedFrame   `json:"frame,omitempty"`            //
+	Request          *AuditsAffectedRequest `json:"request,omitempty"`          //
+	ViolatingNodeId  int                    `json:"violatingNodeId,omitempty"`  //
+	InvalidParameter string                 `json:"invalidParameter,omitempty"` //
+}
+
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
 type AuditsInspectorIssueDetails struct {
 	SameSiteCookieIssueDetails        *AuditsSameSiteCookieIssueDetails        `json:"sameSiteCookieIssueDetails,omitempty"`        //
@@ -119,11 +138,13 @@ type AuditsInspectorIssueDetails struct {
 	SharedArrayBufferIssueDetails     *AuditsSharedArrayBufferIssueDetails     `json:"sharedArrayBufferIssueDetails,omitempty"`     //
 	TwaQualityEnforcementDetails      *AuditsTrustedWebActivityIssueDetails    `json:"twaQualityEnforcementDetails,omitempty"`      //
 	LowTextContrastIssueDetails       *AuditsLowTextContrastIssueDetails       `json:"lowTextContrastIssueDetails,omitempty"`       //
+	CorsIssueDetails                  *AuditsCorsIssueDetails                  `json:"corsIssueDetails,omitempty"`                  //
+	AttributionReportingIssueDetails  *AuditsAttributionReportingIssueDetails  `json:"attributionReportingIssueDetails,omitempty"`  //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue
+	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue
 	Details *AuditsInspectorIssueDetails `json:"details"` //
 }
 
@@ -214,7 +235,20 @@ func (c *Audits) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error)
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.enable"})
 }
 
-// Runs the contrast check for the target page. Found issues are reported using Audits.issueAdded event.
-func (c *Audits) CheckContrast(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.checkContrast"})
+type AuditsCheckContrastParams struct {
+	// Whether to report WCAG AAA level issues. Default is false.
+	ReportAAA bool `json:"reportAAA,omitempty"`
+}
+
+// CheckContrastWithParams - Runs the contrast check for the target page. Found issues are reported using Audits.issueAdded event.
+func (c *Audits) CheckContrastWithParams(ctx context.Context, v *AuditsCheckContrastParams) (*gcdmessage.ChromeResponse, error) {
+	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.checkContrast", Params: v})
+}
+
+// CheckContrast - Runs the contrast check for the target page. Found issues are reported using Audits.issueAdded event.
+// reportAAA - Whether to report WCAG AAA level issues. Default is false.
+func (c *Audits) CheckContrast(ctx context.Context, reportAAA bool) (*gcdmessage.ChromeResponse, error) {
+	var v AuditsCheckContrastParams
+	v.ReportAAA = reportAAA
+	return c.CheckContrastWithParams(ctx, &v)
 }

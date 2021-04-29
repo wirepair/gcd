@@ -12,7 +12,7 @@ import (
 // Mirror object referencing original JavaScript object.
 type RuntimeRemoteObject struct {
 	Type                string                `json:"type"`                          // Object type.
-	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` or `wasm` type values only.
+	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only. NOTE: If you change anything here, make sure to also update `subtype` in `ObjectPreview` and `PropertyPreview` below.
 	ClassName           string                `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
 	Value               interface{}           `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
 	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property.
@@ -90,10 +90,11 @@ type RuntimeCallArgument struct {
 
 // Description of an isolated world.
 type RuntimeExecutionContextDescription struct {
-	Id      int                    `json:"id"`                // Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed.
-	Origin  string                 `json:"origin"`            // Execution context origin.
-	Name    string                 `json:"name"`              // Human readable name describing given context.
-	AuxData map[string]interface{} `json:"auxData,omitempty"` // Embedder-specific auxiliary data.
+	Id       int                    `json:"id"`                // Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed.
+	Origin   string                 `json:"origin"`            // Execution context origin.
+	Name     string                 `json:"name"`              // Human readable name describing given context.
+	UniqueId string                 `json:"uniqueId"`          // A system-unique execution context identifier. Unlike the id, this is unique accross multiple processes, so can be reliably used to identify specific context while backend performs a cross-process navigation.
+	AuxData  map[string]interface{} `json:"auxData,omitempty"` // Embedder-specific auxiliary data.
 }
 
 // Detailed information about exception (or error) that was thrown during script compilation or execution.
@@ -428,7 +429,7 @@ type RuntimeEvaluateParams struct {
 	IncludeCommandLineAPI bool `json:"includeCommandLineAPI,omitempty"`
 	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
 	Silent bool `json:"silent,omitempty"`
-	// Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+	// Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page. This is mutually exclusive with `uniqueContextId`, which offers an alternative way to identify the execution context that is more reliable in a multi-process environment.
 	ContextId int `json:"contextId,omitempty"`
 	// Whether the result is expected to be a JSON object that should be sent by value.
 	ReturnByValue bool `json:"returnByValue,omitempty"`
@@ -448,6 +449,8 @@ type RuntimeEvaluateParams struct {
 	ReplMode bool `json:"replMode,omitempty"`
 	// The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
 	AllowUnsafeEvalBlockedByCSP bool `json:"allowUnsafeEvalBlockedByCSP,omitempty"`
+	// An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused accross processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation accross process boundaries). This is mutually exclusive with `contextId`.
+	UniqueContextId string `json:"uniqueContextId,omitempty"`
 }
 
 // EvaluateWithParams - Evaluates expression on global object.
@@ -488,7 +491,7 @@ func (c *Runtime) EvaluateWithParams(ctx context.Context, v *RuntimeEvaluatePara
 // objectGroup - Symbolic group name that can be used to release multiple objects.
 // includeCommandLineAPI - Determines whether Command Line API should be available during the evaluation.
 // silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
-// contextId - Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+// contextId - Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page. This is mutually exclusive with `uniqueContextId`, which offers an alternative way to identify the execution context that is more reliable in a multi-process environment.
 // returnByValue - Whether the result is expected to be a JSON object that should be sent by value.
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
@@ -498,8 +501,9 @@ func (c *Runtime) EvaluateWithParams(ctx context.Context, v *RuntimeEvaluatePara
 // disableBreaks - Disable breakpoints during execution.
 // replMode - Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
 // allowUnsafeEvalBlockedByCSP - The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
+// uniqueContextId - An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused accross processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation accross process boundaries). This is mutually exclusive with `contextId`.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool, uniqueContextId string) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
 	v.Expression = expression
 	v.ObjectGroup = objectGroup
@@ -515,6 +519,7 @@ func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup s
 	v.DisableBreaks = disableBreaks
 	v.ReplMode = replMode
 	v.AllowUnsafeEvalBlockedByCSP = allowUnsafeEvalBlockedByCSP
+	v.UniqueContextId = uniqueContextId
 	return c.EvaluateWithParams(ctx, &v)
 }
 
@@ -918,22 +923,26 @@ func (c *Runtime) TerminateExecution(ctx context.Context) (*gcdmessage.ChromeRes
 type RuntimeAddBindingParams struct {
 	//
 	Name string `json:"name"`
-	//
+	// If specified, the binding would only be exposed to the specified execution context. If omitted and `executionContextName` is not set, the binding is exposed to all execution contexts of the target. This parameter is mutually exclusive with `executionContextName`.
 	ExecutionContextId int `json:"executionContextId,omitempty"`
+	// If specified, the binding is exposed to the executionContext with matching name, even for contexts created after the binding is added. See also `ExecutionContext.name` and `worldName` parameter to `Page.addScriptToEvaluateOnNewDocument`. This parameter is mutually exclusive with `executionContextId`.
+	ExecutionContextName string `json:"executionContextName,omitempty"`
 }
 
-// AddBindingWithParams - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. If executionContextId is specified, adds binding only on global object of given execution context. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
+// AddBindingWithParams - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
 func (c *Runtime) AddBindingWithParams(ctx context.Context, v *RuntimeAddBindingParams) (*gcdmessage.ChromeResponse, error) {
 	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.addBinding", Params: v})
 }
 
-// AddBinding - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. If executionContextId is specified, adds binding only on global object of given execution context. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
+// AddBinding - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
 // name -
-// executionContextId -
-func (c *Runtime) AddBinding(ctx context.Context, name string, executionContextId int) (*gcdmessage.ChromeResponse, error) {
+// executionContextId - If specified, the binding would only be exposed to the specified execution context. If omitted and `executionContextName` is not set, the binding is exposed to all execution contexts of the target. This parameter is mutually exclusive with `executionContextName`.
+// executionContextName - If specified, the binding is exposed to the executionContext with matching name, even for contexts created after the binding is added. See also `ExecutionContext.name` and `worldName` parameter to `Page.addScriptToEvaluateOnNewDocument`. This parameter is mutually exclusive with `executionContextId`.
+func (c *Runtime) AddBinding(ctx context.Context, name string, executionContextId int, executionContextName string) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeAddBindingParams
 	v.Name = name
 	v.ExecutionContextId = executionContextId
+	v.ExecutionContextName = executionContextName
 	return c.AddBindingWithParams(ctx, &v)
 }
 
