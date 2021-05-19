@@ -28,6 +28,8 @@ package gcdmessage
 
 import (
 	"context"
+	"errors"
+	"github.com/wirepair/gcd/v2/observer"
 	"strconv"
 	"time"
 
@@ -126,7 +128,9 @@ type ParamRequest struct {
 // Takes in a ParamRequest and gives back a response channel so the caller can decode as necessary.
 func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- *Message, paramRequest *ParamRequest) (*Message, error) {
 	data, err := json.Marshal(paramRequest)
+
 	if err != nil {
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, err)
 		return nil, err
 	}
 
@@ -135,22 +139,36 @@ func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- 
 
 	select {
 	case <-ctx.Done():
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, errors.New("context is done"))
 		return nil, &ChromeCtxDoneErr{}
 	case sendCh <- sendMsg:
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, nil)
 	case <-time.After(target.GetApiTimeout()):
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, errors.New("message timed out"))
 		return nil, &ChromeApiTimeoutErr{}
 	case <-target.GetDoneCh():
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, errors.New("chrome is done"))
 		return nil, &ChromeDoneErr{}
 	}
 
 	var resp *Message
 	select {
 	case <-ctx.Done():
+		observer.Observe.Response(paramRequest.Id, paramRequest.Method, nil, errors.New("chrome is done"))
 		return nil, &ChromeCtxDoneErr{}
 	case <-time.After(target.GetApiTimeout()):
+		observer.Observe.Response(paramRequest.Id, paramRequest.Method, nil, errors.New("timed out waiting for response"))
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
+		var responseData []byte
+
+		if resp != nil && resp.Data != nil {
+			responseData = resp.Data
+		}
+
+		observer.Observe.Response(paramRequest.Id, paramRequest.Method, responseData, nil)
 	case <-target.GetDoneCh():
+		observer.Observe.Response(paramRequest.Id, paramRequest.Method, nil, errors.New("chrome is done"))
 		return nil, &ChromeDoneErr{}
 	}
 	return resp, nil
@@ -161,7 +179,9 @@ func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- 
 func SendDefaultRequest(target ChromeTargeter, ctx context.Context, sendCh chan<- *Message, paramRequest *ParamRequest) (*ChromeResponse, error) {
 	req := &ChromeRequest{Id: paramRequest.Id, Method: paramRequest.Method, Params: paramRequest.Params}
 	data, err := json.Marshal(req)
+
 	if err != nil {
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, err)
 		return nil, err
 	}
 
@@ -170,22 +190,36 @@ func SendDefaultRequest(target ChromeTargeter, ctx context.Context, sendCh chan<
 
 	select {
 	case <-ctx.Done():
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, errors.New("context is done"))
 		return nil, &ChromeCtxDoneErr{}
 	case sendCh <- sendMsg:
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, nil)
 	case <-time.After(target.GetApiTimeout()):
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, errors.New("message timed out"))
 		return nil, &ChromeApiTimeoutErr{}
 	case <-target.GetDoneCh():
+		observer.Observe.Request(paramRequest.Id, paramRequest.Method, data, errors.New("chrome is done"))
 		return nil, &ChromeDoneErr{}
 	}
 
 	var resp *Message
 	select {
 	case <-ctx.Done():
+		observer.Observe.Response(paramRequest.Id, paramRequest.Method, nil, errors.New("context is done"))
 		return nil, &ChromeCtxDoneErr{}
 	case <-time.After(target.GetApiTimeout()):
+		observer.Observe.Response(paramRequest.Id, paramRequest.Method, nil, errors.New("timed out waiting for response"))
 		return nil, &ChromeApiTimeoutErr{}
 	case resp = <-recvCh:
+		var responseData []byte
+
+		if resp != nil && resp.Data != nil {
+			responseData = resp.Data
+		}
+
+		observer.Observe.Response(paramRequest.Id, paramRequest.Method, responseData, nil)
 	case <-target.GetDoneCh():
+		observer.Observe.Response(paramRequest.Id, paramRequest.Method, nil, errors.New("chrome is done"))
 		return nil, &ChromeDoneErr{}
 	}
 
