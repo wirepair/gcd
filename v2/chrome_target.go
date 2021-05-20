@@ -403,7 +403,12 @@ func (c *ChromeTarget) SendCustomReturn(ctx context.Context, paramRequest *gcdme
 		return nil, err
 	}
 
-	return c.sendData(ctx, paramRequest.Id, data)
+	c.messageObserver.Request(paramRequest.Id, paramRequest.Method, data)
+
+	response, err := c.sendData(ctx, paramRequest.Id, data)
+
+	c.messageObserver.Response(paramRequest.Id, paramRequest.Method, observer.DigResponseData(response), err)
+	return response, err
 }
 
 // SendDefaultRequest sends a generic request that gets back a generic response, or error. This returns a ChromeResponse
@@ -415,15 +420,14 @@ func (c *ChromeTarget) SendDefaultRequest(ctx context.Context, paramRequest *gcd
 		return nil, err
 	}
 
-	resp, err := c.sendData(ctx, paramRequest.Id, data)
+	c.messageObserver.Request(paramRequest.Id, paramRequest.Method, data)
 
-	if resp == nil || resp.Data == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
+	response, err := c.sendData(ctx, paramRequest.Id, data)
+
+	c.messageObserver.Response(paramRequest.Id, paramRequest.Method, observer.DigResponseData(response), err)
 
 	chromeResponse := &gcdmessage.ChromeResponse{}
-
-	err = json.Unmarshal(resp.Data, chromeResponse)
+	err = json.Unmarshal(response.Data, chromeResponse)
 
 	if err != nil {
 		return nil, err
@@ -454,6 +458,10 @@ func (c *ChromeTarget) sendData(ctx context.Context, ID int64, data []byte) (*gc
 	case resp = <-recvCh:
 	case <-c.GetDoneCh():
 		return nil, &gcdmessage.ChromeDoneErr{}
+	}
+
+	if resp == nil || resp.Data == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	return resp, nil
