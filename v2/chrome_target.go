@@ -233,7 +233,10 @@ func (c *ChromeTarget) GetApiTimeout() time.Duration {
 // which takes a ChromeTarget (us) and the raw JSON byte data for that event.
 func (c *ChromeTarget) Subscribe(method string, callback func(*ChromeTarget, []byte)) {
 	c.eventLock.Lock()
-	c.eventDispatcher[method] = callback
+	c.eventDispatcher[method] = func(chromeTarget *ChromeTarget, data []byte) {
+		c.messageObserver.Event(method, data)
+		callback(chromeTarget, data)
+	}
 	c.eventLock.Unlock()
 }
 
