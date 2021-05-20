@@ -26,6 +26,7 @@ package gcd
 
 import (
 	"context"
+	"github.com/wirepair/gcd/v2/observer"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -111,17 +112,18 @@ type ChromeTarget struct {
 	WebAudio             *gcdapi.WebAudio
 	WebAuthn             *gcdapi.WebAuthn
 
-	Target     *TargetInfo              // The target information see, TargetInfo
-	sendCh     chan *gcdmessage.Message // The channel used for API components to send back to use
-	doneCh     chan struct{}            // we be donez.
-	apiTimeout time.Duration            // A customizable timeout for waiting on Chrome to respond to us
-	logger     Log
-	debugger   *Gcd
-	stopped    bool // we are/have shutdown
+	Target          *TargetInfo              // The target information see, TargetInfo
+	sendCh          chan *gcdmessage.Message // The channel used for API components to send back to use
+	doneCh          chan struct{}            // we be donez.
+	apiTimeout      time.Duration            // A customizable timeout for waiting on Chrome to respond to us
+	logger          Log
+	debugger        *Gcd
+	stopped         bool // we are/have shutdown
+	messageObserver observer.MessageObserver
 }
 
 // openChromeTarget creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
-func openChromeTarget(debugger *Gcd, target *TargetInfo) (*ChromeTarget, error) {
+func openChromeTarget(debugger *Gcd, target *TargetInfo, observer observer.MessageObserver) (*ChromeTarget, error) {
 	conn, err := wsConnection(debugger.ctx, target.WebSocketDebuggerUrl)
 	if err != nil {
 		return nil, err
@@ -139,6 +141,7 @@ func openChromeTarget(debugger *Gcd, target *TargetInfo) (*ChromeTarget, error) 
 		logger:          debugger.logger,
 		debugger:        debugger,
 		sendId:          0,
+		messageObserver: observer,
 	}
 
 	chromeTarget.Init()
