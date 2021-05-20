@@ -44,7 +44,7 @@ type DOMDebuggerGetEventListenersParams struct {
 // GetEventListenersWithParams - Returns event listeners of the given object.
 // Returns -  listeners - Array of relevant listeners.
 func (c *DOMDebugger) GetEventListenersWithParams(ctx context.Context, v *DOMDebuggerGetEventListenersParams) ([]*DOMDebuggerEventListener, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.getEventListeners", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.getEventListeners", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ type DOMDebuggerRemoveDOMBreakpointParams struct {
 
 // RemoveDOMBreakpointWithParams - Removes DOM breakpoint that was set using `setDOMBreakpoint`.
 func (c *DOMDebugger) RemoveDOMBreakpointWithParams(ctx context.Context, v *DOMDebuggerRemoveDOMBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.removeDOMBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.removeDOMBreakpoint", Params: v})
 }
 
 // RemoveDOMBreakpoint - Removes DOM breakpoint that was set using `setDOMBreakpoint`.
@@ -117,7 +117,7 @@ type DOMDebuggerRemoveEventListenerBreakpointParams struct {
 
 // RemoveEventListenerBreakpointWithParams - Removes breakpoint on particular DOM event.
 func (c *DOMDebugger) RemoveEventListenerBreakpointWithParams(ctx context.Context, v *DOMDebuggerRemoveEventListenerBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.removeEventListenerBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.removeEventListenerBreakpoint", Params: v})
 }
 
 // RemoveEventListenerBreakpoint - Removes breakpoint on particular DOM event.
@@ -137,7 +137,7 @@ type DOMDebuggerRemoveInstrumentationBreakpointParams struct {
 
 // RemoveInstrumentationBreakpointWithParams - Removes breakpoint on particular native event.
 func (c *DOMDebugger) RemoveInstrumentationBreakpointWithParams(ctx context.Context, v *DOMDebuggerRemoveInstrumentationBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.removeInstrumentationBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.removeInstrumentationBreakpoint", Params: v})
 }
 
 // RemoveInstrumentationBreakpoint - Removes breakpoint on particular native event.
@@ -155,7 +155,7 @@ type DOMDebuggerRemoveXHRBreakpointParams struct {
 
 // RemoveXHRBreakpointWithParams - Removes breakpoint from XMLHttpRequest.
 func (c *DOMDebugger) RemoveXHRBreakpointWithParams(ctx context.Context, v *DOMDebuggerRemoveXHRBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.removeXHRBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.removeXHRBreakpoint", Params: v})
 }
 
 // RemoveXHRBreakpoint - Removes breakpoint from XMLHttpRequest.
@@ -173,7 +173,7 @@ type DOMDebuggerSetBreakOnCSPViolationParams struct {
 
 // SetBreakOnCSPViolationWithParams - Sets breakpoint on particular CSP violations.
 func (c *DOMDebugger) SetBreakOnCSPViolationWithParams(ctx context.Context, v *DOMDebuggerSetBreakOnCSPViolationParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setBreakOnCSPViolation", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setBreakOnCSPViolation", Params: v})
 }
 
 // SetBreakOnCSPViolation - Sets breakpoint on particular CSP violations.
@@ -193,7 +193,7 @@ type DOMDebuggerSetDOMBreakpointParams struct {
 
 // SetDOMBreakpointWithParams - Sets breakpoint on particular operation with DOM.
 func (c *DOMDebugger) SetDOMBreakpointWithParams(ctx context.Context, v *DOMDebuggerSetDOMBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setDOMBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setDOMBreakpoint", Params: v})
 }
 
 // SetDOMBreakpoint - Sets breakpoint on particular operation with DOM.
@@ -215,7 +215,7 @@ type DOMDebuggerSetEventListenerBreakpointParams struct {
 
 // SetEventListenerBreakpointWithParams - Sets breakpoint on particular DOM event.
 func (c *DOMDebugger) SetEventListenerBreakpointWithParams(ctx context.Context, v *DOMDebuggerSetEventListenerBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setEventListenerBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setEventListenerBreakpoint", Params: v})
 }
 
 // SetEventListenerBreakpoint - Sets breakpoint on particular DOM event.
@@ -235,7 +235,7 @@ type DOMDebuggerSetInstrumentationBreakpointParams struct {
 
 // SetInstrumentationBreakpointWithParams - Sets breakpoint on particular native event.
 func (c *DOMDebugger) SetInstrumentationBreakpointWithParams(ctx context.Context, v *DOMDebuggerSetInstrumentationBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setInstrumentationBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setInstrumentationBreakpoint", Params: v})
 }
 
 // SetInstrumentationBreakpoint - Sets breakpoint on particular native event.
@@ -253,7 +253,7 @@ type DOMDebuggerSetXHRBreakpointParams struct {
 
 // SetXHRBreakpointWithParams - Sets breakpoint on XMLHttpRequest.
 func (c *DOMDebugger) SetXHRBreakpointWithParams(ctx context.Context, v *DOMDebuggerSetXHRBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setXHRBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMDebugger.setXHRBreakpoint", Params: v})
 }
 
 // SetXHRBreakpoint - Sets breakpoint on XMLHttpRequest.

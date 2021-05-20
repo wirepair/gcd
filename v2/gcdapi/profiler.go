@@ -128,18 +128,18 @@ func NewProfiler(target gcdmessage.ChromeTargeter) *Profiler {
 
 //
 func (c *Profiler) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disable"})
 }
 
 //
 func (c *Profiler) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enable"})
 }
 
 // GetBestEffortCoverage - Collect coverage data for the current isolate. The coverage data may be incomplete due to garbage collection.
 // Returns -  result - Coverage data for the current isolate.
 func (c *Profiler) GetBestEffortCoverage(ctx context.Context) ([]*ProfilerScriptCoverage, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getBestEffortCoverage"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getBestEffortCoverage"})
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ type ProfilerSetSamplingIntervalParams struct {
 
 // SetSamplingIntervalWithParams - Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
 func (c *Profiler) SetSamplingIntervalWithParams(ctx context.Context, v *ProfilerSetSamplingIntervalParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.setSamplingInterval", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.setSamplingInterval", Params: v})
 }
 
 // SetSamplingInterval - Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
@@ -188,7 +188,7 @@ func (c *Profiler) SetSamplingInterval(ctx context.Context, interval int) (*gcdm
 
 //
 func (c *Profiler) Start(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.start"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.start"})
 }
 
 type ProfilerStartPreciseCoverageParams struct {
@@ -203,7 +203,7 @@ type ProfilerStartPreciseCoverageParams struct {
 // StartPreciseCoverageWithParams - Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code coverage may be incomplete. Enabling prevents running optimized code and resets execution counters.
 // Returns -  timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
 func (c *Profiler) StartPreciseCoverageWithParams(ctx context.Context, v *ProfilerStartPreciseCoverageParams) (float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startPreciseCoverage", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startPreciseCoverage", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -247,13 +247,13 @@ func (c *Profiler) StartPreciseCoverage(ctx context.Context, callCount bool, det
 
 // Enable type profile.
 func (c *Profiler) StartTypeProfile(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startTypeProfile"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.startTypeProfile"})
 }
 
 // Stop -
 // Returns -  profile - Recorded profile.
 func (c *Profiler) Stop(ctx context.Context) (*ProfilerProfile, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stop"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stop"})
 	if err != nil {
 		return nil, err
 	}
@@ -284,18 +284,18 @@ func (c *Profiler) Stop(ctx context.Context) (*ProfilerProfile, error) {
 
 // Disable precise code coverage. Disabling releases unnecessary execution count records and allows executing optimized code.
 func (c *Profiler) StopPreciseCoverage(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stopPreciseCoverage"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stopPreciseCoverage"})
 }
 
 // Disable type profile. Disabling releases type profile data collected so far.
 func (c *Profiler) StopTypeProfile(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stopTypeProfile"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.stopTypeProfile"})
 }
 
 // TakePreciseCoverage - Collect coverage data for the current isolate, and resets execution counters. Precise code coverage needs to have started.
 // Returns -  result - Coverage data for the current isolate. timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
 func (c *Profiler) TakePreciseCoverage(ctx context.Context) ([]*ProfilerScriptCoverage, float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takePreciseCoverage"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takePreciseCoverage"})
 	if err != nil {
 		return nil, 0, err
 	}
@@ -328,7 +328,7 @@ func (c *Profiler) TakePreciseCoverage(ctx context.Context) ([]*ProfilerScriptCo
 // TakeTypeProfile - Collect type profile.
 // Returns -  result - Type profile for all scripts since startTypeProfile() was turned on.
 func (c *Profiler) TakeTypeProfile(ctx context.Context) ([]*ProfilerScriptTypeProfile, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takeTypeProfile"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.takeTypeProfile"})
 	if err != nil {
 		return nil, err
 	}
@@ -359,18 +359,18 @@ func (c *Profiler) TakeTypeProfile(ctx context.Context) ([]*ProfilerScriptTypePr
 
 // Enable counters collection.
 func (c *Profiler) EnableCounters(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableCounters"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableCounters"})
 }
 
 // Disable counters collection.
 func (c *Profiler) DisableCounters(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disableCounters"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disableCounters"})
 }
 
 // GetCounters - Retrieve counters.
 // Returns -  result - Collected counters information.
 func (c *Profiler) GetCounters(ctx context.Context) ([]*ProfilerCounterInfo, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getCounters"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getCounters"})
 	if err != nil {
 		return nil, err
 	}
@@ -401,18 +401,18 @@ func (c *Profiler) GetCounters(ctx context.Context) ([]*ProfilerCounterInfo, err
 
 // Enable run time call stats collection.
 func (c *Profiler) EnableRuntimeCallStats(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableRuntimeCallStats"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableRuntimeCallStats"})
 }
 
 // Disable run time call stats collection.
 func (c *Profiler) DisableRuntimeCallStats(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disableRuntimeCallStats"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disableRuntimeCallStats"})
 }
 
 // GetRuntimeCallStats - Retrieve run time call stats.
 // Returns -  result - Collected runtime call counter information.
 func (c *Profiler) GetRuntimeCallStats(ctx context.Context) ([]*ProfilerRuntimeCallCounterInfo, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getRuntimeCallStats"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getRuntimeCallStats"})
 	if err != nil {
 		return nil, err
 	}

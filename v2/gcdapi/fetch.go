@@ -75,7 +75,7 @@ func NewFetch(target gcdmessage.ChromeTargeter) *Fetch {
 
 // Disables the fetch domain.
 func (c *Fetch) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.disable"})
 }
 
 type FetchEnableParams struct {
@@ -87,7 +87,7 @@ type FetchEnableParams struct {
 
 // EnableWithParams - Enables issuing of requestPaused events. A request will be paused until client calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
 func (c *Fetch) EnableWithParams(ctx context.Context, v *FetchEnableParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.enable", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.enable", Params: v})
 }
 
 // Enable - Enables issuing of requestPaused events. A request will be paused until client calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
@@ -109,7 +109,7 @@ type FetchFailRequestParams struct {
 
 // FailRequestWithParams - Causes the request to fail with specified reason.
 func (c *Fetch) FailRequestWithParams(ctx context.Context, v *FetchFailRequestParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.failRequest", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.failRequest", Params: v})
 }
 
 // FailRequest - Causes the request to fail with specified reason.
@@ -139,7 +139,7 @@ type FetchFulfillRequestParams struct {
 
 // FulfillRequestWithParams - Provides response to the request.
 func (c *Fetch) FulfillRequestWithParams(ctx context.Context, v *FetchFulfillRequestParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.fulfillRequest", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.fulfillRequest", Params: v})
 }
 
 // FulfillRequest - Provides response to the request.
@@ -175,7 +175,7 @@ type FetchContinueRequestParams struct {
 
 // ContinueRequestWithParams - Continues the request, optionally modifying some of its parameters.
 func (c *Fetch) ContinueRequestWithParams(ctx context.Context, v *FetchContinueRequestParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.continueRequest", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.continueRequest", Params: v})
 }
 
 // ContinueRequest - Continues the request, optionally modifying some of its parameters.
@@ -203,7 +203,7 @@ type FetchContinueWithAuthParams struct {
 
 // ContinueWithAuthWithParams - Continues a request supplying authChallengeResponse following authRequired event.
 func (c *Fetch) ContinueWithAuthWithParams(ctx context.Context, v *FetchContinueWithAuthParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.continueWithAuth", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.continueWithAuth", Params: v})
 }
 
 // ContinueWithAuth - Continues a request supplying authChallengeResponse following authRequired event.
@@ -224,7 +224,7 @@ type FetchGetResponseBodyParams struct {
 // GetResponseBodyWithParams - Causes the body of the response to be received from the server and returned as a single string. May only be issued for a request that is paused in the Response stage and is mutually exclusive with takeResponseBodyForInterceptionAsStream. Calling other methods that affect the request or disabling fetch domain before body is received results in an undefined behavior.
 // Returns -  body - Response body. base64Encoded - True, if content was sent as base64.
 func (c *Fetch) GetResponseBodyWithParams(ctx context.Context, v *FetchGetResponseBodyParams) (string, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.getResponseBody", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.getResponseBody", Params: v})
 	if err != nil {
 		return "", false, err
 	}
@@ -271,7 +271,7 @@ type FetchTakeResponseBodyAsStreamParams struct {
 // TakeResponseBodyAsStreamWithParams - Returns a handle to the stream representing the response body. The request must be paused in the HeadersReceived stage. Note that after this command the request can't be continued as is -- client either needs to cancel it or to provide the response body. The stream only supports sequential read, IO.read will fail if the position is specified. This method is mutually exclusive with getResponseBody. Calling other methods that affect the request or disabling fetch domain before body is received results in an undefined behavior.
 // Returns -  stream -
 func (c *Fetch) TakeResponseBodyAsStreamWithParams(ctx context.Context, v *FetchTakeResponseBodyAsStreamParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.takeResponseBodyAsStream", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.takeResponseBodyAsStream", Params: v})
 	if err != nil {
 		return "", err
 	}

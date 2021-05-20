@@ -42,7 +42,7 @@ func NewMemory(target gcdmessage.ChromeTargeter) *Memory {
 // GetDOMCounters -
 // Returns -  documents -  nodes -  jsEventListeners -
 func (c *Memory) GetDOMCounters(ctx context.Context) (int, int, int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getDOMCounters"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getDOMCounters"})
 	if err != nil {
 		return 0, 0, 0, err
 	}
@@ -75,12 +75,12 @@ func (c *Memory) GetDOMCounters(ctx context.Context) (int, int, int, error) {
 
 //
 func (c *Memory) PrepareForLeakDetection(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.prepareForLeakDetection"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.prepareForLeakDetection"})
 }
 
 // Simulate OomIntervention by purging V8 memory.
 func (c *Memory) ForciblyPurgeJavaScriptMemory(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.forciblyPurgeJavaScriptMemory"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.forciblyPurgeJavaScriptMemory"})
 }
 
 type MemorySetPressureNotificationsSuppressedParams struct {
@@ -90,7 +90,7 @@ type MemorySetPressureNotificationsSuppressedParams struct {
 
 // SetPressureNotificationsSuppressedWithParams - Enable/disable suppressing memory pressure notifications in all processes.
 func (c *Memory) SetPressureNotificationsSuppressedWithParams(ctx context.Context, v *MemorySetPressureNotificationsSuppressedParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.setPressureNotificationsSuppressed", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.setPressureNotificationsSuppressed", Params: v})
 }
 
 // SetPressureNotificationsSuppressed - Enable/disable suppressing memory pressure notifications in all processes.
@@ -108,7 +108,7 @@ type MemorySimulatePressureNotificationParams struct {
 
 // SimulatePressureNotificationWithParams - Simulate a memory pressure notification in all processes.
 func (c *Memory) SimulatePressureNotificationWithParams(ctx context.Context, v *MemorySimulatePressureNotificationParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.simulatePressureNotification", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.simulatePressureNotification", Params: v})
 }
 
 // SimulatePressureNotification - Simulate a memory pressure notification in all processes.
@@ -128,7 +128,7 @@ type MemoryStartSamplingParams struct {
 
 // StartSamplingWithParams - Start collecting native memory profile.
 func (c *Memory) StartSamplingWithParams(ctx context.Context, v *MemoryStartSamplingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.startSampling", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.startSampling", Params: v})
 }
 
 // StartSampling - Start collecting native memory profile.
@@ -143,13 +143,13 @@ func (c *Memory) StartSampling(ctx context.Context, samplingInterval int, suppre
 
 // Stop collecting native memory profile.
 func (c *Memory) StopSampling(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.stopSampling"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.stopSampling"})
 }
 
 // GetAllTimeSamplingProfile - Retrieve native memory allocations profile collected since renderer process startup.
 // Returns -  profile -
 func (c *Memory) GetAllTimeSamplingProfile(ctx context.Context) (*MemorySamplingProfile, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getAllTimeSamplingProfile"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getAllTimeSamplingProfile"})
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (c *Memory) GetAllTimeSamplingProfile(ctx context.Context) (*MemorySampling
 // GetBrowserSamplingProfile - Retrieve native memory allocations profile collected since browser process startup.
 // Returns -  profile -
 func (c *Memory) GetBrowserSamplingProfile(ctx context.Context) (*MemorySamplingProfile, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getBrowserSamplingProfile"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getBrowserSamplingProfile"})
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (c *Memory) GetBrowserSamplingProfile(ctx context.Context) (*MemorySampling
 // GetSamplingProfile - Retrieve native memory allocations profile collected since last `startSampling` call.
 // Returns -  profile -
 func (c *Memory) GetSamplingProfile(ctx context.Context) (*MemorySamplingProfile, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getSamplingProfile"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getSamplingProfile"})
 	if err != nil {
 		return nil, err
 	}

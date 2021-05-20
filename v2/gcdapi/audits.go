@@ -179,7 +179,7 @@ type AuditsGetEncodedResponseParams struct {
 // GetEncodedResponseWithParams - Returns the response body and size if it were re-encoded with the specified settings. Only applies to images.
 // Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. (Encoded as a base64 string when passed over JSON) originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
 func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetEncodedResponseParams) (string, int, int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.getEncodedResponse", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.getEncodedResponse", Params: v})
 	if err != nil {
 		return "", 0, 0, err
 	}
@@ -227,12 +227,12 @@ func (c *Audits) GetEncodedResponse(ctx context.Context, requestId string, encod
 
 // Disables issues domain, prevents further issues from being reported to the client.
 func (c *Audits) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.disable"})
 }
 
 // Enables issues domain, sends the issues collected so far to the client by means of the `issueAdded` event.
 func (c *Audits) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.enable"})
 }
 
 type AuditsCheckContrastParams struct {
@@ -242,7 +242,7 @@ type AuditsCheckContrastParams struct {
 
 // CheckContrastWithParams - Runs the contrast check for the target page. Found issues are reported using Audits.issueAdded event.
 func (c *Audits) CheckContrastWithParams(ctx context.Context, v *AuditsCheckContrastParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.checkContrast", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.checkContrast", Params: v})
 }
 
 // CheckContrast - Runs the contrast check for the target page. Found issues are reported using Audits.issueAdded event.

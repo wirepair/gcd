@@ -25,7 +25,7 @@ type IOCloseParams struct {
 
 // CloseWithParams - Close the stream, discard any temporary backing storage.
 func (c *IO) CloseWithParams(ctx context.Context, v *IOCloseParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.close", Params: v})
 }
 
 // Close - Close the stream, discard any temporary backing storage.
@@ -48,7 +48,7 @@ type IOReadParams struct {
 // ReadWithParams - Read a chunk of the stream
 // Returns -  base64Encoded - Set if the data is base64-encoded data - Data that were read. eof - Set if the end-of-file condition occurred while reading.
 func (c *IO) ReadWithParams(ctx context.Context, v *IOReadParams) (bool, string, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.read", Params: v})
 	if err != nil {
 		return false, "", false, err
 	}
@@ -100,7 +100,7 @@ type IOResolveBlobParams struct {
 // ResolveBlobWithParams - Return UUID of Blob object specified by a remote object id.
 // Returns -  uuid - UUID of the specified Blob.
 func (c *IO) ResolveBlobWithParams(ctx context.Context, v *IOResolveBlobParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.resolveBlob", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IO.resolveBlob", Params: v})
 	if err != nil {
 		return "", err
 	}

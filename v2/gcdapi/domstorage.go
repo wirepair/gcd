@@ -69,7 +69,7 @@ type DOMStorageClearParams struct {
 
 // ClearWithParams -
 func (c *DOMStorage) ClearWithParams(ctx context.Context, v *DOMStorageClearParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.clear", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.clear", Params: v})
 }
 
 // Clear -
@@ -82,12 +82,12 @@ func (c *DOMStorage) Clear(ctx context.Context, storageId *DOMStorageStorageId) 
 
 // Disables storage tracking, prevents storage events from being sent to the client.
 func (c *DOMStorage) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.disable"})
 }
 
 // Enables storage tracking, storage events will now be delivered to the client.
 func (c *DOMStorage) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.enable"})
 }
 
 type DOMStorageGetDOMStorageItemsParams struct {
@@ -98,7 +98,7 @@ type DOMStorageGetDOMStorageItemsParams struct {
 // GetDOMStorageItemsWithParams -
 // Returns -  entries -
 func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMStorageGetDOMStorageItemsParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ type DOMStorageRemoveDOMStorageItemParams struct {
 
 // RemoveDOMStorageItemWithParams -
 func (c *DOMStorage) RemoveDOMStorageItemWithParams(ctx context.Context, v *DOMStorageRemoveDOMStorageItemParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.removeDOMStorageItem", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.removeDOMStorageItem", Params: v})
 }
 
 // RemoveDOMStorageItem -
@@ -169,7 +169,7 @@ type DOMStorageSetDOMStorageItemParams struct {
 
 // SetDOMStorageItemWithParams -
 func (c *DOMStorage) SetDOMStorageItemWithParams(ctx context.Context, v *DOMStorageSetDOMStorageItemParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.setDOMStorageItem", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.setDOMStorageItem", Params: v})
 }
 
 // SetDOMStorageItem -

@@ -589,7 +589,7 @@ type NetworkSetAcceptedEncodingsParams struct {
 
 // SetAcceptedEncodingsWithParams - Sets a list of content encodings that will be accepted. Empty list means no encoding is accepted.
 func (c *Network) SetAcceptedEncodingsWithParams(ctx context.Context, v *NetworkSetAcceptedEncodingsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setAcceptedEncodings", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setAcceptedEncodings", Params: v})
 }
 
 // SetAcceptedEncodings - Sets a list of content encodings that will be accepted. Empty list means no encoding is accepted.
@@ -602,13 +602,13 @@ func (c *Network) SetAcceptedEncodings(ctx context.Context, encodings []string) 
 
 // Clears accepted encodings set by setAcceptedEncodings
 func (c *Network) ClearAcceptedEncodingsOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearAcceptedEncodingsOverride"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearAcceptedEncodingsOverride"})
 }
 
 // CanClearBrowserCache - Tells whether clearing browser cache is supported.
 // Returns -  result - True if browser cache can be cleared.
 func (c *Network) CanClearBrowserCache(ctx context.Context) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.canClearBrowserCache"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.canClearBrowserCache"})
 	if err != nil {
 		return false, err
 	}
@@ -640,7 +640,7 @@ func (c *Network) CanClearBrowserCache(ctx context.Context) (bool, error) {
 // CanClearBrowserCookies - Tells whether clearing browser cookies is supported.
 // Returns -  result - True if browser cookies can be cleared.
 func (c *Network) CanClearBrowserCookies(ctx context.Context) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.canClearBrowserCookies"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.canClearBrowserCookies"})
 	if err != nil {
 		return false, err
 	}
@@ -672,7 +672,7 @@ func (c *Network) CanClearBrowserCookies(ctx context.Context) (bool, error) {
 // CanEmulateNetworkConditions - Tells whether emulation of network conditions is supported.
 // Returns -  result - True if emulation of network conditions is supported.
 func (c *Network) CanEmulateNetworkConditions(ctx context.Context) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.canEmulateNetworkConditions"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.canEmulateNetworkConditions"})
 	if err != nil {
 		return false, err
 	}
@@ -703,12 +703,12 @@ func (c *Network) CanEmulateNetworkConditions(ctx context.Context) (bool, error)
 
 // Clears browser cache.
 func (c *Network) ClearBrowserCache(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearBrowserCache"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearBrowserCache"})
 }
 
 // Clears browser cookies.
 func (c *Network) ClearBrowserCookies(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearBrowserCookies"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.clearBrowserCookies"})
 }
 
 type NetworkContinueInterceptedRequestParams struct {
@@ -732,7 +732,7 @@ type NetworkContinueInterceptedRequestParams struct {
 
 // ContinueInterceptedRequestWithParams - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId. Deprecated, use Fetch.continueRequest, Fetch.fulfillRequest and Fetch.failRequest instead.
 func (c *Network) ContinueInterceptedRequestWithParams(ctx context.Context, v *NetworkContinueInterceptedRequestParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.continueInterceptedRequest", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.continueInterceptedRequest", Params: v})
 }
 
 // ContinueInterceptedRequest - Response to Network.requestIntercepted which either modifies the request to continue with any modifications, or blocks it, or completes it with the provided response bytes. If a network fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted event will be sent with the same InterceptionId. Deprecated, use Fetch.continueRequest, Fetch.fulfillRequest and Fetch.failRequest instead.
@@ -770,7 +770,7 @@ type NetworkDeleteCookiesParams struct {
 
 // DeleteCookiesWithParams - Deletes browser cookies with matching name and url or domain/path pair.
 func (c *Network) DeleteCookiesWithParams(ctx context.Context, v *NetworkDeleteCookiesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.deleteCookies", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.deleteCookies", Params: v})
 }
 
 // DeleteCookies - Deletes browser cookies with matching name and url or domain/path pair.
@@ -789,7 +789,7 @@ func (c *Network) DeleteCookies(ctx context.Context, name string, url string, do
 
 // Disables network tracking, prevents network events from being sent to the client.
 func (c *Network) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.disable"})
 }
 
 type NetworkEmulateNetworkConditionsParams struct {
@@ -807,7 +807,7 @@ type NetworkEmulateNetworkConditionsParams struct {
 
 // EmulateNetworkConditionsWithParams - Activates emulation of network conditions.
 func (c *Network) EmulateNetworkConditionsWithParams(ctx context.Context, v *NetworkEmulateNetworkConditionsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.emulateNetworkConditions", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.emulateNetworkConditions", Params: v})
 }
 
 // EmulateNetworkConditions - Activates emulation of network conditions.
@@ -837,7 +837,7 @@ type NetworkEnableParams struct {
 
 // EnableWithParams - Enables network tracking, network events will now be delivered to the client.
 func (c *Network) EnableWithParams(ctx context.Context, v *NetworkEnableParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.enable", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.enable", Params: v})
 }
 
 // Enable - Enables network tracking, network events will now be delivered to the client.
@@ -855,7 +855,7 @@ func (c *Network) Enable(ctx context.Context, maxTotalBufferSize int, maxResourc
 // GetAllCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the `cookies` field.
 // Returns -  cookies - Array of cookie objects.
 func (c *Network) GetAllCookies(ctx context.Context) ([]*NetworkCookie, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getAllCookies"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getAllCookies"})
 	if err != nil {
 		return nil, err
 	}
@@ -892,7 +892,7 @@ type NetworkGetCertificateParams struct {
 // GetCertificateWithParams - Returns the DER-encoded certificate.
 // Returns -  tableNames -
 func (c *Network) GetCertificateWithParams(ctx context.Context, v *NetworkGetCertificateParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCertificate", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCertificate", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -938,7 +938,7 @@ type NetworkGetCookiesParams struct {
 // GetCookiesWithParams - Returns all browser cookies for the current URL. Depending on the backend support, will return detailed cookie information in the `cookies` field.
 // Returns -  cookies - Array of cookie objects.
 func (c *Network) GetCookiesWithParams(ctx context.Context, v *NetworkGetCookiesParams) ([]*NetworkCookie, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCookies", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getCookies", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -984,7 +984,7 @@ type NetworkGetResponseBodyParams struct {
 // GetResponseBodyWithParams - Returns content served for the given request.
 // Returns -  body - Response body. base64Encoded - True, if content was sent as base64.
 func (c *Network) GetResponseBodyWithParams(ctx context.Context, v *NetworkGetResponseBodyParams) (string, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getResponseBody", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getResponseBody", Params: v})
 	if err != nil {
 		return "", false, err
 	}
@@ -1031,7 +1031,7 @@ type NetworkGetRequestPostDataParams struct {
 // GetRequestPostDataWithParams - Returns post data sent with the request. Returns an error when no data was sent with the request.
 // Returns -  postData - Request body string, omitting files from multipart requests
 func (c *Network) GetRequestPostDataWithParams(ctx context.Context, v *NetworkGetRequestPostDataParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getRequestPostData", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getRequestPostData", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -1077,7 +1077,7 @@ type NetworkGetResponseBodyForInterceptionParams struct {
 // GetResponseBodyForInterceptionWithParams - Returns content served for the given currently intercepted request.
 // Returns -  body - Response body. base64Encoded - True, if content was sent as base64.
 func (c *Network) GetResponseBodyForInterceptionWithParams(ctx context.Context, v *NetworkGetResponseBodyForInterceptionParams) (string, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getResponseBodyForInterception", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getResponseBodyForInterception", Params: v})
 	if err != nil {
 		return "", false, err
 	}
@@ -1124,7 +1124,7 @@ type NetworkTakeResponseBodyForInterceptionAsStreamParams struct {
 // TakeResponseBodyForInterceptionAsStreamWithParams - Returns a handle to the stream representing the response body. Note that after this command, the intercepted request can't be continued as is -- you either need to cancel it or to provide the response body. The stream only supports sequential read, IO.read will fail if the position is specified.
 // Returns -  stream -
 func (c *Network) TakeResponseBodyForInterceptionAsStreamWithParams(ctx context.Context, v *NetworkTakeResponseBodyForInterceptionAsStreamParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.takeResponseBodyForInterceptionAsStream", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.takeResponseBodyForInterceptionAsStream", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -1169,7 +1169,7 @@ type NetworkReplayXHRParams struct {
 
 // ReplayXHRWithParams - This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password.
 func (c *Network) ReplayXHRWithParams(ctx context.Context, v *NetworkReplayXHRParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.replayXHR", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.replayXHR", Params: v})
 }
 
 // ReplayXHR - This method sends a new XMLHttpRequest which is identical to the original one. The following parameters should be identical: method, url, async, request body, extra headers, withCredentials attribute, user, password.
@@ -1194,7 +1194,7 @@ type NetworkSearchInResponseBodyParams struct {
 // SearchInResponseBodyWithParams - Searches for given string in response content.
 // Returns -  result - List of search matches.
 func (c *Network) SearchInResponseBodyWithParams(ctx context.Context, v *NetworkSearchInResponseBodyParams) ([]*DebuggerSearchMatch, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.searchInResponseBody", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.searchInResponseBody", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -1245,7 +1245,7 @@ type NetworkSetBlockedURLsParams struct {
 
 // SetBlockedURLsWithParams - Blocks URLs from loading.
 func (c *Network) SetBlockedURLsWithParams(ctx context.Context, v *NetworkSetBlockedURLsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBlockedURLs", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBlockedURLs", Params: v})
 }
 
 // SetBlockedURLs - Blocks URLs from loading.
@@ -1263,7 +1263,7 @@ type NetworkSetBypassServiceWorkerParams struct {
 
 // SetBypassServiceWorkerWithParams - Toggles ignoring of service worker for each request.
 func (c *Network) SetBypassServiceWorkerWithParams(ctx context.Context, v *NetworkSetBypassServiceWorkerParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBypassServiceWorker", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setBypassServiceWorker", Params: v})
 }
 
 // SetBypassServiceWorker - Toggles ignoring of service worker for each request.
@@ -1281,7 +1281,7 @@ type NetworkSetCacheDisabledParams struct {
 
 // SetCacheDisabledWithParams - Toggles ignoring cache for each request. If `true`, cache will not be used.
 func (c *Network) SetCacheDisabledWithParams(ctx context.Context, v *NetworkSetCacheDisabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCacheDisabled", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCacheDisabled", Params: v})
 }
 
 // SetCacheDisabled - Toggles ignoring cache for each request. If `true`, cache will not be used.
@@ -1324,7 +1324,7 @@ type NetworkSetCookieParams struct {
 // SetCookieWithParams - Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
 // Returns -  success - Always set to true. If an error occurs, the response indicates protocol error.
 func (c *Network) SetCookieWithParams(ctx context.Context, v *NetworkSetCookieParams) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCookie", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCookie", Params: v})
 	if err != nil {
 		return false, err
 	}
@@ -1393,7 +1393,7 @@ type NetworkSetCookiesParams struct {
 
 // SetCookiesWithParams - Sets given cookies.
 func (c *Network) SetCookiesWithParams(ctx context.Context, v *NetworkSetCookiesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCookies", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setCookies", Params: v})
 }
 
 // SetCookies - Sets given cookies.
@@ -1413,7 +1413,7 @@ type NetworkSetDataSizeLimitsForTestParams struct {
 
 // SetDataSizeLimitsForTestWithParams - For testing.
 func (c *Network) SetDataSizeLimitsForTestWithParams(ctx context.Context, v *NetworkSetDataSizeLimitsForTestParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setDataSizeLimitsForTest", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setDataSizeLimitsForTest", Params: v})
 }
 
 // SetDataSizeLimitsForTest - For testing.
@@ -1433,7 +1433,7 @@ type NetworkSetExtraHTTPHeadersParams struct {
 
 // SetExtraHTTPHeadersWithParams - Specifies whether to always send extra HTTP headers with the requests from this page.
 func (c *Network) SetExtraHTTPHeadersWithParams(ctx context.Context, v *NetworkSetExtraHTTPHeadersParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setExtraHTTPHeaders", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setExtraHTTPHeaders", Params: v})
 }
 
 // SetExtraHTTPHeaders - Specifies whether to always send extra HTTP headers with the requests from this page.
@@ -1451,7 +1451,7 @@ type NetworkSetAttachDebugStackParams struct {
 
 // SetAttachDebugStackWithParams - Specifies whether to attach a page script stack id in requests
 func (c *Network) SetAttachDebugStackWithParams(ctx context.Context, v *NetworkSetAttachDebugStackParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setAttachDebugStack", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setAttachDebugStack", Params: v})
 }
 
 // SetAttachDebugStack - Specifies whether to attach a page script stack id in requests
@@ -1469,7 +1469,7 @@ type NetworkSetRequestInterceptionParams struct {
 
 // SetRequestInterceptionWithParams - Sets the requests to intercept that match the provided patterns and optionally resource types. Deprecated, please use Fetch.enable instead.
 func (c *Network) SetRequestInterceptionWithParams(ctx context.Context, v *NetworkSetRequestInterceptionParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setRequestInterception", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setRequestInterception", Params: v})
 }
 
 // SetRequestInterception - Sets the requests to intercept that match the provided patterns and optionally resource types. Deprecated, please use Fetch.enable instead.
@@ -1493,7 +1493,7 @@ type NetworkSetUserAgentOverrideParams struct {
 
 // SetUserAgentOverrideWithParams - Allows overriding user agent with the given string.
 func (c *Network) SetUserAgentOverrideWithParams(ctx context.Context, v *NetworkSetUserAgentOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setUserAgentOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.setUserAgentOverride", Params: v})
 }
 
 // SetUserAgentOverride - Allows overriding user agent with the given string.
@@ -1518,7 +1518,7 @@ type NetworkGetSecurityIsolationStatusParams struct {
 // GetSecurityIsolationStatusWithParams - Returns information about the COEP/COOP isolation status.
 // Returns -  status -
 func (c *Network) GetSecurityIsolationStatusWithParams(ctx context.Context, v *NetworkGetSecurityIsolationStatusParams) (*NetworkSecurityIsolationStatus, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getSecurityIsolationStatus", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getSecurityIsolationStatus", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -1568,7 +1568,7 @@ type NetworkLoadNetworkResourceParams struct {
 // LoadNetworkResourceWithParams - Fetches the resource and returns the content.
 // Returns -  resource -
 func (c *Network) LoadNetworkResourceWithParams(ctx context.Context, v *NetworkLoadNetworkResourceParams) (*NetworkLoadNetworkResourcePageResult, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.loadNetworkResource", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.loadNetworkResource", Params: v})
 	if err != nil {
 		return nil, err
 	}

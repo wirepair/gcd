@@ -159,12 +159,12 @@ func NewDOMSnapshot(target gcdmessage.ChromeTargeter) *DOMSnapshot {
 
 // Disables DOM snapshot agent for the given page.
 func (c *DOMSnapshot) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.disable"})
 }
 
 // Enables DOM snapshot agent for the given page.
 func (c *DOMSnapshot) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.enable"})
 }
 
 type DOMSnapshotGetSnapshotParams struct {
@@ -181,7 +181,7 @@ type DOMSnapshotGetSnapshotParams struct {
 // GetSnapshotWithParams - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
 // Returns -  domNodes - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. layoutTreeNodes - The nodes in the layout tree. computedStyles - Whitelisted ComputedStyle properties for each node in the layout tree.
 func (c *DOMSnapshot) GetSnapshotWithParams(ctx context.Context, v *DOMSnapshotGetSnapshotParams) ([]*DOMSnapshotDOMNode, []*DOMSnapshotLayoutTreeNode, []*DOMSnapshotComputedStyle, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.getSnapshot", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.getSnapshot", Params: v})
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -243,7 +243,7 @@ type DOMSnapshotCaptureSnapshotParams struct {
 // CaptureSnapshotWithParams - Returns a document snapshot, including the full DOM tree of the root node (including iframes, template contents, and imported documents) in a flattened array, as well as layout and white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is flattened.
 // Returns -  documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document. strings - Shared string table that all string properties refer to with indexes.
 func (c *DOMSnapshot) CaptureSnapshotWithParams(ctx context.Context, v *DOMSnapshotCaptureSnapshotParams) ([]*DOMSnapshotDocumentSnapshot, []string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.captureSnapshot", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMSnapshot.captureSnapshot", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}

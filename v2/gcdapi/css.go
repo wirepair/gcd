@@ -247,7 +247,7 @@ type CSSAddRuleParams struct {
 // AddRuleWithParams - Inserts a new rule with the given `ruleText` in a stylesheet with given `styleSheetId`, at the position specified by `location`.
 // Returns -  rule - The newly created rule.
 func (c *CSS) AddRuleWithParams(ctx context.Context, v *CSSAddRuleParams) (*CSSCSSRule, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.addRule", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.addRule", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ type CSSCollectClassNamesParams struct {
 // CollectClassNamesWithParams - Returns all class names from specified stylesheet.
 // Returns -  classNames - Class name list.
 func (c *CSS) CollectClassNamesWithParams(ctx context.Context, v *CSSCollectClassNamesParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.collectClassNames", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.collectClassNames", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -343,7 +343,7 @@ type CSSCreateStyleSheetParams struct {
 // CreateStyleSheetWithParams - Creates a new special "via-inspector" stylesheet in the frame with given `frameId`.
 // Returns -  styleSheetId - Identifier of the created "via-inspector" stylesheet.
 func (c *CSS) CreateStyleSheetWithParams(ctx context.Context, v *CSSCreateStyleSheetParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.createStyleSheet", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.createStyleSheet", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -383,12 +383,12 @@ func (c *CSS) CreateStyleSheet(ctx context.Context, frameId string) (string, err
 
 // Disables the CSS agent for the given page.
 func (c *CSS) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.disable"})
 }
 
 // Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received.
 func (c *CSS) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.enable"})
 }
 
 type CSSForcePseudoStateParams struct {
@@ -400,7 +400,7 @@ type CSSForcePseudoStateParams struct {
 
 // ForcePseudoStateWithParams - Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser.
 func (c *CSS) ForcePseudoStateWithParams(ctx context.Context, v *CSSForcePseudoStateParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.forcePseudoState", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.forcePseudoState", Params: v})
 }
 
 // ForcePseudoState - Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser.
@@ -421,7 +421,7 @@ type CSSGetBackgroundColorsParams struct {
 // GetBackgroundColorsWithParams -
 // Returns -  backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load). computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px'). computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100').
 func (c *CSS) GetBackgroundColorsWithParams(ctx context.Context, v *CSSGetBackgroundColorsParams) ([]string, string, string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getBackgroundColors", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getBackgroundColors", Params: v})
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -469,7 +469,7 @@ type CSSGetComputedStyleForNodeParams struct {
 // GetComputedStyleForNodeWithParams - Returns the computed style for a DOM node identified by `nodeId`.
 // Returns -  computedStyle - Computed style for the specified DOM node.
 func (c *CSS) GetComputedStyleForNodeWithParams(ctx context.Context, v *CSSGetComputedStyleForNodeParams) ([]*CSSCSSComputedStyleProperty, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getComputedStyleForNode", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getComputedStyleForNode", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -515,7 +515,7 @@ type CSSGetInlineStylesForNodeParams struct {
 // GetInlineStylesForNodeWithParams - Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by `nodeId`.
 // Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%").
 func (c *CSS) GetInlineStylesForNodeWithParams(ctx context.Context, v *CSSGetInlineStylesForNodeParams) (*CSSCSSStyle, *CSSCSSStyle, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getInlineStylesForNode", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getInlineStylesForNode", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -562,7 +562,7 @@ type CSSGetMatchedStylesForNodeParams struct {
 // GetMatchedStylesForNodeWithParams - Returns requested styles for a DOM node identified by `nodeId`.
 // Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node.
 func (c *CSS) GetMatchedStylesForNodeWithParams(ctx context.Context, v *CSSGetMatchedStylesForNodeParams) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSCSSKeyframesRule, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode", Params: v})
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, err
 	}
@@ -608,7 +608,7 @@ func (c *CSS) GetMatchedStylesForNode(ctx context.Context, nodeId int) (*CSSCSSS
 // GetMediaQueries - Returns all media queries parsed by the rendering engine.
 // Returns -  medias -
 func (c *CSS) GetMediaQueries(ctx context.Context) ([]*CSSCSSMedia, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMediaQueries"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMediaQueries"})
 	if err != nil {
 		return nil, err
 	}
@@ -645,7 +645,7 @@ type CSSGetPlatformFontsForNodeParams struct {
 // GetPlatformFontsForNodeWithParams - Requests information about platform fonts which we used to render child TextNodes in the given node.
 // Returns -  fonts - Usage statistics for every employed platform font.
 func (c *CSS) GetPlatformFontsForNodeWithParams(ctx context.Context, v *CSSGetPlatformFontsForNodeParams) ([]*CSSPlatformFontUsage, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getPlatformFontsForNode", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getPlatformFontsForNode", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -691,7 +691,7 @@ type CSSGetStyleSheetTextParams struct {
 // GetStyleSheetTextWithParams - Returns the current textual content for a stylesheet.
 // Returns -  text - The stylesheet text.
 func (c *CSS) GetStyleSheetTextWithParams(ctx context.Context, v *CSSGetStyleSheetTextParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getStyleSheetText", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getStyleSheetText", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -736,7 +736,7 @@ type CSSTrackComputedStyleUpdatesParams struct {
 
 // TrackComputedStyleUpdatesWithParams - Starts tracking the given computed styles for updates. The specified array of properties replaces the one previously specified. Pass empty array to disable tracking. Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified. The changes to computed style properties are only tracked for nodes pushed to the front-end by the DOM agent. If no changes to the tracked properties occur after the node has been pushed to the front-end, no updates will be issued for the node.
 func (c *CSS) TrackComputedStyleUpdatesWithParams(ctx context.Context, v *CSSTrackComputedStyleUpdatesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.trackComputedStyleUpdates", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.trackComputedStyleUpdates", Params: v})
 }
 
 // TrackComputedStyleUpdates - Starts tracking the given computed styles for updates. The specified array of properties replaces the one previously specified. Pass empty array to disable tracking. Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified. The changes to computed style properties are only tracked for nodes pushed to the front-end by the DOM agent. If no changes to the tracked properties occur after the node has been pushed to the front-end, no updates will be issued for the node.
@@ -750,7 +750,7 @@ func (c *CSS) TrackComputedStyleUpdates(ctx context.Context, propertiesToTrack [
 // TakeComputedStyleUpdates - Polls the next batch of computed style updates.
 // Returns -  nodeIds - The list of node Ids that have their tracked computed styles updated
 func (c *CSS) TakeComputedStyleUpdates(ctx context.Context) ([]int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeComputedStyleUpdates"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeComputedStyleUpdates"})
 	if err != nil {
 		return nil, err
 	}
@@ -790,7 +790,7 @@ type CSSSetEffectivePropertyValueForNodeParams struct {
 
 // SetEffectivePropertyValueForNodeWithParams - Find a rule with the given active property for the given node and set the new value for this property
 func (c *CSS) SetEffectivePropertyValueForNodeWithParams(ctx context.Context, v *CSSSetEffectivePropertyValueForNodeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setEffectivePropertyValueForNode", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setEffectivePropertyValueForNode", Params: v})
 }
 
 // SetEffectivePropertyValueForNode - Find a rule with the given active property for the given node and set the new value for this property
@@ -817,7 +817,7 @@ type CSSSetKeyframeKeyParams struct {
 // SetKeyframeKeyWithParams - Modifies the keyframe rule key text.
 // Returns -  keyText - The resulting key text after modification.
 func (c *CSS) SetKeyframeKeyWithParams(ctx context.Context, v *CSSSetKeyframeKeyParams) (*CSSValue, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setKeyframeKey", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setKeyframeKey", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -871,7 +871,7 @@ type CSSSetMediaTextParams struct {
 // SetMediaTextWithParams - Modifies the rule selector.
 // Returns -  media - The resulting CSS media rule after modification.
 func (c *CSS) SetMediaTextWithParams(ctx context.Context, v *CSSSetMediaTextParams) (*CSSCSSMedia, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setMediaText", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setMediaText", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -925,7 +925,7 @@ type CSSSetRuleSelectorParams struct {
 // SetRuleSelectorWithParams - Modifies the rule selector.
 // Returns -  selectorList - The resulting selector list after modification.
 func (c *CSS) SetRuleSelectorWithParams(ctx context.Context, v *CSSSetRuleSelectorParams) (*CSSSelectorList, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setRuleSelector", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setRuleSelector", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -977,7 +977,7 @@ type CSSSetStyleSheetTextParams struct {
 // SetStyleSheetTextWithParams - Sets the new stylesheet text.
 // Returns -  sourceMapURL - URL of source map associated with script (if any).
 func (c *CSS) SetStyleSheetTextWithParams(ctx context.Context, v *CSSSetStyleSheetTextParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleSheetText", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleSheetText", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -1025,7 +1025,7 @@ type CSSSetStyleTextsParams struct {
 // SetStyleTextsWithParams - Applies specified style edits one after another in the given order.
 // Returns -  styles - The resulting styles after modification.
 func (c *CSS) SetStyleTextsWithParams(ctx context.Context, v *CSSSetStyleTextsParams) ([]*CSSCSSStyle, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleTexts", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setStyleTexts", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -1065,13 +1065,13 @@ func (c *CSS) SetStyleTexts(ctx context.Context, edits []*CSSStyleDeclarationEdi
 
 // Enables the selector recording.
 func (c *CSS) StartRuleUsageTracking(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.startRuleUsageTracking"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.startRuleUsageTracking"})
 }
 
 // StopRuleUsageTracking - Stop tracking rule usage and return the list of rules that were used since last call to `takeCoverageDelta` (or since start of coverage instrumentation)
 // Returns -  ruleUsage -
 func (c *CSS) StopRuleUsageTracking(ctx context.Context) ([]*CSSRuleUsage, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.stopRuleUsageTracking"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.stopRuleUsageTracking"})
 	if err != nil {
 		return nil, err
 	}
@@ -1103,7 +1103,7 @@ func (c *CSS) StopRuleUsageTracking(ctx context.Context) ([]*CSSRuleUsage, error
 // TakeCoverageDelta - Obtain list of rules that became used since last call to this method (or since start of coverage instrumentation)
 // Returns -  coverage -  timestamp - Monotonically increasing time, in seconds.
 func (c *CSS) TakeCoverageDelta(ctx context.Context) ([]*CSSRuleUsage, float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeCoverageDelta"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeCoverageDelta"})
 	if err != nil {
 		return nil, 0, err
 	}
@@ -1140,7 +1140,7 @@ type CSSSetLocalFontsEnabledParams struct {
 
 // SetLocalFontsEnabledWithParams - Enables/disables rendering of local CSS fonts (enabled by default).
 func (c *CSS) SetLocalFontsEnabledWithParams(ctx context.Context, v *CSSSetLocalFontsEnabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setLocalFontsEnabled", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setLocalFontsEnabled", Params: v})
 }
 
 // SetLocalFontsEnabled - Enables/disables rendering of local CSS fonts (enabled by default).

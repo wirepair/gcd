@@ -35,7 +35,7 @@ func NewPerformance(target gcdmessage.ChromeTargeter) *Performance {
 
 // Disable collecting and reporting metrics.
 func (c *Performance) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.disable"})
 }
 
 type PerformanceEnableParams struct {
@@ -45,7 +45,7 @@ type PerformanceEnableParams struct {
 
 // EnableWithParams - Enable collecting and reporting metrics.
 func (c *Performance) EnableWithParams(ctx context.Context, v *PerformanceEnableParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.enable", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.enable", Params: v})
 }
 
 // Enable - Enable collecting and reporting metrics.
@@ -63,7 +63,7 @@ type PerformanceSetTimeDomainParams struct {
 
 // SetTimeDomainWithParams - Sets time domain to use for collecting and reporting duration metrics. Note that this must be called before enabling metrics collection. Calling this method while metrics collection is enabled returns an error.
 func (c *Performance) SetTimeDomainWithParams(ctx context.Context, v *PerformanceSetTimeDomainParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.setTimeDomain", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.setTimeDomain", Params: v})
 }
 
 // SetTimeDomain - Sets time domain to use for collecting and reporting duration metrics. Note that this must be called before enabling metrics collection. Calling this method while metrics collection is enabled returns an error.
@@ -77,7 +77,7 @@ func (c *Performance) SetTimeDomain(ctx context.Context, timeDomain string) (*gc
 // GetMetrics - Retrieve current values of run-time metrics.
 // Returns -  metrics - Current values for run-time metrics.
 func (c *Performance) GetMetrics(ctx context.Context) ([]*PerformanceMetric, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.getMetrics"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Performance.getMetrics"})
 	if err != nil {
 		return nil, err
 	}

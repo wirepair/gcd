@@ -59,7 +59,7 @@ type BackgroundServiceStartObservingParams struct {
 
 // StartObservingWithParams - Enables event updates for the service.
 func (c *BackgroundService) StartObservingWithParams(ctx context.Context, v *BackgroundServiceStartObservingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.startObserving", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.startObserving", Params: v})
 }
 
 // StartObserving - Enables event updates for the service.
@@ -77,7 +77,7 @@ type BackgroundServiceStopObservingParams struct {
 
 // StopObservingWithParams - Disables event updates for the service.
 func (c *BackgroundService) StopObservingWithParams(ctx context.Context, v *BackgroundServiceStopObservingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.stopObserving", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.stopObserving", Params: v})
 }
 
 // StopObserving - Disables event updates for the service.
@@ -97,7 +97,7 @@ type BackgroundServiceSetRecordingParams struct {
 
 // SetRecordingWithParams - Set the recording state for the service.
 func (c *BackgroundService) SetRecordingWithParams(ctx context.Context, v *BackgroundServiceSetRecordingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.setRecording", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.setRecording", Params: v})
 }
 
 // SetRecording - Set the recording state for the service.
@@ -117,7 +117,7 @@ type BackgroundServiceClearEventsParams struct {
 
 // ClearEventsWithParams - Clears all stored data for the service.
 func (c *BackgroundService) ClearEventsWithParams(ctx context.Context, v *BackgroundServiceClearEventsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.clearEvents", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "BackgroundService.clearEvents", Params: v})
 }
 
 // ClearEvents - Clears all stored data for the service.

@@ -84,12 +84,12 @@ func NewAnimation(target gcdmessage.ChromeTargeter) *Animation {
 
 // Disables animation domain notifications.
 func (c *Animation) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.disable"})
 }
 
 // Enables animation domain notifications.
 func (c *Animation) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.enable"})
 }
 
 type AnimationGetCurrentTimeParams struct {
@@ -100,7 +100,7 @@ type AnimationGetCurrentTimeParams struct {
 // GetCurrentTimeWithParams - Returns the current time of the an animation.
 // Returns -  currentTime - Current time of the page.
 func (c *Animation) GetCurrentTimeWithParams(ctx context.Context, v *AnimationGetCurrentTimeParams) (float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.getCurrentTime", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.getCurrentTime", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -141,7 +141,7 @@ func (c *Animation) GetCurrentTime(ctx context.Context, id string) (float64, err
 // GetPlaybackRate - Gets the playback rate of the document timeline.
 // Returns -  playbackRate - Playback rate for animations on page.
 func (c *Animation) GetPlaybackRate(ctx context.Context) (float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.getPlaybackRate"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.getPlaybackRate"})
 	if err != nil {
 		return 0, err
 	}
@@ -177,7 +177,7 @@ type AnimationReleaseAnimationsParams struct {
 
 // ReleaseAnimationsWithParams - Releases a set of animations to no longer be manipulated.
 func (c *Animation) ReleaseAnimationsWithParams(ctx context.Context, v *AnimationReleaseAnimationsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.releaseAnimations", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.releaseAnimations", Params: v})
 }
 
 // ReleaseAnimations - Releases a set of animations to no longer be manipulated.
@@ -196,7 +196,7 @@ type AnimationResolveAnimationParams struct {
 // ResolveAnimationWithParams - Gets the remote object of the Animation.
 // Returns -  remoteObject - Corresponding remote object.
 func (c *Animation) ResolveAnimationWithParams(ctx context.Context, v *AnimationResolveAnimationParams) (*RuntimeRemoteObject, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.resolveAnimation", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.resolveAnimation", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +243,7 @@ type AnimationSeekAnimationsParams struct {
 
 // SeekAnimationsWithParams - Seek a set of animations to a particular time within each animation.
 func (c *Animation) SeekAnimationsWithParams(ctx context.Context, v *AnimationSeekAnimationsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.seekAnimations", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.seekAnimations", Params: v})
 }
 
 // SeekAnimations - Seek a set of animations to a particular time within each animation.
@@ -265,7 +265,7 @@ type AnimationSetPausedParams struct {
 
 // SetPausedWithParams - Sets the paused state of a set of animations.
 func (c *Animation) SetPausedWithParams(ctx context.Context, v *AnimationSetPausedParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setPaused", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setPaused", Params: v})
 }
 
 // SetPaused - Sets the paused state of a set of animations.
@@ -285,7 +285,7 @@ type AnimationSetPlaybackRateParams struct {
 
 // SetPlaybackRateWithParams - Sets the playback rate of the document timeline.
 func (c *Animation) SetPlaybackRateWithParams(ctx context.Context, v *AnimationSetPlaybackRateParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setPlaybackRate", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setPlaybackRate", Params: v})
 }
 
 // SetPlaybackRate - Sets the playback rate of the document timeline.
@@ -307,7 +307,7 @@ type AnimationSetTimingParams struct {
 
 // SetTimingWithParams - Sets the timing of an animation node.
 func (c *Animation) SetTimingWithParams(ctx context.Context, v *AnimationSetTimingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setTiming", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Animation.setTiming", Params: v})
 }
 
 // SetTiming - Sets the timing of an animation node.
