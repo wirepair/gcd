@@ -34,7 +34,7 @@ type TetheringBindParams struct {
 
 // BindWithParams - Request browser port binding.
 func (c *Tethering) BindWithParams(ctx context.Context, v *TetheringBindParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.bind", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.bind", Params: v})
 }
 
 // Bind - Request browser port binding.
@@ -52,7 +52,7 @@ type TetheringUnbindParams struct {
 
 // UnbindWithParams - Request browser port unbinding.
 func (c *Tethering) UnbindWithParams(ctx context.Context, v *TetheringUnbindParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.unbind", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tethering.unbind", Params: v})
 }
 
 // Unbind - Request browser port unbinding.

@@ -41,6 +41,8 @@ type ChromeTargeter interface {
 	GetApiTimeout() time.Duration
 	GetSendCh() chan *Message
 	GetDoneCh() chan struct{} // if tab is closed we don't want dangling goroutines.
+	SendCustomReturn(ctx context.Context, paramRequest *ParamRequest) (*Message, error)
+	SendDefaultRequest(ctx context.Context, paramRequest *ParamRequest) (*ChromeResponse, error)
 }
 
 // An internal message object used for components and ChromeTarget to communicate back and forth
@@ -123,80 +125,3 @@ type ParamRequest struct {
 	Params interface{} `json:"params,omitempty"`
 }
 
-// Takes in a ParamRequest and gives back a response channel so the caller can decode as necessary.
-func SendCustomReturn(target ChromeTargeter, ctx context.Context, sendCh chan<- *Message, paramRequest *ParamRequest) (*Message, error) {
-	data, err := json.Marshal(paramRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	recvCh := make(chan *Message, 1)
-	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
-
-	select {
-	case <-ctx.Done():
-		return nil, &ChromeCtxDoneErr{}
-	case sendCh <- sendMsg:
-	case <-time.After(target.GetApiTimeout()):
-		return nil, &ChromeApiTimeoutErr{}
-	case <-target.GetDoneCh():
-		return nil, &ChromeDoneErr{}
-	}
-
-	var resp *Message
-	select {
-	case <-ctx.Done():
-		return nil, &ChromeCtxDoneErr{}
-	case <-time.After(target.GetApiTimeout()):
-		return nil, &ChromeApiTimeoutErr{}
-	case resp = <-recvCh:
-	case <-target.GetDoneCh():
-		return nil, &ChromeDoneErr{}
-	}
-	return resp, nil
-}
-
-// Sends a generic request that gets back a generic response, or error. This returns a ChromeResponse
-// object.
-func SendDefaultRequest(target ChromeTargeter, ctx context.Context, sendCh chan<- *Message, paramRequest *ParamRequest) (*ChromeResponse, error) {
-	req := &ChromeRequest{Id: paramRequest.Id, Method: paramRequest.Method, Params: paramRequest.Params}
-	data, err := json.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
-
-	recvCh := make(chan *Message, 1)
-	sendMsg := &Message{ReplyCh: recvCh, Id: paramRequest.Id, Data: []byte(data)}
-
-	select {
-	case <-ctx.Done():
-		return nil, &ChromeCtxDoneErr{}
-	case sendCh <- sendMsg:
-	case <-time.After(target.GetApiTimeout()):
-		return nil, &ChromeApiTimeoutErr{}
-	case <-target.GetDoneCh():
-		return nil, &ChromeDoneErr{}
-	}
-
-	var resp *Message
-	select {
-	case <-ctx.Done():
-		return nil, &ChromeCtxDoneErr{}
-	case <-time.After(target.GetApiTimeout()):
-		return nil, &ChromeApiTimeoutErr{}
-	case resp = <-recvCh:
-	case <-target.GetDoneCh():
-		return nil, &ChromeDoneErr{}
-	}
-
-	if resp == nil || resp.Data == nil {
-		return nil, &ChromeEmptyResponseErr{}
-	}
-
-	chromeResponse := &ChromeResponse{}
-	err = json.Unmarshal(resp.Data, chromeResponse)
-	if err != nil {
-		return nil, err
-	}
-	return chromeResponse, nil
-}

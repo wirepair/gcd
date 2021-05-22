@@ -84,7 +84,7 @@ type LayerTreeCompositingReasonsParams struct {
 // CompositingReasonsWithParams - Provides the reasons why the given layer was composited.
 // Returns -  compositingReasons - A list of strings specifying reasons for the given layer to become composited. compositingReasonIds - A list of strings specifying reason IDs for the given layer to become composited.
 func (c *LayerTree) CompositingReasonsWithParams(ctx context.Context, v *LayerTreeCompositingReasonsParams) ([]string, []string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.compositingReasons", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -125,12 +125,12 @@ func (c *LayerTree) CompositingReasons(ctx context.Context, layerId string) ([]s
 
 // Disables compositing tree inspection.
 func (c *LayerTree) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.disable"})
 }
 
 // Enables compositing tree inspection.
 func (c *LayerTree) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.enable"})
 }
 
 type LayerTreeLoadSnapshotParams struct {
@@ -141,7 +141,7 @@ type LayerTreeLoadSnapshotParams struct {
 // LoadSnapshotWithParams - Returns the snapshot identifier.
 // Returns -  snapshotId - The id of the snapshot.
 func (c *LayerTree) LoadSnapshotWithParams(ctx context.Context, v *LayerTreeLoadSnapshotParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.loadSnapshot", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -187,7 +187,7 @@ type LayerTreeMakeSnapshotParams struct {
 // MakeSnapshotWithParams - Returns the layer snapshot identifier.
 // Returns -  snapshotId - The id of the layer snapshot.
 func (c *LayerTree) MakeSnapshotWithParams(ctx context.Context, v *LayerTreeMakeSnapshotParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.makeSnapshot", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -239,7 +239,7 @@ type LayerTreeProfileSnapshotParams struct {
 // ProfileSnapshotWithParams -
 // Returns -  timings - The array of paint profiles, one per run.
 func (c *LayerTree) ProfileSnapshotWithParams(ctx context.Context, v *LayerTreeProfileSnapshotParams) ([]float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -290,7 +290,7 @@ type LayerTreeReleaseSnapshotParams struct {
 
 // ReleaseSnapshotWithParams - Releases layer snapshot captured by the back-end.
 func (c *LayerTree) ReleaseSnapshotWithParams(ctx context.Context, v *LayerTreeReleaseSnapshotParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.releaseSnapshot", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.releaseSnapshot", Params: v})
 }
 
 // ReleaseSnapshot - Releases layer snapshot captured by the back-end.
@@ -315,7 +315,7 @@ type LayerTreeReplaySnapshotParams struct {
 // ReplaySnapshotWithParams - Replays the layer snapshot and returns the resulting bitmap.
 // Returns -  dataURL - A data: URL for resulting image.
 func (c *LayerTree) ReplaySnapshotWithParams(ctx context.Context, v *LayerTreeReplaySnapshotParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.replaySnapshot", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.replaySnapshot", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -367,7 +367,7 @@ type LayerTreeSnapshotCommandLogParams struct {
 // SnapshotCommandLogWithParams - Replays the layer snapshot and returns canvas log.
 // Returns -
 func (c *LayerTree) SnapshotCommandLogWithParams(ctx context.Context, v *LayerTreeSnapshotCommandLogParams) error {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.snapshotCommandLog", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.snapshotCommandLog", Params: v})
 	if err != nil {
 		return err
 	}

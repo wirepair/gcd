@@ -26,6 +26,7 @@ package gcd
 
 import (
 	"context"
+	"github.com/wirepair/gcd/v2/observer"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -111,17 +112,18 @@ type ChromeTarget struct {
 	WebAudio             *gcdapi.WebAudio
 	WebAuthn             *gcdapi.WebAuthn
 
-	Target     *TargetInfo              // The target information see, TargetInfo
-	sendCh     chan *gcdmessage.Message // The channel used for API components to send back to use
-	doneCh     chan struct{}            // we be donez.
-	apiTimeout time.Duration            // A customizable timeout for waiting on Chrome to respond to us
-	logger     Log
-	debugger   *Gcd
-	stopped    bool // we are/have shutdown
+	Target          *TargetInfo              // The target information see, TargetInfo
+	sendCh          chan *gcdmessage.Message // The channel used for API components to send back to use
+	doneCh          chan struct{}            // we be donez.
+	apiTimeout      time.Duration            // A customizable timeout for waiting on Chrome to respond to us
+	logger          Log
+	debugger        *Gcd
+	stopped         bool // we are/have shutdown
+	messageObserver observer.MessageObserver
 }
 
 // openChromeTarget creates a new Chrome Target by connecting to the service given the URL taken from initial connection.
-func openChromeTarget(debugger *Gcd, target *TargetInfo) (*ChromeTarget, error) {
+func openChromeTarget(debugger *Gcd, target *TargetInfo, observer observer.MessageObserver) (*ChromeTarget, error) {
 	conn, err := wsConnection(debugger.ctx, target.WebSocketDebuggerUrl)
 	if err != nil {
 		return nil, err
@@ -139,6 +141,7 @@ func openChromeTarget(debugger *Gcd, target *TargetInfo) (*ChromeTarget, error) 
 		logger:          debugger.logger,
 		debugger:        debugger,
 		sendId:          0,
+		messageObserver: observer,
 	}
 
 	chromeTarget.Init()
@@ -230,7 +233,10 @@ func (c *ChromeTarget) GetApiTimeout() time.Duration {
 // which takes a ChromeTarget (us) and the raw JSON byte data for that event.
 func (c *ChromeTarget) Subscribe(method string, callback func(*ChromeTarget, []byte)) {
 	c.eventLock.Lock()
-	c.eventDispatcher[method] = callback
+	c.eventDispatcher[method] = func(chromeTarget *ChromeTarget, data []byte) {
+		c.messageObserver.Event(method, data)
+		callback(chromeTarget, data)
+	}
 	c.eventLock.Unlock()
 }
 
@@ -390,4 +396,76 @@ func (c *ChromeTarget) logDebug(args ...interface{}) {
 	if c.debugger.debug {
 		c.logger.Println(args...)
 	}
+}
+
+// SendCustomReturn takes in a ParamRequest and gives back a response channel so the caller can decode as necessary.
+func (c *ChromeTarget) SendCustomReturn(ctx context.Context, paramRequest *gcdmessage.ParamRequest) (*gcdmessage.Message, error) {
+	data, err := json.Marshal(paramRequest)
+
+	if err != nil {
+		return nil, err
+	}
+
+	c.messageObserver.Request(paramRequest.Id, paramRequest.Method, data)
+
+	response, err := c.sendData(ctx, paramRequest.Id, data)
+
+	c.messageObserver.Response(paramRequest.Id, paramRequest.Method, observer.DigResponseData(response), err)
+	return response, err
+}
+
+// SendDefaultRequest sends a generic request that gets back a generic response, or error. This returns a ChromeResponse
+// object.
+func (c *ChromeTarget) SendDefaultRequest(ctx context.Context, paramRequest *gcdmessage.ParamRequest) (*gcdmessage.ChromeResponse, error) {
+	data, err := json.Marshal(&gcdmessage.ChromeRequest{Id: paramRequest.Id, Method: paramRequest.Method, Params: paramRequest.Params})
+
+	if err != nil {
+		return nil, err
+	}
+
+	c.messageObserver.Request(paramRequest.Id, paramRequest.Method, data)
+
+	response, err := c.sendData(ctx, paramRequest.Id, data)
+
+	c.messageObserver.Response(paramRequest.Id, paramRequest.Method, observer.DigResponseData(response), err)
+
+	chromeResponse := &gcdmessage.ChromeResponse{}
+	err = json.Unmarshal(response.Data, chromeResponse)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return chromeResponse, nil
+}
+
+func (c *ChromeTarget) sendData(ctx context.Context, ID int64, data []byte) (*gcdmessage.Message, error) {
+	recvCh := make(chan *gcdmessage.Message, 1)
+
+	select {
+	case <-ctx.Done():
+		return nil, &gcdmessage.ChromeCtxDoneErr{}
+	case c.sendCh <- &gcdmessage.Message{ReplyCh: recvCh, Id: ID, Data: data}:
+	case <-time.After(c.GetApiTimeout()):
+		return nil, &gcdmessage.ChromeApiTimeoutErr{}
+	case <-c.GetDoneCh():
+		return nil, &gcdmessage.ChromeDoneErr{}
+	}
+
+	var resp *gcdmessage.Message
+	select {
+	case <-ctx.Done():
+		return nil, &gcdmessage.ChromeCtxDoneErr{}
+	case <-time.After(c.GetApiTimeout()):
+		return nil, &gcdmessage.ChromeApiTimeoutErr{}
+	case resp = <-recvCh:
+	case <-c.GetDoneCh():
+		return nil, &gcdmessage.ChromeDoneErr{}
+	}
+
+	if resp == nil || resp.Data == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	return resp, nil
 }

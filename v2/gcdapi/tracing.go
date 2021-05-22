@@ -53,13 +53,13 @@ func NewTracing(target gcdmessage.ChromeTargeter) *Tracing {
 
 // Stop trace events collection.
 func (c *Tracing) End(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.end"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.end"})
 }
 
 // GetCategories - Gets supported tracing categories.
 // Returns -  categories - A list of supported tracing categories.
 func (c *Tracing) GetCategories(ctx context.Context) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.getCategories"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.getCategories"})
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ type TracingRecordClockSyncMarkerParams struct {
 
 // RecordClockSyncMarkerWithParams - Record a clock sync marker in the trace.
 func (c *Tracing) RecordClockSyncMarkerWithParams(ctx context.Context, v *TracingRecordClockSyncMarkerParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.recordClockSyncMarker", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.recordClockSyncMarker", Params: v})
 }
 
 // RecordClockSyncMarker - Record a clock sync marker in the trace.
@@ -116,7 +116,7 @@ type TracingRequestMemoryDumpParams struct {
 // RequestMemoryDumpWithParams - Request a global memory dump.
 // Returns -  dumpGuid - GUID of the resulting global memory dump. success - True iff the global memory dump succeeded.
 func (c *Tracing) RequestMemoryDumpWithParams(ctx context.Context, v *TracingRequestMemoryDumpParams) (string, bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.requestMemoryDump", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.requestMemoryDump", Params: v})
 	if err != nil {
 		return "", false, err
 	}
@@ -180,7 +180,7 @@ type TracingStartParams struct {
 
 // StartWithParams - Start trace events collection.
 func (c *Tracing) StartWithParams(ctx context.Context, v *TracingStartParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.start", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Tracing.start", Params: v})
 }
 
 // Start - Start trace events collection.

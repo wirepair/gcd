@@ -57,7 +57,7 @@ func NewEmulation(target gcdmessage.ChromeTargeter) *Emulation {
 // CanEmulate - Tells whether emulation is supported.
 // Returns -  result - True if emulation is supported.
 func (c *Emulation) CanEmulate(ctx context.Context) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.canEmulate"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.canEmulate"})
 	if err != nil {
 		return false, err
 	}
@@ -88,17 +88,17 @@ func (c *Emulation) CanEmulate(ctx context.Context) (bool, error) {
 
 // Clears the overridden device metrics.
 func (c *Emulation) ClearDeviceMetricsOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDeviceMetricsOverride"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDeviceMetricsOverride"})
 }
 
 // Clears the overridden Geolocation Position and Error.
 func (c *Emulation) ClearGeolocationOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearGeolocationOverride"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearGeolocationOverride"})
 }
 
 // Requests that page scale factor is reset to initial values.
 func (c *Emulation) ResetPageScaleFactor(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetPageScaleFactor"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.resetPageScaleFactor"})
 }
 
 type EmulationSetFocusEmulationEnabledParams struct {
@@ -108,7 +108,7 @@ type EmulationSetFocusEmulationEnabledParams struct {
 
 // SetFocusEmulationEnabledWithParams - Enables or disables simulating a focused and active page.
 func (c *Emulation) SetFocusEmulationEnabledWithParams(ctx context.Context, v *EmulationSetFocusEmulationEnabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setFocusEmulationEnabled", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setFocusEmulationEnabled", Params: v})
 }
 
 // SetFocusEmulationEnabled - Enables or disables simulating a focused and active page.
@@ -126,7 +126,7 @@ type EmulationSetCPUThrottlingRateParams struct {
 
 // SetCPUThrottlingRateWithParams - Enables CPU throttling to emulate slow CPUs.
 func (c *Emulation) SetCPUThrottlingRateWithParams(ctx context.Context, v *EmulationSetCPUThrottlingRateParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setCPUThrottlingRate", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setCPUThrottlingRate", Params: v})
 }
 
 // SetCPUThrottlingRate - Enables CPU throttling to emulate slow CPUs.
@@ -144,7 +144,7 @@ type EmulationSetDefaultBackgroundColorOverrideParams struct {
 
 // SetDefaultBackgroundColorOverrideWithParams - Sets or clears an override of the default background color of the frame. This override is used if the content does not specify one.
 func (c *Emulation) SetDefaultBackgroundColorOverrideWithParams(ctx context.Context, v *EmulationSetDefaultBackgroundColorOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDefaultBackgroundColorOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDefaultBackgroundColorOverride", Params: v})
 }
 
 // SetDefaultBackgroundColorOverride - Sets or clears an override of the default background color of the frame. This override is used if the content does not specify one.
@@ -186,7 +186,7 @@ type EmulationSetDeviceMetricsOverrideParams struct {
 
 // SetDeviceMetricsOverrideWithParams - Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results).
 func (c *Emulation) SetDeviceMetricsOverrideWithParams(ctx context.Context, v *EmulationSetDeviceMetricsOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDeviceMetricsOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDeviceMetricsOverride", Params: v})
 }
 
 // SetDeviceMetricsOverride - Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results).
@@ -228,7 +228,7 @@ type EmulationSetScrollbarsHiddenParams struct {
 
 // SetScrollbarsHiddenWithParams -
 func (c *Emulation) SetScrollbarsHiddenWithParams(ctx context.Context, v *EmulationSetScrollbarsHiddenParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setScrollbarsHidden", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setScrollbarsHidden", Params: v})
 }
 
 // SetScrollbarsHidden -
@@ -246,7 +246,7 @@ type EmulationSetDocumentCookieDisabledParams struct {
 
 // SetDocumentCookieDisabledWithParams -
 func (c *Emulation) SetDocumentCookieDisabledWithParams(ctx context.Context, v *EmulationSetDocumentCookieDisabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDocumentCookieDisabled", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDocumentCookieDisabled", Params: v})
 }
 
 // SetDocumentCookieDisabled -
@@ -266,7 +266,7 @@ type EmulationSetEmitTouchEventsForMouseParams struct {
 
 // SetEmitTouchEventsForMouseWithParams -
 func (c *Emulation) SetEmitTouchEventsForMouseWithParams(ctx context.Context, v *EmulationSetEmitTouchEventsForMouseParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmitTouchEventsForMouse", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmitTouchEventsForMouse", Params: v})
 }
 
 // SetEmitTouchEventsForMouse -
@@ -288,7 +288,7 @@ type EmulationSetEmulatedMediaParams struct {
 
 // SetEmulatedMediaWithParams - Emulates the given media type or media feature for CSS media queries.
 func (c *Emulation) SetEmulatedMediaWithParams(ctx context.Context, v *EmulationSetEmulatedMediaParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedMedia", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedMedia", Params: v})
 }
 
 // SetEmulatedMedia - Emulates the given media type or media feature for CSS media queries.
@@ -308,7 +308,7 @@ type EmulationSetEmulatedVisionDeficiencyParams struct {
 
 // SetEmulatedVisionDeficiencyWithParams - Emulates the given vision deficiency.
 func (c *Emulation) SetEmulatedVisionDeficiencyWithParams(ctx context.Context, v *EmulationSetEmulatedVisionDeficiencyParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedVisionDeficiency", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setEmulatedVisionDeficiency", Params: v})
 }
 
 // SetEmulatedVisionDeficiency - Emulates the given vision deficiency.
@@ -330,7 +330,7 @@ type EmulationSetGeolocationOverrideParams struct {
 
 // SetGeolocationOverrideWithParams - Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.
 func (c *Emulation) SetGeolocationOverrideWithParams(ctx context.Context, v *EmulationSetGeolocationOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setGeolocationOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setGeolocationOverride", Params: v})
 }
 
 // SetGeolocationOverride - Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.
@@ -354,7 +354,7 @@ type EmulationSetIdleOverrideParams struct {
 
 // SetIdleOverrideWithParams - Overrides the Idle state.
 func (c *Emulation) SetIdleOverrideWithParams(ctx context.Context, v *EmulationSetIdleOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setIdleOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setIdleOverride", Params: v})
 }
 
 // SetIdleOverride - Overrides the Idle state.
@@ -369,7 +369,7 @@ func (c *Emulation) SetIdleOverride(ctx context.Context, isUserActive bool, isSc
 
 // Clears Idle state overrides.
 func (c *Emulation) ClearIdleOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearIdleOverride"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearIdleOverride"})
 }
 
 type EmulationSetNavigatorOverridesParams struct {
@@ -379,7 +379,7 @@ type EmulationSetNavigatorOverridesParams struct {
 
 // SetNavigatorOverridesWithParams - Overrides value returned by the javascript navigator object.
 func (c *Emulation) SetNavigatorOverridesWithParams(ctx context.Context, v *EmulationSetNavigatorOverridesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setNavigatorOverrides", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setNavigatorOverrides", Params: v})
 }
 
 // SetNavigatorOverrides - Overrides value returned by the javascript navigator object.
@@ -397,7 +397,7 @@ type EmulationSetPageScaleFactorParams struct {
 
 // SetPageScaleFactorWithParams - Sets a specified page scale factor.
 func (c *Emulation) SetPageScaleFactorWithParams(ctx context.Context, v *EmulationSetPageScaleFactorParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setPageScaleFactor", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setPageScaleFactor", Params: v})
 }
 
 // SetPageScaleFactor - Sets a specified page scale factor.
@@ -415,7 +415,7 @@ type EmulationSetScriptExecutionDisabledParams struct {
 
 // SetScriptExecutionDisabledWithParams - Switches script execution in the page.
 func (c *Emulation) SetScriptExecutionDisabledWithParams(ctx context.Context, v *EmulationSetScriptExecutionDisabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setScriptExecutionDisabled", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setScriptExecutionDisabled", Params: v})
 }
 
 // SetScriptExecutionDisabled - Switches script execution in the page.
@@ -435,7 +435,7 @@ type EmulationSetTouchEmulationEnabledParams struct {
 
 // SetTouchEmulationEnabledWithParams - Enables touch on platforms which do not support them.
 func (c *Emulation) SetTouchEmulationEnabledWithParams(ctx context.Context, v *EmulationSetTouchEmulationEnabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setTouchEmulationEnabled", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setTouchEmulationEnabled", Params: v})
 }
 
 // SetTouchEmulationEnabled - Enables touch on platforms which do not support them.
@@ -464,7 +464,7 @@ type EmulationSetVirtualTimePolicyParams struct {
 // SetVirtualTimePolicyWithParams - Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.
 // Returns -  virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
 func (c *Emulation) SetVirtualTimePolicyWithParams(ctx context.Context, v *EmulationSetVirtualTimePolicyParams) (float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setVirtualTimePolicy", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setVirtualTimePolicy", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -517,7 +517,7 @@ type EmulationSetLocaleOverrideParams struct {
 
 // SetLocaleOverrideWithParams - Overrides default host system locale with the specified one.
 func (c *Emulation) SetLocaleOverrideWithParams(ctx context.Context, v *EmulationSetLocaleOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setLocaleOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setLocaleOverride", Params: v})
 }
 
 // SetLocaleOverride - Overrides default host system locale with the specified one.
@@ -535,7 +535,7 @@ type EmulationSetTimezoneOverrideParams struct {
 
 // SetTimezoneOverrideWithParams - Overrides default host system timezone with the specified one.
 func (c *Emulation) SetTimezoneOverrideWithParams(ctx context.Context, v *EmulationSetTimezoneOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setTimezoneOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setTimezoneOverride", Params: v})
 }
 
 // SetTimezoneOverride - Overrides default host system timezone with the specified one.
@@ -555,7 +555,7 @@ type EmulationSetVisibleSizeParams struct {
 
 // SetVisibleSizeWithParams - Resizes the frame/viewport of the page. Note that this does not affect the frame's container (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported on Android.
 func (c *Emulation) SetVisibleSizeWithParams(ctx context.Context, v *EmulationSetVisibleSizeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setVisibleSize", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setVisibleSize", Params: v})
 }
 
 // SetVisibleSize - Resizes the frame/viewport of the page. Note that this does not affect the frame's container (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported on Android.
@@ -575,7 +575,7 @@ type EmulationSetDisabledImageTypesParams struct {
 
 // SetDisabledImageTypesWithParams -
 func (c *Emulation) SetDisabledImageTypesWithParams(ctx context.Context, v *EmulationSetDisabledImageTypesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDisabledImageTypes", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDisabledImageTypes", Params: v})
 }
 
 // SetDisabledImageTypes -
@@ -599,7 +599,7 @@ type EmulationSetUserAgentOverrideParams struct {
 
 // SetUserAgentOverrideWithParams - Allows overriding user agent with the given string.
 func (c *Emulation) SetUserAgentOverrideWithParams(ctx context.Context, v *EmulationSetUserAgentOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setUserAgentOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setUserAgentOverride", Params: v})
 }
 
 // SetUserAgentOverride - Allows overriding user agent with the given string.

@@ -161,7 +161,7 @@ type DebuggerContinueToLocationParams struct {
 
 // ContinueToLocationWithParams - Continues execution until specific location is reached.
 func (c *Debugger) ContinueToLocationWithParams(ctx context.Context, v *DebuggerContinueToLocationParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.continueToLocation", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.continueToLocation", Params: v})
 }
 
 // ContinueToLocation - Continues execution until specific location is reached.
@@ -176,7 +176,7 @@ func (c *Debugger) ContinueToLocation(ctx context.Context, location *DebuggerLoc
 
 // Disables debugger for given page.
 func (c *Debugger) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disable"})
 }
 
 type DebuggerEnableParams struct {
@@ -187,7 +187,7 @@ type DebuggerEnableParams struct {
 // EnableWithParams - Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
 // Returns -  debuggerId - Unique identifier of the debugger.
 func (c *Debugger) EnableWithParams(ctx context.Context, v *DebuggerEnableParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enable", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.enable", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -249,7 +249,7 @@ type DebuggerEvaluateOnCallFrameParams struct {
 // EvaluateOnCallFrameWithParams - Evaluates expression on a given call frame.
 // Returns -  result - Object wrapper for the evaluation result. exceptionDetails - Exception details.
 func (c *Debugger) EvaluateOnCallFrameWithParams(ctx context.Context, v *DebuggerEvaluateOnCallFrameParams) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.evaluateOnCallFrame", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.evaluateOnCallFrame", Params: v})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -316,7 +316,7 @@ type DebuggerGetPossibleBreakpointsParams struct {
 // GetPossibleBreakpointsWithParams - Returns possible locations for breakpoint. scriptId in start and end range locations should be the same.
 // Returns -  locations - List of the possible breakpoint locations.
 func (c *Debugger) GetPossibleBreakpointsWithParams(ctx context.Context, v *DebuggerGetPossibleBreakpointsParams) ([]*DebuggerBreakLocation, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getPossibleBreakpoints", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getPossibleBreakpoints", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -366,7 +366,7 @@ type DebuggerGetScriptSourceParams struct {
 // GetScriptSourceWithParams - Returns source for the script with given id.
 // Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode. (Encoded as a base64 string when passed over JSON)
 func (c *Debugger) GetScriptSourceWithParams(ctx context.Context, v *DebuggerGetScriptSourceParams) (string, string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource", Params: v})
 	if err != nil {
 		return "", "", err
 	}
@@ -413,7 +413,7 @@ type DebuggerGetWasmBytecodeParams struct {
 // GetWasmBytecodeWithParams - This command is deprecated. Use getScriptSource instead.
 // Returns -  bytecode - Script source. (Encoded as a base64 string when passed over JSON)
 func (c *Debugger) GetWasmBytecodeWithParams(ctx context.Context, v *DebuggerGetWasmBytecodeParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getWasmBytecode", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getWasmBytecode", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -459,7 +459,7 @@ type DebuggerGetStackTraceParams struct {
 // GetStackTraceWithParams - Returns stack trace with given `stackTraceId`.
 // Returns -  stackTrace -
 func (c *Debugger) GetStackTraceWithParams(ctx context.Context, v *DebuggerGetStackTraceParams) (*RuntimeStackTrace, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getStackTrace", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getStackTrace", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -499,7 +499,7 @@ func (c *Debugger) GetStackTrace(ctx context.Context, stackTraceId *RuntimeStack
 
 // Stops on the next JavaScript statement.
 func (c *Debugger) Pause(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.pause"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.pause"})
 }
 
 type DebuggerPauseOnAsyncCallParams struct {
@@ -509,7 +509,7 @@ type DebuggerPauseOnAsyncCallParams struct {
 
 // PauseOnAsyncCallWithParams -
 func (c *Debugger) PauseOnAsyncCallWithParams(ctx context.Context, v *DebuggerPauseOnAsyncCallParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.pauseOnAsyncCall", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.pauseOnAsyncCall", Params: v})
 }
 
 // PauseOnAsyncCall -
@@ -527,7 +527,7 @@ type DebuggerRemoveBreakpointParams struct {
 
 // RemoveBreakpointWithParams - Removes JavaScript breakpoint.
 func (c *Debugger) RemoveBreakpointWithParams(ctx context.Context, v *DebuggerRemoveBreakpointParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.removeBreakpoint", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.removeBreakpoint", Params: v})
 }
 
 // RemoveBreakpoint - Removes JavaScript breakpoint.
@@ -546,7 +546,7 @@ type DebuggerRestartFrameParams struct {
 // RestartFrameWithParams - Restarts particular call frame from the beginning.
 // Returns -  callFrames - New stack trace. asyncStackTrace - Async stack trace, if any. asyncStackTraceId - Async stack trace, if any.
 func (c *Debugger) RestartFrameWithParams(ctx context.Context, v *DebuggerRestartFrameParams) ([]*DebuggerCallFrame, *RuntimeStackTrace, *RuntimeStackTraceId, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.restartFrame", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.restartFrame", Params: v})
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -593,7 +593,7 @@ type DebuggerResumeParams struct {
 
 // ResumeWithParams - Resumes JavaScript execution.
 func (c *Debugger) ResumeWithParams(ctx context.Context, v *DebuggerResumeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.resume", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.resume", Params: v})
 }
 
 // Resume - Resumes JavaScript execution.
@@ -618,7 +618,7 @@ type DebuggerSearchInContentParams struct {
 // SearchInContentWithParams - Searches for given string in script content.
 // Returns -  result - List of search matches.
 func (c *Debugger) SearchInContentWithParams(ctx context.Context, v *DebuggerSearchInContentParams) ([]*DebuggerSearchMatch, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.searchInContent", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.searchInContent", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -669,7 +669,7 @@ type DebuggerSetAsyncCallStackDepthParams struct {
 
 // SetAsyncCallStackDepthWithParams - Enables or disables async call stacks tracking.
 func (c *Debugger) SetAsyncCallStackDepthWithParams(ctx context.Context, v *DebuggerSetAsyncCallStackDepthParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setAsyncCallStackDepth", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setAsyncCallStackDepth", Params: v})
 }
 
 // SetAsyncCallStackDepth - Enables or disables async call stacks tracking.
@@ -687,7 +687,7 @@ type DebuggerSetBlackboxPatternsParams struct {
 
 // SetBlackboxPatternsWithParams - Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
 func (c *Debugger) SetBlackboxPatternsWithParams(ctx context.Context, v *DebuggerSetBlackboxPatternsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBlackboxPatterns", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBlackboxPatterns", Params: v})
 }
 
 // SetBlackboxPatterns - Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
@@ -707,7 +707,7 @@ type DebuggerSetBlackboxedRangesParams struct {
 
 // SetBlackboxedRangesWithParams - Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted.
 func (c *Debugger) SetBlackboxedRangesWithParams(ctx context.Context, v *DebuggerSetBlackboxedRangesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBlackboxedRanges", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBlackboxedRanges", Params: v})
 }
 
 // SetBlackboxedRanges - Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful. Positions array contains positions where blackbox state is changed. First interval isn't blackboxed. Array should be sorted.
@@ -730,7 +730,7 @@ type DebuggerSetBreakpointParams struct {
 // SetBreakpointWithParams - Sets JavaScript breakpoint at a given location.
 // Returns -  breakpointId - Id of the created breakpoint for further reference. actualLocation - Location this breakpoint resolved into.
 func (c *Debugger) SetBreakpointWithParams(ctx context.Context, v *DebuggerSetBreakpointParams) (string, *DebuggerLocation, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpoint", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpoint", Params: v})
 	if err != nil {
 		return "", nil, err
 	}
@@ -779,7 +779,7 @@ type DebuggerSetInstrumentationBreakpointParams struct {
 // SetInstrumentationBreakpointWithParams - Sets instrumentation breakpoint.
 // Returns -  breakpointId - Id of the created breakpoint for further reference.
 func (c *Debugger) SetInstrumentationBreakpointWithParams(ctx context.Context, v *DebuggerSetInstrumentationBreakpointParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setInstrumentationBreakpoint", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setInstrumentationBreakpoint", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -835,7 +835,7 @@ type DebuggerSetBreakpointByUrlParams struct {
 // SetBreakpointByUrlWithParams - Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this command is issued, all existing parsed scripts will have breakpoints resolved and returned in `locations` property. Further matching script parsing will result in subsequent `breakpointResolved` events issued. This logical breakpoint will survive page reloads.
 // Returns -  breakpointId - Id of the created breakpoint for further reference. locations - List of the locations this breakpoint resolved into upon addition.
 func (c *Debugger) SetBreakpointByUrlWithParams(ctx context.Context, v *DebuggerSetBreakpointByUrlParams) (string, []*DebuggerLocation, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointByUrl", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointByUrl", Params: v})
 	if err != nil {
 		return "", nil, err
 	}
@@ -894,7 +894,7 @@ type DebuggerSetBreakpointOnFunctionCallParams struct {
 // SetBreakpointOnFunctionCallWithParams - Sets JavaScript breakpoint before each call to the given function. If another function was created from the same source as a given one, calling it will also trigger the breakpoint.
 // Returns -  breakpointId - Id of the created breakpoint for further reference.
 func (c *Debugger) SetBreakpointOnFunctionCallWithParams(ctx context.Context, v *DebuggerSetBreakpointOnFunctionCallParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointOnFunctionCall", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointOnFunctionCall", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -941,7 +941,7 @@ type DebuggerSetBreakpointsActiveParams struct {
 
 // SetBreakpointsActiveWithParams - Activates / deactivates all breakpoints on the page.
 func (c *Debugger) SetBreakpointsActiveWithParams(ctx context.Context, v *DebuggerSetBreakpointsActiveParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointsActive", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBreakpointsActive", Params: v})
 }
 
 // SetBreakpointsActive - Activates / deactivates all breakpoints on the page.
@@ -959,7 +959,7 @@ type DebuggerSetPauseOnExceptionsParams struct {
 
 // SetPauseOnExceptionsWithParams - Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is `none`.
 func (c *Debugger) SetPauseOnExceptionsWithParams(ctx context.Context, v *DebuggerSetPauseOnExceptionsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setPauseOnExceptions", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setPauseOnExceptions", Params: v})
 }
 
 // SetPauseOnExceptions - Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is `none`.
@@ -977,7 +977,7 @@ type DebuggerSetReturnValueParams struct {
 
 // SetReturnValueWithParams - Changes return value in top frame. Available only at return break position.
 func (c *Debugger) SetReturnValueWithParams(ctx context.Context, v *DebuggerSetReturnValueParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setReturnValue", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setReturnValue", Params: v})
 }
 
 // SetReturnValue - Changes return value in top frame. Available only at return break position.
@@ -1000,7 +1000,7 @@ type DebuggerSetScriptSourceParams struct {
 // SetScriptSourceWithParams - Edits JavaScript source live.
 // Returns -  callFrames - New stack trace in case editing has happened while VM was stopped. stackChanged - Whether current call stack  was modified after applying the changes. asyncStackTrace - Async stack trace, if any. asyncStackTraceId - Async stack trace, if any. exceptionDetails - Exception details if any.
 func (c *Debugger) SetScriptSourceWithParams(ctx context.Context, v *DebuggerSetScriptSourceParams) ([]*DebuggerCallFrame, bool, *RuntimeStackTrace, *RuntimeStackTraceId, *RuntimeExceptionDetails, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setScriptSource", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setScriptSource", Params: v})
 	if err != nil {
 		return nil, false, nil, nil, nil, err
 	}
@@ -1053,7 +1053,7 @@ type DebuggerSetSkipAllPausesParams struct {
 
 // SetSkipAllPausesWithParams - Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
 func (c *Debugger) SetSkipAllPausesWithParams(ctx context.Context, v *DebuggerSetSkipAllPausesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setSkipAllPauses", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setSkipAllPauses", Params: v})
 }
 
 // SetSkipAllPauses - Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
@@ -1077,7 +1077,7 @@ type DebuggerSetVariableValueParams struct {
 
 // SetVariableValueWithParams - Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually.
 func (c *Debugger) SetVariableValueWithParams(ctx context.Context, v *DebuggerSetVariableValueParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setVariableValue", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setVariableValue", Params: v})
 }
 
 // SetVariableValue - Changes value of variable in a callframe. Object-based scopes are not supported and must be mutated manually.
@@ -1103,7 +1103,7 @@ type DebuggerStepIntoParams struct {
 
 // StepIntoWithParams - Steps into the function call.
 func (c *Debugger) StepIntoWithParams(ctx context.Context, v *DebuggerStepIntoParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepInto", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepInto", Params: v})
 }
 
 // StepInto - Steps into the function call.
@@ -1118,7 +1118,7 @@ func (c *Debugger) StepInto(ctx context.Context, breakOnAsyncCall bool, skipList
 
 // Steps out of the function call.
 func (c *Debugger) StepOut(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOut"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOut"})
 }
 
 type DebuggerStepOverParams struct {
@@ -1128,7 +1128,7 @@ type DebuggerStepOverParams struct {
 
 // StepOverWithParams - Steps over the statement.
 func (c *Debugger) StepOverWithParams(ctx context.Context, v *DebuggerStepOverParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOver", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.stepOver", Params: v})
 }
 
 // StepOver - Steps over the statement.

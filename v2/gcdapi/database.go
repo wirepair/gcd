@@ -42,12 +42,12 @@ func NewDatabase(target gcdmessage.ChromeTargeter) *Database {
 
 // Disables database tracking, prevents database events from being sent to the client.
 func (c *Database) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.disable"})
 }
 
 // Enables database tracking, database events will now be delivered to the client.
 func (c *Database) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.enable"})
 }
 
 type DatabaseExecuteSQLParams struct {
@@ -60,7 +60,7 @@ type DatabaseExecuteSQLParams struct {
 // ExecuteSQLWithParams -
 // Returns -  columnNames -  values -  sqlError -
 func (c *Database) ExecuteSQLWithParams(ctx context.Context, v *DatabaseExecuteSQLParams) ([]string, []interface{}, *DatabaseError, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.executeSQL", Params: v})
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -110,7 +110,7 @@ type DatabaseGetDatabaseTableNamesParams struct {
 // GetDatabaseTableNamesWithParams -
 // Returns -  tableNames -
 func (c *Database) GetDatabaseTableNamesWithParams(ctx context.Context, v *DatabaseGetDatabaseTableNamesParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Database.getDatabaseTableNames", Params: v})
 	if err != nil {
 		return nil, err
 	}

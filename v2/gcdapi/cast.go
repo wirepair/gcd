@@ -48,7 +48,7 @@ type CastEnableParams struct {
 
 // EnableWithParams - Starts observing for sinks that can be used for tab mirroring, and if set, sinks compatible with |presentationUrl| as well. When sinks are found, a |sinksUpdated| event is fired. Also starts observing for issue messages. When an issue is added or removed, an |issueUpdated| event is fired.
 func (c *Cast) EnableWithParams(ctx context.Context, v *CastEnableParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.enable", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.enable", Params: v})
 }
 
 // Enable - Starts observing for sinks that can be used for tab mirroring, and if set, sinks compatible with |presentationUrl| as well. When sinks are found, a |sinksUpdated| event is fired. Also starts observing for issue messages. When an issue is added or removed, an |issueUpdated| event is fired.
@@ -61,7 +61,7 @@ func (c *Cast) Enable(ctx context.Context, presentationUrl string) (*gcdmessage.
 
 // Stops observing for sinks and issues.
 func (c *Cast) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.disable"})
 }
 
 type CastSetSinkToUseParams struct {
@@ -71,7 +71,7 @@ type CastSetSinkToUseParams struct {
 
 // SetSinkToUseWithParams - Sets a sink to be used when the web page requests the browser to choose a sink via Presentation API, Remote Playback API, or Cast SDK.
 func (c *Cast) SetSinkToUseWithParams(ctx context.Context, v *CastSetSinkToUseParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.setSinkToUse", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.setSinkToUse", Params: v})
 }
 
 // SetSinkToUse - Sets a sink to be used when the web page requests the browser to choose a sink via Presentation API, Remote Playback API, or Cast SDK.
@@ -89,7 +89,7 @@ type CastStartTabMirroringParams struct {
 
 // StartTabMirroringWithParams - Starts mirroring the tab to the sink.
 func (c *Cast) StartTabMirroringWithParams(ctx context.Context, v *CastStartTabMirroringParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.startTabMirroring", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.startTabMirroring", Params: v})
 }
 
 // StartTabMirroring - Starts mirroring the tab to the sink.
@@ -107,7 +107,7 @@ type CastStopCastingParams struct {
 
 // StopCastingWithParams - Stops the active Cast session on the sink.
 func (c *Cast) StopCastingWithParams(ctx context.Context, v *CastStopCastingParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.stopCasting", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.stopCasting", Params: v})
 }
 
 // StopCasting - Stops the active Cast session on the sink.

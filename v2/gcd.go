@@ -28,6 +28,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wirepair/gcd/v2/observer"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -90,6 +91,7 @@ type Gcd struct {
 	logger            Log
 	debugEvents       bool
 	debug             bool
+	messageObserver   observer.MessageObserver
 }
 
 // Give it a friendly name.
@@ -103,6 +105,7 @@ func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 	c.env = make([]string, 0)
 	c.ctx = context.Background()
 	c.logger = LogDiscarder{}
+	c.messageObserver = observer.NewIgnoreMessagesObserver()
 
 	for _, o := range opts {
 		o(c)
@@ -165,6 +168,12 @@ func WithEventDebugging() func(*Gcd) {
 func WithInternalDebugMessages() func(*Gcd) {
 	return func(g *Gcd) {
 		g.debug = true
+	}
+}
+
+func WithMessageObserver(observer observer.MessageObserver) func(*Gcd) {
+	return func(g *Gcd) {
+		g.messageObserver = observer
 	}
 }
 
@@ -316,7 +325,7 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 	chromeTargets := make([]*ChromeTarget, 0)
 	for _, connectableTarget := range connectableTargets {
 		if _, ok := knownIds[connectableTarget.Id]; !ok {
-			target, err := openChromeTarget(c, connectableTarget)
+			target, err := openChromeTarget(c, connectableTarget, c.messageObserver)
 			if err != nil {
 				return nil, err
 			}
@@ -379,7 +388,7 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	if err != nil {
 		return nil, &GcdDecodingErr{Message: err.Error()}
 	}
-	return openChromeTarget(c, tabTarget)
+	return openChromeTarget(c, tabTarget, c.messageObserver)
 }
 
 // GetFirstTab returns the first tab created, to be called when
@@ -392,7 +401,7 @@ func (c *Gcd) GetFirstTab() (*ChromeTarget, error) {
 
 	for _, tabTarget := range connectableTargets {
 		if tabTarget.Type == "page" {
-			return openChromeTarget(c, tabTarget)
+			return openChromeTarget(c, tabTarget, c.messageObserver)
 		}
 	}
 	return nil, ErrNoTabAvailable

@@ -44,12 +44,12 @@ func NewWebAuthn(target gcdmessage.ChromeTargeter) *WebAuthn {
 
 // Enable the WebAuthn domain and start intercepting credential storage and retrieval with a virtual authenticator.
 func (c *WebAuthn) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.enable"})
 }
 
 // Disable the WebAuthn domain.
 func (c *WebAuthn) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.disable"})
 }
 
 type WebAuthnAddVirtualAuthenticatorParams struct {
@@ -60,7 +60,7 @@ type WebAuthnAddVirtualAuthenticatorParams struct {
 // AddVirtualAuthenticatorWithParams - Creates and adds a virtual authenticator.
 // Returns -  authenticatorId -
 func (c *WebAuthn) AddVirtualAuthenticatorWithParams(ctx context.Context, v *WebAuthnAddVirtualAuthenticatorParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.addVirtualAuthenticator", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.addVirtualAuthenticator", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -105,7 +105,7 @@ type WebAuthnRemoveVirtualAuthenticatorParams struct {
 
 // RemoveVirtualAuthenticatorWithParams - Removes the given authenticator.
 func (c *WebAuthn) RemoveVirtualAuthenticatorWithParams(ctx context.Context, v *WebAuthnRemoveVirtualAuthenticatorParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.removeVirtualAuthenticator", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.removeVirtualAuthenticator", Params: v})
 }
 
 // RemoveVirtualAuthenticator - Removes the given authenticator.
@@ -125,7 +125,7 @@ type WebAuthnAddCredentialParams struct {
 
 // AddCredentialWithParams - Adds the credential to the specified authenticator.
 func (c *WebAuthn) AddCredentialWithParams(ctx context.Context, v *WebAuthnAddCredentialParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.addCredential", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.addCredential", Params: v})
 }
 
 // AddCredential - Adds the credential to the specified authenticator.
@@ -148,7 +148,7 @@ type WebAuthnGetCredentialParams struct {
 // GetCredentialWithParams - Returns a single credential stored in the given virtual authenticator that matches the credential ID.
 // Returns -  credential -
 func (c *WebAuthn) GetCredentialWithParams(ctx context.Context, v *WebAuthnGetCredentialParams) (*WebAuthnCredential, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.getCredential", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.getCredential", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +196,7 @@ type WebAuthnGetCredentialsParams struct {
 // GetCredentialsWithParams - Returns all the credentials stored in the given virtual authenticator.
 // Returns -  credentials -
 func (c *WebAuthn) GetCredentialsWithParams(ctx context.Context, v *WebAuthnGetCredentialsParams) ([]*WebAuthnCredential, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.getCredentials", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.getCredentials", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +243,7 @@ type WebAuthnRemoveCredentialParams struct {
 
 // RemoveCredentialWithParams - Removes a credential from the authenticator.
 func (c *WebAuthn) RemoveCredentialWithParams(ctx context.Context, v *WebAuthnRemoveCredentialParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.removeCredential", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.removeCredential", Params: v})
 }
 
 // RemoveCredential - Removes a credential from the authenticator.
@@ -263,7 +263,7 @@ type WebAuthnClearCredentialsParams struct {
 
 // ClearCredentialsWithParams - Clears all the credentials from the specified device.
 func (c *WebAuthn) ClearCredentialsWithParams(ctx context.Context, v *WebAuthnClearCredentialsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.clearCredentials", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.clearCredentials", Params: v})
 }
 
 // ClearCredentials - Clears all the credentials from the specified device.
@@ -283,7 +283,7 @@ type WebAuthnSetUserVerifiedParams struct {
 
 // SetUserVerifiedWithParams - Sets whether User Verification succeeds or fails for an authenticator. The default is true.
 func (c *WebAuthn) SetUserVerifiedWithParams(ctx context.Context, v *WebAuthnSetUserVerifiedParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.setUserVerified", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.setUserVerified", Params: v})
 }
 
 // SetUserVerified - Sets whether User Verification succeeds or fails for an authenticator. The default is true.
@@ -305,7 +305,7 @@ type WebAuthnSetAutomaticPresenceSimulationParams struct {
 
 // SetAutomaticPresenceSimulationWithParams - Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator. The default is true.
 func (c *WebAuthn) SetAutomaticPresenceSimulationWithParams(ctx context.Context, v *WebAuthnSetAutomaticPresenceSimulationParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.setAutomaticPresenceSimulation", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.setAutomaticPresenceSimulation", Params: v})
 }
 
 // SetAutomaticPresenceSimulation - Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator. The default is true.

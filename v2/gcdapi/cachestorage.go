@@ -55,7 +55,7 @@ type CacheStorageDeleteCacheParams struct {
 
 // DeleteCacheWithParams - Deletes a cache.
 func (c *CacheStorage) DeleteCacheWithParams(ctx context.Context, v *CacheStorageDeleteCacheParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteCache", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteCache", Params: v})
 }
 
 // DeleteCache - Deletes a cache.
@@ -75,7 +75,7 @@ type CacheStorageDeleteEntryParams struct {
 
 // DeleteEntryWithParams - Deletes a cache entry.
 func (c *CacheStorage) DeleteEntryWithParams(ctx context.Context, v *CacheStorageDeleteEntryParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteEntry", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.deleteEntry", Params: v})
 }
 
 // DeleteEntry - Deletes a cache entry.
@@ -96,7 +96,7 @@ type CacheStorageRequestCacheNamesParams struct {
 // RequestCacheNamesWithParams - Requests cache names.
 // Returns -  caches - Caches for the security origin.
 func (c *CacheStorage) RequestCacheNamesWithParams(ctx context.Context, v *CacheStorageRequestCacheNamesParams) ([]*CacheStorageCache, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCacheNames", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCacheNames", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ type CacheStorageRequestCachedResponseParams struct {
 // RequestCachedResponseWithParams - Fetches cache entry.
 // Returns -  response - Response read from the cache.
 func (c *CacheStorage) RequestCachedResponseWithParams(ctx context.Context, v *CacheStorageRequestCachedResponseParams) (*CacheStorageCachedResponse, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCachedResponse", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestCachedResponse", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ type CacheStorageRequestEntriesParams struct {
 // RequestEntriesWithParams - Requests data from cache.
 // Returns -  cacheDataEntries - Array of object store data entries. returnCount - Count of returned entries from this storage. If pathFilter is empty, it is the count of all entries from this storage.
 func (c *CacheStorage) RequestEntriesWithParams(ctx context.Context, v *CacheStorageRequestEntriesParams) ([]*CacheStorageDataEntry, float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestEntries", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CacheStorage.requestEntries", Params: v})
 	if err != nil {
 		return nil, 0, err
 	}

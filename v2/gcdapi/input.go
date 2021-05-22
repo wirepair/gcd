@@ -70,7 +70,7 @@ type InputDispatchDragEventParams struct {
 
 // DispatchDragEventWithParams - Dispatches a drag event into the page.
 func (c *Input) DispatchDragEventWithParams(ctx context.Context, v *InputDispatchDragEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchDragEvent", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchDragEvent", Params: v})
 }
 
 // DispatchDragEvent - Dispatches a drag event into the page.
@@ -124,7 +124,7 @@ type InputDispatchKeyEventParams struct {
 
 // DispatchKeyEventWithParams - Dispatches a key event to the page.
 func (c *Input) DispatchKeyEventWithParams(ctx context.Context, v *InputDispatchKeyEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchKeyEvent", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchKeyEvent", Params: v})
 }
 
 // DispatchKeyEvent - Dispatches a key event to the page.
@@ -170,7 +170,7 @@ type InputInsertTextParams struct {
 
 // InsertTextWithParams - This method emulates inserting text that doesn't come from a key press, for example an emoji keyboard or an IME.
 func (c *Input) InsertTextWithParams(ctx context.Context, v *InputInsertTextParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.insertText", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.insertText", Params: v})
 }
 
 // InsertText - This method emulates inserting text that doesn't come from a key press, for example an emoji keyboard or an IME.
@@ -218,7 +218,7 @@ type InputDispatchMouseEventParams struct {
 
 // DispatchMouseEventWithParams - Dispatches a mouse event to the page.
 func (c *Input) DispatchMouseEventWithParams(ctx context.Context, v *InputDispatchMouseEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchMouseEvent", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchMouseEvent", Params: v})
 }
 
 // DispatchMouseEvent - Dispatches a mouse event to the page.
@@ -272,7 +272,7 @@ type InputDispatchTouchEventParams struct {
 
 // DispatchTouchEventWithParams - Dispatches a touch event to the page.
 func (c *Input) DispatchTouchEventWithParams(ctx context.Context, v *InputDispatchTouchEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchTouchEvent", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.dispatchTouchEvent", Params: v})
 }
 
 // DispatchTouchEvent - Dispatches a touch event to the page.
@@ -312,7 +312,7 @@ type InputEmulateTouchFromMouseEventParams struct {
 
 // EmulateTouchFromMouseEventWithParams - Emulates touch event from the mouse event parameters.
 func (c *Input) EmulateTouchFromMouseEventWithParams(ctx context.Context, v *InputEmulateTouchFromMouseEventParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.emulateTouchFromMouseEvent", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.emulateTouchFromMouseEvent", Params: v})
 }
 
 // EmulateTouchFromMouseEvent - Emulates touch event from the mouse event parameters.
@@ -346,7 +346,7 @@ type InputSetIgnoreInputEventsParams struct {
 
 // SetIgnoreInputEventsWithParams - Ignores input events (useful while auditing page).
 func (c *Input) SetIgnoreInputEventsWithParams(ctx context.Context, v *InputSetIgnoreInputEventsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.setIgnoreInputEvents", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.setIgnoreInputEvents", Params: v})
 }
 
 // SetIgnoreInputEvents - Ignores input events (useful while auditing page).
@@ -364,7 +364,7 @@ type InputSetInterceptDragsParams struct {
 
 // SetInterceptDragsWithParams - Prevents default drag and drop behavior and instead emits `Input.dragIntercepted` events. Drag and drop behavior can be directly controlled via `Input.dispatchDragEvent`.
 func (c *Input) SetInterceptDragsWithParams(ctx context.Context, v *InputSetInterceptDragsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.setInterceptDrags", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.setInterceptDrags", Params: v})
 }
 
 // SetInterceptDrags - Prevents default drag and drop behavior and instead emits `Input.dragIntercepted` events. Drag and drop behavior can be directly controlled via `Input.dispatchDragEvent`.
@@ -390,7 +390,7 @@ type InputSynthesizePinchGestureParams struct {
 
 // SynthesizePinchGestureWithParams - Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
 func (c *Input) SynthesizePinchGestureWithParams(ctx context.Context, v *InputSynthesizePinchGestureParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizePinchGesture", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizePinchGesture", Params: v})
 }
 
 // SynthesizePinchGesture - Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
@@ -438,7 +438,7 @@ type InputSynthesizeScrollGestureParams struct {
 
 // SynthesizeScrollGestureWithParams - Synthesizes a scroll gesture over a time period by issuing appropriate touch events.
 func (c *Input) SynthesizeScrollGestureWithParams(ctx context.Context, v *InputSynthesizeScrollGestureParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeScrollGesture", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeScrollGesture", Params: v})
 }
 
 // SynthesizeScrollGesture - Synthesizes a scroll gesture over a time period by issuing appropriate touch events.
@@ -486,7 +486,7 @@ type InputSynthesizeTapGestureParams struct {
 
 // SynthesizeTapGestureWithParams - Synthesizes a tap gesture over a time period by issuing appropriate touch events.
 func (c *Input) SynthesizeTapGestureWithParams(ctx context.Context, v *InputSynthesizeTapGestureParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeTapGesture", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.synthesizeTapGesture", Params: v})
 }
 
 // SynthesizeTapGesture - Synthesizes a tap gesture over a time period by issuing appropriate touch events.

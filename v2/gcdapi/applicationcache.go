@@ -61,7 +61,7 @@ func NewApplicationCache(target gcdmessage.ChromeTargeter) *ApplicationCache {
 
 // Enables application cache domain notifications.
 func (c *ApplicationCache) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.enable"})
 }
 
 type ApplicationCacheGetApplicationCacheForFrameParams struct {
@@ -72,7 +72,7 @@ type ApplicationCacheGetApplicationCacheForFrameParams struct {
 // GetApplicationCacheForFrameWithParams - Returns relevant application cache data for the document in given frame.
 // Returns -  applicationCache - Relevant application cache data for the document in given frame.
 func (c *ApplicationCache) GetApplicationCacheForFrameWithParams(ctx context.Context, v *ApplicationCacheGetApplicationCacheForFrameParams) (*ApplicationCacheApplicationCache, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getApplicationCacheForFrame", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getApplicationCacheForFrame", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (c *ApplicationCache) GetApplicationCacheForFrame(ctx context.Context, fram
 // GetFramesWithManifests - Returns array of frame identifiers with manifest urls for each frame containing a document associated with some application cache.
 // Returns -  frameIds - Array of frame identifiers with manifest urls for each frame containing a document associated with some application cache.
 func (c *ApplicationCache) GetFramesWithManifests(ctx context.Context) ([]*ApplicationCacheFrameWithManifest, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getFramesWithManifests"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getFramesWithManifests"})
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ type ApplicationCacheGetManifestForFrameParams struct {
 // GetManifestForFrameWithParams - Returns manifest URL for document in the given frame.
 // Returns -  manifestURL - Manifest URL for document in the given frame.
 func (c *ApplicationCache) GetManifestForFrameWithParams(ctx context.Context, v *ApplicationCacheGetManifestForFrameParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getManifestForFrame", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ApplicationCache.getManifestForFrame", Params: v})
 	if err != nil {
 		return "", err
 	}

@@ -223,7 +223,7 @@ type DOMCollectClassNamesFromSubtreeParams struct {
 // CollectClassNamesFromSubtreeWithParams - Collects class names for the node with given id and all of it's child nodes.
 // Returns -  classNames - Class name list.
 func (c *DOM) CollectClassNamesFromSubtreeWithParams(ctx context.Context, v *DOMCollectClassNamesFromSubtreeParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.collectClassNamesFromSubtree", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.collectClassNamesFromSubtree", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ type DOMCopyToParams struct {
 // CopyToWithParams - Creates a deep copy of the specified node and places it into the target container before the given anchor.
 // Returns -  nodeId - Id of the node clone.
 func (c *DOM) CopyToWithParams(ctx context.Context, v *DOMCopyToParams) (int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.copyTo", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.copyTo", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -331,7 +331,7 @@ type DOMDescribeNodeParams struct {
 // DescribeNodeWithParams - Describes node given its id, does not require domain to be enabled. Does not start tracking any objects, can be used for automation.
 // Returns -  node - Node description.
 func (c *DOM) DescribeNodeWithParams(ctx context.Context, v *DOMDescribeNodeParams) (*DOMNode, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.describeNode", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.describeNode", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +390,7 @@ type DOMScrollIntoViewIfNeededParams struct {
 
 // ScrollIntoViewIfNeededWithParams - Scrolls the specified rect of the given node into view if not already visible. Note: exactly one between nodeId, backendNodeId and objectId should be passed to identify the node.
 func (c *DOM) ScrollIntoViewIfNeededWithParams(ctx context.Context, v *DOMScrollIntoViewIfNeededParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.scrollIntoViewIfNeeded", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.scrollIntoViewIfNeeded", Params: v})
 }
 
 // ScrollIntoViewIfNeeded - Scrolls the specified rect of the given node into view if not already visible. Note: exactly one between nodeId, backendNodeId and objectId should be passed to identify the node.
@@ -409,7 +409,7 @@ func (c *DOM) ScrollIntoViewIfNeeded(ctx context.Context, nodeId int, backendNod
 
 // Disables DOM agent for the given page.
 func (c *DOM) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.disable"})
 }
 
 type DOMDiscardSearchResultsParams struct {
@@ -419,7 +419,7 @@ type DOMDiscardSearchResultsParams struct {
 
 // DiscardSearchResultsWithParams - Discards search results from the session with the given id. `getSearchResults` should no longer be called for that search.
 func (c *DOM) DiscardSearchResultsWithParams(ctx context.Context, v *DOMDiscardSearchResultsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.discardSearchResults", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.discardSearchResults", Params: v})
 }
 
 // DiscardSearchResults - Discards search results from the session with the given id. `getSearchResults` should no longer be called for that search.
@@ -432,7 +432,7 @@ func (c *DOM) DiscardSearchResults(ctx context.Context, searchId string) (*gcdme
 
 // Enables DOM agent for the given page.
 func (c *DOM) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.enable"})
 }
 
 type DOMFocusParams struct {
@@ -446,7 +446,7 @@ type DOMFocusParams struct {
 
 // FocusWithParams - Focuses the given element.
 func (c *DOM) FocusWithParams(ctx context.Context, v *DOMFocusParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.focus", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.focus", Params: v})
 }
 
 // Focus - Focuses the given element.
@@ -469,7 +469,7 @@ type DOMGetAttributesParams struct {
 // GetAttributesWithParams - Returns attributes for the specified node.
 // Returns -  attributes - An interleaved array of node attribute names and values.
 func (c *DOM) GetAttributesWithParams(ctx context.Context, v *DOMGetAttributesParams) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getAttributes", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getAttributes", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -519,7 +519,7 @@ type DOMGetBoxModelParams struct {
 // GetBoxModelWithParams - Returns boxes for the given node.
 // Returns -  model - Box model for the node.
 func (c *DOM) GetBoxModelWithParams(ctx context.Context, v *DOMGetBoxModelParams) (*DOMBoxModel, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getBoxModel", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getBoxModel", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -573,7 +573,7 @@ type DOMGetContentQuadsParams struct {
 // GetContentQuadsWithParams - Returns quads that describe node position on the page. This method might return multiple quads for inline nodes.
 // Returns -  quads - Quads that describe node layout relative to viewport.
 func (c *DOM) GetContentQuadsWithParams(ctx context.Context, v *DOMGetContentQuadsParams) ([]float64, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getContentQuads", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getContentQuads", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -625,7 +625,7 @@ type DOMGetDocumentParams struct {
 // GetDocumentWithParams - Returns the root DOM node (and optionally the subtree) to the caller.
 // Returns -  root - Resulting node.
 func (c *DOM) GetDocumentWithParams(ctx context.Context, v *DOMGetDocumentParams) (*DOMNode, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getDocument", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getDocument", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -675,7 +675,7 @@ type DOMGetFlattenedDocumentParams struct {
 // GetFlattenedDocumentWithParams - Returns the root DOM node (and optionally the subtree) to the caller. Deprecated, as it is not designed to work well with the rest of the DOM agent. Use DOMSnapshot.captureSnapshot instead.
 // Returns -  nodes - Resulting node.
 func (c *DOM) GetFlattenedDocumentWithParams(ctx context.Context, v *DOMGetFlattenedDocumentParams) ([]*DOMNode, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFlattenedDocument", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFlattenedDocument", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -727,7 +727,7 @@ type DOMGetNodesForSubtreeByStyleParams struct {
 // GetNodesForSubtreeByStyleWithParams - Finds nodes with a given computed style in a subtree.
 // Returns -  nodeIds - Resulting nodes.
 func (c *DOM) GetNodesForSubtreeByStyleWithParams(ctx context.Context, v *DOMGetNodesForSubtreeByStyleParams) ([]int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodesForSubtreeByStyle", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodesForSubtreeByStyle", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -783,7 +783,7 @@ type DOMGetNodeForLocationParams struct {
 // GetNodeForLocationWithParams - Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is either returned or not.
 // Returns -  backendNodeId - Resulting node. frameId - Frame this node belongs to. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetNodeForLocationWithParams(ctx context.Context, v *DOMGetNodeForLocationParams) (int, string, int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeForLocation", Params: v})
 	if err != nil {
 		return 0, "", 0, err
 	}
@@ -841,7 +841,7 @@ type DOMGetOuterHTMLParams struct {
 // GetOuterHTMLWithParams - Returns node's HTML markup.
 // Returns -  outerHTML - Outer HTML markup.
 func (c *DOM) GetOuterHTMLWithParams(ctx context.Context, v *DOMGetOuterHTMLParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getOuterHTML", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getOuterHTML", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -891,7 +891,7 @@ type DOMGetRelayoutBoundaryParams struct {
 // GetRelayoutBoundaryWithParams - Returns the id of the nearest ancestor that is a relayout boundary.
 // Returns -  nodeId - Relayout boundary node id for the given node.
 func (c *DOM) GetRelayoutBoundaryWithParams(ctx context.Context, v *DOMGetRelayoutBoundaryParams) (int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getRelayoutBoundary", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getRelayoutBoundary", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -941,7 +941,7 @@ type DOMGetSearchResultsParams struct {
 // GetSearchResultsWithParams - Returns search results from given `fromIndex` to given `toIndex` from the search with the given identifier.
 // Returns -  nodeIds - Ids of the search result nodes.
 func (c *DOM) GetSearchResultsWithParams(ctx context.Context, v *DOMGetSearchResultsParams) ([]int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getSearchResults", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getSearchResults", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -985,22 +985,22 @@ func (c *DOM) GetSearchResults(ctx context.Context, searchId string, fromIndex i
 
 // Hides any highlight.
 func (c *DOM) HideHighlight(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.hideHighlight"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.hideHighlight"})
 }
 
 // Highlights DOM node.
 func (c *DOM) HighlightNode(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightNode"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightNode"})
 }
 
 // Highlights given rectangle.
 func (c *DOM) HighlightRect(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightRect"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.highlightRect"})
 }
 
 // Marks last undoable state.
 func (c *DOM) MarkUndoableState(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.markUndoableState"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.markUndoableState"})
 }
 
 type DOMMoveToParams struct {
@@ -1015,7 +1015,7 @@ type DOMMoveToParams struct {
 // MoveToWithParams - Moves node into the new container, places it before the given anchor.
 // Returns -  nodeId - New id of the moved node.
 func (c *DOM) MoveToWithParams(ctx context.Context, v *DOMMoveToParams) (int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.moveTo", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.moveTo", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -1067,7 +1067,7 @@ type DOMPerformSearchParams struct {
 // PerformSearchWithParams - Searches for a given string in the DOM tree. Use `getSearchResults` to access search results or `cancelSearch` to end this search session.
 // Returns -  searchId - Unique search session identifier. resultCount - Number of search results.
 func (c *DOM) PerformSearchWithParams(ctx context.Context, v *DOMPerformSearchParams) (string, int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.performSearch", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.performSearch", Params: v})
 	if err != nil {
 		return "", 0, err
 	}
@@ -1116,7 +1116,7 @@ type DOMPushNodeByPathToFrontendParams struct {
 // PushNodeByPathToFrontendWithParams - Requests that the node is sent to the caller given its path. // FIXME, use XPath
 // Returns -  nodeId - Id of the node for given path.
 func (c *DOM) PushNodeByPathToFrontendWithParams(ctx context.Context, v *DOMPushNodeByPathToFrontendParams) (int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodeByPathToFrontend", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodeByPathToFrontend", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -1162,7 +1162,7 @@ type DOMPushNodesByBackendIdsToFrontendParams struct {
 // PushNodesByBackendIdsToFrontendWithParams - Requests that a batch of nodes is sent to the caller given their backend node ids.
 // Returns -  nodeIds - The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds.
 func (c *DOM) PushNodesByBackendIdsToFrontendWithParams(ctx context.Context, v *DOMPushNodesByBackendIdsToFrontendParams) ([]int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodesByBackendIdsToFrontend", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.pushNodesByBackendIdsToFrontend", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -1210,7 +1210,7 @@ type DOMQuerySelectorParams struct {
 // QuerySelectorWithParams - Executes `querySelector` on a given node.
 // Returns -  nodeId - Query selector result.
 func (c *DOM) QuerySelectorWithParams(ctx context.Context, v *DOMQuerySelectorParams) (int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelector", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelector", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -1260,7 +1260,7 @@ type DOMQuerySelectorAllParams struct {
 // QuerySelectorAllWithParams - Executes `querySelectorAll` on a given node.
 // Returns -  nodeIds - Query selector result.
 func (c *DOM) QuerySelectorAllWithParams(ctx context.Context, v *DOMQuerySelectorAllParams) ([]int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelectorAll", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.querySelectorAll", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -1302,7 +1302,7 @@ func (c *DOM) QuerySelectorAll(ctx context.Context, nodeId int, selector string)
 
 // Re-does the last undone action.
 func (c *DOM) Redo(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.redo"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.redo"})
 }
 
 type DOMRemoveAttributeParams struct {
@@ -1314,7 +1314,7 @@ type DOMRemoveAttributeParams struct {
 
 // RemoveAttributeWithParams - Removes attribute with given name from an element with given id.
 func (c *DOM) RemoveAttributeWithParams(ctx context.Context, v *DOMRemoveAttributeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.removeAttribute", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.removeAttribute", Params: v})
 }
 
 // RemoveAttribute - Removes attribute with given name from an element with given id.
@@ -1334,7 +1334,7 @@ type DOMRemoveNodeParams struct {
 
 // RemoveNodeWithParams - Removes node with given id.
 func (c *DOM) RemoveNodeWithParams(ctx context.Context, v *DOMRemoveNodeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.removeNode", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.removeNode", Params: v})
 }
 
 // RemoveNode - Removes node with given id.
@@ -1356,7 +1356,7 @@ type DOMRequestChildNodesParams struct {
 
 // RequestChildNodesWithParams - Requests that children of the node with given id are returned to the caller in form of `setChildNodes` events where not only immediate children are retrieved, but all children down to the specified depth.
 func (c *DOM) RequestChildNodesWithParams(ctx context.Context, v *DOMRequestChildNodesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestChildNodes", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestChildNodes", Params: v})
 }
 
 // RequestChildNodes - Requests that children of the node with given id are returned to the caller in form of `setChildNodes` events where not only immediate children are retrieved, but all children down to the specified depth.
@@ -1379,7 +1379,7 @@ type DOMRequestNodeParams struct {
 // RequestNodeWithParams - Requests that the node is sent to the caller given the JavaScript node object reference. All nodes that form the path from the node to the root are also sent to the client as a series of `setChildNodes` notifications.
 // Returns -  nodeId - Node id for given object.
 func (c *DOM) RequestNodeWithParams(ctx context.Context, v *DOMRequestNodeParams) (int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestNode", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.requestNode", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -1431,7 +1431,7 @@ type DOMResolveNodeParams struct {
 // ResolveNodeWithParams - Resolves the JavaScript node object for a given NodeId or BackendNodeId.
 // Returns -  object - JavaScript object wrapper for given node.
 func (c *DOM) ResolveNodeWithParams(ctx context.Context, v *DOMResolveNodeParams) (*RuntimeRemoteObject, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.resolveNode", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.resolveNode", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -1486,7 +1486,7 @@ type DOMSetAttributeValueParams struct {
 
 // SetAttributeValueWithParams - Sets attribute for an element with given id.
 func (c *DOM) SetAttributeValueWithParams(ctx context.Context, v *DOMSetAttributeValueParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setAttributeValue", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setAttributeValue", Params: v})
 }
 
 // SetAttributeValue - Sets attribute for an element with given id.
@@ -1512,7 +1512,7 @@ type DOMSetAttributesAsTextParams struct {
 
 // SetAttributesAsTextWithParams - Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs.
 func (c *DOM) SetAttributesAsTextWithParams(ctx context.Context, v *DOMSetAttributesAsTextParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setAttributesAsText", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setAttributesAsText", Params: v})
 }
 
 // SetAttributesAsText - Sets attributes on element with given id. This method is useful when user edits some existing attribute value and types in several attribute name/value pairs.
@@ -1540,7 +1540,7 @@ type DOMSetFileInputFilesParams struct {
 
 // SetFileInputFilesWithParams - Sets files for the given file input element.
 func (c *DOM) SetFileInputFilesWithParams(ctx context.Context, v *DOMSetFileInputFilesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setFileInputFiles", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setFileInputFiles", Params: v})
 }
 
 // SetFileInputFiles - Sets files for the given file input element.
@@ -1564,7 +1564,7 @@ type DOMSetNodeStackTracesEnabledParams struct {
 
 // SetNodeStackTracesEnabledWithParams - Sets if stack traces should be captured for Nodes. See `Node.getNodeStackTraces`. Default is disabled.
 func (c *DOM) SetNodeStackTracesEnabledWithParams(ctx context.Context, v *DOMSetNodeStackTracesEnabledParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeStackTracesEnabled", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeStackTracesEnabled", Params: v})
 }
 
 // SetNodeStackTracesEnabled - Sets if stack traces should be captured for Nodes. See `Node.getNodeStackTraces`. Default is disabled.
@@ -1583,7 +1583,7 @@ type DOMGetNodeStackTracesParams struct {
 // GetNodeStackTracesWithParams - Gets stack traces associated with a Node. As of now, only provides stack trace for Node creation.
 // Returns -  creation - Creation stack trace, if available.
 func (c *DOM) GetNodeStackTracesWithParams(ctx context.Context, v *DOMGetNodeStackTracesParams) (*RuntimeStackTrace, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeStackTraces", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getNodeStackTraces", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -1629,7 +1629,7 @@ type DOMGetFileInfoParams struct {
 // GetFileInfoWithParams - Returns file information for the given File wrapper.
 // Returns -  path -
 func (c *DOM) GetFileInfoWithParams(ctx context.Context, v *DOMGetFileInfoParams) (string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFileInfo", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFileInfo", Params: v})
 	if err != nil {
 		return "", err
 	}
@@ -1674,7 +1674,7 @@ type DOMSetInspectedNodeParams struct {
 
 // SetInspectedNodeWithParams - Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions).
 func (c *DOM) SetInspectedNodeWithParams(ctx context.Context, v *DOMSetInspectedNodeParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setInspectedNode", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setInspectedNode", Params: v})
 }
 
 // SetInspectedNode - Enables console to refer to the node with given id via $x (see Command Line API for more details $x functions).
@@ -1695,7 +1695,7 @@ type DOMSetNodeNameParams struct {
 // SetNodeNameWithParams - Sets node name for a node with given id.
 // Returns -  nodeId - New node's id.
 func (c *DOM) SetNodeNameWithParams(ctx context.Context, v *DOMSetNodeNameParams) (int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeName", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeName", Params: v})
 	if err != nil {
 		return 0, err
 	}
@@ -1744,7 +1744,7 @@ type DOMSetNodeValueParams struct {
 
 // SetNodeValueWithParams - Sets node value for a node with given id.
 func (c *DOM) SetNodeValueWithParams(ctx context.Context, v *DOMSetNodeValueParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeValue", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setNodeValue", Params: v})
 }
 
 // SetNodeValue - Sets node value for a node with given id.
@@ -1766,7 +1766,7 @@ type DOMSetOuterHTMLParams struct {
 
 // SetOuterHTMLWithParams - Sets node HTML markup, returns new node id.
 func (c *DOM) SetOuterHTMLWithParams(ctx context.Context, v *DOMSetOuterHTMLParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setOuterHTML", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.setOuterHTML", Params: v})
 }
 
 // SetOuterHTML - Sets node HTML markup, returns new node id.
@@ -1781,7 +1781,7 @@ func (c *DOM) SetOuterHTML(ctx context.Context, nodeId int, outerHTML string) (*
 
 // Undoes the last performed action.
 func (c *DOM) Undo(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.undo"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.undo"})
 }
 
 type DOMGetFrameOwnerParams struct {
@@ -1792,7 +1792,7 @@ type DOMGetFrameOwnerParams struct {
 // GetFrameOwnerWithParams - Returns iframe node that owns iframe with the given domain.
 // Returns -  backendNodeId - Resulting node. nodeId - Id of the node at given coordinates, only when enabled and requested document.
 func (c *DOM) GetFrameOwnerWithParams(ctx context.Context, v *DOMGetFrameOwnerParams) (int, int, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFrameOwner", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getFrameOwner", Params: v})
 	if err != nil {
 		return 0, 0, err
 	}

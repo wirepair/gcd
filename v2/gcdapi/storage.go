@@ -74,7 +74,7 @@ type StorageClearDataForOriginParams struct {
 
 // ClearDataForOriginWithParams - Clears storage for origin.
 func (c *Storage) ClearDataForOriginWithParams(ctx context.Context, v *StorageClearDataForOriginParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearDataForOrigin", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearDataForOrigin", Params: v})
 }
 
 // ClearDataForOrigin - Clears storage for origin.
@@ -95,7 +95,7 @@ type StorageGetCookiesParams struct {
 // GetCookiesWithParams - Returns all browser cookies.
 // Returns -  cookies - Array of cookie objects.
 func (c *Storage) GetCookiesWithParams(ctx context.Context, v *StorageGetCookiesParams) ([]*NetworkCookie, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getCookies", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getCookies", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ type StorageSetCookiesParams struct {
 
 // SetCookiesWithParams - Sets given cookies.
 func (c *Storage) SetCookiesWithParams(ctx context.Context, v *StorageSetCookiesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.setCookies", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.setCookies", Params: v})
 }
 
 // SetCookies - Sets given cookies.
@@ -162,7 +162,7 @@ type StorageClearCookiesParams struct {
 
 // ClearCookiesWithParams - Clears cookies.
 func (c *Storage) ClearCookiesWithParams(ctx context.Context, v *StorageClearCookiesParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearCookies", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearCookies", Params: v})
 }
 
 // ClearCookies - Clears cookies.
@@ -181,7 +181,7 @@ type StorageGetUsageAndQuotaParams struct {
 // GetUsageAndQuotaWithParams - Returns usage and quota in bytes.
 // Returns -  usage - Storage usage (bytes). quota - Storage quota (bytes). overrideActive - Whether or not the origin has an active storage quota override usageBreakdown - Storage usage per type (bytes).
 func (c *Storage) GetUsageAndQuotaWithParams(ctx context.Context, v *StorageGetUsageAndQuotaParams) (float64, float64, bool, []*StorageUsageForType, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getUsageAndQuota", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getUsageAndQuota", Params: v})
 	if err != nil {
 		return 0, 0, false, nil, err
 	}
@@ -231,7 +231,7 @@ type StorageOverrideQuotaForOriginParams struct {
 
 // OverrideQuotaForOriginWithParams - Override quota for the specified origin
 func (c *Storage) OverrideQuotaForOriginWithParams(ctx context.Context, v *StorageOverrideQuotaForOriginParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.overrideQuotaForOrigin", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.overrideQuotaForOrigin", Params: v})
 }
 
 // OverrideQuotaForOrigin - Override quota for the specified origin
@@ -251,7 +251,7 @@ type StorageTrackCacheStorageForOriginParams struct {
 
 // TrackCacheStorageForOriginWithParams - Registers origin to be notified when an update occurs to its cache storage list.
 func (c *Storage) TrackCacheStorageForOriginWithParams(ctx context.Context, v *StorageTrackCacheStorageForOriginParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.trackCacheStorageForOrigin", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.trackCacheStorageForOrigin", Params: v})
 }
 
 // TrackCacheStorageForOrigin - Registers origin to be notified when an update occurs to its cache storage list.
@@ -269,7 +269,7 @@ type StorageTrackIndexedDBForOriginParams struct {
 
 // TrackIndexedDBForOriginWithParams - Registers origin to be notified when an update occurs to its IndexedDB.
 func (c *Storage) TrackIndexedDBForOriginWithParams(ctx context.Context, v *StorageTrackIndexedDBForOriginParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.trackIndexedDBForOrigin", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.trackIndexedDBForOrigin", Params: v})
 }
 
 // TrackIndexedDBForOrigin - Registers origin to be notified when an update occurs to its IndexedDB.
@@ -287,7 +287,7 @@ type StorageUntrackCacheStorageForOriginParams struct {
 
 // UntrackCacheStorageForOriginWithParams - Unregisters origin from receiving notifications for cache storage.
 func (c *Storage) UntrackCacheStorageForOriginWithParams(ctx context.Context, v *StorageUntrackCacheStorageForOriginParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.untrackCacheStorageForOrigin", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.untrackCacheStorageForOrigin", Params: v})
 }
 
 // UntrackCacheStorageForOrigin - Unregisters origin from receiving notifications for cache storage.
@@ -305,7 +305,7 @@ type StorageUntrackIndexedDBForOriginParams struct {
 
 // UntrackIndexedDBForOriginWithParams - Unregisters origin from receiving notifications for IndexedDB.
 func (c *Storage) UntrackIndexedDBForOriginWithParams(ctx context.Context, v *StorageUntrackIndexedDBForOriginParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.untrackIndexedDBForOrigin", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.untrackIndexedDBForOrigin", Params: v})
 }
 
 // UntrackIndexedDBForOrigin - Unregisters origin from receiving notifications for IndexedDB.
@@ -319,7 +319,7 @@ func (c *Storage) UntrackIndexedDBForOrigin(ctx context.Context, origin string) 
 // GetTrustTokens - Returns the number of stored Trust Tokens per issuer for the current browsing context.
 // Returns -  tokens -
 func (c *Storage) GetTrustTokens(ctx context.Context) ([]*StorageTrustTokens, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getTrustTokens"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getTrustTokens"})
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +356,7 @@ type StorageClearTrustTokensParams struct {
 // ClearTrustTokensWithParams - Removes all Trust Tokens issued by the provided issuerOrigin. Leaves other stored data, including the issuer's Redemption Records, intact.
 // Returns -  didDeleteTokens - True if any tokens were deleted, false otherwise.
 func (c *Storage) ClearTrustTokensWithParams(ctx context.Context, v *StorageClearTrustTokensParams) (bool, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearTrustTokens", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearTrustTokens", Params: v})
 	if err != nil {
 		return false, err
 	}

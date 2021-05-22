@@ -191,12 +191,12 @@ func NewWebAudio(target gcdmessage.ChromeTargeter) *WebAudio {
 
 // Enables the WebAudio domain and starts sending context lifetime events.
 func (c *WebAudio) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.enable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.enable"})
 }
 
 // Disables the WebAudio domain.
 func (c *WebAudio) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.disable"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.disable"})
 }
 
 type WebAudioGetRealtimeDataParams struct {
@@ -207,7 +207,7 @@ type WebAudioGetRealtimeDataParams struct {
 // GetRealtimeDataWithParams - Fetch the realtime data from the registered contexts.
 // Returns -  realtimeData -
 func (c *WebAudio) GetRealtimeDataWithParams(ctx context.Context, v *WebAudioGetRealtimeDataParams) (*WebAudioContextRealtimeData, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.getRealtimeData", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAudio.getRealtimeData", Params: v})
 	if err != nil {
 		return nil, err
 	}

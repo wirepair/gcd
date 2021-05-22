@@ -69,7 +69,7 @@ type PerformanceTimelineEnableParams struct {
 
 // EnableWithParams - Previously buffered events would be reported before method returns. See also: timelineEventAdded
 func (c *PerformanceTimeline) EnableWithParams(ctx context.Context, v *PerformanceTimelineEnableParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "PerformanceTimeline.enable", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "PerformanceTimeline.enable", Params: v})
 }
 
 // Enable - Previously buffered events would be reported before method returns. See also: timelineEventAdded

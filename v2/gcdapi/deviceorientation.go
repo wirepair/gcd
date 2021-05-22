@@ -20,7 +20,7 @@ func NewDeviceOrientation(target gcdmessage.ChromeTargeter) *DeviceOrientation {
 
 // Clears the overridden Device Orientation.
 func (c *DeviceOrientation) ClearDeviceOrientationOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.clearDeviceOrientationOverride"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.clearDeviceOrientationOverride"})
 }
 
 type DeviceOrientationSetDeviceOrientationOverrideParams struct {
@@ -34,7 +34,7 @@ type DeviceOrientationSetDeviceOrientationOverrideParams struct {
 
 // SetDeviceOrientationOverrideWithParams - Overrides the Device Orientation.
 func (c *DeviceOrientation) SetDeviceOrientationOverrideWithParams(ctx context.Context, v *DeviceOrientationSetDeviceOrientationOverrideParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.setDeviceOrientationOverride", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DeviceOrientation.setDeviceOrientationOverride", Params: v})
 }
 
 // SetDeviceOrientationOverride - Overrides the Device Orientation.

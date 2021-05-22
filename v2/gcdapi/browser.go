@@ -86,7 +86,7 @@ type BrowserSetPermissionParams struct {
 
 // SetPermissionWithParams - Set permission settings for given origin.
 func (c *Browser) SetPermissionWithParams(ctx context.Context, v *BrowserSetPermissionParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setPermission", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setPermission", Params: v})
 }
 
 // SetPermission - Set permission settings for given origin.
@@ -114,7 +114,7 @@ type BrowserGrantPermissionsParams struct {
 
 // GrantPermissionsWithParams - Grant specific permissions to the given origin and reject all others.
 func (c *Browser) GrantPermissionsWithParams(ctx context.Context, v *BrowserGrantPermissionsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.grantPermissions", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.grantPermissions", Params: v})
 }
 
 // GrantPermissions - Grant specific permissions to the given origin and reject all others.
@@ -136,7 +136,7 @@ type BrowserResetPermissionsParams struct {
 
 // ResetPermissionsWithParams - Reset all permission management for all origins.
 func (c *Browser) ResetPermissionsWithParams(ctx context.Context, v *BrowserResetPermissionsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.resetPermissions", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.resetPermissions", Params: v})
 }
 
 // ResetPermissions - Reset all permission management for all origins.
@@ -160,7 +160,7 @@ type BrowserSetDownloadBehaviorParams struct {
 
 // SetDownloadBehaviorWithParams - Set the behavior when downloading a file.
 func (c *Browser) SetDownloadBehaviorWithParams(ctx context.Context, v *BrowserSetDownloadBehaviorParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDownloadBehavior", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDownloadBehavior", Params: v})
 }
 
 // SetDownloadBehavior - Set the behavior when downloading a file.
@@ -186,7 +186,7 @@ type BrowserCancelDownloadParams struct {
 
 // CancelDownloadWithParams - Cancel a download if in progress
 func (c *Browser) CancelDownloadWithParams(ctx context.Context, v *BrowserCancelDownloadParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.cancelDownload", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.cancelDownload", Params: v})
 }
 
 // CancelDownload - Cancel a download if in progress
@@ -201,23 +201,23 @@ func (c *Browser) CancelDownload(ctx context.Context, guid string, browserContex
 
 // Close browser gracefully.
 func (c *Browser) Close(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.close"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.close"})
 }
 
 // Crashes browser on the main thread.
 func (c *Browser) Crash(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.crash"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.crash"})
 }
 
 // Crashes GPU process.
 func (c *Browser) CrashGpuProcess(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.crashGpuProcess"})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.crashGpuProcess"})
 }
 
 // GetVersion - Returns version information.
 // Returns -  protocolVersion - Protocol version. product - Product name. revision - Product revision. userAgent - User-Agent. jsVersion - V8 version.
 func (c *Browser) GetVersion(ctx context.Context) (string, string, string, string, string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getVersion"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getVersion"})
 	if err != nil {
 		return "", "", "", "", "", err
 	}
@@ -253,7 +253,7 @@ func (c *Browser) GetVersion(ctx context.Context) (string, string, string, strin
 // GetBrowserCommandLine - Returns the command line switches for the browser process if, and only if --enable-automation is on the commandline.
 // Returns -  arguments - Commandline parameters
 func (c *Browser) GetBrowserCommandLine(ctx context.Context) ([]string, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getBrowserCommandLine"})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getBrowserCommandLine"})
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +292,7 @@ type BrowserGetHistogramsParams struct {
 // GetHistogramsWithParams - Get Chrome histograms.
 // Returns -  histograms - Histograms.
 func (c *Browser) GetHistogramsWithParams(ctx context.Context, v *BrowserGetHistogramsParams) ([]*BrowserHistogram, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getHistograms", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getHistograms", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -342,7 +342,7 @@ type BrowserGetHistogramParams struct {
 // GetHistogramWithParams - Get a Chrome histogram by name.
 // Returns -  histogram - Histogram.
 func (c *Browser) GetHistogramWithParams(ctx context.Context, v *BrowserGetHistogramParams) (*BrowserHistogram, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getHistogram", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getHistogram", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +390,7 @@ type BrowserGetWindowBoundsParams struct {
 // GetWindowBoundsWithParams - Get position and size of the browser window.
 // Returns -  bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
 func (c *Browser) GetWindowBoundsWithParams(ctx context.Context, v *BrowserGetWindowBoundsParams) (*BrowserBounds, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowBounds", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowBounds", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -436,7 +436,7 @@ type BrowserGetWindowForTargetParams struct {
 // GetWindowForTargetWithParams - Get the browser window that contains the devtools target.
 // Returns -  windowId - Browser window id. bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
 func (c *Browser) GetWindowForTargetWithParams(ctx context.Context, v *BrowserGetWindowForTargetParams) (int, *BrowserBounds, error) {
-	resp, err := gcdmessage.SendCustomReturn(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowForTarget", Params: v})
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.getWindowForTarget", Params: v})
 	if err != nil {
 		return 0, nil, err
 	}
@@ -484,7 +484,7 @@ type BrowserSetWindowBoundsParams struct {
 
 // SetWindowBoundsWithParams - Set position and/or size of the browser window.
 func (c *Browser) SetWindowBoundsWithParams(ctx context.Context, v *BrowserSetWindowBoundsParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setWindowBounds", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setWindowBounds", Params: v})
 }
 
 // SetWindowBounds - Set position and/or size of the browser window.
@@ -506,7 +506,7 @@ type BrowserSetDockTileParams struct {
 
 // SetDockTileWithParams - Set dock tile details, platform-specific.
 func (c *Browser) SetDockTileWithParams(ctx context.Context, v *BrowserSetDockTileParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDockTile", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.setDockTile", Params: v})
 }
 
 // SetDockTile - Set dock tile details, platform-specific.
@@ -526,7 +526,7 @@ type BrowserExecuteBrowserCommandParams struct {
 
 // ExecuteBrowserCommandWithParams - Invoke custom browser commands used by telemetry.
 func (c *Browser) ExecuteBrowserCommandWithParams(ctx context.Context, v *BrowserExecuteBrowserCommandParams) (*gcdmessage.ChromeResponse, error) {
-	return gcdmessage.SendDefaultRequest(c.target, ctx, c.target.GetSendCh(), &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.executeBrowserCommand", Params: v})
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.executeBrowserCommand", Params: v})
 }
 
 // ExecuteBrowserCommand - Invoke custom browser commands used by telemetry.
