@@ -1,5 +1,8 @@
 # Changelog (2021)
 
+- 2.1.2 (May 23rd): Update to chrome version 90.0.4430.212
+  - Implementation of an observer package to allow inspection of messages between gcd/browser by @camswords
+
 - 2.1.1 (April 29th): Update to chrome version 90.0.4430.93.
   - Replaced websocket with [rod's](https://go-rod.github.io/#/) implementation (You should use their library!).
   - Added functional opts for creating Gcd objects.

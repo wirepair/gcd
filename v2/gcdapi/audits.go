@@ -114,6 +114,7 @@ type AuditsCorsIssueDetails struct {
 	CorsErrorStatus        *NetworkCorsErrorStatus     `json:"corsErrorStatus"`                  //
 	IsWarning              bool                        `json:"isWarning"`                        //
 	Request                *AuditsAffectedRequest      `json:"request"`                          //
+	Location               *AuditsSourceCodeLocation   `json:"location,omitempty"`               //
 	InitiatorOrigin        string                      `json:"initiatorOrigin,omitempty"`        //
 	ResourceIPAddressSpace string                      `json:"resourceIPAddressSpace,omitempty"` //  enum values: Local, Private, Public, Unknown
 	ClientSecurityState    *NetworkClientSecurityState `json:"clientSecurityState,omitempty"`    //
@@ -128,6 +129,21 @@ type AuditsAttributionReportingIssueDetails struct {
 	InvalidParameter string                 `json:"invalidParameter,omitempty"` //
 }
 
+// Details for issues about documents in Quirks Mode or Limited Quirks Mode that affects page layouting.
+type AuditsQuirksModeIssueDetails struct {
+	IsLimitedQuirksMode bool   `json:"isLimitedQuirksMode"` // If false, it means the document's mode is "quirks" instead of "limited-quirks".
+	DocumentNodeId      int    `json:"documentNodeId"`      //
+	Url                 string `json:"url"`                 //
+	FrameId             string `json:"frameId"`             //
+	LoaderId            string `json:"loaderId"`            //
+}
+
+// No Description.
+type AuditsNavigatorUserAgentIssueDetails struct {
+	Url      string                    `json:"url"`                //
+	Location *AuditsSourceCodeLocation `json:"location,omitempty"` //
+}
+
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
 type AuditsInspectorIssueDetails struct {
 	SameSiteCookieIssueDetails        *AuditsSameSiteCookieIssueDetails        `json:"sameSiteCookieIssueDetails,omitempty"`        //
@@ -140,11 +156,13 @@ type AuditsInspectorIssueDetails struct {
 	LowTextContrastIssueDetails       *AuditsLowTextContrastIssueDetails       `json:"lowTextContrastIssueDetails,omitempty"`       //
 	CorsIssueDetails                  *AuditsCorsIssueDetails                  `json:"corsIssueDetails,omitempty"`                  //
 	AttributionReportingIssueDetails  *AuditsAttributionReportingIssueDetails  `json:"attributionReportingIssueDetails,omitempty"`  //
+	QuirksModeIssueDetails            *AuditsQuirksModeIssueDetails            `json:"quirksModeIssueDetails,omitempty"`            //
+	NavigatorUserAgentIssueDetails    *AuditsNavigatorUserAgentIssueDetails    `json:"navigatorUserAgentIssueDetails,omitempty"`    //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue
+	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue, QuirksModeIssue, NavigatorUserAgentIssue
 	Details *AuditsInspectorIssueDetails `json:"details"` //
 }
 

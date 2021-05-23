@@ -26,10 +26,11 @@ package gcd
 
 import (
 	"context"
-	"github.com/wirepair/gcd/v2/observer"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/wirepair/gcd/v2/observer"
 
 	"github.com/wirepair/gcd/v2/gcdapi"
 	"github.com/wirepair/gcd/v2/gcdmessage"
@@ -428,6 +429,10 @@ func (c *ChromeTarget) SendDefaultRequest(ctx context.Context, paramRequest *gcd
 	response, err := c.sendData(ctx, paramRequest.Id, data)
 
 	c.messageObserver.Response(paramRequest.Id, paramRequest.Method, observer.DigResponseData(response), err)
+
+	if err != nil {
+		return nil, err
+	}
 
 	chromeResponse := &gcdmessage.ChromeResponse{}
 	err = json.Unmarshal(response.Data, chromeResponse)
