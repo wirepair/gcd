@@ -28,13 +28,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/wirepair/gcd/v2/observer"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"sync"
 	"time"
+
+	"github.com/wirepair/gcd/v2/observer"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -43,7 +44,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.1.1"
+var GCDVERSION = "v2.1.2"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")

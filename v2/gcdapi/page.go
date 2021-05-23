@@ -17,27 +17,52 @@ type PagePermissionsPolicyBlockLocator struct {
 
 // No Description.
 type PagePermissionsPolicyFeatureState struct {
-	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, autoplay, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-lang, ch-rtt, ch-ua, ch-ua-arch, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full-version, ch-ua-platform-version, ch-viewport-width, ch-width, clipboard-read, clipboard-write, conversion-measurement, cross-origin-isolated, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, screen-wake-lock, serial, storage-access-api, sync-xhr, trust-token-redemption, usb, vertical-scroll, web-share, xr-spatial-tracking
+	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-lang, ch-prefers-color-scheme, ch-rtt, ch-ua, ch-ua-arch, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full-version, ch-ua-platform-version, ch-viewport-width, ch-width, clipboard-read, clipboard-write, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, screen-wake-lock, serial, shared-autofill, storage-access-api, sync-xhr, trust-token-redemption, usb, vertical-scroll, web-share, window-placement, xr-spatial-tracking
 	Allowed bool                               `json:"allowed"`           //
 	Locator *PagePermissionsPolicyBlockLocator `json:"locator,omitempty"` //
 }
 
+// No Description.
+type PageOriginTrialToken struct {
+	Origin           string  `json:"origin"`           //
+	MatchSubDomains  bool    `json:"matchSubDomains"`  //
+	TrialName        string  `json:"trialName"`        //
+	ExpiryTime       float64 `json:"expiryTime"`       //
+	IsThirdParty     bool    `json:"isThirdParty"`     //
+	UsageRestriction string  `json:"usageRestriction"` //  enum values: None, Subset
+}
+
+// No Description.
+type PageOriginTrialTokenWithStatus struct {
+	RawTokenText string                `json:"rawTokenText"`          //
+	ParsedToken  *PageOriginTrialToken `json:"parsedToken,omitempty"` // `parsedToken` is present only when the token is extractable and parsable.
+	Status       string                `json:"status"`                //  enum values: Success, NotSupported, Insecure, Expired, WrongOrigin, InvalidSignature, Malformed, WrongVersion, FeatureDisabled, TokenDisabled, FeatureDisabledForUser
+}
+
+// No Description.
+type PageOriginTrial struct {
+	TrialName        string                            `json:"trialName"`        //
+	Status           string                            `json:"status"`           //  enum values: Enabled, ValidTokenNotProvided, OSNotSupported, TrialNotAllowed
+	TokensWithStatus []*PageOriginTrialTokenWithStatus `json:"tokensWithStatus"` //
+}
+
 // Information about the Frame on the page.
 type PageFrame struct {
-	Id                             string   `json:"id"`                             // Frame unique identifier.
-	ParentId                       string   `json:"parentId,omitempty"`             // Parent frame identifier.
-	LoaderId                       string   `json:"loaderId"`                       // Identifier of the loader associated with this frame.
-	Name                           string   `json:"name,omitempty"`                 // Frame's name as specified in the tag.
-	Url                            string   `json:"url"`                            // Frame document's URL without fragment.
-	UrlFragment                    string   `json:"urlFragment,omitempty"`          // Frame document's URL fragment including the '#'.
-	DomainAndRegistry              string   `json:"domainAndRegistry"`              // Frame document's registered domain, taking the public suffixes list into account. Extracted from the Frame's url. Example URLs: http://www.google.com/file.html -> "google.com"               http://a.b.co.uk/file.html      -> "b.co.uk"
-	SecurityOrigin                 string   `json:"securityOrigin"`                 // Frame document's security origin.
-	MimeType                       string   `json:"mimeType"`                       // Frame document's mimeType as determined by the browser.
-	UnreachableUrl                 string   `json:"unreachableUrl,omitempty"`       // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
-	AdFrameType                    string   `json:"adFrameType,omitempty"`          // Indicates whether this frame was tagged as an ad. enum values: none, child, root
-	SecureContextType              string   `json:"secureContextType"`              // Indicates whether the main document is a secure context and explains why that is the case. enum values: Secure, SecureLocalhost, InsecureScheme, InsecureAncestor
-	CrossOriginIsolatedContextType string   `json:"crossOriginIsolatedContextType"` // Indicates whether this is a cross origin isolated context. enum values: Isolated, NotIsolated, NotIsolatedFeatureDisabled
-	GatedAPIFeatures               []string `json:"gatedAPIFeatures"`               // Indicated which gated APIs / features are available. enum values: SharedArrayBuffers, SharedArrayBuffersTransferAllowed, PerformanceMeasureMemory, PerformanceProfile
+	Id                             string             `json:"id"`                             // Frame unique identifier.
+	ParentId                       string             `json:"parentId,omitempty"`             // Parent frame identifier.
+	LoaderId                       string             `json:"loaderId"`                       // Identifier of the loader associated with this frame.
+	Name                           string             `json:"name,omitempty"`                 // Frame's name as specified in the tag.
+	Url                            string             `json:"url"`                            // Frame document's URL without fragment.
+	UrlFragment                    string             `json:"urlFragment,omitempty"`          // Frame document's URL fragment including the '#'.
+	DomainAndRegistry              string             `json:"domainAndRegistry"`              // Frame document's registered domain, taking the public suffixes list into account. Extracted from the Frame's url. Example URLs: http://www.google.com/file.html -> "google.com"               http://a.b.co.uk/file.html      -> "b.co.uk"
+	SecurityOrigin                 string             `json:"securityOrigin"`                 // Frame document's security origin.
+	MimeType                       string             `json:"mimeType"`                       // Frame document's mimeType as determined by the browser.
+	UnreachableUrl                 string             `json:"unreachableUrl,omitempty"`       // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
+	AdFrameType                    string             `json:"adFrameType,omitempty"`          // Indicates whether this frame was tagged as an ad. enum values: none, child, root
+	SecureContextType              string             `json:"secureContextType"`              // Indicates whether the main document is a secure context and explains why that is the case. enum values: Secure, SecureLocalhost, InsecureScheme, InsecureAncestor
+	CrossOriginIsolatedContextType string             `json:"crossOriginIsolatedContextType"` // Indicates whether this is a cross origin isolated context. enum values: Isolated, NotIsolated, NotIsolatedFeatureDisabled
+	GatedAPIFeatures               []string           `json:"gatedAPIFeatures"`               // Indicated which gated APIs / features are available. enum values: SharedArrayBuffers, SharedArrayBuffersTransferAllowed, PerformanceMeasureMemory, PerformanceProfile
+	OriginTrials                   []*PageOriginTrial `json:"originTrials,omitempty"`         // Frame document's origin trials with at least one token present.
 }
 
 // Information about the Resource on the page.
@@ -439,6 +464,8 @@ type PageAddScriptToEvaluateOnNewDocumentParams struct {
 	Source string `json:"source"`
 	// If specified, creates an isolated world with the given name and evaluates given script in it. This world name will be used as the ExecutionContextDescription::name when the corresponding event is emitted.
 	WorldName string `json:"worldName,omitempty"`
+	// Specifies whether command line API should be available to the script, defaults to false.
+	IncludeCommandLineAPI bool `json:"includeCommandLineAPI,omitempty"`
 }
 
 // AddScriptToEvaluateOnNewDocumentWithParams - Evaluates given script in every frame upon creation (before loading frame's scripts).
@@ -476,11 +503,13 @@ func (c *Page) AddScriptToEvaluateOnNewDocumentWithParams(ctx context.Context, v
 // AddScriptToEvaluateOnNewDocument - Evaluates given script in every frame upon creation (before loading frame's scripts).
 // source -
 // worldName - If specified, creates an isolated world with the given name and evaluates given script in it. This world name will be used as the ExecutionContextDescription::name when the corresponding event is emitted.
+// includeCommandLineAPI - Specifies whether command line API should be available to the script, defaults to false.
 // Returns -  identifier - Identifier of the added script.
-func (c *Page) AddScriptToEvaluateOnNewDocument(ctx context.Context, source string, worldName string) (string, error) {
+func (c *Page) AddScriptToEvaluateOnNewDocument(ctx context.Context, source string, worldName string, includeCommandLineAPI bool) (string, error) {
 	var v PageAddScriptToEvaluateOnNewDocumentParams
 	v.Source = source
 	v.WorldName = worldName
+	v.IncludeCommandLineAPI = includeCommandLineAPI
 	return c.AddScriptToEvaluateOnNewDocumentWithParams(ctx, &v)
 }
 

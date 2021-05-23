@@ -18,34 +18,35 @@ type DOMBackendNode struct {
 
 // DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type.
 type DOMNode struct {
-	NodeId           int               `json:"nodeId"`                     // Node identifier that is passed into the rest of the DOM messages as the `nodeId`. Backend will only push node with given `id` once. It is aware of all requested nodes and will only fire DOM events for nodes known to the client.
-	ParentId         int               `json:"parentId,omitempty"`         // The id of the parent node if any.
-	BackendNodeId    int               `json:"backendNodeId"`              // The BackendNodeId for this node.
-	NodeType         int               `json:"nodeType"`                   // `Node`'s nodeType.
-	NodeName         string            `json:"nodeName"`                   // `Node`'s nodeName.
-	LocalName        string            `json:"localName"`                  // `Node`'s localName.
-	NodeValue        string            `json:"nodeValue"`                  // `Node`'s nodeValue.
-	ChildNodeCount   int               `json:"childNodeCount,omitempty"`   // Child count for `Container` nodes.
-	Children         []*DOMNode        `json:"children,omitempty"`         // Child nodes of this node when requested with children.
-	Attributes       []string          `json:"attributes,omitempty"`       // Attributes of the `Element` node in the form of flat array `[name1, value1, name2, value2]`.
-	DocumentURL      string            `json:"documentURL,omitempty"`      // Document URL that `Document` or `FrameOwner` node points to.
-	BaseURL          string            `json:"baseURL,omitempty"`          // Base URL that `Document` or `FrameOwner` node uses for URL completion.
-	PublicId         string            `json:"publicId,omitempty"`         // `DocumentType`'s publicId.
-	SystemId         string            `json:"systemId,omitempty"`         // `DocumentType`'s systemId.
-	InternalSubset   string            `json:"internalSubset,omitempty"`   // `DocumentType`'s internalSubset.
-	XmlVersion       string            `json:"xmlVersion,omitempty"`       // `Document`'s XML version in case of XML documents.
-	Name             string            `json:"name,omitempty"`             // `Attr`'s name.
-	Value            string            `json:"value,omitempty"`            // `Attr`'s value.
-	PseudoType       string            `json:"pseudoType,omitempty"`       // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
-	ShadowRootType   string            `json:"shadowRootType,omitempty"`   // Shadow root type. enum values: user-agent, open, closed
-	FrameId          string            `json:"frameId,omitempty"`          // Frame ID for frame owner elements.
-	ContentDocument  *DOMNode          `json:"contentDocument,omitempty"`  // Content document for frame owner elements.
-	ShadowRoots      []*DOMNode        `json:"shadowRoots,omitempty"`      // Shadow root list for given element host.
-	TemplateContent  *DOMNode          `json:"templateContent,omitempty"`  // Content document fragment for template elements.
-	PseudoElements   []*DOMNode        `json:"pseudoElements,omitempty"`   // Pseudo elements associated with this node.
-	ImportedDocument *DOMNode          `json:"importedDocument,omitempty"` // Deprecated, as the HTML Imports API has been removed (crbug.com/937746). This property used to return the imported document for the HTMLImport links. The property is always undefined now.
-	DistributedNodes []*DOMBackendNode `json:"distributedNodes,omitempty"` // Distributed nodes for given insertion point.
-	IsSVG            bool              `json:"isSVG,omitempty"`            // Whether the node is SVG.
+	NodeId            int               `json:"nodeId"`                      // Node identifier that is passed into the rest of the DOM messages as the `nodeId`. Backend will only push node with given `id` once. It is aware of all requested nodes and will only fire DOM events for nodes known to the client.
+	ParentId          int               `json:"parentId,omitempty"`          // The id of the parent node if any.
+	BackendNodeId     int               `json:"backendNodeId"`               // The BackendNodeId for this node.
+	NodeType          int               `json:"nodeType"`                    // `Node`'s nodeType.
+	NodeName          string            `json:"nodeName"`                    // `Node`'s nodeName.
+	LocalName         string            `json:"localName"`                   // `Node`'s localName.
+	NodeValue         string            `json:"nodeValue"`                   // `Node`'s nodeValue.
+	ChildNodeCount    int               `json:"childNodeCount,omitempty"`    // Child count for `Container` nodes.
+	Children          []*DOMNode        `json:"children,omitempty"`          // Child nodes of this node when requested with children.
+	Attributes        []string          `json:"attributes,omitempty"`        // Attributes of the `Element` node in the form of flat array `[name1, value1, name2, value2]`.
+	DocumentURL       string            `json:"documentURL,omitempty"`       // Document URL that `Document` or `FrameOwner` node points to.
+	BaseURL           string            `json:"baseURL,omitempty"`           // Base URL that `Document` or `FrameOwner` node uses for URL completion.
+	PublicId          string            `json:"publicId,omitempty"`          // `DocumentType`'s publicId.
+	SystemId          string            `json:"systemId,omitempty"`          // `DocumentType`'s systemId.
+	InternalSubset    string            `json:"internalSubset,omitempty"`    // `DocumentType`'s internalSubset.
+	XmlVersion        string            `json:"xmlVersion,omitempty"`        // `Document`'s XML version in case of XML documents.
+	Name              string            `json:"name,omitempty"`              // `Attr`'s name.
+	Value             string            `json:"value,omitempty"`             // `Attr`'s value.
+	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	ShadowRootType    string            `json:"shadowRootType,omitempty"`    // Shadow root type. enum values: user-agent, open, closed
+	FrameId           string            `json:"frameId,omitempty"`           // Frame ID for frame owner elements.
+	ContentDocument   *DOMNode          `json:"contentDocument,omitempty"`   // Content document for frame owner elements.
+	ShadowRoots       []*DOMNode        `json:"shadowRoots,omitempty"`       // Shadow root list for given element host.
+	TemplateContent   *DOMNode          `json:"templateContent,omitempty"`   // Content document fragment for template elements.
+	PseudoElements    []*DOMNode        `json:"pseudoElements,omitempty"`    // Pseudo elements associated with this node.
+	ImportedDocument  *DOMNode          `json:"importedDocument,omitempty"`  // Deprecated, as the HTML Imports API has been removed (crbug.com/937746). This property used to return the imported document for the HTMLImport links. The property is always undefined now.
+	DistributedNodes  []*DOMBackendNode `json:"distributedNodes,omitempty"`  // Distributed nodes for given insertion point.
+	IsSVG             bool              `json:"isSVG,omitempty"`             // Whether the node is SVG.
+	CompatibilityMode string            `json:"compatibilityMode,omitempty"` //  enum values: QuirksMode, LimitedQuirksMode, NoQuirksMode
 }
 
 // A structure holding an RGBA color.

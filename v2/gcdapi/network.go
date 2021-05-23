@@ -83,7 +83,7 @@ type NetworkSecurityDetails struct {
 
 // No Description.
 type NetworkCorsErrorStatus struct {
-	CorsError       string `json:"corsError"`       //  enum values: DisallowedByMode, InvalidResponse, WildcardOriginNotAllowed, MissingAllowOriginHeader, MultipleAllowOriginValues, InvalidAllowOriginValue, AllowOriginMismatch, InvalidAllowCredentials, CorsDisabledScheme, PreflightInvalidStatus, PreflightDisallowedRedirect, PreflightWildcardOriginNotAllowed, PreflightMissingAllowOriginHeader, PreflightMultipleAllowOriginValues, PreflightInvalidAllowOriginValue, PreflightAllowOriginMismatch, PreflightInvalidAllowCredentials, PreflightMissingAllowExternal, PreflightInvalidAllowExternal, InvalidAllowMethodsPreflightResponse, InvalidAllowHeadersPreflightResponse, MethodDisallowedByPreflightResponse, HeaderDisallowedByPreflightResponse, RedirectContainsCredentials, InsecurePrivateNetwork
+	CorsError       string `json:"corsError"`       //  enum values: DisallowedByMode, InvalidResponse, WildcardOriginNotAllowed, MissingAllowOriginHeader, MultipleAllowOriginValues, InvalidAllowOriginValue, AllowOriginMismatch, InvalidAllowCredentials, CorsDisabledScheme, PreflightInvalidStatus, PreflightDisallowedRedirect, PreflightWildcardOriginNotAllowed, PreflightMissingAllowOriginHeader, PreflightMultipleAllowOriginValues, PreflightInvalidAllowOriginValue, PreflightAllowOriginMismatch, PreflightInvalidAllowCredentials, PreflightMissingAllowExternal, PreflightInvalidAllowExternal, InvalidAllowMethodsPreflightResponse, InvalidAllowHeadersPreflightResponse, MethodDisallowedByPreflightResponse, HeaderDisallowedByPreflightResponse, RedirectContainsCredentials, InsecurePrivateNetwork, NoCorsRedirectModeNotFollow
 	FailedParameter string `json:"failedParameter"` //
 }
 
@@ -226,7 +226,7 @@ type NetworkAuthChallengeResponse struct {
 
 // Request pattern for interception.
 type NetworkRequestPattern struct {
-	UrlPattern        string `json:"urlPattern,omitempty"`        // Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to "*".
+	UrlPattern        string `json:"urlPattern,omitempty"`        // Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to `"*"`.
 	ResourceType      string `json:"resourceType,omitempty"`      // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 	InterceptionStage string `json:"interceptionStage,omitempty"` // Stage at which to begin intercepting requests. Default is Request. enum values: Request, HeadersReceived
 }
@@ -570,6 +570,45 @@ type NetworkTrustTokenOperationDoneEvent struct {
 		TopLevelOrigin   string `json:"topLevelOrigin,omitempty"`   // Top level origin. The context in which the operation was attempted.
 		IssuerOrigin     string `json:"issuerOrigin,omitempty"`     // Origin of the issuer in case of a "Issuance" or "Redemption" operation.
 		IssuedTokenCount int    `json:"issuedTokenCount,omitempty"` // The number of obtained Trust Tokens on a successful "Issuance" operation.
+	} `json:"Params,omitempty"`
+}
+
+// Fired once when parsing the .wbn file has succeeded. The event contains the information about the web bundle contents.
+type NetworkSubresourceWebBundleMetadataReceivedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		RequestId string   `json:"requestId"` // Request identifier. Used to match this information to another event.
+		Urls      []string `json:"urls"`      // A list of URLs of resources in the subresource Web Bundle.
+	} `json:"Params,omitempty"`
+}
+
+// Fired once when parsing the .wbn file has failed.
+type NetworkSubresourceWebBundleMetadataErrorEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		RequestId    string `json:"requestId"`    // Request identifier. Used to match this information to another event.
+		ErrorMessage string `json:"errorMessage"` // Error message
+	} `json:"Params,omitempty"`
+}
+
+// Fired when handling requests for resources within a .wbn file. Note: this will only be fired for resources that are requested by the webpage.
+type NetworkSubresourceWebBundleInnerResponseParsedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		InnerRequestId  string `json:"innerRequestId"`            // Request identifier of the subresource request
+		InnerRequestURL string `json:"innerRequestURL"`           // URL of the subresource resource.
+		BundleRequestId string `json:"bundleRequestId,omitempty"` // Bundle request identifier. Used to match this information to another event. This made be absent in case when the instrumentation was enabled only after webbundle was parsed.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when request for resources within a .wbn file failed.
+type NetworkSubresourceWebBundleInnerResponseErrorEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		InnerRequestId  string `json:"innerRequestId"`            // Request identifier of the subresource request
+		InnerRequestURL string `json:"innerRequestURL"`           // URL of the subresource resource.
+		ErrorMessage    string `json:"errorMessage"`              // Error message
+		BundleRequestId string `json:"bundleRequestId,omitempty"` // Bundle request identifier. Used to match this information to another event. This made be absent in case when the instrumentation was enabled only after webbundle was parsed.
 	} `json:"Params,omitempty"`
 }
 
