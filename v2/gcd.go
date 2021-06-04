@@ -44,7 +44,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.1.2"
+var GCDVERSION = "v2.1.3"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -443,6 +443,7 @@ func (c *Gcd) probeDebugPort() error {
 	defer func() {
 		ticker.Stop()
 		timeoutTicker.Stop()
+		c.readyCh <- struct{}{}
 	}()
 
 	for {
@@ -453,7 +454,6 @@ func (c *Gcd) probeDebugPort() error {
 				continue
 			}
 			defer resp.Body.Close()
-			c.readyCh <- struct{}{}
 			return nil
 		case <-timeoutTicker.C:
 			return fmt.Errorf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
