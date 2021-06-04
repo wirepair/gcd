@@ -1,5 +1,5 @@
 # Changelog (2021)
-
+- 2.1.3 (June 4th): Fix a potential blocked channel if chrome fails to start and debug port probe fails
 - 2.1.2 (May 23rd): Update to chrome version 90.0.4430.212
   - Implementation of an observer package to allow inspection of messages between gcd/browser by @camswords
 
