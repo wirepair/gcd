@@ -44,7 +44,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.1.3"
+var GCDVERSION = "v2.1.4"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -90,11 +90,11 @@ type Gcd struct {
 	flags               []string
 	env                 []string
 	chomeApiVersion     string
-	ctx                   context.Context
-	logger                Log
-	debugEvents           bool
-	debug                 bool
-	messageObserver       observer.MessageObserver
+	ctx                 context.Context
+	logger              Log
+	debugEvents         bool
+	debug               bool
+	messageObserver     observer.MessageObserver
 }
 
 // Give it a friendly name.
