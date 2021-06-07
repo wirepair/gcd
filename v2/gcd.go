@@ -69,30 +69,32 @@ func (g *GcdDecodingErr) Error() string {
 }
 
 type TerminatedHandler func(reason string)
+type OnChromeExitHandler func(profileDir string, err error)
 
 // The Google Chrome Debugger
 type Gcd struct {
 	processLock *sync.RWMutex // make go -race detection happy for process
 
-	timeout           time.Duration // how much time to wait for debugger port to open up
-	chromeProcess     *os.Process
-	chromeCmd         *exec.Cmd
-	terminatedHandler TerminatedHandler
-	port              string
-	host              string
-	addr              string
-	profileDir        string
-	deleteProfile     bool
-	readyCh           chan struct{}
-	apiEndpoint       string
-	flags             []string
-	env               []string
-	chomeApiVersion   string
-	ctx               context.Context
-	logger            Log
-	debugEvents       bool
-	debug             bool
-	messageObserver   observer.MessageObserver
+	timeout             time.Duration // how much time to wait for debugger port to open up
+	chromeProcess       *os.Process
+	chromeCmd           *exec.Cmd
+	terminatedHandler   TerminatedHandler
+	onChromeExitHandler OnChromeExitHandler
+	port                string
+	host                string
+	addr                string
+	profileDir          string
+	deleteProfile       bool
+	readyCh             chan struct{}
+	apiEndpoint         string
+	flags               []string
+	env                 []string
+	chomeApiVersion     string
+	ctx                   context.Context
+	logger                Log
+	debugEvents           bool
+	debug                 bool
+	messageObserver       observer.MessageObserver
 }
 
 // Give it a friendly name.
@@ -102,6 +104,7 @@ func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 	c.host = "localhost"
 	c.readyCh = make(chan struct{})
 	c.terminatedHandler = nil
+	c.onChromeExitHandler = nil
 	c.flags = make([]string, 0)
 	c.env = make([]string, 0)
 	c.ctx = context.Background()
@@ -118,6 +121,13 @@ func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 func WithTerminationHandler(handler TerminatedHandler) func(*Gcd) {
 	return func(g *Gcd) {
 		g.terminatedHandler = handler
+	}
+}
+
+// WithOnChromeExitHandler Pass a handler to be notified when the chrome process exits.
+func WithOnChromeExitHandler(handler OnChromeExitHandler) func(*Gcd) {
+	return func(g *Gcd) {
+		g.onChromeExitHandler = handler
 	}
 }
 
@@ -241,6 +251,10 @@ func (c *Gcd) startProcess() error {
 		c.chromeProcess = c.chromeCmd.Process
 		c.processLock.Unlock()
 		err = c.chromeCmd.Wait()
+
+		if c.onChromeExitHandler != nil {
+			c.onChromeExitHandler(c.profileDir, err)
+		}
 
 		c.removeProfileDir()
 
