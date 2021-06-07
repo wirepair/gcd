@@ -268,9 +268,9 @@ func (c *Gcd) startProcess() error {
 	}()
 
 	var err error
-	go func(err error) {
+	go func() {
 		err = c.probeDebugPort()
-	}(err)
+	}()
 	<-c.readyCh
 
 	return err
@@ -313,9 +313,9 @@ func (c *Gcd) ConnectToInstance(host string, port string) error {
 	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
 
 	var err error
-	go func(err error) {
+	go func() {
 		err = c.probeDebugPort()
-	}(err)
+	}()
 	<-c.readyCh
 
 	return err
