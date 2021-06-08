@@ -294,8 +294,6 @@ func (c *Gcd) PID() int {
 // removeProfileDir if deleteProfile is true
 func (c *Gcd) removeProfileDir() {
 	if c.deleteProfile {
-		// let chrome shutdown completely before deleting
-		time.Sleep(1 * time.Second)
 		if err := os.RemoveAll(c.profileDir); err != nil {
 			c.logger.Println("error deleting profile directory", err)
 		}

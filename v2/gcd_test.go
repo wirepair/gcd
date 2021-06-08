@@ -59,9 +59,12 @@ func testCleanUp() {
 
 func TestDeleteProfileOnExit(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("windows will hold on to the process handle too long")
+		//t.Skip("windows will hold on to the process handle too long")
 	}
-	debugger := NewChromeDebugger(WithDeleteProfileOnExit(), WithFlags([]string{"--headless"}))
+
+	debugger := NewChromeDebugger(WithDeleteProfileOnExit(),
+		WithFlags([]string{"--headless"}),
+	)
 
 	profileDir := testRandomTempDir(t)
 	err := debugger.StartProcess(testPath, profileDir, testRandomPort(t))
@@ -69,6 +72,7 @@ func TestDeleteProfileOnExit(t *testing.T) {
 		t.Fatalf("error starting chrome: %s\n", err)
 	}
 	debugger.ExitProcess()
+	time.Sleep(1 * time.Second)
 	if stat, err := os.Stat(profileDir); err == nil {
 		t.Fatalf("error temporary profileDir still exists: %s\n", stat.Name())
 	}
