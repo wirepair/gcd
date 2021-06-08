@@ -72,7 +72,7 @@ func TestDeleteProfileOnExit(t *testing.T) {
 		t.Fatalf("error starting chrome: %s\n", err)
 	}
 	debugger.ExitProcess()
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 	if stat, err := os.Stat(profileDir); err == nil {
 		t.Fatalf("error temporary profileDir still exists: %s\n", stat.Name())
 	}
@@ -94,7 +94,7 @@ func TestGetPages(t *testing.T) {
 
 func TestEnv(t *testing.T) {
 	var ok bool
-	debugger = NewChromeDebugger(WithEnvironmentVars([]string{"hello=youze", "zoinks=scoob"}))
+	debugger = NewChromeDebugger(WithEnvironmentVars([]string{"hello=youze", "zoinks=scoob"}), WithFlags([]string{"--headless"}))
 	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
 	defer debugger.ExitProcess()
 
@@ -582,7 +582,7 @@ func testExtensionStartup(t *testing.T) {
 
 	sep := string(os.PathSeparator)
 	extensionPath := "--load-extension=" + path + sep + "testdata" + sep + "extension" + sep
-	debugger = NewChromeDebugger(WithFlags([]string{extensionPath}))
+	debugger = NewChromeDebugger(WithFlags([]string{extensionPath, "--headless"}))
 
 	debugger.StartProcess(testPath, testRandomTempDir(t), testRandomPort(t))
 }

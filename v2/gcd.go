@@ -294,6 +294,7 @@ func (c *Gcd) PID() int {
 // removeProfileDir if deleteProfile is true
 func (c *Gcd) removeProfileDir() {
 	if c.deleteProfile {
+		time.Sleep(time.Second * 1)
 		if err := os.RemoveAll(c.profileDir); err != nil {
 			c.logger.Println("error deleting profile directory", err)
 		}
