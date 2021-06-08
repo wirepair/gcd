@@ -100,7 +100,7 @@ type Gcd struct {
 // Give it a friendly name.
 func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 	c := &Gcd{processLock: &sync.RWMutex{}}
-	c.timeout = 15
+	c.timeout = time.Second * 15
 	c.host = "localhost"
 	c.readyChErr = make(chan error)
 	c.terminatedHandler = nil
@@ -450,7 +450,7 @@ func (c *Gcd) ActivateTab(target *ChromeTarget) error {
 // probes the debugger report and signals when it's available.
 func (c *Gcd) probeDebugPort(endpoint string) error {
 	ticker := time.NewTicker(time.Millisecond * 100)
-	timeoutTicker := time.NewTicker(time.Second * c.timeout)
+	timeoutTicker := time.NewTicker(c.timeout)
 
 	defer func() {
 		ticker.Stop()

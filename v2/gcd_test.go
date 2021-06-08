@@ -61,7 +61,9 @@ func TestDeleteProfileOnExit(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("windows will hold on to the process handle too long")
 	}
-	debugger := NewChromeDebugger(WithDeleteProfileOnExit())
+	debugger := NewChromeDebugger(WithDeleteProfileOnExit(),
+		WithDebugPortTimeout(time.Second*30),
+	)
 
 	profileDir := testRandomTempDir(t)
 	err := debugger.StartProcess(testPath, profileDir, testRandomPort(t))
