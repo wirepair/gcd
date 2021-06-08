@@ -1,4 +1,5 @@
 # Changelog (2021)
+- 2.1.5 (June 8th) Fix race condition on error and endpoint
 - 2.1.4 (June 8th) Added a chrome exit handler from @camswords.
 - 2.1.3 (June 4th): Fix a potential blocked channel if chrome fails to start and debug port probe fails
 - 2.1.2 (May 23rd): Update to chrome version 90.0.4430.212
