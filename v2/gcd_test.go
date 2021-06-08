@@ -66,7 +66,7 @@ func TestDeleteProfileOnExit(t *testing.T) {
 	profileDir := testRandomTempDir(t)
 	err := debugger.StartProcess(testPath, profileDir, testRandomPort(t))
 	if err != nil {
-		t.Fatalf("error starting chrome")
+		t.Fatalf("error starting chrome: %s\n", err)
 	}
 	debugger.ExitProcess()
 	if stat, err := os.Stat(profileDir); err == nil {
