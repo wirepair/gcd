@@ -44,7 +44,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.1.4"
+var GCDVERSION = "v2.1.5"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -85,7 +85,7 @@ type Gcd struct {
 	addr                string
 	profileDir          string
 	deleteProfile       bool
-	readyCh             chan struct{}
+	readyChErr          chan error
 	apiEndpoint         string
 	flags               []string
 	env                 []string
@@ -102,7 +102,7 @@ func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 	c := &Gcd{processLock: &sync.RWMutex{}}
 	c.timeout = 15
 	c.host = "localhost"
-	c.readyCh = make(chan struct{})
+	c.readyChErr = make(chan error)
 	c.terminatedHandler = nil
 	c.onChromeExitHandler = nil
 	c.flags = make([]string, 0)
@@ -267,11 +267,10 @@ func (c *Gcd) startProcess() error {
 		}
 	}()
 
-	var err error
-	go func() {
-		err = c.probeDebugPort()
-	}()
-	<-c.readyCh
+	go func(endpoint string) {
+		c.probeDebugPort(endpoint)
+	}(c.apiEndpoint)
+	err := <-c.readyChErr
 
 	return err
 }
@@ -312,11 +311,10 @@ func (c *Gcd) ConnectToInstance(host string, port string) error {
 	c.addr = fmt.Sprintf("%s:%s", c.host, c.port)
 	c.apiEndpoint = fmt.Sprintf("http://%s/json", c.addr)
 
-	var err error
-	go func() {
-		err = c.probeDebugPort()
-	}()
-	<-c.readyCh
+	go func(endpoint string) {
+		c.probeDebugPort(endpoint)
+	}(c.apiEndpoint)
+	err := <-c.readyChErr
 
 	return err
 }
@@ -450,27 +448,26 @@ func (c *Gcd) ActivateTab(target *ChromeTarget) error {
 }
 
 // probes the debugger report and signals when it's available.
-func (c *Gcd) probeDebugPort() error {
+func (c *Gcd) probeDebugPort(endpoint string) error {
 	ticker := time.NewTicker(time.Millisecond * 100)
 	timeoutTicker := time.NewTicker(time.Second * c.timeout)
 
 	defer func() {
 		ticker.Stop()
 		timeoutTicker.Stop()
-		c.readyCh <- struct{}{}
 	}()
 
 	for {
 		select {
 		case <-ticker.C:
-			resp, err := http.Get(c.apiEndpoint)
+			resp, err := http.Get(endpoint)
 			if err != nil {
 				continue
 			}
 			defer resp.Body.Close()
-			return nil
+			c.readyChErr <- nil
 		case <-timeoutTicker.C:
-			return fmt.Errorf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
+			c.readyChErr <- fmt.Errorf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
 		}
 	}
 }
