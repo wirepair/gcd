@@ -11,7 +11,7 @@ jobs:
     - name: Install Packages
       run: |
         sudo apt-get -qq update
-        sudo apt-get install -y build-essential chromium
+        sudo apt-get install -y build-essential chromium-browser
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Test
