@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"runtime/pprof"
 	"strings"
 	"testing"
 	"time"
@@ -106,6 +107,27 @@ func TestEnv(t *testing.T) {
 	}
 	if !ok {
 		t.Fatalf("error finding our environment vars in chrome process")
+	}
+}
+
+func TestGoRoutineCount(t *testing.T) {
+	startRoutines := runtime.NumGoroutine()
+
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+
+	_, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error creating new tab")
+	}
+
+	debugger.ExitProcess()
+	// let exit process clean up profile directories and what not
+	time.Sleep(time.Second * 2)
+	remaining := runtime.NumGoroutine()
+	if remaining > startRoutines {
+		pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
+		t.Fatalf("error expected remaining go routines (%d) to less than or equal start routines (%d)\n", remaining, startRoutines)
 	}
 }
 
