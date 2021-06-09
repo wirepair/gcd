@@ -111,8 +111,8 @@ func TestEnv(t *testing.T) {
 }
 
 func TestGoRoutineCount(t *testing.T) {
-	pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
-	goRoutines := runtime.NumGoroutine()
+	startRoutines := runtime.NumGoroutine()
+
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
@@ -125,9 +125,9 @@ func TestGoRoutineCount(t *testing.T) {
 	// let exit process clean up profile directories and what not
 	time.Sleep(time.Second * 2)
 	remaining := runtime.NumGoroutine()
-	if goRoutines <= remaining {
+	if startRoutines >= remaining {
 		pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
-		t.Fatalf("error expected %d goRoutines, have %d\n", goRoutines, remaining)
+		t.Fatalf("error expected startRoutines (%d) to be <= remaining routines (%d)\n", startRoutines, remaining)
 	}
 }
 
