@@ -125,7 +125,7 @@ func TestGoRoutineCount(t *testing.T) {
 	// let exit process clean up profile directories and what not
 	time.Sleep(time.Second * 2)
 	remaining := runtime.NumGoroutine()
-	if goRoutines != remaining {
+	if goRoutines <= remaining {
 		pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
 		t.Fatalf("error expected %d goRoutines, have %d\n", goRoutines, remaining)
 	}
