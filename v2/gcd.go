@@ -447,7 +447,7 @@ func (c *Gcd) ActivateTab(target *ChromeTarget) error {
 }
 
 // probes the debugger report and signals when it's available.
-func (c *Gcd) probeDebugPort(endpoint string) error {
+func (c *Gcd) probeDebugPort(endpoint string) {
 	ticker := time.NewTicker(time.Millisecond * 100)
 	timeoutTicker := time.NewTicker(c.timeout)
 
@@ -465,8 +465,10 @@ func (c *Gcd) probeDebugPort(endpoint string) error {
 			}
 			defer resp.Body.Close()
 			c.readyChErr <- nil
+			return
 		case <-timeoutTicker.C:
 			c.readyChErr <- fmt.Errorf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
+			return
 		}
 	}
 }
