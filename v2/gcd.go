@@ -90,6 +90,7 @@ type Gcd struct {
 	flags               []string
 	env                 []string
 	chomeApiVersion     string
+	eventQueueSize      int
 	ctx                 context.Context
 	logger              Log
 	debugEvents         bool
@@ -107,6 +108,7 @@ func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 	c.onChromeExitHandler = nil
 	c.flags = make([]string, 0)
 	c.env = make([]string, 0)
+	c.eventQueueSize = 256
 	c.ctx = context.Background()
 	c.logger = LogDiscarder{}
 	c.messageObserver = observer.NewIgnoreMessagesObserver()
@@ -115,6 +117,13 @@ func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 		o(c)
 	}
 	return c
+}
+
+// WithEventQueueSize number of DevTool events to allow to queue up
+func WithEventQueueSize(queueSize int) func(*Gcd) {
+	return func(g *Gcd) {
+		g.eventQueueSize = queueSize
+	}
 }
 
 // WithTerminationHandler Pass a handler to be notified when the chrome process exits.

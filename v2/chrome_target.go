@@ -145,7 +145,7 @@ func openChromeTarget(debugger *Gcd, target *TargetInfo, observer observer.Messa
 		sendCh:          make(chan *gcdmessage.Message),
 		replyDispatcher: make(map[int64]chan *gcdmessage.Message),
 		eventDispatcher: make(map[string]func(*ChromeTarget, []byte)),
-		eventCh:         make(chan *devtoolsEventResponse),
+		eventCh:         make(chan *devtoolsEventResponse, debugger.eventQueueSize), // allow enough events to buffer up
 		doneCh:          make(chan struct{}),
 		logger:          debugger.logger,
 		debugger:        debugger,
