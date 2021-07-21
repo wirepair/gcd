@@ -260,6 +260,7 @@ func (c *ChromeTarget) Unsubscribe(method string) {
 func (c *ChromeTarget) listen() {
 	go c.listenRead()
 	go c.listenWrite()
+	go c.dispatchEvents()
 }
 
 // Listens for API components wishing to send requests to the Chrome Debugger Service
@@ -329,26 +330,12 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	c.checkTargetDisconnected(f.Method)
 
 	c.eventLock.RLock()
-	if r, ok := c.eventDispatcher[f.Method]; ok {
-		c.eventLock.RUnlock()
-		c.logDebug("dispatching", f.Method, "event: ", string(msg))
-		go r(c, msg)
-		return
-
-	}
-	c.eventLock.RUnlock()
-
-	c.eventLock.RLock()
 	_, ok := c.eventDispatcher[f.Method]
 	c.eventLock.RUnlock()
 
 	if ok {
 		c.eventCh <- &devtoolsEventResponse{Method: f.Method, Msg: msg}
 		return
-	}
-
-	if c.debugger.debugEvents {
-		c.logger.Println("no event reciever bound: ", f.Method, " data: ", string(msg))
 	}
 
 	if c.debugger.debugEvents {
