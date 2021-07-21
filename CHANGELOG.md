@@ -1,5 +1,5 @@
 # Changelog (2021)
-- 3.0.0 (July 21st) Breaking change of not calling dev tool events via a newly spawned go routine as it can cause messages to be delivered out of order.
+- 2.2.0 (July 21st) DevTool events via a newly spawned go routine can cause messages to be delivered out of order, this change synchronizes them using an internal channel.
 - 2.1.5 (June 8th) Fix race condition on error and endpoint
 - 2.1.4 (June 8th) Added a chrome exit handler from @camswords.
 - 2.1.3 (June 4th): Fix a potential blocked channel if chrome fails to start and debug port probe fails
