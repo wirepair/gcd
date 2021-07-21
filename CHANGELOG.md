@@ -1,4 +1,5 @@
 # Changelog (2021)
+- 2.2.0 (July 21st) Dispatching DevTool events via a newly spawned go routine was causing messages to be delivered out of order. This change synchronizes them using an internal channel. Note: If you previously had Subscriptions try to signal each other (via another channel) it may be blocked since all subscriptions are executed under a single go routine now. Upgrade with caution.
 - 2.1.6 (June 9th) Fix go routine leak and add test
 - 2.1.5 (June 8th) Fix race condition on error and endpoint
 - 2.1.4 (June 8th) Added a chrome exit handler from @camswords.

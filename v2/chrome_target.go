@@ -49,6 +49,12 @@ type TargetInfo struct {
 	WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
 }
 
+// devtoolsEventResponse from websocket with method and msg data to dispatch to subscribers
+type devtoolsEventResponse struct {
+	Method string `json:"method"`
+	Msg    []byte `json:"msg"`
+}
+
 // ChromeTarget (Tab/Process). Messages are returned to callers via non-buffered channels. Helpfully,
 // the remote debugger service uses id's so we can correlate which request should match which response.
 // We use a map to store the id of the request which contains a reference to a gcdmessage.Message that holds the
@@ -113,10 +119,11 @@ type ChromeTarget struct {
 	WebAudio             *gcdapi.WebAudio
 	WebAuthn             *gcdapi.WebAuthn
 
-	Target          *TargetInfo              // The target information see, TargetInfo
-	sendCh          chan *gcdmessage.Message // The channel used for API components to send back to use
-	doneCh          chan struct{}            // we be donez.
-	apiTimeout      time.Duration            // A customizable timeout for waiting on Chrome to respond to us
+	Target          *TargetInfo                 // The target information see, TargetInfo
+	sendCh          chan *gcdmessage.Message    // The channel used for API components to send back to use
+	eventCh         chan *devtoolsEventResponse // The channel used for dispatching devtool events
+	doneCh          chan struct{}               // we be donez.
+	apiTimeout      time.Duration               // A customizable timeout for waiting on Chrome to respond to us
 	logger          Log
 	debugger        *Gcd
 	stopped         bool // we are/have shutdown
@@ -138,6 +145,7 @@ func openChromeTarget(debugger *Gcd, target *TargetInfo, observer observer.Messa
 		sendCh:          make(chan *gcdmessage.Message),
 		replyDispatcher: make(map[int64]chan *gcdmessage.Message),
 		eventDispatcher: make(map[string]func(*ChromeTarget, []byte)),
+		eventCh:         make(chan *devtoolsEventResponse, debugger.eventQueueSize), // allow enough events to buffer up
 		doneCh:          make(chan struct{}),
 		logger:          debugger.logger,
 		debugger:        debugger,
@@ -252,6 +260,7 @@ func (c *ChromeTarget) Unsubscribe(method string) {
 func (c *ChromeTarget) listen() {
 	go c.listenRead()
 	go c.listenWrite()
+	go c.dispatchEvents()
 }
 
 // Listens for API components wishing to send requests to the Chrome Debugger Service
@@ -321,17 +330,36 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	c.checkTargetDisconnected(f.Method)
 
 	c.eventLock.RLock()
-	if r, ok := c.eventDispatcher[f.Method]; ok {
-		c.eventLock.RUnlock()
-		c.logDebug("dispatching", f.Method, "event: ", string(msg))
-		go r(c, msg)
-		return
-
-	}
+	_, ok := c.eventDispatcher[f.Method]
 	c.eventLock.RUnlock()
+
+	if ok {
+		c.eventCh <- &devtoolsEventResponse{Method: f.Method, Msg: msg}
+		return
+	}
 
 	if c.debugger.debugEvents {
 		c.logger.Println("no event reciever bound: ", f.Method, " data: ", string(msg))
+	}
+}
+
+func (c *ChromeTarget) dispatchEvents() {
+	for {
+		select {
+		case <-c.doneCh:
+			return
+		case <-c.ctx.Done():
+			return
+		case m := <-c.eventCh:
+			c.logDebug("dispatching", m.Method, "event: ", string(m.Msg))
+			c.eventLock.Lock()
+			cb, ok := c.eventDispatcher[m.Method]
+			c.eventLock.Unlock()
+			if !ok {
+				break
+			}
+			cb(c, m.Msg)
+		}
 	}
 }
 
