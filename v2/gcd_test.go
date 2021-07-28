@@ -293,6 +293,21 @@ func TestSimpleReturn(t *testing.T) {
 	}
 }
 
+func TestSimpleReturnReturnsGoError(t *testing.T) {
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+
+	target, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error getting new tab: %s\n", err)
+	}
+
+	css := target.CSS
+	if _, err := css.Enable(testCtx); err == nil {
+		t.Fatalf("expected a go error since css.Enable requires DOM.Enable first.")
+	}
+}
+
 // Tests that the ctx canceled doesn't cause the wsconn to get stuck in a loop in windows
 func TestCtxCancel(t *testing.T) {
 	testDefaultStartup(t, WithEventDebugging(), WithEventDebugging())

@@ -462,6 +462,13 @@ func (c *ChromeTarget) SendDefaultRequest(ctx context.Context, paramRequest *gcd
 		return nil, err
 	}
 
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(response.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
 	chromeResponse := &gcdmessage.ChromeResponse{}
 	err = json.Unmarshal(response.Data, chromeResponse)
 
