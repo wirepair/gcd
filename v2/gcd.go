@@ -44,7 +44,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.2.1"
+var GCDVERSION = "v2.3.0"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -476,7 +476,7 @@ func (c *Gcd) probeDebugPort(endpoint string) {
 			c.readyChErr <- nil
 			return
 		case <-timeoutTicker.C:
-			c.readyChErr <- fmt.Errorf("Unable to contact debugger at %s after %d seconds, gave up", c.apiEndpoint, c.timeout)
+			c.readyChErr <- fmt.Errorf("Unable to contact debugger at %s after %v, gave up", c.apiEndpoint, c.timeout)
 			return
 		}
 	}
