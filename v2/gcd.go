@@ -28,6 +28,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -44,7 +45,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.2.2"
+var GCDVERSION = "v2.2.3"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -78,6 +79,7 @@ type Gcd struct {
 	timeout             time.Duration // how much time to wait for debugger port to open up
 	chromeProcess       *os.Process
 	chromeCmd           *exec.Cmd
+	chromeCmdOutput     io.Writer
 	terminatedHandler   TerminatedHandler
 	onChromeExitHandler OnChromeExitHandler
 	port                string
@@ -144,6 +146,13 @@ func WithOnChromeExitHandler(handler OnChromeExitHandler) func(*Gcd) {
 func WithDebugPortTimeout(timeout time.Duration) func(*Gcd) {
 	return func(g *Gcd) {
 		g.timeout = timeout
+	}
+}
+
+// WithChromeCmdOutput will send the STDOUT and STDERR output of the chrome process to the provided stream
+func WithChromeCmdOutput(output io.Writer) func(*Gcd) {
+	return func(g *Gcd) {
+		g.chromeCmdOutput = output
 	}
 }
 
@@ -226,6 +235,12 @@ func (c *Gcd) StartProcess(exePath, userDir, port string) error {
 	c.flags = append(c.flags, "--no-default-browser-check")
 
 	c.chromeCmd = exec.Command(exePath, c.flags...)
+
+	if c.chromeCmdOutput != nil {
+		c.chromeCmd.Stdout = c.chromeCmdOutput
+		c.chromeCmd.Stderr = c.chromeCmdOutput
+	}
+
 	// add custom environment variables.
 	c.chromeCmd.Env = os.Environ()
 	c.chromeCmd.Env = append(c.chromeCmd.Env, c.env...)
