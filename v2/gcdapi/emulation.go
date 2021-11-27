@@ -36,13 +36,14 @@ type EmulationUserAgentBrandVersion struct {
 
 // Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints Missing optional values will be filled in by the target with what it would normally use.
 type EmulationUserAgentMetadata struct {
-	Brands          []*EmulationUserAgentBrandVersion `json:"brands,omitempty"`      //
-	FullVersion     string                            `json:"fullVersion,omitempty"` //
-	Platform        string                            `json:"platform"`              //
-	PlatformVersion string                            `json:"platformVersion"`       //
-	Architecture    string                            `json:"architecture"`          //
-	Model           string                            `json:"model"`                 //
-	Mobile          bool                              `json:"mobile"`                //
+	Brands          []*EmulationUserAgentBrandVersion `json:"brands,omitempty"`          //
+	FullVersionList []*EmulationUserAgentBrandVersion `json:"fullVersionList,omitempty"` //
+	FullVersion     string                            `json:"fullVersion,omitempty"`     //
+	Platform        string                            `json:"platform"`                  //
+	PlatformVersion string                            `json:"platformVersion"`           //
+	Architecture    string                            `json:"architecture"`              //
+	Model           string                            `json:"model"`                     //
+	Mobile          bool                              `json:"mobile"`                    //
 }
 
 type Emulation struct {
@@ -117,6 +118,24 @@ func (c *Emulation) SetFocusEmulationEnabled(ctx context.Context, enabled bool) 
 	var v EmulationSetFocusEmulationEnabledParams
 	v.Enabled = enabled
 	return c.SetFocusEmulationEnabledWithParams(ctx, &v)
+}
+
+type EmulationSetAutoDarkModeOverrideParams struct {
+	// Whether to enable or disable automatic dark mode. If not specified, any existing override will be cleared.
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+// SetAutoDarkModeOverrideWithParams - Automatically render all web contents using a dark theme.
+func (c *Emulation) SetAutoDarkModeOverrideWithParams(ctx context.Context, v *EmulationSetAutoDarkModeOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setAutoDarkModeOverride", Params: v})
+}
+
+// SetAutoDarkModeOverride - Automatically render all web contents using a dark theme.
+// enabled - Whether to enable or disable automatic dark mode. If not specified, any existing override will be cleared.
+func (c *Emulation) SetAutoDarkModeOverride(ctx context.Context, enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetAutoDarkModeOverrideParams
+	v.Enabled = enabled
+	return c.SetAutoDarkModeOverrideWithParams(ctx, &v)
 }
 
 type EmulationSetCPUThrottlingRateParams struct {

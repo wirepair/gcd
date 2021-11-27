@@ -35,6 +35,7 @@ type InputDragDataItem struct {
 // No Description.
 type InputDragData struct {
 	Items              []*InputDragDataItem `json:"items"`              //
+	Files              []string             `json:"files,omitempty"`    // List of filenames that should be included when dropping
 	DragOperationsMask int                  `json:"dragOperationsMask"` // Bit field representing allowed drag operations. Copy = 1, Link = 2, Move = 16
 }
 
@@ -179,6 +180,40 @@ func (c *Input) InsertText(ctx context.Context, text string) (*gcdmessage.Chrome
 	var v InputInsertTextParams
 	v.Text = text
 	return c.InsertTextWithParams(ctx, &v)
+}
+
+type InputImeSetCompositionParams struct {
+	// The text to insert
+	Text string `json:"text"`
+	// selection start
+	SelectionStart int `json:"selectionStart"`
+	// selection end
+	SelectionEnd int `json:"selectionEnd"`
+	// replacement start
+	ReplacementStart int `json:"replacementStart,omitempty"`
+	// replacement end
+	ReplacementEnd int `json:"replacementEnd,omitempty"`
+}
+
+// ImeSetCompositionWithParams - This method sets the current candidate text for ime. Use imeCommitComposition to commit the final text. Use imeSetComposition with empty string as text to cancel composition.
+func (c *Input) ImeSetCompositionWithParams(ctx context.Context, v *InputImeSetCompositionParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.imeSetComposition", Params: v})
+}
+
+// ImeSetComposition - This method sets the current candidate text for ime. Use imeCommitComposition to commit the final text. Use imeSetComposition with empty string as text to cancel composition.
+// text - The text to insert
+// selectionStart - selection start
+// selectionEnd - selection end
+// replacementStart - replacement start
+// replacementEnd - replacement end
+func (c *Input) ImeSetComposition(ctx context.Context, text string, selectionStart int, selectionEnd int, replacementStart int, replacementEnd int) (*gcdmessage.ChromeResponse, error) {
+	var v InputImeSetCompositionParams
+	v.Text = text
+	v.SelectionStart = selectionStart
+	v.SelectionEnd = selectionEnd
+	v.ReplacementStart = replacementStart
+	v.ReplacementEnd = replacementEnd
+	return c.ImeSetCompositionWithParams(ctx, &v)
 }
 
 type InputDispatchMouseEventParams struct {

@@ -14,6 +14,7 @@ type LogLogEntry struct {
 	Source           string                 `json:"source"`                     // Log entry source.
 	Level            string                 `json:"level"`                      // Log entry severity.
 	Text             string                 `json:"text"`                       // Logged text.
+	Category         string                 `json:"category,omitempty"`         //
 	Timestamp        float64                `json:"timestamp"`                  // Timestamp when this entry was added.
 	Url              string                 `json:"url,omitempty"`              // URL of the resource if known.
 	LineNumber       int                    `json:"lineNumber,omitempty"`       // Line number in the resource.

@@ -36,7 +36,7 @@ type DOMNode struct {
 	XmlVersion        string            `json:"xmlVersion,omitempty"`        // `Document`'s XML version in case of XML documents.
 	Name              string            `json:"name,omitempty"`              // `Attr`'s name.
 	Value             string            `json:"value,omitempty"`             // `Attr`'s value.
-	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
 	ShadowRootType    string            `json:"shadowRootType,omitempty"`    // Shadow root type. enum values: user-agent, open, closed
 	FrameId           string            `json:"frameId,omitempty"`           // Frame ID for frame owner elements.
 	ContentDocument   *DOMNode          `json:"contentDocument,omitempty"`   // Content document for frame owner elements.
@@ -1830,4 +1830,100 @@ func (c *DOM) GetFrameOwner(ctx context.Context, frameId string) (int, int, erro
 	var v DOMGetFrameOwnerParams
 	v.FrameId = frameId
 	return c.GetFrameOwnerWithParams(ctx, &v)
+}
+
+type DOMGetContainerForNodeParams struct {
+	//
+	NodeId int `json:"nodeId"`
+	//
+	ContainerName string `json:"containerName,omitempty"`
+}
+
+// GetContainerForNodeWithParams - Returns the container of the given node based on container query conditions. If containerName is given, it will find the nearest container with a matching name; otherwise it will find the nearest container regardless of its container name.
+// Returns -  nodeId - The container node for the given node, or null if not found.
+func (c *DOM) GetContainerForNodeWithParams(ctx context.Context, v *DOMGetContainerForNodeParams) (int, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getContainerForNode", Params: v})
+	if err != nil {
+		return 0, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			NodeId int
+		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
+	}
+
+	return chromeData.Result.NodeId, nil
+}
+
+// GetContainerForNode - Returns the container of the given node based on container query conditions. If containerName is given, it will find the nearest container with a matching name; otherwise it will find the nearest container regardless of its container name.
+// nodeId -
+// containerName -
+// Returns -  nodeId - The container node for the given node, or null if not found.
+func (c *DOM) GetContainerForNode(ctx context.Context, nodeId int, containerName string) (int, error) {
+	var v DOMGetContainerForNodeParams
+	v.NodeId = nodeId
+	v.ContainerName = containerName
+	return c.GetContainerForNodeWithParams(ctx, &v)
+}
+
+type DOMGetQueryingDescendantsForContainerParams struct {
+	// Id of the container node to find querying descendants from.
+	NodeId int `json:"nodeId"`
+}
+
+// GetQueryingDescendantsForContainerWithParams - Returns the descendants of a container query container that have container queries against this container.
+// Returns -  nodeIds - Descendant nodes with container queries against the given container.
+func (c *DOM) GetQueryingDescendantsForContainerWithParams(ctx context.Context, v *DOMGetQueryingDescendantsForContainerParams) ([]int, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getQueryingDescendantsForContainer", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			NodeIds []int
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.NodeIds, nil
+}
+
+// GetQueryingDescendantsForContainer - Returns the descendants of a container query container that have container queries against this container.
+// nodeId - Id of the container node to find querying descendants from.
+// Returns -  nodeIds - Descendant nodes with container queries against the given container.
+func (c *DOM) GetQueryingDescendantsForContainer(ctx context.Context, nodeId int) ([]int, error) {
+	var v DOMGetQueryingDescendantsForContainerParams
+	v.NodeId = nodeId
+	return c.GetQueryingDescendantsForContainerWithParams(ctx, &v)
 }

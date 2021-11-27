@@ -29,9 +29,10 @@ type AuditsAffectedFrame struct {
 
 // This information is currently necessary, as the front-end has a difficult time finding a specific cookie. With this, we can convey specific error information without the cookie.
 type AuditsSameSiteCookieIssueDetails struct {
-	Cookie                 *AuditsAffectedCookie  `json:"cookie"`                   //
+	Cookie                 *AuditsAffectedCookie  `json:"cookie,omitempty"`         // If AffectedCookie is not set then rawCookieLine contains the raw Set-Cookie header string. This hints at a problem where the cookie line is syntactically or semantically malformed in a way that no valid cookie could be created.
+	RawCookieLine          string                 `json:"rawCookieLine,omitempty"`  //
 	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteStrictLaxDowngradeStrict, WarnSameSiteStrictCrossDowngradeStrict, WarnSameSiteStrictCrossDowngradeLax, WarnSameSiteLaxCrossDowngradeStrict, WarnSameSiteLaxCrossDowngradeLax
-	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict
+	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict, ExcludeInvalidSameParty, ExcludeSamePartyCrossPartyContext
 	Operation              string                 `json:"operation"`                // Optionally identifies the site-for-cookies and the cookie url, which may be used by the front-end as additional context. enum values: SetCookie, ReadCookie
 	SiteForCookies         string                 `json:"siteForCookies,omitempty"` //
 	CookieUrl              string                 `json:"cookieUrl,omitempty"`      //
@@ -76,7 +77,7 @@ type AuditsContentSecurityPolicyIssueDetails struct {
 	BlockedURL                         string                    `json:"blockedURL,omitempty"`               // The url not included in allowed sources.
 	ViolatedDirective                  string                    `json:"violatedDirective"`                  // Specific directive that is violated, causing the CSP issue.
 	IsReportOnly                       bool                      `json:"isReportOnly"`                       //
-	ContentSecurityPolicyViolationType string                    `json:"contentSecurityPolicyViolationType"` //  enum values: kInlineViolation, kEvalViolation, kURLViolation, kTrustedTypesSinkViolation, kTrustedTypesPolicyViolation
+	ContentSecurityPolicyViolationType string                    `json:"contentSecurityPolicyViolationType"` //  enum values: kInlineViolation, kEvalViolation, kURLViolation, kTrustedTypesSinkViolation, kTrustedTypesPolicyViolation, kWasmEvalViolation
 	FrameAncestor                      *AuditsAffectedFrame      `json:"frameAncestor,omitempty"`            //
 	SourceCodeLocation                 *AuditsSourceCodeLocation `json:"sourceCodeLocation,omitempty"`       //
 	ViolatingNodeId                    int                       `json:"violatingNodeId,omitempty"`          //
@@ -122,7 +123,7 @@ type AuditsCorsIssueDetails struct {
 
 // Details for issues around "Attribution Reporting API" usage. Explainer: https://github.com/WICG/conversion-measurement-api
 type AuditsAttributionReportingIssueDetails struct {
-	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, InvalidAttributionSourceEventId, InvalidAttributionData, AttributionSourceUntrustworthyOrigin, AttributionUntrustworthyOrigin
+	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, InvalidAttributionSourceEventId, InvalidAttributionData, AttributionSourceUntrustworthyOrigin, AttributionUntrustworthyOrigin, AttributionTriggerDataTooLarge, AttributionEventSourceTriggerDataTooLarge
 	Frame            *AuditsAffectedFrame   `json:"frame,omitempty"`            //
 	Request          *AuditsAffectedRequest `json:"request,omitempty"`          //
 	ViolatingNodeId  int                    `json:"violatingNodeId,omitempty"`  //
@@ -144,26 +145,51 @@ type AuditsNavigatorUserAgentIssueDetails struct {
 	Location *AuditsSourceCodeLocation `json:"location,omitempty"` //
 }
 
+// No Description.
+type AuditsWasmCrossOriginModuleSharingIssueDetails struct {
+	WasmModuleUrl string `json:"wasmModuleUrl"` //
+	SourceOrigin  string `json:"sourceOrigin"`  //
+	TargetOrigin  string `json:"targetOrigin"`  //
+	IsWarning     bool   `json:"isWarning"`     //
+}
+
+// Depending on the concrete errorType, different properties are set.
+type AuditsGenericIssueDetails struct {
+	ErrorType string `json:"errorType"`         // Issues with the same errorType are aggregated in the frontend. enum values: CrossOriginPortalPostMessageError
+	FrameId   string `json:"frameId,omitempty"` //
+}
+
+// This issue tracks information needed to print a deprecation message. The formatting is inherited from the old console.log version, see more at: https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/deprecation.cc TODO(crbug.com/1264960): Re-work format to add i18n support per: https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/devtools_protocol/README.md
+type AuditsDeprecationIssueDetails struct {
+	AffectedFrame      *AuditsAffectedFrame      `json:"affectedFrame,omitempty"` //
+	SourceCodeLocation *AuditsSourceCodeLocation `json:"sourceCodeLocation"`      //
+	Message            string                    `json:"message,omitempty"`       // The content of the deprecation issue (this won't be translated), e.g. "window.inefficientLegacyStorageMethod will be removed in M97, around January 2022. Please use Web Storage or Indexed Database instead. This standard was abandoned in January, 1970. See https://www.chromestatus.com/feature/5684870116278272 for more details."
+}
+
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
 type AuditsInspectorIssueDetails struct {
-	SameSiteCookieIssueDetails        *AuditsSameSiteCookieIssueDetails        `json:"sameSiteCookieIssueDetails,omitempty"`        //
-	MixedContentIssueDetails          *AuditsMixedContentIssueDetails          `json:"mixedContentIssueDetails,omitempty"`          //
-	BlockedByResponseIssueDetails     *AuditsBlockedByResponseIssueDetails     `json:"blockedByResponseIssueDetails,omitempty"`     //
-	HeavyAdIssueDetails               *AuditsHeavyAdIssueDetails               `json:"heavyAdIssueDetails,omitempty"`               //
-	ContentSecurityPolicyIssueDetails *AuditsContentSecurityPolicyIssueDetails `json:"contentSecurityPolicyIssueDetails,omitempty"` //
-	SharedArrayBufferIssueDetails     *AuditsSharedArrayBufferIssueDetails     `json:"sharedArrayBufferIssueDetails,omitempty"`     //
-	TwaQualityEnforcementDetails      *AuditsTrustedWebActivityIssueDetails    `json:"twaQualityEnforcementDetails,omitempty"`      //
-	LowTextContrastIssueDetails       *AuditsLowTextContrastIssueDetails       `json:"lowTextContrastIssueDetails,omitempty"`       //
-	CorsIssueDetails                  *AuditsCorsIssueDetails                  `json:"corsIssueDetails,omitempty"`                  //
-	AttributionReportingIssueDetails  *AuditsAttributionReportingIssueDetails  `json:"attributionReportingIssueDetails,omitempty"`  //
-	QuirksModeIssueDetails            *AuditsQuirksModeIssueDetails            `json:"quirksModeIssueDetails,omitempty"`            //
-	NavigatorUserAgentIssueDetails    *AuditsNavigatorUserAgentIssueDetails    `json:"navigatorUserAgentIssueDetails,omitempty"`    //
+	SameSiteCookieIssueDetails        *AuditsSameSiteCookieIssueDetails               `json:"sameSiteCookieIssueDetails,omitempty"`        //
+	MixedContentIssueDetails          *AuditsMixedContentIssueDetails                 `json:"mixedContentIssueDetails,omitempty"`          //
+	BlockedByResponseIssueDetails     *AuditsBlockedByResponseIssueDetails            `json:"blockedByResponseIssueDetails,omitempty"`     //
+	HeavyAdIssueDetails               *AuditsHeavyAdIssueDetails                      `json:"heavyAdIssueDetails,omitempty"`               //
+	ContentSecurityPolicyIssueDetails *AuditsContentSecurityPolicyIssueDetails        `json:"contentSecurityPolicyIssueDetails,omitempty"` //
+	SharedArrayBufferIssueDetails     *AuditsSharedArrayBufferIssueDetails            `json:"sharedArrayBufferIssueDetails,omitempty"`     //
+	TwaQualityEnforcementDetails      *AuditsTrustedWebActivityIssueDetails           `json:"twaQualityEnforcementDetails,omitempty"`      //
+	LowTextContrastIssueDetails       *AuditsLowTextContrastIssueDetails              `json:"lowTextContrastIssueDetails,omitempty"`       //
+	CorsIssueDetails                  *AuditsCorsIssueDetails                         `json:"corsIssueDetails,omitempty"`                  //
+	AttributionReportingIssueDetails  *AuditsAttributionReportingIssueDetails         `json:"attributionReportingIssueDetails,omitempty"`  //
+	QuirksModeIssueDetails            *AuditsQuirksModeIssueDetails                   `json:"quirksModeIssueDetails,omitempty"`            //
+	NavigatorUserAgentIssueDetails    *AuditsNavigatorUserAgentIssueDetails           `json:"navigatorUserAgentIssueDetails,omitempty"`    //
+	WasmCrossOriginModuleSharingIssue *AuditsWasmCrossOriginModuleSharingIssueDetails `json:"wasmCrossOriginModuleSharingIssue,omitempty"` //
+	GenericIssueDetails               *AuditsGenericIssueDetails                      `json:"genericIssueDetails,omitempty"`               //
+	DeprecationIssueDetails           *AuditsDeprecationIssueDetails                  `json:"deprecationIssueDetails,omitempty"`           //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`    //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue, QuirksModeIssue, NavigatorUserAgentIssue
-	Details *AuditsInspectorIssueDetails `json:"details"` //
+	Code    string                       `json:"code"`              //  enum values: SameSiteCookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue, QuirksModeIssue, NavigatorUserAgentIssue, WasmCrossOriginModuleSharingIssue, GenericIssue, DeprecationIssue
+	Details *AuditsInspectorIssueDetails `json:"details"`           //
+	IssueId string                       `json:"issueId,omitempty"` // A unique id for this issue. May be omitted if no other entity (e.g. exception, CDP message, etc.) is referencing this issue.
 }
 
 //

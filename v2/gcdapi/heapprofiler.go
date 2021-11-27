@@ -308,6 +308,8 @@ type HeapProfilerStopTrackingHeapObjectsParams struct {
 	ReportProgress bool `json:"reportProgress,omitempty"`
 	//
 	TreatGlobalObjectsAsRoots bool `json:"treatGlobalObjectsAsRoots,omitempty"`
+	// If true, numerical values are included in the snapshot
+	CaptureNumericValue bool `json:"captureNumericValue,omitempty"`
 }
 
 // StopTrackingHeapObjectsWithParams -
@@ -318,18 +320,22 @@ func (c *HeapProfiler) StopTrackingHeapObjectsWithParams(ctx context.Context, v 
 // StopTrackingHeapObjects -
 // reportProgress - If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
 // treatGlobalObjectsAsRoots -
-func (c *HeapProfiler) StopTrackingHeapObjects(ctx context.Context, reportProgress bool, treatGlobalObjectsAsRoots bool) (*gcdmessage.ChromeResponse, error) {
+// captureNumericValue - If true, numerical values are included in the snapshot
+func (c *HeapProfiler) StopTrackingHeapObjects(ctx context.Context, reportProgress bool, treatGlobalObjectsAsRoots bool, captureNumericValue bool) (*gcdmessage.ChromeResponse, error) {
 	var v HeapProfilerStopTrackingHeapObjectsParams
 	v.ReportProgress = reportProgress
 	v.TreatGlobalObjectsAsRoots = treatGlobalObjectsAsRoots
+	v.CaptureNumericValue = captureNumericValue
 	return c.StopTrackingHeapObjectsWithParams(ctx, &v)
 }
 
 type HeapProfilerTakeHeapSnapshotParams struct {
 	// If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
 	ReportProgress bool `json:"reportProgress,omitempty"`
-	// If true, a raw snapshot without artifical roots will be generated
+	// If true, a raw snapshot without artificial roots will be generated
 	TreatGlobalObjectsAsRoots bool `json:"treatGlobalObjectsAsRoots,omitempty"`
+	// If true, numerical values are included in the snapshot
+	CaptureNumericValue bool `json:"captureNumericValue,omitempty"`
 }
 
 // TakeHeapSnapshotWithParams -
@@ -339,10 +345,12 @@ func (c *HeapProfiler) TakeHeapSnapshotWithParams(ctx context.Context, v *HeapPr
 
 // TakeHeapSnapshot -
 // reportProgress - If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
-// treatGlobalObjectsAsRoots - If true, a raw snapshot without artifical roots will be generated
-func (c *HeapProfiler) TakeHeapSnapshot(ctx context.Context, reportProgress bool, treatGlobalObjectsAsRoots bool) (*gcdmessage.ChromeResponse, error) {
+// treatGlobalObjectsAsRoots - If true, a raw snapshot without artificial roots will be generated
+// captureNumericValue - If true, numerical values are included in the snapshot
+func (c *HeapProfiler) TakeHeapSnapshot(ctx context.Context, reportProgress bool, treatGlobalObjectsAsRoots bool, captureNumericValue bool) (*gcdmessage.ChromeResponse, error) {
 	var v HeapProfilerTakeHeapSnapshotParams
 	v.ReportProgress = reportProgress
 	v.TreatGlobalObjectsAsRoots = treatGlobalObjectsAsRoots
+	v.CaptureNumericValue = captureNumericValue
 	return c.TakeHeapSnapshotWithParams(ctx, &v)
 }

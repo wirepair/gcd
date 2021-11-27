@@ -180,7 +180,7 @@ func (c *Debugger) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, err
 }
 
 type DebuggerEnableParams struct {
-	// The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if paramter is omitted.
+	// The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if parameter is omitted.
 	MaxScriptsCacheSize float64 `json:"maxScriptsCacheSize,omitempty"`
 }
 
@@ -217,7 +217,7 @@ func (c *Debugger) EnableWithParams(ctx context.Context, v *DebuggerEnableParams
 }
 
 // Enable - Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
-// maxScriptsCacheSize - The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if paramter is omitted.
+// maxScriptsCacheSize - The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if parameter is omitted.
 // Returns -  debuggerId - Unique identifier of the debugger.
 func (c *Debugger) Enable(ctx context.Context, maxScriptsCacheSize float64) (string, error) {
 	var v DebuggerEnableParams

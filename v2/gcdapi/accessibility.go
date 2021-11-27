@@ -16,7 +16,7 @@ type AccessibilityAXValueSource struct {
 	Attribute         string                `json:"attribute,omitempty"`         // The name of the relevant attribute, if any.
 	AttributeValue    *AccessibilityAXValue `json:"attributeValue,omitempty"`    // The value of the relevant attribute, if any.
 	Superseded        bool                  `json:"superseded,omitempty"`        // Whether this source is superseded by a higher priority source.
-	NativeSource      string                `json:"nativeSource,omitempty"`      // The native markup source for this value, e.g. a <label> element. enum values: figcaption, label, labelfor, labelwrapped, legend, rubyannotation, tablecaption, title, other
+	NativeSource      string                `json:"nativeSource,omitempty"`      // The native markup source for this value, e.g. a <label> element. enum values: description, figcaption, label, labelfor, labelwrapped, legend, rubyannotation, tablecaption, title, other
 	NativeSourceValue *AccessibilityAXValue `json:"nativeSourceValue,omitempty"` // The value, such as a node or node list, of the native source.
 	Invalid           bool                  `json:"invalid,omitempty"`           // Whether the value for this property is invalid.
 	InvalidReason     string                `json:"invalidReason,omitempty"`     // Reason for the value being invalid, if it is.
@@ -53,8 +53,26 @@ type AccessibilityAXNode struct {
 	Description      *AccessibilityAXValue      `json:"description,omitempty"`      // The accessible description for this `Node`.
 	Value            *AccessibilityAXValue      `json:"value,omitempty"`            // The value for this `Node`.
 	Properties       []*AccessibilityAXProperty `json:"properties,omitempty"`       // All other properties
+	ParentId         string                     `json:"parentId,omitempty"`         // ID for this node's parent.
 	ChildIds         []string                   `json:"childIds,omitempty"`         // IDs for each of this node's child nodes.
 	BackendDOMNodeId int                        `json:"backendDOMNodeId,omitempty"` // The backend ID for the associated DOM node, if any.
+	FrameId          string                     `json:"frameId,omitempty"`          // The frame ID for the frame associated with this nodes document.
+}
+
+// The loadComplete event mirrors the load complete event sent by the browser to assistive technology when the web page has finished loading.
+type AccessibilityLoadCompleteEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Root *AccessibilityAXNode `json:"root"` // New document root node.
+	} `json:"Params,omitempty"`
+}
+
+// The nodesUpdated event is sent every time a previously requested node has changed the in tree.
+type AccessibilityNodesUpdatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		Nodes []*AccessibilityAXNode `json:"nodes"` // Updated node data.
+	} `json:"Params,omitempty"`
 }
 
 type Accessibility struct {
@@ -136,7 +154,11 @@ func (c *Accessibility) GetPartialAXTree(ctx context.Context, nodeId int, backen
 
 type AccessibilityGetFullAXTreeParams struct {
 	// The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
+	Depth int `json:"depth,omitempty"`
+	// Deprecated. This parameter has been renamed to `depth`. If depth is not provided, max_depth will be used.
 	Max_depth int `json:"max_depth,omitempty"`
+	// The frame for whose document the AX tree should be retrieved. If omited, the root frame is used.
+	FrameId string `json:"frameId,omitempty"`
 }
 
 // GetFullAXTreeWithParams - Fetches the entire accessibility tree for the root Document
@@ -172,17 +194,123 @@ func (c *Accessibility) GetFullAXTreeWithParams(ctx context.Context, v *Accessib
 }
 
 // GetFullAXTree - Fetches the entire accessibility tree for the root Document
-// max_depth - The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
+// depth - The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
+// max_depth - Deprecated. This parameter has been renamed to `depth`. If depth is not provided, max_depth will be used.
+// frameId - The frame for whose document the AX tree should be retrieved. If omited, the root frame is used.
 // Returns -  nodes -
-func (c *Accessibility) GetFullAXTree(ctx context.Context, max_depth int) ([]*AccessibilityAXNode, error) {
+func (c *Accessibility) GetFullAXTree(ctx context.Context, depth int, max_depth int, frameId string) ([]*AccessibilityAXNode, error) {
 	var v AccessibilityGetFullAXTreeParams
+	v.Depth = depth
 	v.Max_depth = max_depth
+	v.FrameId = frameId
 	return c.GetFullAXTreeWithParams(ctx, &v)
+}
+
+type AccessibilityGetRootAXNodeParams struct {
+	// The frame in whose document the node resides. If omitted, the root frame is used.
+	FrameId string `json:"frameId,omitempty"`
+}
+
+// GetRootAXNodeWithParams - Fetches the root node. Requires `enable()` to have been called previously.
+// Returns -  node -
+func (c *Accessibility) GetRootAXNodeWithParams(ctx context.Context, v *AccessibilityGetRootAXNodeParams) (*AccessibilityAXNode, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getRootAXNode", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Node *AccessibilityAXNode
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Node, nil
+}
+
+// GetRootAXNode - Fetches the root node. Requires `enable()` to have been called previously.
+// frameId - The frame in whose document the node resides. If omitted, the root frame is used.
+// Returns -  node -
+func (c *Accessibility) GetRootAXNode(ctx context.Context, frameId string) (*AccessibilityAXNode, error) {
+	var v AccessibilityGetRootAXNodeParams
+	v.FrameId = frameId
+	return c.GetRootAXNodeWithParams(ctx, &v)
+}
+
+type AccessibilityGetAXNodeAndAncestorsParams struct {
+	// Identifier of the node to get.
+	NodeId int `json:"nodeId,omitempty"`
+	// Identifier of the backend node to get.
+	BackendNodeId int `json:"backendNodeId,omitempty"`
+	// JavaScript object id of the node wrapper to get.
+	ObjectId string `json:"objectId,omitempty"`
+}
+
+// GetAXNodeAndAncestorsWithParams - Fetches a node and all ancestors up to and including the root. Requires `enable()` to have been called previously.
+// Returns -  nodes -
+func (c *Accessibility) GetAXNodeAndAncestorsWithParams(ctx context.Context, v *AccessibilityGetAXNodeAndAncestorsParams) ([]*AccessibilityAXNode, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.getAXNodeAndAncestors", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Nodes []*AccessibilityAXNode
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Nodes, nil
+}
+
+// GetAXNodeAndAncestors - Fetches a node and all ancestors up to and including the root. Requires `enable()` to have been called previously.
+// nodeId - Identifier of the node to get.
+// backendNodeId - Identifier of the backend node to get.
+// objectId - JavaScript object id of the node wrapper to get.
+// Returns -  nodes -
+func (c *Accessibility) GetAXNodeAndAncestors(ctx context.Context, nodeId int, backendNodeId int, objectId string) ([]*AccessibilityAXNode, error) {
+	var v AccessibilityGetAXNodeAndAncestorsParams
+	v.NodeId = nodeId
+	v.BackendNodeId = backendNodeId
+	v.ObjectId = objectId
+	return c.GetAXNodeAndAncestorsWithParams(ctx, &v)
 }
 
 type AccessibilityGetChildAXNodesParams struct {
 	//
 	Id string `json:"id"`
+	// The frame in whose document the node resides. If omitted, the root frame is used.
+	FrameId string `json:"frameId,omitempty"`
 }
 
 // GetChildAXNodesWithParams - Fetches a particular accessibility node by AXNodeId. Requires `enable()` to have been called previously.
@@ -219,10 +347,12 @@ func (c *Accessibility) GetChildAXNodesWithParams(ctx context.Context, v *Access
 
 // GetChildAXNodes - Fetches a particular accessibility node by AXNodeId. Requires `enable()` to have been called previously.
 // id -
+// frameId - The frame in whose document the node resides. If omitted, the root frame is used.
 // Returns -  nodes -
-func (c *Accessibility) GetChildAXNodes(ctx context.Context, id string) ([]*AccessibilityAXNode, error) {
+func (c *Accessibility) GetChildAXNodes(ctx context.Context, id string, frameId string) ([]*AccessibilityAXNode, error) {
 	var v AccessibilityGetChildAXNodesParams
 	v.Id = id
+	v.FrameId = frameId
 	return c.GetChildAXNodesWithParams(ctx, &v)
 }
 

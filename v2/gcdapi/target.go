@@ -275,6 +275,8 @@ type TargetCreateBrowserContextParams struct {
 	ProxyServer string `json:"proxyServer,omitempty"`
 	// Proxy bypass list, similar to the one passed to --proxy-bypass-list
 	ProxyBypassList string `json:"proxyBypassList,omitempty"`
+	// An optional list of origins to grant unlimited cross-origin access to. Parts of the URL other than those constituting origin are ignored.
+	OriginsWithUniversalNetworkAccess []string `json:"originsWithUniversalNetworkAccess,omitempty"`
 }
 
 // CreateBrowserContextWithParams - Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.
@@ -313,12 +315,14 @@ func (c *Target) CreateBrowserContextWithParams(ctx context.Context, v *TargetCr
 // disposeOnDetach - If specified, disposes this context when debugging session disconnects.
 // proxyServer - Proxy server, similar to the one passed to --proxy-server
 // proxyBypassList - Proxy bypass list, similar to the one passed to --proxy-bypass-list
+// originsWithUniversalNetworkAccess - An optional list of origins to grant unlimited cross-origin access to. Parts of the URL other than those constituting origin are ignored.
 // Returns -  browserContextId - The id of the context created.
-func (c *Target) CreateBrowserContext(ctx context.Context, disposeOnDetach bool, proxyServer string, proxyBypassList string) (string, error) {
+func (c *Target) CreateBrowserContext(ctx context.Context, disposeOnDetach bool, proxyServer string, proxyBypassList string, originsWithUniversalNetworkAccess []string) (string, error) {
 	var v TargetCreateBrowserContextParams
 	v.DisposeOnDetach = disposeOnDetach
 	v.ProxyServer = proxyServer
 	v.ProxyBypassList = proxyBypassList
+	v.OriginsWithUniversalNetworkAccess = originsWithUniversalNetworkAccess
 	return c.CreateBrowserContextWithParams(ctx, &v)
 }
 
@@ -577,12 +581,12 @@ type TargetSetAutoAttachParams struct {
 	Flatten bool `json:"flatten,omitempty"`
 }
 
-// SetAutoAttachWithParams - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
+// SetAutoAttachWithParams - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets. This also clears all targets added by `autoAttachRelated` from the list of targets to watch for creation of related targets.
 func (c *Target) SetAutoAttachWithParams(ctx context.Context, v *TargetSetAutoAttachParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.setAutoAttach", Params: v})
 }
 
-// SetAutoAttach - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.
+// SetAutoAttach - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets. This also clears all targets added by `autoAttachRelated` from the list of targets to watch for creation of related targets.
 // autoAttach - Whether to auto-attach to related targets.
 // waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
 // flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
@@ -592,6 +596,28 @@ func (c *Target) SetAutoAttach(ctx context.Context, autoAttach bool, waitForDebu
 	v.WaitForDebuggerOnStart = waitForDebuggerOnStart
 	v.Flatten = flatten
 	return c.SetAutoAttachWithParams(ctx, &v)
+}
+
+type TargetAutoAttachRelatedParams struct {
+	//
+	TargetId string `json:"targetId"`
+	// Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
+	WaitForDebuggerOnStart bool `json:"waitForDebuggerOnStart"`
+}
+
+// AutoAttachRelatedWithParams - Adds the specified target to the list of targets that will be monitored for any related target creation (such as child frames, child workers and new versions of service worker) and reported through `attachedToTarget`. The specified target is also auto-attached. This cancels the effect of any previous `setAutoAttach` and is also cancelled by subsequent `setAutoAttach`. Only available at the Browser target.
+func (c *Target) AutoAttachRelatedWithParams(ctx context.Context, v *TargetAutoAttachRelatedParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.autoAttachRelated", Params: v})
+}
+
+// AutoAttachRelated - Adds the specified target to the list of targets that will be monitored for any related target creation (such as child frames, child workers and new versions of service worker) and reported through `attachedToTarget`. The specified target is also auto-attached. This cancels the effect of any previous `setAutoAttach` and is also cancelled by subsequent `setAutoAttach`. Only available at the Browser target.
+// targetId -
+// waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
+func (c *Target) AutoAttachRelated(ctx context.Context, targetId string, waitForDebuggerOnStart bool) (*gcdmessage.ChromeResponse, error) {
+	var v TargetAutoAttachRelatedParams
+	v.TargetId = targetId
+	v.WaitForDebuggerOnStart = waitForDebuggerOnStart
+	return c.AutoAttachRelatedWithParams(ctx, &v)
 }
 
 type TargetSetDiscoverTargetsParams struct {
