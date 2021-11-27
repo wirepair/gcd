@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2020 isaac dawson
+Copyright (c) 2021 isaac dawson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -118,6 +118,7 @@ type ChromeTarget struct {
 	Media                *gcdapi.Media
 	WebAudio             *gcdapi.WebAudio
 	WebAuthn             *gcdapi.WebAuthn
+	EventBreakpoints     *gcdapi.EventBreakpoints
 
 	Target          *TargetInfo                 // The target information see, TargetInfo
 	sendCh          chan *gcdmessage.Message    // The channel used for API components to send back to use
@@ -207,6 +208,7 @@ func (c *ChromeTarget) Init() {
 	c.WebAudio = gcdapi.NewWebAudio(c)
 	c.WebAuthn = gcdapi.NewWebAuthn(c)
 	c.BackgroundService = gcdapi.NewBackgroundService(c)
+	c.EventBreakpoints = gcdapi.NewEventBreakpoints(c)
 }
 
 // clean up this target

@@ -93,21 +93,22 @@ type RuntimeExecutionContextDescription struct {
 	Id       int                    `json:"id"`                // Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed.
 	Origin   string                 `json:"origin"`            // Execution context origin.
 	Name     string                 `json:"name"`              // Human readable name describing given context.
-	UniqueId string                 `json:"uniqueId"`          // A system-unique execution context identifier. Unlike the id, this is unique accross multiple processes, so can be reliably used to identify specific context while backend performs a cross-process navigation.
+	UniqueId string                 `json:"uniqueId"`          // A system-unique execution context identifier. Unlike the id, this is unique across multiple processes, so can be reliably used to identify specific context while backend performs a cross-process navigation.
 	AuxData  map[string]interface{} `json:"auxData,omitempty"` // Embedder-specific auxiliary data.
 }
 
 // Detailed information about exception (or error) that was thrown during script compilation or execution.
 type RuntimeExceptionDetails struct {
-	ExceptionId        int                  `json:"exceptionId"`                  // Exception id.
-	Text               string               `json:"text"`                         // Exception text, which should be used together with exception object when available.
-	LineNumber         int                  `json:"lineNumber"`                   // Line number of the exception location (0-based).
-	ColumnNumber       int                  `json:"columnNumber"`                 // Column number of the exception location (0-based).
-	ScriptId           string               `json:"scriptId,omitempty"`           // Script ID of the exception location.
-	Url                string               `json:"url,omitempty"`                // URL of the exception location, to be used when the script was not reported.
-	StackTrace         *RuntimeStackTrace   `json:"stackTrace,omitempty"`         // JavaScript stack trace if available.
-	Exception          *RuntimeRemoteObject `json:"exception,omitempty"`          // Exception object if available.
-	ExecutionContextId int                  `json:"executionContextId,omitempty"` // Identifier of the context where exception happened.
+	ExceptionId        int                    `json:"exceptionId"`                  // Exception id.
+	Text               string                 `json:"text"`                         // Exception text, which should be used together with exception object when available.
+	LineNumber         int                    `json:"lineNumber"`                   // Line number of the exception location (0-based).
+	ColumnNumber       int                    `json:"columnNumber"`                 // Column number of the exception location (0-based).
+	ScriptId           string                 `json:"scriptId,omitempty"`           // Script ID of the exception location.
+	Url                string                 `json:"url,omitempty"`                // URL of the exception location, to be used when the script was not reported.
+	StackTrace         *RuntimeStackTrace     `json:"stackTrace,omitempty"`         // JavaScript stack trace if available.
+	Exception          *RuntimeRemoteObject   `json:"exception,omitempty"`          // Exception object if available.
+	ExecutionContextId int                    `json:"executionContextId,omitempty"` // Identifier of the context where exception happened.
+	ExceptionMetaData  map[string]interface{} `json:"exceptionMetaData,omitempty"`  // Dictionary with entries of meta data that the client associated with this exception, such as information about associated network requests, etc.
 }
 
 // Stack entry for runtime errors and assertions.
@@ -194,8 +195,9 @@ type RuntimeExecutionContextDestroyedEvent struct {
 type RuntimeInspectRequestedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Object *RuntimeRemoteObject   `json:"object"` //
-		Hints  map[string]interface{} `json:"hints"`  //
+		Object             *RuntimeRemoteObject   `json:"object"`                       //
+		Hints              map[string]interface{} `json:"hints"`                        //
+		ExecutionContextId int                    `json:"executionContextId,omitempty"` // Identifier of the context where the call was made.
 	} `json:"Params,omitempty"`
 }
 
@@ -284,6 +286,8 @@ type RuntimeCallFunctionOnParams struct {
 	ExecutionContextId int `json:"executionContextId,omitempty"`
 	// Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
 	ObjectGroup string `json:"objectGroup,omitempty"`
+	// Whether to throw an exception if side effect cannot be ruled out during evaluation.
+	ThrowOnSideEffect bool `json:"throwOnSideEffect,omitempty"`
 }
 
 // CallFunctionOnWithParams - Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
@@ -330,8 +334,9 @@ func (c *Runtime) CallFunctionOnWithParams(ctx context.Context, v *RuntimeCallFu
 // awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
 // executionContextId - Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
 // objectGroup - Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
+// throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation.
 // Returns -  result - Call result. exceptionDetails - Exception details.
-func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string, throwOnSideEffect bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeCallFunctionOnParams
 	v.FunctionDeclaration = functionDeclaration
 	v.ObjectId = objectId
@@ -343,6 +348,7 @@ func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string
 	v.AwaitPromise = awaitPromise
 	v.ExecutionContextId = executionContextId
 	v.ObjectGroup = objectGroup
+	v.ThrowOnSideEffect = throwOnSideEffect
 	return c.CallFunctionOnWithParams(ctx, &v)
 }
 
@@ -449,7 +455,7 @@ type RuntimeEvaluateParams struct {
 	ReplMode bool `json:"replMode,omitempty"`
 	// The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
 	AllowUnsafeEvalBlockedByCSP bool `json:"allowUnsafeEvalBlockedByCSP,omitempty"`
-	// An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused accross processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation accross process boundaries). This is mutually exclusive with `contextId`.
+	// An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `contextId`.
 	UniqueContextId string `json:"uniqueContextId,omitempty"`
 }
 
@@ -501,7 +507,7 @@ func (c *Runtime) EvaluateWithParams(ctx context.Context, v *RuntimeEvaluatePara
 // disableBreaks - Disable breakpoints during execution.
 // replMode - Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
 // allowUnsafeEvalBlockedByCSP - The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
-// uniqueContextId - An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused accross processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation accross process boundaries). This is mutually exclusive with `contextId`.
+// uniqueContextId - An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `contextId`.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
 func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool, uniqueContextId string) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
@@ -597,6 +603,8 @@ type RuntimeGetPropertiesParams struct {
 	AccessorPropertiesOnly bool `json:"accessorPropertiesOnly,omitempty"`
 	// Whether preview should be generated for the results.
 	GeneratePreview bool `json:"generatePreview,omitempty"`
+	// If true, returns non-indexed properties only.
+	NonIndexedPropertiesOnly bool `json:"nonIndexedPropertiesOnly,omitempty"`
 }
 
 // GetPropertiesWithParams - Returns properties of a given object. Object group of the result is inherited from the target object.
@@ -639,13 +647,15 @@ func (c *Runtime) GetPropertiesWithParams(ctx context.Context, v *RuntimeGetProp
 // ownProperties - If true, returns properties belonging only to the element itself, not to its prototype chain.
 // accessorPropertiesOnly - If true, returns accessor properties (with getter/setter) only; internal properties are not returned either.
 // generatePreview - Whether preview should be generated for the results.
+// nonIndexedPropertiesOnly - If true, returns non-indexed properties only.
 // Returns -  result - Object properties. internalProperties - Internal object properties (only of the element itself). privateProperties - Object private properties. exceptionDetails - Exception details.
-func (c *Runtime) GetProperties(ctx context.Context, objectId string, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
+func (c *Runtime) GetProperties(ctx context.Context, objectId string, ownProperties bool, accessorPropertiesOnly bool, generatePreview bool, nonIndexedPropertiesOnly bool) ([]*RuntimePropertyDescriptor, []*RuntimeInternalPropertyDescriptor, []*RuntimePrivatePropertyDescriptor, *RuntimeExceptionDetails, error) {
 	var v RuntimeGetPropertiesParams
 	v.ObjectId = objectId
 	v.OwnProperties = ownProperties
 	v.AccessorPropertiesOnly = accessorPropertiesOnly
 	v.GeneratePreview = generatePreview
+	v.NonIndexedPropertiesOnly = nonIndexedPropertiesOnly
 	return c.GetPropertiesWithParams(ctx, &v)
 }
 
@@ -923,7 +933,7 @@ func (c *Runtime) TerminateExecution(ctx context.Context) (*gcdmessage.ChromeRes
 type RuntimeAddBindingParams struct {
 	//
 	Name string `json:"name"`
-	// If specified, the binding would only be exposed to the specified execution context. If omitted and `executionContextName` is not set, the binding is exposed to all execution contexts of the target. This parameter is mutually exclusive with `executionContextName`.
+	// If specified, the binding would only be exposed to the specified execution context. If omitted and `executionContextName` is not set, the binding is exposed to all execution contexts of the target. This parameter is mutually exclusive with `executionContextName`. Deprecated in favor of `executionContextName` due to an unclear use case and bugs in implementation (crbug.com/1169639). `executionContextId` will be removed in the future.
 	ExecutionContextId int `json:"executionContextId,omitempty"`
 	// If specified, the binding is exposed to the executionContext with matching name, even for contexts created after the binding is added. See also `ExecutionContext.name` and `worldName` parameter to `Page.addScriptToEvaluateOnNewDocument`. This parameter is mutually exclusive with `executionContextId`.
 	ExecutionContextName string `json:"executionContextName,omitempty"`
@@ -936,7 +946,7 @@ func (c *Runtime) AddBindingWithParams(ctx context.Context, v *RuntimeAddBinding
 
 // AddBinding - If executionContextId is empty, adds binding with the given name on the global objects of all inspected contexts, including those created later, bindings survive reloads. Binding function takes exactly one argument, this argument should be string, in case of any other input, function throws an exception. Each binding function call produces Runtime.bindingCalled notification.
 // name -
-// executionContextId - If specified, the binding would only be exposed to the specified execution context. If omitted and `executionContextName` is not set, the binding is exposed to all execution contexts of the target. This parameter is mutually exclusive with `executionContextName`.
+// executionContextId - If specified, the binding would only be exposed to the specified execution context. If omitted and `executionContextName` is not set, the binding is exposed to all execution contexts of the target. This parameter is mutually exclusive with `executionContextName`. Deprecated in favor of `executionContextName` due to an unclear use case and bugs in implementation (crbug.com/1169639). `executionContextId` will be removed in the future.
 // executionContextName - If specified, the binding is exposed to the executionContext with matching name, even for contexts created after the binding is added. See also `ExecutionContext.name` and `worldName` parameter to `Page.addScriptToEvaluateOnNewDocument`. This parameter is mutually exclusive with `executionContextId`.
 func (c *Runtime) AddBinding(ctx context.Context, name string, executionContextId int, executionContextName string) (*gcdmessage.ChromeResponse, error) {
 	var v RuntimeAddBindingParams

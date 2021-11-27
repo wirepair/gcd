@@ -1,4 +1,5 @@
 # Changelog (2021)
+- 2.2.4 (November 27th) Upgrade protocol.json to 96.0.4664.45
 - 2.2.3 (August 23rd) Applied patch from @camswords to allow using custom output writer for chrome process to aid in debugging.
 - 2.2.2 (August 19th) Applied patch from @camswords to fix the cannot connect to debugger message to print seconds out properly.
 - 2.2.1 (July 28th) SendDefaultRequests were not returning ChromeErrorResponses

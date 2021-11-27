@@ -9,6 +9,12 @@ import (
 	"github.com/wirepair/gcd/v2/gcdmessage"
 )
 
+// Indicates whether a frame has been identified as an ad and why.
+type PageAdFrameStatus struct {
+	AdFrameType  string   `json:"adFrameType"`            //  enum values: none, child, root
+	Explanations []string `json:"explanations,omitempty"` //  enum values: ParentIsAd, CreatedByAdScript, MatchedBlockingRule
+}
+
 // No Description.
 type PagePermissionsPolicyBlockLocator struct {
 	FrameId     string `json:"frameId"`     //
@@ -17,7 +23,7 @@ type PagePermissionsPolicyBlockLocator struct {
 
 // No Description.
 type PagePermissionsPolicyFeatureState struct {
-	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-lang, ch-prefers-color-scheme, ch-rtt, ch-ua, ch-ua-arch, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full-version, ch-ua-platform-version, ch-viewport-width, ch-width, clipboard-read, clipboard-write, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, screen-wake-lock, serial, shared-autofill, storage-access-api, sync-xhr, trust-token-redemption, usb, vertical-scroll, web-share, window-placement, xr-spatial-tracking
+	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-rtt, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-reduced, ch-viewport-height, ch-viewport-width, ch-width, clipboard-read, clipboard-write, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, storage-access-api, sync-xhr, trust-token-redemption, usb, vertical-scroll, web-share, window-placement, xr-spatial-tracking
 	Allowed bool                               `json:"allowed"`           //
 	Locator *PagePermissionsPolicyBlockLocator `json:"locator,omitempty"` //
 }
@@ -36,7 +42,7 @@ type PageOriginTrialToken struct {
 type PageOriginTrialTokenWithStatus struct {
 	RawTokenText string                `json:"rawTokenText"`          //
 	ParsedToken  *PageOriginTrialToken `json:"parsedToken,omitempty"` // `parsedToken` is present only when the token is extractable and parsable.
-	Status       string                `json:"status"`                //  enum values: Success, NotSupported, Insecure, Expired, WrongOrigin, InvalidSignature, Malformed, WrongVersion, FeatureDisabled, TokenDisabled, FeatureDisabledForUser
+	Status       string                `json:"status"`                //  enum values: Success, NotSupported, Insecure, Expired, WrongOrigin, InvalidSignature, Malformed, WrongVersion, FeatureDisabled, TokenDisabled, FeatureDisabledForUser, UnknownTrial
 }
 
 // No Description.
@@ -58,11 +64,10 @@ type PageFrame struct {
 	SecurityOrigin                 string             `json:"securityOrigin"`                 // Frame document's security origin.
 	MimeType                       string             `json:"mimeType"`                       // Frame document's mimeType as determined by the browser.
 	UnreachableUrl                 string             `json:"unreachableUrl,omitempty"`       // If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
-	AdFrameType                    string             `json:"adFrameType,omitempty"`          // Indicates whether this frame was tagged as an ad. enum values: none, child, root
+	AdFrameStatus                  *PageAdFrameStatus `json:"adFrameStatus,omitempty"`        // Indicates whether this frame was tagged as an ad and why.
 	SecureContextType              string             `json:"secureContextType"`              // Indicates whether the main document is a secure context and explains why that is the case. enum values: Secure, SecureLocalhost, InsecureScheme, InsecureAncestor
 	CrossOriginIsolatedContextType string             `json:"crossOriginIsolatedContextType"` // Indicates whether this is a cross origin isolated context. enum values: Isolated, NotIsolated, NotIsolatedFeatureDisabled
 	GatedAPIFeatures               []string           `json:"gatedAPIFeatures"`               // Indicated which gated APIs / features are available. enum values: SharedArrayBuffers, SharedArrayBuffersTransferAllowed, PerformanceMeasureMemory, PerformanceProfile
-	OriginTrials                   []*PageOriginTrial `json:"originTrials,omitempty"`         // Frame document's origin trials with at least one token present.
 }
 
 // Information about the Resource on the page.
@@ -184,6 +189,12 @@ type PageInstallabilityError struct {
 type PageCompilationCacheParams struct {
 	Url   string `json:"url"`             // The URL of the script to produce a compilation cache entry for.
 	Eager bool   `json:"eager,omitempty"` // A hint to the backend whether eager compilation is recommended. (the actual compilation mode used is upon backend discretion).
+}
+
+// No Description.
+type PageBackForwardCacheNotRestoredExplanation struct {
+	Type   string `json:"type"`   // Type of the reason enum values: SupportPending, PageSupportNeeded, Circumstantial
+	Reason string `json:"reason"` // Not restored reason enum values: NotMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, GrantedMediaStreamAccess, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, OptInUnloadHeaderNotPresent, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, DedicatedWorkerOrWorklet, OutstandingNetworkRequestOthers, OutstandingIndexedDBTransaction, RequestedNotificationsPermission, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, IndexedDBConnection, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, Portal, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, Dummy, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSession, ContentMediaSessionService, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame
 }
 
 //
@@ -344,8 +355,9 @@ type PageLifecycleEventEvent struct {
 type PageBackForwardCacheNotUsedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		LoaderId string `json:"loaderId"` // The loader id for the associated navgation.
-		FrameId  string `json:"frameId"`  // The frame id of the associated frame.
+		LoaderId                string                                        `json:"loaderId"`                // The loader id for the associated navgation.
+		FrameId                 string                                        `json:"frameId"`                 // The frame id of the associated frame.
+		NotRestoredExplanations []*PageBackForwardCacheNotRestoredExplanation `json:"notRestoredExplanations"` // Array of reasons why the page could not be cached. This must not be empty.
 	} `json:"Params,omitempty"`
 }
 
@@ -824,6 +836,39 @@ func (c *Page) GetManifestIcons(ctx context.Context) (string, error) {
 	}
 
 	return chromeData.Result.PrimaryIcon, nil
+}
+
+// GetAppId - Returns the unique (PWA) app id. Only returns values if the feature flag 'WebAppEnableManifestId' is enabled
+// Returns -  appId - App id, either from manifest's id attribute or computed from start_url recommendedId - Recommendation for manifest's id attribute to match current id computed from start_url
+func (c *Page) GetAppId(ctx context.Context) (string, string, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getAppId"})
+	if err != nil {
+		return "", "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			AppId         string
+			RecommendedId string
+		}
+	}
+
+	if resp == nil {
+		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", "", err
+	}
+
+	return chromeData.Result.AppId, chromeData.Result.RecommendedId, nil
 }
 
 // GetCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the `cookies` field.
@@ -1479,6 +1524,52 @@ func (c *Page) GetPermissionsPolicyState(ctx context.Context, frameId string) ([
 	return c.GetPermissionsPolicyStateWithParams(ctx, &v)
 }
 
+type PageGetOriginTrialsParams struct {
+	//
+	FrameId string `json:"frameId"`
+}
+
+// GetOriginTrialsWithParams - Get Origin Trials on given frame.
+// Returns -  originTrials -
+func (c *Page) GetOriginTrialsWithParams(ctx context.Context, v *PageGetOriginTrialsParams) ([]*PageOriginTrial, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getOriginTrials", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			OriginTrials []*PageOriginTrial
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.OriginTrials, nil
+}
+
+// GetOriginTrials - Get Origin Trials on given frame.
+// frameId -
+// Returns -  originTrials -
+func (c *Page) GetOriginTrials(ctx context.Context, frameId string) ([]*PageOriginTrial, error) {
+	var v PageGetOriginTrialsParams
+	v.FrameId = frameId
+	return c.GetOriginTrialsWithParams(ctx, &v)
+}
+
 type PageSetDeviceMetricsOverrideParams struct {
 	// Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
 	Width int `json:"width"`
@@ -1785,35 +1876,17 @@ func (c *Page) StopScreencast(ctx context.Context) (*gcdmessage.ChromeResponse, 
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.stopScreencast"})
 }
 
-type PageSetProduceCompilationCacheParams struct {
-	//
-	Enabled bool `json:"enabled"`
-}
-
-// SetProduceCompilationCacheWithParams - Forces compilation cache to be generated for every subresource script. See also: `Page.produceCompilationCache`.
-func (c *Page) SetProduceCompilationCacheWithParams(ctx context.Context, v *PageSetProduceCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
-	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setProduceCompilationCache", Params: v})
-}
-
-// SetProduceCompilationCache - Forces compilation cache to be generated for every subresource script. See also: `Page.produceCompilationCache`.
-// enabled -
-func (c *Page) SetProduceCompilationCache(ctx context.Context, enabled bool) (*gcdmessage.ChromeResponse, error) {
-	var v PageSetProduceCompilationCacheParams
-	v.Enabled = enabled
-	return c.SetProduceCompilationCacheWithParams(ctx, &v)
-}
-
 type PageProduceCompilationCacheParams struct {
 	//
 	Scripts []*PageCompilationCacheParams `json:"scripts"`
 }
 
-// ProduceCompilationCacheWithParams - Requests backend to produce compilation cache for the specified scripts. Unlike setProduceCompilationCache, this allows client to only produce cache for specific scripts. `scripts` are appeneded to the list of scripts for which the cache for would produced. Disabling compilation cache with `setProduceCompilationCache` would reset all pending cache requests. The list may also be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
+// ProduceCompilationCacheWithParams - Requests backend to produce compilation cache for the specified scripts. `scripts` are appeneded to the list of scripts for which the cache would be produced. The list may be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
 func (c *Page) ProduceCompilationCacheWithParams(ctx context.Context, v *PageProduceCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.produceCompilationCache", Params: v})
 }
 
-// ProduceCompilationCache - Requests backend to produce compilation cache for the specified scripts. Unlike setProduceCompilationCache, this allows client to only produce cache for specific scripts. `scripts` are appeneded to the list of scripts for which the cache for would produced. Disabling compilation cache with `setProduceCompilationCache` would reset all pending cache requests. The list may also be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
+// ProduceCompilationCache - Requests backend to produce compilation cache for the specified scripts. `scripts` are appeneded to the list of scripts for which the cache would be produced. The list may be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
 // scripts -
 func (c *Page) ProduceCompilationCache(ctx context.Context, scripts []*PageCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
 	var v PageProduceCompilationCacheParams
@@ -1846,6 +1919,24 @@ func (c *Page) AddCompilationCache(ctx context.Context, url string, data string)
 // Clears seeded compilation cache.
 func (c *Page) ClearCompilationCache(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.clearCompilationCache"})
+}
+
+type PageSetSPCTransactionModeParams struct {
+	//
+	Mode string `json:"mode"`
+}
+
+// SetSPCTransactionModeWithParams - Sets the Secure Payment Confirmation transaction mode. https://w3c.github.io/secure-payment-confirmation/#sctn-automation-set-spc-transaction-mode
+func (c *Page) SetSPCTransactionModeWithParams(ctx context.Context, v *PageSetSPCTransactionModeParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setSPCTransactionMode", Params: v})
+}
+
+// SetSPCTransactionMode - Sets the Secure Payment Confirmation transaction mode. https://w3c.github.io/secure-payment-confirmation/#sctn-automation-set-spc-transaction-mode
+// mode -
+func (c *Page) SetSPCTransactionMode(ctx context.Context, mode string) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetSPCTransactionModeParams
+	v.Mode = mode
+	return c.SetSPCTransactionModeWithParams(ctx, &v)
 }
 
 type PageGenerateTestReportParams struct {

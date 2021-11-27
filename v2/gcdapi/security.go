@@ -85,15 +85,15 @@ type SecurityVisibleSecurityStateChangedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// The security state of the page changed.
+// The security state of the page changed. No longer being sent.
 type SecuritySecurityStateChangedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		SecurityState         string                              `json:"securityState"`         // Security state. enum values: unknown, neutral, insecure, secure, info, insecure-broken
 		SchemeIsCryptographic bool                                `json:"schemeIsCryptographic"` // True if the page was loaded over cryptographic transport such as HTTPS.
-		Explanations          []*SecuritySecurityStateExplanation `json:"explanations"`          // List of explanations for the security state. If the overall security state is `insecure` or `warning`, at least one corresponding explanation should be included.
+		Explanations          []*SecuritySecurityStateExplanation `json:"explanations"`          // Previously a list of explanations for the security state. Now always empty.
 		InsecureContentStatus *SecurityInsecureContentStatus      `json:"insecureContentStatus"` // Information about insecure content on the page.
-		Summary               string                              `json:"summary,omitempty"`     // Overrides user-visible description of the state.
+		Summary               string                              `json:"summary,omitempty"`     // Overrides user-visible description of the state. Always omitted.
 	} `json:"Params,omitempty"`
 }
 

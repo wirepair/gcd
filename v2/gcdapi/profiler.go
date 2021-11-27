@@ -73,19 +73,6 @@ type ProfilerScriptTypeProfile struct {
 	Entries  []*ProfilerTypeProfileEntry `json:"entries"`  // Type profile entries for parameters and return values of the functions in the script.
 }
 
-// Collected counter information.
-type ProfilerCounterInfo struct {
-	Name  string `json:"name"`  // Counter name.
-	Value int    `json:"value"` // Counter value.
-}
-
-// Runtime call counter information.
-type ProfilerRuntimeCallCounterInfo struct {
-	Name  string  `json:"name"`  // Counter name.
-	Value float64 `json:"value"` // Counter value.
-	Time  float64 `json:"time"`  // Counter time in seconds.
-}
-
 //
 type ProfilerConsoleProfileFinishedEvent struct {
 	Method string `json:"method"`
@@ -107,12 +94,12 @@ type ProfilerConsoleProfileStartedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-// Reports coverage delta since the last poll (either from an event like this, or from `takePreciseCoverage` for the current isolate. May only be sent if precise code coverage has been started. This event can be trigged by the embedder to, for example, trigger collection of coverage data immediatelly at a certain point in time.
+// Reports coverage delta since the last poll (either from an event like this, or from `takePreciseCoverage` for the current isolate. May only be sent if precise code coverage has been started. This event can be trigged by the embedder to, for example, trigger collection of coverage data immediately at a certain point in time.
 type ProfilerPreciseCoverageDeltaUpdateEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Timestamp float64                   `json:"timestamp"` // Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
-		Occassion string                    `json:"occassion"` // Identifier for distinguishing coverage events.
+		Occasion  string                    `json:"occasion"`  // Identifier for distinguishing coverage events.
 		Result    []*ProfilerScriptCoverage `json:"result"`    // Coverage data for the current isolate.
 	} `json:"Params,omitempty"`
 }
@@ -336,90 +323,6 @@ func (c *Profiler) TakeTypeProfile(ctx context.Context) ([]*ProfilerScriptTypePr
 	var chromeData struct {
 		Result struct {
 			Result []*ProfilerScriptTypeProfile
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.Result, nil
-}
-
-// Enable counters collection.
-func (c *Profiler) EnableCounters(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableCounters"})
-}
-
-// Disable counters collection.
-func (c *Profiler) DisableCounters(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disableCounters"})
-}
-
-// GetCounters - Retrieve counters.
-// Returns -  result - Collected counters information.
-func (c *Profiler) GetCounters(ctx context.Context) ([]*ProfilerCounterInfo, error) {
-	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getCounters"})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Result []*ProfilerCounterInfo
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	return chromeData.Result.Result, nil
-}
-
-// Enable run time call stats collection.
-func (c *Profiler) EnableRuntimeCallStats(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enableRuntimeCallStats"})
-}
-
-// Disable run time call stats collection.
-func (c *Profiler) DisableRuntimeCallStats(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disableRuntimeCallStats"})
-}
-
-// GetRuntimeCallStats - Retrieve run time call stats.
-// Returns -  result - Collected runtime call counter information.
-func (c *Profiler) GetRuntimeCallStats(ctx context.Context) ([]*ProfilerRuntimeCallCounterInfo, error) {
-	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.getRuntimeCallStats"})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		Result struct {
-			Result []*ProfilerRuntimeCallCounterInfo
 		}
 	}
 

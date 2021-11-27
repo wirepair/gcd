@@ -11,7 +11,7 @@ import (
 
 // CSS rule collection for a single pseudo style.
 type CSSPseudoElementMatches struct {
-	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
 	Matches    []*CSSRuleMatch `json:"matches"`    // Matches of CSS rules applicable to the pseudo style.
 }
 
@@ -43,7 +43,7 @@ type CSSSelectorList struct {
 type CSSCSSStyleSheetHeader struct {
 	StyleSheetId  string  `json:"styleSheetId"`           // The stylesheet identifier.
 	FrameId       string  `json:"frameId"`                // Owner frame identifier.
-	SourceURL     string  `json:"sourceURL"`              // Stylesheet resource URL.
+	SourceURL     string  `json:"sourceURL"`              // Stylesheet resource URL. Empty if this is a constructed stylesheet created using new CSSStyleSheet() (but non-empty if this is a constructed sylesheet imported as a CSS module script).
 	SourceMapURL  string  `json:"sourceMapURL,omitempty"` // URL of source map associated with the stylesheet (if any).
 	Origin        string  `json:"origin"`                 // Stylesheet origin. enum values: injected, user-agent, inspector, regular
 	Title         string  `json:"title"`                  // Stylesheet title.
@@ -52,7 +52,7 @@ type CSSCSSStyleSheetHeader struct {
 	HasSourceURL  bool    `json:"hasSourceURL,omitempty"` // Whether the sourceURL field value comes from the sourceURL comment.
 	IsInline      bool    `json:"isInline"`               // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
 	IsMutable     bool    `json:"isMutable"`              // Whether this stylesheet is mutable. Inline stylesheets become mutable after they have been modified via CSSOM API. <link> element's stylesheets become mutable only if DevTools modifies them. Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
-	IsConstructed bool    `json:"isConstructed"`          // Whether this stylesheet is a constructed stylesheet (created using new CSSStyleSheet()).
+	IsConstructed bool    `json:"isConstructed"`          // True if this stylesheet is created through new CSSStyleSheet() or imported as a CSS module script.
 	StartLine     float64 `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
 	StartColumn   float64 `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
 	Length        float64 `json:"length"`                 // Size of the content (in characters).
@@ -62,11 +62,12 @@ type CSSCSSStyleSheetHeader struct {
 
 // CSS rule representation.
 type CSSCSSRule struct {
-	StyleSheetId string           `json:"styleSheetId,omitempty"` // The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
-	SelectorList *CSSSelectorList `json:"selectorList"`           // Rule selector data.
-	Origin       string           `json:"origin"`                 // Parent stylesheet's origin. enum values: injected, user-agent, inspector, regular
-	Style        *CSSCSSStyle     `json:"style"`                  // Associated style declaration.
-	Media        []*CSSCSSMedia   `json:"media,omitempty"`        // Media list array (for rules involving media queries). The array enumerates media queries starting with the innermost one, going outwards.
+	StyleSheetId     string                  `json:"styleSheetId,omitempty"`     // The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
+	SelectorList     *CSSSelectorList        `json:"selectorList"`               // Rule selector data.
+	Origin           string                  `json:"origin"`                     // Parent stylesheet's origin. enum values: injected, user-agent, inspector, regular
+	Style            *CSSCSSStyle            `json:"style"`                      // Associated style declaration.
+	Media            []*CSSCSSMedia          `json:"media,omitempty"`            // Media list array (for rules involving media queries). The array enumerates media queries starting with the innermost one, going outwards.
+	ContainerQueries []*CSSCSSContainerQuery `json:"containerQueries,omitempty"` // Container query list array (for rules involving container queries). The array enumerates container queries starting with the innermost one, going outwards.
 }
 
 // CSS coverage information.
@@ -142,6 +143,14 @@ type CSSMediaQueryExpression struct {
 	Feature        string          `json:"feature"`                  // Media query expression feature.
 	ValueRange     *CSSSourceRange `json:"valueRange,omitempty"`     // The associated range of the value text in the enclosing stylesheet (if available).
 	ComputedLength float64         `json:"computedLength,omitempty"` // Computed length of media query expression (if applicable).
+}
+
+// CSS container query rule descriptor.
+type CSSCSSContainerQuery struct {
+	Text         string          `json:"text"`                   // Container query text.
+	Range        *CSSSourceRange `json:"range,omitempty"`        // The associated rule header range in the enclosing stylesheet (if available).
+	StyleSheetId string          `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
+	Name         string          `json:"name,omitempty"`         // Optional name for the container.
 }
 
 // Information about amount of glyphs that were rendered with given font.
@@ -911,6 +920,60 @@ func (c *CSS) SetMediaText(ctx context.Context, styleSheetId string, theRange *C
 	v.TheRange = theRange
 	v.Text = text
 	return c.SetMediaTextWithParams(ctx, &v)
+}
+
+type CSSSetContainerQueryTextParams struct {
+	//
+	StyleSheetId string `json:"styleSheetId"`
+	//
+	TheRange *CSSSourceRange `json:"range"`
+	//
+	Text string `json:"text"`
+}
+
+// SetContainerQueryTextWithParams - Modifies the expression of a container query.
+// Returns -  containerQuery - The resulting CSS container query rule after modification.
+func (c *CSS) SetContainerQueryTextWithParams(ctx context.Context, v *CSSSetContainerQueryTextParams) (*CSSCSSContainerQuery, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setContainerQueryText", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ContainerQuery *CSSCSSContainerQuery
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.ContainerQuery, nil
+}
+
+// SetContainerQueryText - Modifies the expression of a container query.
+// styleSheetId -
+// range -
+// text -
+// Returns -  containerQuery - The resulting CSS container query rule after modification.
+func (c *CSS) SetContainerQueryText(ctx context.Context, styleSheetId string, theRange *CSSSourceRange, text string) (*CSSCSSContainerQuery, error) {
+	var v CSSSetContainerQueryTextParams
+	v.StyleSheetId = styleSheetId
+	v.TheRange = theRange
+	v.Text = text
+	return c.SetContainerQueryTextWithParams(ctx, &v)
 }
 
 type CSSSetRuleSelectorParams struct {
