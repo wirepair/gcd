@@ -11,7 +11,7 @@ import (
 
 // CSS rule collection for a single pseudo style.
 type CSSPseudoElementMatches struct {
-	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType string          `json:"pseudoType"` // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, page-transition, page-transition-container, page-transition-image-wrapper, page-transition-outgoing-image, page-transition-incoming-image
 	Matches    []*CSSRuleMatch `json:"matches"`    // Matches of CSS rules applicable to the pseudo style.
 }
 
@@ -19,6 +19,11 @@ type CSSPseudoElementMatches struct {
 type CSSInheritedStyleEntry struct {
 	InlineStyle     *CSSCSSStyle    `json:"inlineStyle,omitempty"` // The ancestor node's inline style, if any, in the style inheritance chain.
 	MatchedCSSRules []*CSSRuleMatch `json:"matchedCSSRules"`       // Matches of CSS rules matching the ancestor node in the style inheritance chain.
+}
+
+// Inherited pseudo element matches from pseudos of an ancestor node.
+type CSSInheritedPseudoElementMatches struct {
+	PseudoElements []*CSSPseudoElementMatches `json:"pseudoElements"` // Matches of pseudo styles from the pseudos of an ancestor node.
 }
 
 // Match data for a CSS rule.
@@ -68,6 +73,8 @@ type CSSCSSRule struct {
 	Style            *CSSCSSStyle            `json:"style"`                      // Associated style declaration.
 	Media            []*CSSCSSMedia          `json:"media,omitempty"`            // Media list array (for rules involving media queries). The array enumerates media queries starting with the innermost one, going outwards.
 	ContainerQueries []*CSSCSSContainerQuery `json:"containerQueries,omitempty"` // Container query list array (for rules involving container queries). The array enumerates container queries starting with the innermost one, going outwards.
+	Supports         []*CSSCSSSupports       `json:"supports,omitempty"`         // @supports CSS at-rule array. The array enumerates @supports at-rules starting with the innermost one, going outwards.
+	Layers           []*CSSCSSLayer          `json:"layers,omitempty"`           // Cascade layer array. Contains the layer hierarchy that this rule belongs to starting with the innermost layer and going outwards.
 }
 
 // CSS coverage information.
@@ -151,6 +158,28 @@ type CSSCSSContainerQuery struct {
 	Range        *CSSSourceRange `json:"range,omitempty"`        // The associated rule header range in the enclosing stylesheet (if available).
 	StyleSheetId string          `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
 	Name         string          `json:"name,omitempty"`         // Optional name for the container.
+}
+
+// CSS Supports at-rule descriptor.
+type CSSCSSSupports struct {
+	Text         string          `json:"text"`                   // Supports rule text.
+	Active       bool            `json:"active"`                 // Whether the supports condition is satisfied.
+	Range        *CSSSourceRange `json:"range,omitempty"`        // The associated rule header range in the enclosing stylesheet (if available).
+	StyleSheetId string          `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
+}
+
+// CSS Layer at-rule descriptor.
+type CSSCSSLayer struct {
+	Text         string          `json:"text"`                   // Layer name.
+	Range        *CSSSourceRange `json:"range,omitempty"`        // The associated rule header range in the enclosing stylesheet (if available).
+	StyleSheetId string          `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
+}
+
+// CSS Layer data.
+type CSSCSSLayerData struct {
+	Name      string             `json:"name"`                // Layer name.
+	SubLayers []*CSSCSSLayerData `json:"subLayers,omitempty"` // Direct sub-layers
+	Order     float64            `json:"order"`               // Layer order. The order determines the order of the layer in the cascade order. A higher number has higher priority in the cascade order.
 }
 
 // Information about amount of glyphs that were rendered with given font.
@@ -569,46 +598,47 @@ type CSSGetMatchedStylesForNodeParams struct {
 }
 
 // GetMatchedStylesForNodeWithParams - Returns requested styles for a DOM node identified by `nodeId`.
-// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node.
-func (c *CSS) GetMatchedStylesForNodeWithParams(ctx context.Context, v *CSSGetMatchedStylesForNodeParams) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSCSSKeyframesRule, error) {
+// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node.
+func (c *CSS) GetMatchedStylesForNodeWithParams(ctx context.Context, v *CSSGetMatchedStylesForNodeParams) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSInheritedPseudoElementMatches, []*CSSCSSKeyframesRule, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode", Params: v})
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			InlineStyle       *CSSCSSStyle
-			AttributesStyle   *CSSCSSStyle
-			MatchedCSSRules   []*CSSRuleMatch
-			PseudoElements    []*CSSPseudoElementMatches
-			Inherited         []*CSSInheritedStyleEntry
-			CssKeyframesRules []*CSSCSSKeyframesRule
+			InlineStyle             *CSSCSSStyle
+			AttributesStyle         *CSSCSSStyle
+			MatchedCSSRules         []*CSSRuleMatch
+			PseudoElements          []*CSSPseudoElementMatches
+			Inherited               []*CSSInheritedStyleEntry
+			InheritedPseudoElements []*CSSInheritedPseudoElementMatches
+			CssKeyframesRules       []*CSSCSSKeyframesRule
 		}
 	}
 
 	if resp == nil {
-		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
-	return chromeData.Result.InlineStyle, chromeData.Result.AttributesStyle, chromeData.Result.MatchedCSSRules, chromeData.Result.PseudoElements, chromeData.Result.Inherited, chromeData.Result.CssKeyframesRules, nil
+	return chromeData.Result.InlineStyle, chromeData.Result.AttributesStyle, chromeData.Result.MatchedCSSRules, chromeData.Result.PseudoElements, chromeData.Result.Inherited, chromeData.Result.InheritedPseudoElements, chromeData.Result.CssKeyframesRules, nil
 }
 
 // GetMatchedStylesForNode - Returns requested styles for a DOM node identified by `nodeId`.
 // nodeId -
-// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node.
-func (c *CSS) GetMatchedStylesForNode(ctx context.Context, nodeId int) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSCSSKeyframesRule, error) {
+// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node.
+func (c *CSS) GetMatchedStylesForNode(ctx context.Context, nodeId int) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSInheritedPseudoElementMatches, []*CSSCSSKeyframesRule, error) {
 	var v CSSGetMatchedStylesForNodeParams
 	v.NodeId = nodeId
 	return c.GetMatchedStylesForNodeWithParams(ctx, &v)
@@ -736,6 +766,52 @@ func (c *CSS) GetStyleSheetText(ctx context.Context, styleSheetId string) (strin
 	var v CSSGetStyleSheetTextParams
 	v.StyleSheetId = styleSheetId
 	return c.GetStyleSheetTextWithParams(ctx, &v)
+}
+
+type CSSGetLayersForNodeParams struct {
+	//
+	NodeId int `json:"nodeId"`
+}
+
+// GetLayersForNodeWithParams - Returns all layers parsed by the rendering engine for the tree scope of a node. Given a DOM element identified by nodeId, getLayersForNode returns the root layer for the nearest ancestor document or shadow root. The layer root contains the full layer tree for the tree scope and their ordering.
+// Returns -  rootLayer -
+func (c *CSS) GetLayersForNodeWithParams(ctx context.Context, v *CSSGetLayersForNodeParams) (*CSSCSSLayerData, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getLayersForNode", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			RootLayer *CSSCSSLayerData
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.RootLayer, nil
+}
+
+// GetLayersForNode - Returns all layers parsed by the rendering engine for the tree scope of a node. Given a DOM element identified by nodeId, getLayersForNode returns the root layer for the nearest ancestor document or shadow root. The layer root contains the full layer tree for the tree scope and their ordering.
+// nodeId -
+// Returns -  rootLayer -
+func (c *CSS) GetLayersForNode(ctx context.Context, nodeId int) (*CSSCSSLayerData, error) {
+	var v CSSGetLayersForNodeParams
+	v.NodeId = nodeId
+	return c.GetLayersForNodeWithParams(ctx, &v)
 }
 
 type CSSTrackComputedStyleUpdatesParams struct {
@@ -974,6 +1050,60 @@ func (c *CSS) SetContainerQueryText(ctx context.Context, styleSheetId string, th
 	v.TheRange = theRange
 	v.Text = text
 	return c.SetContainerQueryTextWithParams(ctx, &v)
+}
+
+type CSSSetSupportsTextParams struct {
+	//
+	StyleSheetId string `json:"styleSheetId"`
+	//
+	TheRange *CSSSourceRange `json:"range"`
+	//
+	Text string `json:"text"`
+}
+
+// SetSupportsTextWithParams - Modifies the expression of a supports at-rule.
+// Returns -  supports - The resulting CSS Supports rule after modification.
+func (c *CSS) SetSupportsTextWithParams(ctx context.Context, v *CSSSetSupportsTextParams) (*CSSCSSSupports, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.setSupportsText", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Supports *CSSCSSSupports
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Supports, nil
+}
+
+// SetSupportsText - Modifies the expression of a supports at-rule.
+// styleSheetId -
+// range -
+// text -
+// Returns -  supports - The resulting CSS Supports rule after modification.
+func (c *CSS) SetSupportsText(ctx context.Context, styleSheetId string, theRange *CSSSourceRange, text string) (*CSSCSSSupports, error) {
+	var v CSSSetSupportsTextParams
+	v.StyleSheetId = styleSheetId
+	v.TheRange = theRange
+	v.Text = text
+	return c.SetSupportsTextWithParams(ctx, &v)
 }
 
 type CSSSetRuleSelectorParams struct {

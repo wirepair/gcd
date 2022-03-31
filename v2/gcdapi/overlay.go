@@ -85,7 +85,7 @@ type OverlayHighlightConfig struct {
 	ShapeColor                             *DOMRGBA                                       `json:"shapeColor,omitempty"`                             // The shape outside fill color (default: transparent).
 	ShapeMarginColor                       *DOMRGBA                                       `json:"shapeMarginColor,omitempty"`                       // The shape margin fill color (default: transparent).
 	CssGridColor                           *DOMRGBA                                       `json:"cssGridColor,omitempty"`                           // The grid layout color (default: transparent).
-	ColorFormat                            string                                         `json:"colorFormat,omitempty"`                            // The color format used to format color styles (default: hex). enum values: rgb, hsl, hex
+	ColorFormat                            string                                         `json:"colorFormat,omitempty"`                            // The color format used to format color styles (default: hex). enum values: rgb, hsl, hwb, hex
 	GridHighlightConfig                    *OverlayGridHighlightConfig                    `json:"gridHighlightConfig,omitempty"`                    // The grid layout highlight configuration (default: all transparent).
 	FlexContainerHighlightConfig           *OverlayFlexContainerHighlightConfig           `json:"flexContainerHighlightConfig,omitempty"`           // The flex container highlight configuration (default: all transparent).
 	FlexItemHighlightConfig                *OverlayFlexItemHighlightConfig                `json:"flexItemHighlightConfig,omitempty"`                // The flex item highlight configuration (default: all transparent).
@@ -201,7 +201,7 @@ type OverlayGetHighlightObjectForTestParams struct {
 	IncludeDistance bool `json:"includeDistance,omitempty"`
 	// Whether to include style info.
 	IncludeStyle bool `json:"includeStyle,omitempty"`
-	// The color format to get config with (default: hex). enum values: rgb, hsl, hex
+	// The color format to get config with (default: hex). enum values: rgb, hsl, hwb, hex
 	ColorFormat string `json:"colorFormat,omitempty"`
 	// Whether to show accessibility info (default: true).
 	ShowAccessibilityInfo bool `json:"showAccessibilityInfo,omitempty"`
@@ -243,7 +243,7 @@ func (c *Overlay) GetHighlightObjectForTestWithParams(ctx context.Context, v *Ov
 // nodeId - Id of the node to get highlight object for.
 // includeDistance - Whether to include distance info.
 // includeStyle - Whether to include style info.
-// colorFormat - The color format to get config with (default: hex). enum values: rgb, hsl, hex
+// colorFormat - The color format to get config with (default: hex). enum values: rgb, hsl, hwb, hex
 // showAccessibilityInfo - Whether to show accessibility info (default: true).
 // Returns -  highlight - Highlight data for the node.
 func (c *Overlay) GetHighlightObjectForTest(ctx context.Context, nodeId int, includeDistance bool, includeStyle bool, colorFormat string, showAccessibilityInfo bool) (map[string]interface{}, error) {
@@ -732,12 +732,12 @@ type OverlaySetShowHitTestBordersParams struct {
 	Show bool `json:"show"`
 }
 
-// SetShowHitTestBordersWithParams - Requests that backend shows hit-test borders on layers
+// SetShowHitTestBordersWithParams - Deprecated, no longer has any effect.
 func (c *Overlay) SetShowHitTestBordersWithParams(ctx context.Context, v *OverlaySetShowHitTestBordersParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowHitTestBorders", Params: v})
 }
 
-// SetShowHitTestBorders - Requests that backend shows hit-test borders on layers
+// SetShowHitTestBorders - Deprecated, no longer has any effect.
 // show - True for showing hit-test borders
 func (c *Overlay) SetShowHitTestBorders(ctx context.Context, show bool) (*gcdmessage.ChromeResponse, error) {
 	var v OverlaySetShowHitTestBordersParams

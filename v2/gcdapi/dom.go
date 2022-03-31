@@ -36,7 +36,7 @@ type DOMNode struct {
 	XmlVersion        string            `json:"xmlVersion,omitempty"`        // `Document`'s XML version in case of XML documents.
 	Name              string            `json:"name,omitempty"`              // `Attr`'s name.
 	Value             string            `json:"value,omitempty"`             // `Attr`'s value.
-	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button
+	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, page-transition, page-transition-container, page-transition-image-wrapper, page-transition-outgoing-image, page-transition-incoming-image
 	ShadowRootType    string            `json:"shadowRootType,omitempty"`    // Shadow root type. enum values: user-agent, open, closed
 	FrameId           string            `json:"frameId,omitempty"`           // Frame ID for frame owner elements.
 	ContentDocument   *DOMNode          `json:"contentDocument,omitempty"`   // Content document for frame owner elements.
@@ -431,9 +431,22 @@ func (c *DOM) DiscardSearchResults(ctx context.Context, searchId string) (*gcdme
 	return c.DiscardSearchResultsWithParams(ctx, &v)
 }
 
-// Enables DOM agent for the given page.
-func (c *DOM) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.enable"})
+type DOMEnableParams struct {
+	// Whether to include whitespaces in the children array of returned Nodes.
+	IncludeWhitespace string `json:"includeWhitespace,omitempty"`
+}
+
+// EnableWithParams - Enables DOM agent for the given page.
+func (c *DOM) EnableWithParams(ctx context.Context, v *DOMEnableParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.enable", Params: v})
+}
+
+// Enable - Enables DOM agent for the given page.
+// includeWhitespace - Whether to include whitespaces in the children array of returned Nodes.
+func (c *DOM) Enable(ctx context.Context, includeWhitespace string) (*gcdmessage.ChromeResponse, error) {
+	var v DOMEnableParams
+	v.IncludeWhitespace = includeWhitespace
+	return c.EnableWithParams(ctx, &v)
 }
 
 type DOMFocusParams struct {

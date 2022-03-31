@@ -74,7 +74,6 @@ type ChromeTarget struct {
 	// Chrome Debugger Domains
 	Accessibility        *gcdapi.Accessibility
 	Animation            *gcdapi.Animation
-	ApplicationCache     *gcdapi.ApplicationCache // application cache API
 	Audits               *gcdapi.Audits
 	BackgroundService    *gcdapi.BackgroundService
 	Browser              *gcdapi.Browser

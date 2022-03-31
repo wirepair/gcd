@@ -84,7 +84,7 @@ type NetworkSecurityDetails struct {
 
 // No Description.
 type NetworkCorsErrorStatus struct {
-	CorsError       string `json:"corsError"`       //  enum values: DisallowedByMode, InvalidResponse, WildcardOriginNotAllowed, MissingAllowOriginHeader, MultipleAllowOriginValues, InvalidAllowOriginValue, AllowOriginMismatch, InvalidAllowCredentials, CorsDisabledScheme, PreflightInvalidStatus, PreflightDisallowedRedirect, PreflightWildcardOriginNotAllowed, PreflightMissingAllowOriginHeader, PreflightMultipleAllowOriginValues, PreflightInvalidAllowOriginValue, PreflightAllowOriginMismatch, PreflightInvalidAllowCredentials, PreflightMissingAllowExternal, PreflightInvalidAllowExternal, InvalidAllowMethodsPreflightResponse, InvalidAllowHeadersPreflightResponse, MethodDisallowedByPreflightResponse, HeaderDisallowedByPreflightResponse, RedirectContainsCredentials, InsecurePrivateNetwork, InvalidPrivateNetworkAccess, UnexpectedPrivateNetworkAccess, NoCorsRedirectModeNotFollow
+	CorsError       string `json:"corsError"`       //  enum values: DisallowedByMode, InvalidResponse, WildcardOriginNotAllowed, MissingAllowOriginHeader, MultipleAllowOriginValues, InvalidAllowOriginValue, AllowOriginMismatch, InvalidAllowCredentials, CorsDisabledScheme, PreflightInvalidStatus, PreflightDisallowedRedirect, PreflightWildcardOriginNotAllowed, PreflightMissingAllowOriginHeader, PreflightMultipleAllowOriginValues, PreflightInvalidAllowOriginValue, PreflightAllowOriginMismatch, PreflightInvalidAllowCredentials, PreflightMissingAllowExternal, PreflightInvalidAllowExternal, PreflightMissingAllowPrivateNetwork, PreflightInvalidAllowPrivateNetwork, InvalidAllowMethodsPreflightResponse, InvalidAllowHeadersPreflightResponse, MethodDisallowedByPreflightResponse, HeaderDisallowedByPreflightResponse, RedirectContainsCredentials, InsecurePrivateNetwork, InvalidPrivateNetworkAccess, UnexpectedPrivateNetworkAccess, NoCorsRedirectModeNotFollow
 	FailedParameter string `json:"failedParameter"` //
 }
 
@@ -286,8 +286,8 @@ type NetworkClientSecurityState struct {
 
 // No Description.
 type NetworkCrossOriginOpenerPolicyStatus struct {
-	Value                       string `json:"value"`                                 //  enum values: SameOrigin, SameOriginAllowPopups, UnsafeNone, SameOriginPlusCoep
-	ReportOnlyValue             string `json:"reportOnlyValue"`                       //  enum values: SameOrigin, SameOriginAllowPopups, UnsafeNone, SameOriginPlusCoep
+	Value                       string `json:"value"`                                 //  enum values: SameOrigin, SameOriginAllowPopups, UnsafeNone, SameOriginPlusCoep, SameOriginAllowPopupsPlusCoep
+	ReportOnlyValue             string `json:"reportOnlyValue"`                       //  enum values: SameOrigin, SameOriginAllowPopups, UnsafeNone, SameOriginPlusCoep, SameOriginAllowPopupsPlusCoep
 	ReportingEndpoint           string `json:"reportingEndpoint,omitempty"`           //
 	ReportOnlyReportingEndpoint string `json:"reportOnlyReportingEndpoint,omitempty"` //
 }

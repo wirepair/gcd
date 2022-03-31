@@ -18,12 +18,12 @@ type PageAdFrameStatus struct {
 // No Description.
 type PagePermissionsPolicyBlockLocator struct {
 	FrameId     string `json:"frameId"`     //
-	BlockReason string `json:"blockReason"` //  enum values: Header, IframeAttribute
+	BlockReason string `json:"blockReason"` //  enum values: Header, IframeAttribute, InFencedFrameTree
 }
 
 // No Description.
 type PagePermissionsPolicyFeatureState struct {
-	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-rtt, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-reduced, ch-viewport-height, ch-viewport-width, ch-width, clipboard-read, clipboard-write, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, storage-access-api, sync-xhr, trust-token-redemption, usb, vertical-scroll, web-share, window-placement, xr-spatial-tracking
+	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, browsing-topics, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-rtt, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-reduced, ch-ua-wow64, ch-viewport-height, ch-viewport-width, ch-width, ch-partitioned-cookies, clipboard-read, clipboard-write, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, storage-access-api, sync-xhr, trust-token-redemption, usb, vertical-scroll, web-share, window-placement, xr-spatial-tracking
 	Allowed bool                               `json:"allowed"`           //
 	Locator *PagePermissionsPolicyBlockLocator `json:"locator,omitempty"` //
 }
@@ -167,6 +167,12 @@ type PageFontFamilies struct {
 	Pictograph string `json:"pictograph,omitempty"` // The pictograph font-family.
 }
 
+// Font families collection for a script.
+type PageScriptFontFamilies struct {
+	Script       string            `json:"script"`       // Name of the script which these font families are defined for.
+	FontFamilies *PageFontFamilies `json:"fontFamilies"` // Generic font families collection for the script.
+}
+
 // Default font sizes.
 type PageFontSizes struct {
 	Standard int `json:"standard,omitempty"` // Default standard font size.
@@ -193,8 +199,16 @@ type PageCompilationCacheParams struct {
 
 // No Description.
 type PageBackForwardCacheNotRestoredExplanation struct {
-	Type   string `json:"type"`   // Type of the reason enum values: SupportPending, PageSupportNeeded, Circumstantial
-	Reason string `json:"reason"` // Not restored reason enum values: NotMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, GrantedMediaStreamAccess, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, OptInUnloadHeaderNotPresent, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, DedicatedWorkerOrWorklet, OutstandingNetworkRequestOthers, OutstandingIndexedDBTransaction, RequestedNotificationsPermission, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, IndexedDBConnection, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, Portal, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, Dummy, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSession, ContentMediaSessionService, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame
+	Type    string `json:"type"`              // Type of the reason enum values: SupportPending, PageSupportNeeded, Circumstantial
+	Reason  string `json:"reason"`            // Not restored reason enum values: NotPrimaryMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, GrantedMediaStreamAccess, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, OptInUnloadHeaderNotPresent, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, ErrorDocument, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, DedicatedWorkerOrWorklet, OutstandingNetworkRequestOthers, OutstandingIndexedDBTransaction, RequestedNotificationsPermission, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, IndexedDBConnection, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, Portal, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, Dummy, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSession, ContentMediaSessionService, ContentScreenReader, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame
+	Context string `json:"context,omitempty"` // Context associated with the reason. The meaning of this context is dependent on the reason: - EmbedderExtensionSentMessageToCachedFrame: the extension ID.
+}
+
+// No Description.
+type PageBackForwardCacheNotRestoredExplanationTree struct {
+	Url          string                                            `json:"url"`          // URL of each frame
+	Explanations []*PageBackForwardCacheNotRestoredExplanation     `json:"explanations"` // Not restored reasons of each frame
+	Children     []*PageBackForwardCacheNotRestoredExplanationTree `json:"children"`     // Array of children frame
 }
 
 //
@@ -355,9 +369,10 @@ type PageLifecycleEventEvent struct {
 type PageBackForwardCacheNotUsedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		LoaderId                string                                        `json:"loaderId"`                // The loader id for the associated navgation.
-		FrameId                 string                                        `json:"frameId"`                 // The frame id of the associated frame.
-		NotRestoredExplanations []*PageBackForwardCacheNotRestoredExplanation `json:"notRestoredExplanations"` // Array of reasons why the page could not be cached. This must not be empty.
+		LoaderId                    string                                          `json:"loaderId"`                              // The loader id for the associated navgation.
+		FrameId                     string                                          `json:"frameId"`                               // The frame id of the associated frame.
+		NotRestoredExplanations     []*PageBackForwardCacheNotRestoredExplanation   `json:"notRestoredExplanations"`               // Array of reasons why the page could not be cached. This must not be empty.
+		NotRestoredExplanationsTree *PageBackForwardCacheNotRestoredExplanationTree `json:"notRestoredExplanationsTree,omitempty"` // Tree structure of reasons why the page could not be cached for each frame.
 	} `json:"Params,omitempty"`
 }
 
@@ -1661,6 +1676,8 @@ func (c *Page) SetDeviceOrientationOverride(ctx context.Context, alpha float64, 
 type PageSetFontFamiliesParams struct {
 	// Specifies font families to set. If a font family is not specified, it won't be changed.
 	FontFamilies *PageFontFamilies `json:"fontFamilies"`
+	// Specifies font families to set for individual scripts.
+	ForScripts []*PageScriptFontFamilies `json:"forScripts,omitempty"`
 }
 
 // SetFontFamiliesWithParams - Set generic font families.
@@ -1670,9 +1687,11 @@ func (c *Page) SetFontFamiliesWithParams(ctx context.Context, v *PageSetFontFami
 
 // SetFontFamilies - Set generic font families.
 // fontFamilies - Specifies font families to set. If a font family is not specified, it won't be changed.
-func (c *Page) SetFontFamilies(ctx context.Context, fontFamilies *PageFontFamilies) (*gcdmessage.ChromeResponse, error) {
+// forScripts - Specifies font families to set for individual scripts.
+func (c *Page) SetFontFamilies(ctx context.Context, fontFamilies *PageFontFamilies, forScripts []*PageScriptFontFamilies) (*gcdmessage.ChromeResponse, error) {
 	var v PageSetFontFamiliesParams
 	v.FontFamilies = fontFamilies
+	v.ForScripts = forScripts
 	return c.SetFontFamiliesWithParams(ctx, &v)
 }
 

@@ -155,8 +155,6 @@ func (c *Accessibility) GetPartialAXTree(ctx context.Context, nodeId int, backen
 type AccessibilityGetFullAXTreeParams struct {
 	// The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
 	Depth int `json:"depth,omitempty"`
-	// Deprecated. This parameter has been renamed to `depth`. If depth is not provided, max_depth will be used.
-	Max_depth int `json:"max_depth,omitempty"`
 	// The frame for whose document the AX tree should be retrieved. If omited, the root frame is used.
 	FrameId string `json:"frameId,omitempty"`
 }
@@ -195,13 +193,11 @@ func (c *Accessibility) GetFullAXTreeWithParams(ctx context.Context, v *Accessib
 
 // GetFullAXTree - Fetches the entire accessibility tree for the root Document
 // depth - The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
-// max_depth - Deprecated. This parameter has been renamed to `depth`. If depth is not provided, max_depth will be used.
 // frameId - The frame for whose document the AX tree should be retrieved. If omited, the root frame is used.
 // Returns -  nodes -
-func (c *Accessibility) GetFullAXTree(ctx context.Context, depth int, max_depth int, frameId string) ([]*AccessibilityAXNode, error) {
+func (c *Accessibility) GetFullAXTree(ctx context.Context, depth int, frameId string) ([]*AccessibilityAXNode, error) {
 	var v AccessibilityGetFullAXTreeParams
 	v.Depth = depth
-	v.Max_depth = max_depth
 	v.FrameId = frameId
 	return c.GetFullAXTreeWithParams(ctx, &v)
 }

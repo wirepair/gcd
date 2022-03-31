@@ -474,8 +474,6 @@ type EmulationSetVirtualTimePolicyParams struct {
 	Budget float64 `json:"budget,omitempty"`
 	// If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
 	MaxVirtualTimeTaskStarvationCount int `json:"maxVirtualTimeTaskStarvationCount,omitempty"`
-	// If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
-	WaitForNavigation bool `json:"waitForNavigation,omitempty"`
 	// If set, base::Time::Now will be overridden to initially return this value.
 	InitialVirtualTime float64 `json:"initialVirtualTime,omitempty"`
 }
@@ -516,15 +514,13 @@ func (c *Emulation) SetVirtualTimePolicyWithParams(ctx context.Context, v *Emula
 // policy -  enum values: advance, pause, pauseIfNetworkFetchesPending
 // budget - If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
 // maxVirtualTimeTaskStarvationCount - If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
-// waitForNavigation - If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
 // initialVirtualTime - If set, base::Time::Now will be overridden to initially return this value.
 // Returns -  virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
-func (c *Emulation) SetVirtualTimePolicy(ctx context.Context, policy string, budget float64, maxVirtualTimeTaskStarvationCount int, waitForNavigation bool, initialVirtualTime float64) (float64, error) {
+func (c *Emulation) SetVirtualTimePolicy(ctx context.Context, policy string, budget float64, maxVirtualTimeTaskStarvationCount int, initialVirtualTime float64) (float64, error) {
 	var v EmulationSetVirtualTimePolicyParams
 	v.Policy = policy
 	v.Budget = budget
 	v.MaxVirtualTimeTaskStarvationCount = maxVirtualTimeTaskStarvationCount
-	v.WaitForNavigation = waitForNavigation
 	v.InitialVirtualTime = initialVirtualTime
 	return c.SetVirtualTimePolicyWithParams(ctx, &v)
 }
@@ -633,4 +629,22 @@ func (c *Emulation) SetUserAgentOverride(ctx context.Context, userAgent string, 
 	v.Platform = platform
 	v.UserAgentMetadata = userAgentMetadata
 	return c.SetUserAgentOverrideWithParams(ctx, &v)
+}
+
+type EmulationSetAutomationOverrideParams struct {
+	// Whether the override should be enabled.
+	Enabled bool `json:"enabled"`
+}
+
+// SetAutomationOverrideWithParams - Allows overriding the automation flag.
+func (c *Emulation) SetAutomationOverrideWithParams(ctx context.Context, v *EmulationSetAutomationOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setAutomationOverride", Params: v})
+}
+
+// SetAutomationOverride - Allows overriding the automation flag.
+// enabled - Whether the override should be enabled.
+func (c *Emulation) SetAutomationOverride(ctx context.Context, enabled bool) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetAutomationOverrideParams
+	v.Enabled = enabled
+	return c.SetAutomationOverrideWithParams(ctx, &v)
 }
