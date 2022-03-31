@@ -136,7 +136,7 @@ func startTarget(debugger *gcd.Gcd) *gcd.ChromeTarget {
 		log.Fatalf("error getting new tab: %s\n", err)
 	}
 	ctx := context.Background()
-	target.DOM.Enable(ctx)
+	target.DOM.Enable(ctx, "false")
 	target.Console.Enable(ctx)
 	target.Page.Enable(ctx)
 	//target.Debugger.Enable()

@@ -308,6 +308,48 @@ func TestSimpleReturnReturnsGoError(t *testing.T) {
 	}
 }
 
+func TestDOMEnableWithWhiteSpace(t *testing.T) {
+	testDefaultStartup(t)
+	defer debugger.ExitProcess()
+	ctx := context.Background()
+	target, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error getting new tab: %s\n", err)
+	}
+
+	page := target.Page
+	if _, err := page.Enable(ctx); err != nil {
+		t.Fatalf("failed to enable page: %s\n", err)
+	}
+
+	dom := target.DOM
+	if _, err := dom.EnableWithParams(ctx, &gcdapi.DOMEnableParams{}); err != nil {
+		t.Fatalf("got error enabling DOM: %s\n", err)
+	}
+
+	doneCh := make(chan struct{})
+	target.Subscribe("Page.loadEventFired", func(target *ChromeTarget, payload []byte) {
+
+		doc, err := target.DOM.GetDocument(context.Background(), -1, true)
+		if err != nil {
+			t.Fatalf("failed to get doc: %s\n", err)
+		}
+
+		if doc.ChildNodeCount != 2 {
+			t.Fatalf("failed to get 2 child nodes, got %d\n", doc.ChildNodeCount)
+		}
+		doneCh <- struct{}{}
+	})
+
+	navParams := &gcdapi.PageNavigateParams{Url: testServerAddr + "cookie.html", TransitionType: "typed"}
+	_, _, _, err = target.Page.NavigateWithParams(testCtx, navParams)
+	if err != nil {
+		t.Fatalf("failed to load test page: %s\n", err)
+	}
+
+	<-doneCh
+}
+
 // Tests that the ctx canceled doesn't cause the wsconn to get stuck in a loop in windows
 func TestCtxCancel(t *testing.T) {
 	testDefaultStartup(t, WithEventDebugging(), WithEventDebugging())
