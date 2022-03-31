@@ -82,6 +82,24 @@ func (c *Cast) SetSinkToUse(ctx context.Context, sinkName string) (*gcdmessage.C
 	return c.SetSinkToUseWithParams(ctx, &v)
 }
 
+type CastStartDesktopMirroringParams struct {
+	//
+	SinkName string `json:"sinkName"`
+}
+
+// StartDesktopMirroringWithParams - Starts mirroring the desktop to the sink.
+func (c *Cast) StartDesktopMirroringWithParams(ctx context.Context, v *CastStartDesktopMirroringParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Cast.startDesktopMirroring", Params: v})
+}
+
+// StartDesktopMirroring - Starts mirroring the desktop to the sink.
+// sinkName -
+func (c *Cast) StartDesktopMirroring(ctx context.Context, sinkName string) (*gcdmessage.ChromeResponse, error) {
+	var v CastStartDesktopMirroringParams
+	v.SinkName = sinkName
+	return c.StartDesktopMirroringWithParams(ctx, &v)
+}
+
 type CastStartTabMirroringParams struct {
 	//
 	SinkName string `json:"sinkName"`

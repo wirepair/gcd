@@ -11,7 +11,7 @@ import (
 
 // Usage for a storage type.
 type StorageUsageForType struct {
-	StorageType string  `json:"storageType"` // Name of storage type. enum values: appcache, cookies, file_systems, indexeddb, local_storage, shader_cache, websql, service_workers, cache_storage, all, other
+	StorageType string  `json:"storageType"` // Name of storage type. enum values: appcache, cookies, file_systems, indexeddb, local_storage, shader_cache, websql, service_workers, cache_storage, interest_groups, all, other
 	Usage       float64 `json:"usage"`       // Storage usage (bytes).
 }
 
@@ -19,6 +19,28 @@ type StorageUsageForType struct {
 type StorageTrustTokens struct {
 	IssuerOrigin string  `json:"issuerOrigin"` //
 	Count        float64 `json:"count"`        //
+}
+
+// Ad advertising element inside an interest group.
+type StorageInterestGroupAd struct {
+	RenderUrl string `json:"renderUrl"`          //
+	Metadata  string `json:"metadata,omitempty"` //
+}
+
+// The full details of an interest group.
+type StorageInterestGroupDetails struct {
+	OwnerOrigin               string                    `json:"ownerOrigin"`                        //
+	Name                      string                    `json:"name"`                               //
+	ExpirationTime            float64                   `json:"expirationTime"`                     //
+	JoiningOrigin             string                    `json:"joiningOrigin"`                      //
+	BiddingUrl                string                    `json:"biddingUrl,omitempty"`               //
+	BiddingWasmHelperUrl      string                    `json:"biddingWasmHelperUrl,omitempty"`     //
+	UpdateUrl                 string                    `json:"updateUrl,omitempty"`                //
+	TrustedBiddingSignalsUrl  string                    `json:"trustedBiddingSignalsUrl,omitempty"` //
+	TrustedBiddingSignalsKeys []string                  `json:"trustedBiddingSignalsKeys"`          //
+	UserBiddingSignals        string                    `json:"userBiddingSignals,omitempty"`       //
+	Ads                       []*StorageInterestGroupAd `json:"ads"`                                //
+	AdComponents              []*StorageInterestGroupAd `json:"adComponents"`                       //
 }
 
 // A cache's contents have been modified.
@@ -53,6 +75,17 @@ type StorageIndexedDBListUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Origin string `json:"origin"` // Origin to update.
+	} `json:"Params,omitempty"`
+}
+
+// One of the interest groups was accessed by the associated page.
+type StorageInterestGroupAccessedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		AccessTime  float64 `json:"accessTime"`  //
+		Type        string  `json:"type"`        //  enum values: join, leave, update, bid, win
+		OwnerOrigin string  `json:"ownerOrigin"` //
+		Name        string  `json:"name"`        //
 	} `json:"Params,omitempty"`
 }
 
@@ -392,4 +425,72 @@ func (c *Storage) ClearTrustTokens(ctx context.Context, issuerOrigin string) (bo
 	var v StorageClearTrustTokensParams
 	v.IssuerOrigin = issuerOrigin
 	return c.ClearTrustTokensWithParams(ctx, &v)
+}
+
+type StorageGetInterestGroupDetailsParams struct {
+	//
+	OwnerOrigin string `json:"ownerOrigin"`
+	//
+	Name string `json:"name"`
+}
+
+// GetInterestGroupDetailsWithParams - Gets details for a named interest group.
+// Returns -  details -
+func (c *Storage) GetInterestGroupDetailsWithParams(ctx context.Context, v *StorageGetInterestGroupDetailsParams) (*StorageInterestGroupDetails, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getInterestGroupDetails", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Details *StorageInterestGroupDetails
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Details, nil
+}
+
+// GetInterestGroupDetails - Gets details for a named interest group.
+// ownerOrigin -
+// name -
+// Returns -  details -
+func (c *Storage) GetInterestGroupDetails(ctx context.Context, ownerOrigin string, name string) (*StorageInterestGroupDetails, error) {
+	var v StorageGetInterestGroupDetailsParams
+	v.OwnerOrigin = ownerOrigin
+	v.Name = name
+	return c.GetInterestGroupDetailsWithParams(ctx, &v)
+}
+
+type StorageSetInterestGroupTrackingParams struct {
+	//
+	Enable bool `json:"enable"`
+}
+
+// SetInterestGroupTrackingWithParams - Enables/Disables issuing of interestGroupAccessed events.
+func (c *Storage) SetInterestGroupTrackingWithParams(ctx context.Context, v *StorageSetInterestGroupTrackingParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.setInterestGroupTracking", Params: v})
+}
+
+// SetInterestGroupTracking - Enables/Disables issuing of interestGroupAccessed events.
+// enable -
+func (c *Storage) SetInterestGroupTracking(ctx context.Context, enable bool) (*gcdmessage.ChromeResponse, error) {
+	var v StorageSetInterestGroupTrackingParams
+	v.Enable = enable
+	return c.SetInterestGroupTrackingWithParams(ctx, &v)
 }

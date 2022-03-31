@@ -1,3 +1,6 @@
+# Changelog (2022)
+- 2.2.5 (March 31st) Upgrade protocol.json to 100.0.4896.60
+
 # Changelog (2021)
 - 2.2.4 (November 27th) Upgrade protocol.json to 96.0.4664.45
 - 2.2.3 (August 23rd) Applied patch from @camswords to allow using custom output writer for chrome process to aid in debugging.
