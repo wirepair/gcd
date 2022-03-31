@@ -162,7 +162,6 @@ func openChromeTarget(debugger *Gcd, target *TargetInfo, observer observer.Messa
 func (c *ChromeTarget) Init() {
 	c.Accessibility = gcdapi.NewAccessibility(c)
 	c.Animation = gcdapi.NewAnimation(c)
-	c.ApplicationCache = gcdapi.NewApplicationCache(c)
 	c.Audits = gcdapi.NewAudits(c)
 	c.Browser = gcdapi.NewBrowser(c)
 	c.BackgroundService = gcdapi.NewBackgroundService(c)
