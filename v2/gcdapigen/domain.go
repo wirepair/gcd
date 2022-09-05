@@ -66,10 +66,15 @@ func (d *Domain) PopulateTypes(types []*ProtoType) {
 	for _, protoType := range types {
 		fmt.Printf("Populating type: %s\n", protoType.Id)
 		newType := NewType(protoType)
-		// igore empty property types as we turn those into Refs
+		// ignore empty property types as we turn those into Refs
 		if len(protoType.Properties) > 0 {
 			d.handleType(newType, protoType.Properties)
 			d.Types = append(d.Types, newType)
+		} else {
+			fmt.Printf("EMPTY TYPE!!!!")
+			if protoType.Id == "TargetFilter" {
+				fmt.Printf("%#v\n", newType)
+			}
 		}
 
 	}
@@ -235,7 +240,9 @@ func (d *Domain) resolveReference(prop PropSetter) bool {
 	}
 
 	ref := globalRefs[refName]
+
 	fmt.Printf("REF (%s): %#v\n", refName, ref)
+
 	// base type
 	if ref.IsBaseType {
 		prop.SetGoType(ref.BaseType)
@@ -245,6 +252,9 @@ func (d *Domain) resolveReference(prop PropSetter) bool {
 		if ref2ref, ok := globalRefs[ref.RefToRefName]; ok {
 			if ref2ref.IsBaseType {
 				prop.SetGoType(ref2ref.BaseType)
+			} else {
+				// handles cases where a new type is just an array pointing to another type
+				prop.SetGoType(ref2ref.ExternalGoName)
 			}
 		} else {
 			prop.SetGoType(ref.ExternalGoName)

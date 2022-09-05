@@ -306,10 +306,12 @@ func (c *HeapProfiler) StopSampling(ctx context.Context) (*HeapProfilerSamplingH
 type HeapProfilerStopTrackingHeapObjectsParams struct {
 	// If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
 	ReportProgress bool `json:"reportProgress,omitempty"`
-	//
+	// Deprecated in favor of `exposeInternals`.
 	TreatGlobalObjectsAsRoots bool `json:"treatGlobalObjectsAsRoots,omitempty"`
 	// If true, numerical values are included in the snapshot
 	CaptureNumericValue bool `json:"captureNumericValue,omitempty"`
+	// If true, exposes internals of the snapshot.
+	ExposeInternals bool `json:"exposeInternals,omitempty"`
 }
 
 // StopTrackingHeapObjectsWithParams -
@@ -319,23 +321,27 @@ func (c *HeapProfiler) StopTrackingHeapObjectsWithParams(ctx context.Context, v 
 
 // StopTrackingHeapObjects -
 // reportProgress - If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
-// treatGlobalObjectsAsRoots -
+// treatGlobalObjectsAsRoots - Deprecated in favor of `exposeInternals`.
 // captureNumericValue - If true, numerical values are included in the snapshot
-func (c *HeapProfiler) StopTrackingHeapObjects(ctx context.Context, reportProgress bool, treatGlobalObjectsAsRoots bool, captureNumericValue bool) (*gcdmessage.ChromeResponse, error) {
+// exposeInternals - If true, exposes internals of the snapshot.
+func (c *HeapProfiler) StopTrackingHeapObjects(ctx context.Context, reportProgress bool, treatGlobalObjectsAsRoots bool, captureNumericValue bool, exposeInternals bool) (*gcdmessage.ChromeResponse, error) {
 	var v HeapProfilerStopTrackingHeapObjectsParams
 	v.ReportProgress = reportProgress
 	v.TreatGlobalObjectsAsRoots = treatGlobalObjectsAsRoots
 	v.CaptureNumericValue = captureNumericValue
+	v.ExposeInternals = exposeInternals
 	return c.StopTrackingHeapObjectsWithParams(ctx, &v)
 }
 
 type HeapProfilerTakeHeapSnapshotParams struct {
 	// If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
 	ReportProgress bool `json:"reportProgress,omitempty"`
-	// If true, a raw snapshot without artificial roots will be generated
+	// If true, a raw snapshot without artificial roots will be generated. Deprecated in favor of `exposeInternals`.
 	TreatGlobalObjectsAsRoots bool `json:"treatGlobalObjectsAsRoots,omitempty"`
 	// If true, numerical values are included in the snapshot
 	CaptureNumericValue bool `json:"captureNumericValue,omitempty"`
+	// If true, exposes internals of the snapshot.
+	ExposeInternals bool `json:"exposeInternals,omitempty"`
 }
 
 // TakeHeapSnapshotWithParams -
@@ -345,12 +351,14 @@ func (c *HeapProfiler) TakeHeapSnapshotWithParams(ctx context.Context, v *HeapPr
 
 // TakeHeapSnapshot -
 // reportProgress - If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
-// treatGlobalObjectsAsRoots - If true, a raw snapshot without artificial roots will be generated
+// treatGlobalObjectsAsRoots - If true, a raw snapshot without artificial roots will be generated. Deprecated in favor of `exposeInternals`.
 // captureNumericValue - If true, numerical values are included in the snapshot
-func (c *HeapProfiler) TakeHeapSnapshot(ctx context.Context, reportProgress bool, treatGlobalObjectsAsRoots bool, captureNumericValue bool) (*gcdmessage.ChromeResponse, error) {
+// exposeInternals - If true, exposes internals of the snapshot.
+func (c *HeapProfiler) TakeHeapSnapshot(ctx context.Context, reportProgress bool, treatGlobalObjectsAsRoots bool, captureNumericValue bool, exposeInternals bool) (*gcdmessage.ChromeResponse, error) {
 	var v HeapProfilerTakeHeapSnapshotParams
 	v.ReportProgress = reportProgress
 	v.TreatGlobalObjectsAsRoots = treatGlobalObjectsAsRoots
 	v.CaptureNumericValue = captureNumericValue
+	v.ExposeInternals = exposeInternals
 	return c.TakeHeapSnapshotWithParams(ctx, &v)
 }

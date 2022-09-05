@@ -44,6 +44,8 @@ type EmulationUserAgentMetadata struct {
 	Architecture    string                            `json:"architecture"`              //
 	Model           string                            `json:"model"`                     //
 	Mobile          bool                              `json:"mobile"`                    //
+	Bitness         string                            `json:"bitness,omitempty"`         //
+	Wow64           bool                              `json:"wow64,omitempty"`           //
 }
 
 type Emulation struct {
@@ -599,6 +601,24 @@ func (c *Emulation) SetDisabledImageTypes(ctx context.Context, imageTypes []stri
 	var v EmulationSetDisabledImageTypesParams
 	v.ImageTypes = imageTypes
 	return c.SetDisabledImageTypesWithParams(ctx, &v)
+}
+
+type EmulationSetHardwareConcurrencyOverrideParams struct {
+	// Hardware concurrency to report
+	HardwareConcurrency int `json:"hardwareConcurrency"`
+}
+
+// SetHardwareConcurrencyOverrideWithParams -
+func (c *Emulation) SetHardwareConcurrencyOverrideWithParams(ctx context.Context, v *EmulationSetHardwareConcurrencyOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setHardwareConcurrencyOverride", Params: v})
+}
+
+// SetHardwareConcurrencyOverride -
+// hardwareConcurrency - Hardware concurrency to report
+func (c *Emulation) SetHardwareConcurrencyOverride(ctx context.Context, hardwareConcurrency int) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetHardwareConcurrencyOverrideParams
+	v.HardwareConcurrency = hardwareConcurrency
+	return c.SetHardwareConcurrencyOverrideWithParams(ctx, &v)
 }
 
 type EmulationSetUserAgentOverrideParams struct {

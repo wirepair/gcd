@@ -43,9 +43,22 @@ func NewWebAuthn(target gcdmessage.ChromeTargeter) *WebAuthn {
 	return c
 }
 
-// Enable the WebAuthn domain and start intercepting credential storage and retrieval with a virtual authenticator.
-func (c *WebAuthn) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
-	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.enable"})
+type WebAuthnEnableParams struct {
+	// Whether to enable the WebAuthn user interface. Enabling the UI is recommended for debugging and demo purposes, as it is closer to the real experience. Disabling the UI is recommended for automated testing. Supported at the embedder's discretion if UI is available. Defaults to false.
+	EnableUI bool `json:"enableUI,omitempty"`
+}
+
+// EnableWithParams - Enable the WebAuthn domain and start intercepting credential storage and retrieval with a virtual authenticator.
+func (c *WebAuthn) EnableWithParams(ctx context.Context, v *WebAuthnEnableParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.enable", Params: v})
+}
+
+// Enable - Enable the WebAuthn domain and start intercepting credential storage and retrieval with a virtual authenticator.
+// enableUI - Whether to enable the WebAuthn user interface. Enabling the UI is recommended for debugging and demo purposes, as it is closer to the real experience. Disabling the UI is recommended for automated testing. Supported at the embedder's discretion if UI is available. Defaults to false.
+func (c *WebAuthn) Enable(ctx context.Context, enableUI bool) (*gcdmessage.ChromeResponse, error) {
+	var v WebAuthnEnableParams
+	v.EnableUI = enableUI
+	return c.EnableWithParams(ctx, &v)
 }
 
 // Disable the WebAuthn domain.
