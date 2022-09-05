@@ -67,19 +67,21 @@ type NetworkSignedCertificateTimestamp struct {
 
 // Security details about a request.
 type NetworkSecurityDetails struct {
-	Protocol                          string                               `json:"protocol"`                          // Protocol name (e.g. "TLS 1.2" or "QUIC").
-	KeyExchange                       string                               `json:"keyExchange"`                       // Key Exchange used by the connection, or the empty string if not applicable.
-	KeyExchangeGroup                  string                               `json:"keyExchangeGroup,omitempty"`        // (EC)DH group used by the connection, if applicable.
-	Cipher                            string                               `json:"cipher"`                            // Cipher name.
-	Mac                               string                               `json:"mac,omitempty"`                     // TLS MAC. Note that AEAD ciphers do not have separate MACs.
-	CertificateId                     int                                  `json:"certificateId"`                     // Certificate ID value.
-	SubjectName                       string                               `json:"subjectName"`                       // Certificate subject name.
-	SanList                           []string                             `json:"sanList"`                           // Subject Alternative Name (SAN) DNS names and IP addresses.
-	Issuer                            string                               `json:"issuer"`                            // Name of the issuing CA.
-	ValidFrom                         float64                              `json:"validFrom"`                         // Certificate valid from date.
-	ValidTo                           float64                              `json:"validTo"`                           // Certificate valid to (expiration) date
-	SignedCertificateTimestampList    []*NetworkSignedCertificateTimestamp `json:"signedCertificateTimestampList"`    // List of signed certificate timestamps (SCTs).
-	CertificateTransparencyCompliance string                               `json:"certificateTransparencyCompliance"` // Whether the request complied with Certificate Transparency policy enum values: unknown, not-compliant, compliant
+	Protocol                          string                               `json:"protocol"`                           // Protocol name (e.g. "TLS 1.2" or "QUIC").
+	KeyExchange                       string                               `json:"keyExchange"`                        // Key Exchange used by the connection, or the empty string if not applicable.
+	KeyExchangeGroup                  string                               `json:"keyExchangeGroup,omitempty"`         // (EC)DH group used by the connection, if applicable.
+	Cipher                            string                               `json:"cipher"`                             // Cipher name.
+	Mac                               string                               `json:"mac,omitempty"`                      // TLS MAC. Note that AEAD ciphers do not have separate MACs.
+	CertificateId                     int                                  `json:"certificateId"`                      // Certificate ID value.
+	SubjectName                       string                               `json:"subjectName"`                        // Certificate subject name.
+	SanList                           []string                             `json:"sanList"`                            // Subject Alternative Name (SAN) DNS names and IP addresses.
+	Issuer                            string                               `json:"issuer"`                             // Name of the issuing CA.
+	ValidFrom                         float64                              `json:"validFrom"`                          // Certificate valid from date.
+	ValidTo                           float64                              `json:"validTo"`                            // Certificate valid to (expiration) date
+	SignedCertificateTimestampList    []*NetworkSignedCertificateTimestamp `json:"signedCertificateTimestampList"`     // List of signed certificate timestamps (SCTs).
+	CertificateTransparencyCompliance string                               `json:"certificateTransparencyCompliance"`  // Whether the request complied with Certificate Transparency policy enum values: unknown, not-compliant, compliant
+	ServerSignatureAlgorithm          int                                  `json:"serverSignatureAlgorithm,omitempty"` // The signature algorithm used by the server in the TLS server signature, represented as a TLS SignatureScheme code point. Omitted if not applicable or not known.
+	EncryptedClientHello              bool                                 `json:"encryptedClientHello"`               // Whether the connection used Encrypted ClientHello
 }
 
 // No Description.
@@ -147,7 +149,7 @@ type NetworkWebSocketFrame struct {
 // Information about the cached resource.
 type NetworkCachedResource struct {
 	Url      string           `json:"url"`                // Resource URL. This is the url of the original network request.
-	Type     string           `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+	Type     string           `json:"type"`               // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 	Response *NetworkResponse `json:"response,omitempty"` // Cached response data.
 	BodySize float64          `json:"bodySize"`           // Cached response body size.
 }
@@ -231,7 +233,7 @@ type NetworkAuthChallengeResponse struct {
 // Request pattern for interception.
 type NetworkRequestPattern struct {
 	UrlPattern        string `json:"urlPattern,omitempty"`        // Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to `"*"`.
-	ResourceType      string `json:"resourceType,omitempty"`      // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+	ResourceType      string `json:"resourceType,omitempty"`      // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 	InterceptionStage string `json:"interceptionStage,omitempty"` // Stage at which to begin intercepting requests. Default is Request. enum values: Request, HeadersReceived
 }
 
@@ -286,8 +288,8 @@ type NetworkClientSecurityState struct {
 
 // No Description.
 type NetworkCrossOriginOpenerPolicyStatus struct {
-	Value                       string `json:"value"`                                 //  enum values: SameOrigin, SameOriginAllowPopups, UnsafeNone, SameOriginPlusCoep, SameOriginAllowPopupsPlusCoep
-	ReportOnlyValue             string `json:"reportOnlyValue"`                       //  enum values: SameOrigin, SameOriginAllowPopups, UnsafeNone, SameOriginPlusCoep, SameOriginAllowPopupsPlusCoep
+	Value                       string `json:"value"`                                 //  enum values: SameOrigin, SameOriginAllowPopups, RestrictProperties, UnsafeNone, SameOriginPlusCoep, RestrictPropertiesPlusCoep
+	ReportOnlyValue             string `json:"reportOnlyValue"`                       //  enum values: SameOrigin, SameOriginAllowPopups, RestrictProperties, UnsafeNone, SameOriginPlusCoep, RestrictPropertiesPlusCoep
 	ReportingEndpoint           string `json:"reportingEndpoint,omitempty"`           //
 	ReportOnlyReportingEndpoint string `json:"reportOnlyReportingEndpoint,omitempty"` //
 }
@@ -370,7 +372,7 @@ type NetworkLoadingFailedEvent struct {
 	Params struct {
 		RequestId       string                  `json:"requestId"`                 // Request identifier.
 		Timestamp       float64                 `json:"timestamp"`                 // Timestamp.
-		Type            string                  `json:"type"`                      // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+		Type            string                  `json:"type"`                      // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		ErrorText       string                  `json:"errorText"`                 // User friendly error message.
 		Canceled        bool                    `json:"canceled,omitempty"`        // True if loading was canceled.
 		BlockedReason   string                  `json:"blockedReason,omitempty"`   // The reason why loading was blocked, if any. enum values: other, csp, mixed-content, origin, inspector, subresource-filter, content-type, coep-frame-resource-needs-coep-header, coop-sandboxed-iframe-cannot-navigate-to-coop-page, corp-not-same-origin, corp-not-same-origin-after-defaulted-to-same-origin-by-coep, corp-not-same-site
@@ -396,7 +398,7 @@ type NetworkRequestInterceptedEvent struct {
 		InterceptionId      string                 `json:"interceptionId"`                // Each request the page makes will have a unique id, however if any redirects are encountered while processing that fetch, they will be reported with the same id as the original fetch. Likewise if HTTP authentication is needed then the same fetch id will be used.
 		Request             *NetworkRequest        `json:"request"`                       //
 		FrameId             string                 `json:"frameId"`                       // The id of the frame that initiated the request.
-		ResourceType        string                 `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+		ResourceType        string                 `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		IsNavigationRequest bool                   `json:"isNavigationRequest"`           // Whether this is a navigation request, which can abort the navigation completely.
 		IsDownload          bool                   `json:"isDownload,omitempty"`          // Set if the request is a navigation that will result in a download. Only present after response is received from the server (i.e. HeadersReceived stage).
 		RedirectUrl         string                 `json:"redirectUrl,omitempty"`         // Redirect location, only sent if a redirect was intercepted.
@@ -429,7 +431,7 @@ type NetworkRequestWillBeSentEvent struct {
 		Initiator            *NetworkInitiator `json:"initiator"`                  // Request initiator.
 		RedirectHasExtraInfo bool              `json:"redirectHasExtraInfo"`       // In the case that redirectResponse is populated, this flag indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted for the request which was just redirected.
 		RedirectResponse     *NetworkResponse  `json:"redirectResponse,omitempty"` // Redirect response data.
-		Type                 string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+		Type                 string            `json:"type,omitempty"`             // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		FrameId              string            `json:"frameId,omitempty"`          // Frame identifier.
 		HasUserGesture       bool              `json:"hasUserGesture,omitempty"`   // Whether the request is initiated by a user gesture. Defaults to false.
 	} `json:"Params,omitempty"`
@@ -461,7 +463,7 @@ type NetworkResponseReceivedEvent struct {
 		RequestId    string           `json:"requestId"`         // Request identifier.
 		LoaderId     string           `json:"loaderId"`          // Loader identifier. Empty string if the request is fetched from worker.
 		Timestamp    float64          `json:"timestamp"`         // Timestamp.
-		Type         string           `json:"type"`              // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+		Type         string           `json:"type"`              // Resource type. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		Response     *NetworkResponse `json:"response"`          // Response data.
 		HasExtraInfo bool             `json:"hasExtraInfo"`      // Indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted for this request.
 		FrameId      string           `json:"frameId,omitempty"` // Frame identifier.

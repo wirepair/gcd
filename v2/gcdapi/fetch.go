@@ -12,7 +12,7 @@ import (
 // No Description.
 type FetchRequestPattern struct {
 	UrlPattern   string `json:"urlPattern,omitempty"`   // Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is backslash. Omitting is equivalent to `"*"`.
-	ResourceType string `json:"resourceType,omitempty"` // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+	ResourceType string `json:"resourceType,omitempty"` // If set, only requests for matching resource types will be intercepted. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 	RequestStage string `json:"requestStage,omitempty"` // Stage at which to begin intercepting requests. Default is Request. enum values: Request, Response
 }
 
@@ -44,7 +44,7 @@ type FetchRequestPausedEvent struct {
 		RequestId           string              `json:"requestId"`                     // Each request the page makes will have a unique id.
 		Request             *NetworkRequest     `json:"request"`                       // The details of the request.
 		FrameId             string              `json:"frameId"`                       // The id of the frame that initiated the request.
-		ResourceType        string              `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+		ResourceType        string              `json:"resourceType"`                  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		ResponseErrorReason string              `json:"responseErrorReason,omitempty"` // Response error if intercepted at response stage. enum values: Failed, Aborted, TimedOut, AccessDenied, ConnectionClosed, ConnectionReset, ConnectionRefused, ConnectionAborted, ConnectionFailed, NameNotResolved, InternetDisconnected, AddressUnreachable, BlockedByClient, BlockedByResponse
 		ResponseStatusCode  int                 `json:"responseStatusCode,omitempty"`  // Response code if intercepted at response stage.
 		ResponseStatusText  string              `json:"responseStatusText,omitempty"`  // Response status text if intercepted at response stage.
@@ -60,7 +60,7 @@ type FetchAuthRequiredEvent struct {
 		RequestId     string              `json:"requestId"`     // Each request the page makes will have a unique id.
 		Request       *NetworkRequest     `json:"request"`       // The details of the request.
 		FrameId       string              `json:"frameId"`       // The id of the frame that initiated the request.
-		ResourceType  string              `json:"resourceType"`  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+		ResourceType  string              `json:"resourceType"`  // How the requested resource will be used. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 		AuthChallenge *FetchAuthChallenge `json:"authChallenge"` // Details of the Authorization Challenge encountered. If this is set, client should respond with continueRequest that contains AuthChallengeResponse.
 	} `json:"Params,omitempty"`
 }

@@ -1,4 +1,6 @@
 # Changelog (2022)
+- 2.2.6 (Sept 5th) Fixes a bug where new types that were just arrays to another ref type were not being output correctly
+  - Updates to chrome 105.0.5195.102
 - 2.2.5 (March 31st) Upgrade protocol.json to 100.0.4896.60
 
 # Changelog (2021)

@@ -37,6 +37,7 @@ type DOMNode struct {
 	Name              string            `json:"name,omitempty"`              // `Attr`'s name.
 	Value             string            `json:"value,omitempty"`             // `Attr`'s value.
 	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, page-transition, page-transition-container, page-transition-image-wrapper, page-transition-outgoing-image, page-transition-incoming-image
+	PseudoIdentifier  string            `json:"pseudoIdentifier,omitempty"`  // Pseudo element identifier for this node. Only present if there is a valid pseudoType.
 	ShadowRootType    string            `json:"shadowRootType,omitempty"`    // Shadow root type. enum values: user-agent, open, closed
 	FrameId           string            `json:"frameId,omitempty"`           // Frame ID for frame owner elements.
 	ContentDocument   *DOMNode          `json:"contentDocument,omitempty"`   // Content document for frame owner elements.
@@ -47,6 +48,7 @@ type DOMNode struct {
 	DistributedNodes  []*DOMBackendNode `json:"distributedNodes,omitempty"`  // Distributed nodes for given insertion point.
 	IsSVG             bool              `json:"isSVG,omitempty"`             // Whether the node is SVG.
 	CompatibilityMode string            `json:"compatibilityMode,omitempty"` //  enum values: QuirksMode, LimitedQuirksMode, NoQuirksMode
+	AssignedSlot      *DOMBackendNode   `json:"assignedSlot,omitempty"`      //
 }
 
 // A structure holding an RGBA color.
@@ -1312,6 +1314,38 @@ func (c *DOM) QuerySelectorAll(ctx context.Context, nodeId int, selector string)
 	v.NodeId = nodeId
 	v.Selector = selector
 	return c.QuerySelectorAllWithParams(ctx, &v)
+}
+
+// GetTopLayerElements - Returns NodeIds of current top layer elements. Top layer is rendered closest to the user within a viewport, therefore its elements always appear on top of all other content.
+// Returns -  nodeIds - NodeIds of top layer elements
+func (c *DOM) GetTopLayerElements(ctx context.Context) ([]int, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getTopLayerElements"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			NodeIds []int
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.NodeIds, nil
 }
 
 // Re-does the last undone action.

@@ -49,6 +49,7 @@ type AccessibilityAXNode struct {
 	Ignored          bool                       `json:"ignored"`                    // Whether this node is ignored for accessibility
 	IgnoredReasons   []*AccessibilityAXProperty `json:"ignoredReasons,omitempty"`   // Collection of reasons why this node is hidden.
 	Role             *AccessibilityAXValue      `json:"role,omitempty"`             // This `Node`'s role, whether explicit or implicit.
+	ChromeRole       *AccessibilityAXValue      `json:"chromeRole,omitempty"`       // This `Node`'s Chrome raw role.
 	Name             *AccessibilityAXValue      `json:"name,omitempty"`             // The accessible name for this `Node`.
 	Description      *AccessibilityAXValue      `json:"description,omitempty"`      // The accessible description for this `Node`.
 	Value            *AccessibilityAXValue      `json:"value,omitempty"`            // The value for this `Node`.

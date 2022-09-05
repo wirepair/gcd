@@ -22,6 +22,12 @@ type TargetTargetInfo struct {
 	BrowserContextId string `json:"browserContextId,omitempty"` //
 }
 
+// A filter used by target query/discovery/auto-attach operations.
+type TargetFilterEntry struct {
+	Exclude bool   `json:"exclude,omitempty"` // If set, causes exclusion of mathcing targets from the list.
+	Type    string `json:"type,omitempty"`    // If not present, matches any type.
+}
+
 // No Description.
 type TargetRemoteLocation struct {
 	Host string `json:"host"` //
@@ -514,10 +520,15 @@ func (c *Target) GetTargetInfo(ctx context.Context, targetId string) (*TargetTar
 	return c.GetTargetInfoWithParams(ctx, &v)
 }
 
-// GetTargets - Retrieves a list of available targets.
+type TargetGetTargetsParams struct {
+	// Only targets matching filter will be reported. If filter is not specified and target discovery is currently enabled, a filter used for target discovery is used for consistency.
+	Filter []*TargetFilterEntry `json:"filter,omitempty"`
+}
+
+// GetTargetsWithParams - Retrieves a list of available targets.
 // Returns -  targetInfos - The list of targets.
-func (c *Target) GetTargets(ctx context.Context) ([]*TargetTargetInfo, error) {
-	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getTargets"})
+func (c *Target) GetTargetsWithParams(ctx context.Context, v *TargetGetTargetsParams) ([]*TargetTargetInfo, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.getTargets", Params: v})
 	if err != nil {
 		return nil, err
 	}
@@ -544,6 +555,15 @@ func (c *Target) GetTargets(ctx context.Context) ([]*TargetTargetInfo, error) {
 	}
 
 	return chromeData.Result.TargetInfos, nil
+}
+
+// GetTargets - Retrieves a list of available targets.
+// filter - Only targets matching filter will be reported. If filter is not specified and target discovery is currently enabled, a filter used for target discovery is used for consistency.
+// Returns -  targetInfos - The list of targets.
+func (c *Target) GetTargets(ctx context.Context, filter []*TargetFilterEntry) ([]*TargetTargetInfo, error) {
+	var v TargetGetTargetsParams
+	v.Filter = filter
+	return c.GetTargetsWithParams(ctx, &v)
 }
 
 type TargetSendMessageToTargetParams struct {
@@ -579,6 +599,8 @@ type TargetSetAutoAttachParams struct {
 	WaitForDebuggerOnStart bool `json:"waitForDebuggerOnStart"`
 	// Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
 	Flatten bool `json:"flatten,omitempty"`
+	// Only targets matching filter will be attached.
+	Filter []*TargetFilterEntry `json:"filter,omitempty"`
 }
 
 // SetAutoAttachWithParams - Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets. This also clears all targets added by `autoAttachRelated` from the list of targets to watch for creation of related targets.
@@ -590,11 +612,13 @@ func (c *Target) SetAutoAttachWithParams(ctx context.Context, v *TargetSetAutoAt
 // autoAttach - Whether to auto-attach to related targets.
 // waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
 // flatten - Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
-func (c *Target) SetAutoAttach(ctx context.Context, autoAttach bool, waitForDebuggerOnStart bool, flatten bool) (*gcdmessage.ChromeResponse, error) {
+// filter - Only targets matching filter will be attached.
+func (c *Target) SetAutoAttach(ctx context.Context, autoAttach bool, waitForDebuggerOnStart bool, flatten bool, filter []*TargetFilterEntry) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSetAutoAttachParams
 	v.AutoAttach = autoAttach
 	v.WaitForDebuggerOnStart = waitForDebuggerOnStart
 	v.Flatten = flatten
+	v.Filter = filter
 	return c.SetAutoAttachWithParams(ctx, &v)
 }
 
@@ -603,6 +627,8 @@ type TargetAutoAttachRelatedParams struct {
 	TargetId string `json:"targetId"`
 	// Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
 	WaitForDebuggerOnStart bool `json:"waitForDebuggerOnStart"`
+	// Only targets matching filter will be attached.
+	Filter []*TargetFilterEntry `json:"filter,omitempty"`
 }
 
 // AutoAttachRelatedWithParams - Adds the specified target to the list of targets that will be monitored for any related target creation (such as child frames, child workers and new versions of service worker) and reported through `attachedToTarget`. The specified target is also auto-attached. This cancels the effect of any previous `setAutoAttach` and is also cancelled by subsequent `setAutoAttach`. Only available at the Browser target.
@@ -613,16 +639,20 @@ func (c *Target) AutoAttachRelatedWithParams(ctx context.Context, v *TargetAutoA
 // AutoAttachRelated - Adds the specified target to the list of targets that will be monitored for any related target creation (such as child frames, child workers and new versions of service worker) and reported through `attachedToTarget`. The specified target is also auto-attached. This cancels the effect of any previous `setAutoAttach` and is also cancelled by subsequent `setAutoAttach`. Only available at the Browser target.
 // targetId -
 // waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.
-func (c *Target) AutoAttachRelated(ctx context.Context, targetId string, waitForDebuggerOnStart bool) (*gcdmessage.ChromeResponse, error) {
+// filter - Only targets matching filter will be attached.
+func (c *Target) AutoAttachRelated(ctx context.Context, targetId string, waitForDebuggerOnStart bool, filter []*TargetFilterEntry) (*gcdmessage.ChromeResponse, error) {
 	var v TargetAutoAttachRelatedParams
 	v.TargetId = targetId
 	v.WaitForDebuggerOnStart = waitForDebuggerOnStart
+	v.Filter = filter
 	return c.AutoAttachRelatedWithParams(ctx, &v)
 }
 
 type TargetSetDiscoverTargetsParams struct {
 	// Whether to discover available targets.
 	Discover bool `json:"discover"`
+	// Only targets matching filter will be attached. If `discover` is false, `filter` must be omitted or empty.
+	Filter []*TargetFilterEntry `json:"filter,omitempty"`
 }
 
 // SetDiscoverTargetsWithParams - Controls whether to discover available targets and notify via `targetCreated/targetInfoChanged/targetDestroyed` events.
@@ -632,9 +662,11 @@ func (c *Target) SetDiscoverTargetsWithParams(ctx context.Context, v *TargetSetD
 
 // SetDiscoverTargets - Controls whether to discover available targets and notify via `targetCreated/targetInfoChanged/targetDestroyed` events.
 // discover - Whether to discover available targets.
-func (c *Target) SetDiscoverTargets(ctx context.Context, discover bool) (*gcdmessage.ChromeResponse, error) {
+// filter - Only targets matching filter will be attached. If `discover` is false, `filter` must be omitted or empty.
+func (c *Target) SetDiscoverTargets(ctx context.Context, discover bool, filter []*TargetFilterEntry) (*gcdmessage.ChromeResponse, error) {
 	var v TargetSetDiscoverTargetsParams
 	v.Discover = discover
+	v.Filter = filter
 	return c.SetDiscoverTargetsWithParams(ctx, &v)
 }
 

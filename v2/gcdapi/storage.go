@@ -65,6 +65,7 @@ type StorageIndexedDBContentUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		Origin          string `json:"origin"`          // Origin to update.
+		StorageKey      string `json:"storageKey"`      // Storage key to update.
 		DatabaseName    string `json:"databaseName"`    // Database to update.
 		ObjectStoreName string `json:"objectStoreName"` // ObjectStore to update.
 	} `json:"Params,omitempty"`
@@ -74,7 +75,8 @@ type StorageIndexedDBContentUpdatedEvent struct {
 type StorageIndexedDBListUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Origin string `json:"origin"` // Origin to update.
+		Origin     string `json:"origin"`     // Origin to update.
+		StorageKey string `json:"storageKey"` // Storage key to update.
 	} `json:"Params,omitempty"`
 }
 
@@ -98,6 +100,52 @@ func NewStorage(target gcdmessage.ChromeTargeter) *Storage {
 	return c
 }
 
+type StorageGetStorageKeyForFrameParams struct {
+	//
+	FrameId string `json:"frameId"`
+}
+
+// GetStorageKeyForFrameWithParams - Returns a storage key given a frame id.
+// Returns -  storageKey -
+func (c *Storage) GetStorageKeyForFrameWithParams(ctx context.Context, v *StorageGetStorageKeyForFrameParams) (string, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.getStorageKeyForFrame", Params: v})
+	if err != nil {
+		return "", err
+	}
+
+	var chromeData struct {
+		Result struct {
+			StorageKey string
+		}
+	}
+
+	if resp == nil {
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
+	}
+
+	return chromeData.Result.StorageKey, nil
+}
+
+// GetStorageKeyForFrame - Returns a storage key given a frame id.
+// frameId -
+// Returns -  storageKey -
+func (c *Storage) GetStorageKeyForFrame(ctx context.Context, frameId string) (string, error) {
+	var v StorageGetStorageKeyForFrameParams
+	v.FrameId = frameId
+	return c.GetStorageKeyForFrameWithParams(ctx, &v)
+}
+
 type StorageClearDataForOriginParams struct {
 	// Security origin.
 	Origin string `json:"origin"`
@@ -118,6 +166,28 @@ func (c *Storage) ClearDataForOrigin(ctx context.Context, origin string, storage
 	v.Origin = origin
 	v.StorageTypes = storageTypes
 	return c.ClearDataForOriginWithParams(ctx, &v)
+}
+
+type StorageClearDataForStorageKeyParams struct {
+	// Storage key.
+	StorageKey string `json:"storageKey"`
+	// Comma separated list of StorageType to clear.
+	StorageTypes string `json:"storageTypes"`
+}
+
+// ClearDataForStorageKeyWithParams - Clears storage for storage key.
+func (c *Storage) ClearDataForStorageKeyWithParams(ctx context.Context, v *StorageClearDataForStorageKeyParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.clearDataForStorageKey", Params: v})
+}
+
+// ClearDataForStorageKey - Clears storage for storage key.
+// storageKey - Storage key.
+// storageTypes - Comma separated list of StorageType to clear.
+func (c *Storage) ClearDataForStorageKey(ctx context.Context, storageKey string, storageTypes string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageClearDataForStorageKeyParams
+	v.StorageKey = storageKey
+	v.StorageTypes = storageTypes
+	return c.ClearDataForStorageKeyWithParams(ctx, &v)
 }
 
 type StorageGetCookiesParams struct {
@@ -313,6 +383,24 @@ func (c *Storage) TrackIndexedDBForOrigin(ctx context.Context, origin string) (*
 	return c.TrackIndexedDBForOriginWithParams(ctx, &v)
 }
 
+type StorageTrackIndexedDBForStorageKeyParams struct {
+	// Storage key.
+	StorageKey string `json:"storageKey"`
+}
+
+// TrackIndexedDBForStorageKeyWithParams - Registers storage key to be notified when an update occurs to its IndexedDB.
+func (c *Storage) TrackIndexedDBForStorageKeyWithParams(ctx context.Context, v *StorageTrackIndexedDBForStorageKeyParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.trackIndexedDBForStorageKey", Params: v})
+}
+
+// TrackIndexedDBForStorageKey - Registers storage key to be notified when an update occurs to its IndexedDB.
+// storageKey - Storage key.
+func (c *Storage) TrackIndexedDBForStorageKey(ctx context.Context, storageKey string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageTrackIndexedDBForStorageKeyParams
+	v.StorageKey = storageKey
+	return c.TrackIndexedDBForStorageKeyWithParams(ctx, &v)
+}
+
 type StorageUntrackCacheStorageForOriginParams struct {
 	// Security origin.
 	Origin string `json:"origin"`
@@ -347,6 +435,24 @@ func (c *Storage) UntrackIndexedDBForOrigin(ctx context.Context, origin string) 
 	var v StorageUntrackIndexedDBForOriginParams
 	v.Origin = origin
 	return c.UntrackIndexedDBForOriginWithParams(ctx, &v)
+}
+
+type StorageUntrackIndexedDBForStorageKeyParams struct {
+	// Storage key.
+	StorageKey string `json:"storageKey"`
+}
+
+// UntrackIndexedDBForStorageKeyWithParams - Unregisters storage key from receiving notifications for IndexedDB.
+func (c *Storage) UntrackIndexedDBForStorageKeyWithParams(ctx context.Context, v *StorageUntrackIndexedDBForStorageKeyParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.untrackIndexedDBForStorageKey", Params: v})
+}
+
+// UntrackIndexedDBForStorageKey - Unregisters storage key from receiving notifications for IndexedDB.
+// storageKey - Storage key.
+func (c *Storage) UntrackIndexedDBForStorageKey(ctx context.Context, storageKey string) (*gcdmessage.ChromeResponse, error) {
+	var v StorageUntrackIndexedDBForStorageKeyParams
+	v.StorageKey = storageKey
+	return c.UntrackIndexedDBForStorageKeyWithParams(ctx, &v)
 }
 
 // GetTrustTokens - Returns the number of stored Trust Tokens per issuer for the current browsing context.

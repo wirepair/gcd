@@ -15,15 +15,21 @@ type PageAdFrameStatus struct {
 	Explanations []string `json:"explanations,omitempty"` //  enum values: ParentIsAd, CreatedByAdScript, MatchedBlockingRule
 }
 
+// Identifies the bottom-most script which caused the frame to be labelled as an ad.
+type PageAdScriptId struct {
+	ScriptId   string `json:"scriptId"`   // Script Id of the bottom-most script which caused the frame to be labelled as an ad.
+	DebuggerId string `json:"debuggerId"` // Id of adScriptId's debugger.
+}
+
 // No Description.
 type PagePermissionsPolicyBlockLocator struct {
 	FrameId     string `json:"frameId"`     //
-	BlockReason string `json:"blockReason"` //  enum values: Header, IframeAttribute, InFencedFrameTree
+	BlockReason string `json:"blockReason"` //  enum values: Header, IframeAttribute, InFencedFrameTree, InIsolatedApp
 }
 
 // No Description.
 type PagePermissionsPolicyFeatureState struct {
-	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, browsing-topics, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-rtt, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-reduced, ch-ua-wow64, ch-viewport-height, ch-viewport-width, ch-width, ch-partitioned-cookies, clipboard-read, clipboard-write, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, storage-access-api, sync-xhr, trust-token-redemption, usb, vertical-scroll, web-share, window-placement, xr-spatial-tracking
+	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, bluetooth, browsing-topics, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-rtt, ch-save-data, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-reduced, ch-ua-wow64, ch-viewport-height, ch-viewport-width, ch-width, clipboard-read, clipboard-write, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, federated-credentials, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, local-fonts, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, shared-storage, storage-access, sync-xhr, trust-token-redemption, unload, usb, vertical-scroll, web-share, window-placement, xr-spatial-tracking
 	Allowed bool                               `json:"allowed"`           //
 	Locator *PagePermissionsPolicyBlockLocator `json:"locator,omitempty"` //
 }
@@ -73,7 +79,7 @@ type PageFrame struct {
 // Information about the Resource on the page.
 type PageFrameResource struct {
 	Url          string  `json:"url"`                    // Resource URL.
-	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
+	Type         string  `json:"type"`                   // Type of this resource. enum values: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, Prefetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other
 	MimeType     string  `json:"mimeType"`               // Resource mimeType as determined by the browser.
 	LastModified float64 `json:"lastModified,omitempty"` // last-modified timestamp as reported by server.
 	ContentSize  float64 `json:"contentSize,omitempty"`  // Resource content size.
@@ -158,13 +164,13 @@ type PageViewport struct {
 
 // Generic font families collection.
 type PageFontFamilies struct {
-	Standard   string `json:"standard,omitempty"`   // The standard font-family.
-	Fixed      string `json:"fixed,omitempty"`      // The fixed font-family.
-	Serif      string `json:"serif,omitempty"`      // The serif font-family.
-	SansSerif  string `json:"sansSerif,omitempty"`  // The sansSerif font-family.
-	Cursive    string `json:"cursive,omitempty"`    // The cursive font-family.
-	Fantasy    string `json:"fantasy,omitempty"`    // The fantasy font-family.
-	Pictograph string `json:"pictograph,omitempty"` // The pictograph font-family.
+	Standard  string `json:"standard,omitempty"`  // The standard font-family.
+	Fixed     string `json:"fixed,omitempty"`     // The fixed font-family.
+	Serif     string `json:"serif,omitempty"`     // The serif font-family.
+	SansSerif string `json:"sansSerif,omitempty"` // The sansSerif font-family.
+	Cursive   string `json:"cursive,omitempty"`   // The cursive font-family.
+	Fantasy   string `json:"fantasy,omitempty"`   // The fantasy font-family.
+	Math      string `json:"math,omitempty"`      // The math font-family.
 }
 
 // Font families collection for a script.
@@ -200,7 +206,7 @@ type PageCompilationCacheParams struct {
 // No Description.
 type PageBackForwardCacheNotRestoredExplanation struct {
 	Type    string `json:"type"`              // Type of the reason enum values: SupportPending, PageSupportNeeded, Circumstantial
-	Reason  string `json:"reason"`            // Not restored reason enum values: NotPrimaryMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, GrantedMediaStreamAccess, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, OptInUnloadHeaderNotPresent, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, ErrorDocument, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, DedicatedWorkerOrWorklet, OutstandingNetworkRequestOthers, OutstandingIndexedDBTransaction, RequestedNotificationsPermission, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, IndexedDBConnection, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, Portal, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, Dummy, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSession, ContentMediaSessionService, ContentScreenReader, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame
+	Reason  string `json:"reason"`            // Not restored reason enum values: NotPrimaryMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, ErrorDocument, FencedFramesEmbedder, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, DedicatedWorkerOrWorklet, OutstandingNetworkRequestOthers, OutstandingIndexedDBTransaction, RequestedNotificationsPermission, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, IndexedDBConnection, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, Portal, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, Dummy, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSessionService, ContentScreenReader, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame
 	Context string `json:"context,omitempty"` // Context associated with the reason. The meaning of this context is dependent on the reason: - EmbedderExtensionSentMessageToCachedFrame: the extension ID.
 }
 
@@ -223,9 +229,9 @@ type PageDomContentEventFiredEvent struct {
 type PageFileChooserOpenedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		FrameId       string `json:"frameId"`       // Id of the frame containing input node.
-		BackendNodeId int    `json:"backendNodeId"` // Input node id.
-		Mode          string `json:"mode"`          // Input mode.
+		FrameId       string `json:"frameId"`                 // Id of the frame containing input node.
+		Mode          string `json:"mode"`                    // Input mode.
+		BackendNodeId int    `json:"backendNodeId,omitempty"` // Input node id. Only present for file choosers opened via an <input type="file"> element.
 	} `json:"Params,omitempty"`
 }
 
@@ -233,9 +239,10 @@ type PageFileChooserOpenedEvent struct {
 type PageFrameAttachedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		FrameId       string             `json:"frameId"`         // Id of the frame that has been attached.
-		ParentFrameId string             `json:"parentFrameId"`   // Parent frame identifier.
-		Stack         *RuntimeStackTrace `json:"stack,omitempty"` // JavaScript stack trace of when frame was attached, only set if frame initiated from script.
+		FrameId       string             `json:"frameId"`              // Id of the frame that has been attached.
+		ParentFrameId string             `json:"parentFrameId"`        // Parent frame identifier.
+		Stack         *RuntimeStackTrace `json:"stack,omitempty"`      // JavaScript stack trace of when frame was attached, only set if frame initiated from script.
+		AdScriptId    *PageAdScriptId    `json:"adScriptId,omitempty"` // Identifies the bottom-most script which caused the frame to be labelled as an ad. Only sent if frame is labelled as an ad and id is available.
 	} `json:"Params,omitempty"`
 }
 
@@ -373,6 +380,17 @@ type PageBackForwardCacheNotUsedEvent struct {
 		FrameId                     string                                          `json:"frameId"`                               // The frame id of the associated frame.
 		NotRestoredExplanations     []*PageBackForwardCacheNotRestoredExplanation   `json:"notRestoredExplanations"`               // Array of reasons why the page could not be cached. This must not be empty.
 		NotRestoredExplanationsTree *PageBackForwardCacheNotRestoredExplanationTree `json:"notRestoredExplanationsTree,omitempty"` // Tree structure of reasons why the page could not be cached for each frame.
+	} `json:"Params,omitempty"`
+}
+
+// Fired when a prerender attempt is completed.
+type PagePrerenderAttemptCompletedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		InitiatingFrameId string `json:"initiatingFrameId"`       // The frame id of the frame initiating prerendering.
+		PrerenderingUrl   string `json:"prerenderingUrl"`         //
+		FinalStatus       string `json:"finalStatus"`             //  enum values: Activated, Destroyed, LowEndDevice, CrossOriginRedirect, CrossOriginNavigation, InvalidSchemeRedirect, InvalidSchemeNavigation, InProgressNavigation, NavigationRequestBlockedByCsp, MainFrameNavigation, MojoBinderPolicy, RendererProcessCrashed, RendererProcessKilled, Download, TriggerDestroyed, NavigationNotCommitted, NavigationBadHttpStatus, ClientCertRequested, NavigationRequestNetworkError, MaxNumOfRunningPrerendersExceeded, CancelAllHostsForTesting, DidFailLoad, Stop, SslCertificateError, LoginAuthRequested, UaChangeRequiresReload, BlockedByClient, AudioOutputDeviceRequested, MixedContent, TriggerBackgrounded, EmbedderTriggeredAndSameOriginRedirected, EmbedderTriggeredAndCrossOriginRedirected, MemoryLimitExceeded, FailToGetMemoryUsage, DataSaverEnabled, HasEffectiveUrl
+		ReasonDetails     string `json:"reasonDetails,omitempty"` // This is used to give users more information about the cancellation details, and this will be formatted for display.
 	} `json:"Params,omitempty"`
 }
 
@@ -951,7 +969,7 @@ func (c *Page) GetFrameTree(ctx context.Context) (*PageFrameTree, error) {
 }
 
 // GetLayoutMetrics - Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
-// Returns -  layoutViewport - Deprecated metrics relating to the layout viewport. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssLayoutViewport` instead. visualViewport - Deprecated metrics relating to the visual viewport. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssVisualViewport` instead. contentSize - Deprecated size of scrollable area. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssContentSize` instead. cssLayoutViewport - Metrics relating to the layout viewport in CSS pixels. cssVisualViewport - Metrics relating to the visual viewport in CSS pixels. cssContentSize - Size of scrollable area in CSS pixels.
+// Returns -  layoutViewport - Deprecated metrics relating to the layout viewport. Is in device pixels. Use `cssLayoutViewport` instead. visualViewport - Deprecated metrics relating to the visual viewport. Is in device pixels. Use `cssVisualViewport` instead. contentSize - Deprecated size of scrollable area. Is in DP. Use `cssContentSize` instead. cssLayoutViewport - Metrics relating to the layout viewport in CSS pixels. cssVisualViewport - Metrics relating to the visual viewport in CSS pixels. cssContentSize - Size of scrollable area in CSS pixels.
 func (c *Page) GetLayoutMetrics(ctx context.Context) (*PageLayoutViewport, *PageVisualViewport, *DOMRect, *PageLayoutViewport, *PageVisualViewport, *DOMRect, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getLayoutMetrics"})
 	if err != nil {
@@ -1144,7 +1162,7 @@ type PageNavigateParams struct {
 }
 
 // NavigateWithParams - Navigates current page to the given URL.
-// Returns -  frameId - Frame id that has navigated (or failed to navigate) loaderId - Loader identifier. errorText - User friendly error message, present if and only if navigation has failed.
+// Returns -  frameId - Frame id that has navigated (or failed to navigate) loaderId - Loader identifier. This is omitted in case of same-document navigation, as the previously committed loaderId would not change. errorText - User friendly error message, present if and only if navigation has failed.
 func (c *Page) NavigateWithParams(ctx context.Context, v *PageNavigateParams) (string, string, string, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.navigate", Params: v})
 	if err != nil {
@@ -1183,7 +1201,7 @@ func (c *Page) NavigateWithParams(ctx context.Context, v *PageNavigateParams) (s
 // transitionType - Intended transition type. enum values: link, typed, address_bar, auto_bookmark, auto_subframe, manual_subframe, generated, auto_toplevel, form_submit, reload, keyword, keyword_generated, other
 // frameId - Frame id to navigate, if not specified navigates the top frame.
 // referrerPolicy - Referrer-policy used for the navigation. enum values: noReferrer, noReferrerWhenDowngrade, origin, originWhenCrossOrigin, sameOrigin, strictOrigin, strictOriginWhenCrossOrigin, unsafeUrl
-// Returns -  frameId - Frame id that has navigated (or failed to navigate) loaderId - Loader identifier. errorText - User friendly error message, present if and only if navigation has failed.
+// Returns -  frameId - Frame id that has navigated (or failed to navigate) loaderId - Loader identifier. This is omitted in case of same-document navigation, as the previously committed loaderId would not change. errorText - User friendly error message, present if and only if navigation has failed.
 func (c *Page) Navigate(ctx context.Context, url string, referrer string, transitionType string, frameId string, referrerPolicy string) (string, string, string, error) {
 	var v PageNavigateParams
 	v.Url = url
@@ -1233,10 +1251,8 @@ type PagePrintToPDFParams struct {
 	MarginLeft float64 `json:"marginLeft,omitempty"`
 	// Right margin in inches. Defaults to 1cm (~0.4 inches).
 	MarginRight float64 `json:"marginRight,omitempty"`
-	// Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
+	// Paper ranges to print, one based, e.g., '1-5, 8, 11-13'. Pages are printed in the document order, not in the order specified, and no more than once. Defaults to empty string, which implies the entire document is printed. The page numbers are quietly capped to actual page count of the document, and ranges beyond the end of the document are ignored. If this results in no pages to print, an error is reported. It is an error to specify a range with start greater than end.
 	PageRanges string `json:"pageRanges,omitempty"`
-	// Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
-	IgnoreInvalidPageRanges bool `json:"ignoreInvalidPageRanges,omitempty"`
 	// HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - `date`: formatted print date - `title`: document title - `url`: document location - `pageNumber`: current page number - `totalPages`: total pages in the document  For example, `<span class=title></span>` would generate span containing the title.
 	HeaderTemplate string `json:"headerTemplate,omitempty"`
 	// HTML template for the print footer. Should use the same format as the `headerTemplate`.
@@ -1291,14 +1307,13 @@ func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams
 // marginBottom - Bottom margin in inches. Defaults to 1cm (~0.4 inches).
 // marginLeft - Left margin in inches. Defaults to 1cm (~0.4 inches).
 // marginRight - Right margin in inches. Defaults to 1cm (~0.4 inches).
-// pageRanges - Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
-// ignoreInvalidPageRanges - Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
+// pageRanges - Paper ranges to print, one based, e.g., '1-5, 8, 11-13'. Pages are printed in the document order, not in the order specified, and no more than once. Defaults to empty string, which implies the entire document is printed. The page numbers are quietly capped to actual page count of the document, and ranges beyond the end of the document are ignored. If this results in no pages to print, an error is reported. It is an error to specify a range with start greater than end.
 // headerTemplate - HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - `date`: formatted print date - `title`: document title - `url`: document location - `pageNumber`: current page number - `totalPages`: total pages in the document  For example, `<span class=title></span>` would generate span containing the title.
 // footerTemplate - HTML template for the print footer. Should use the same format as the `headerTemplate`.
 // preferCSSPageSize - Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
 // transferMode - return as stream
 // Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON) stream - A handle of the stream that holds resulting PDF data.
-func (c *Page) PrintToPDF(ctx context.Context, landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, ignoreInvalidPageRanges bool, headerTemplate string, footerTemplate string, preferCSSPageSize bool, transferMode string) (string, string, error) {
+func (c *Page) PrintToPDF(ctx context.Context, landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, headerTemplate string, footerTemplate string, preferCSSPageSize bool, transferMode string) (string, string, error) {
 	var v PagePrintToPDFParams
 	v.Landscape = landscape
 	v.DisplayHeaderFooter = displayHeaderFooter
@@ -1311,7 +1326,6 @@ func (c *Page) PrintToPDF(ctx context.Context, landscape bool, displayHeaderFoot
 	v.MarginLeft = marginLeft
 	v.MarginRight = marginRight
 	v.PageRanges = pageRanges
-	v.IgnoreInvalidPageRanges = ignoreInvalidPageRanges
 	v.HeaderTemplate = headerTemplate
 	v.FooterTemplate = footerTemplate
 	v.PreferCSSPageSize = preferCSSPageSize

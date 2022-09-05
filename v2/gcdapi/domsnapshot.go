@@ -121,6 +121,7 @@ type DOMSnapshotNodeTreeSnapshot struct {
 	OptionSelected       *DOMSnapshotRareBooleanData `json:"optionSelected,omitempty"`       // Only set for option elements, indicates if the element has been selected
 	ContentDocumentIndex *DOMSnapshotRareIntegerData `json:"contentDocumentIndex,omitempty"` // The index of the document in the list of the snapshot documents.
 	PseudoType           *DOMSnapshotRareStringData  `json:"pseudoType,omitempty"`           // Type of a pseudo element node.
+	PseudoIdentifier     *DOMSnapshotRareStringData  `json:"pseudoIdentifier,omitempty"`     // Pseudo element identifier for this node. Only present if there is a valid pseudoType.
 	IsClickable          *DOMSnapshotRareBooleanData `json:"isClickable,omitempty"`          // Whether this DOM node responds to mouse clicks. This includes nodes that have had click event listeners attached via JavaScript as well as anchor tags that naturally navigate when clicked.
 	CurrentSourceURL     *DOMSnapshotRareStringData  `json:"currentSourceURL,omitempty"`     // The selected url for nodes with a srcset attribute.
 	OriginURL            *DOMSnapshotRareStringData  `json:"originURL,omitempty"`            // The url of the script (if any) that generates this node.

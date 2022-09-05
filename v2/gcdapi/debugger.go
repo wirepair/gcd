@@ -35,10 +35,11 @@ type DebuggerCallFrame struct {
 	FunctionName     string               `json:"functionName"`               // Name of the JavaScript function called on this call frame.
 	FunctionLocation *DebuggerLocation    `json:"functionLocation,omitempty"` // Location in the source code.
 	Location         *DebuggerLocation    `json:"location"`                   // Location in the source code.
-	Url              string               `json:"url"`                        // JavaScript script name or url.
+	Url              string               `json:"url"`                        // JavaScript script name or url. Deprecated in favor of using the `location.scriptId` to resolve the URL via a previously sent `Debugger.scriptParsed` event.
 	ScopeChain       []*DebuggerScope     `json:"scopeChain"`                 // Scope chain for this call frame.
 	This             *RuntimeRemoteObject `json:"this"`                       // `this` object for this call frame.
 	ReturnValue      *RuntimeRemoteObject `json:"returnValue,omitempty"`      // The value being returned, if the function is at return point.
+	CanBeRestarted   bool                 `json:"canBeRestarted,omitempty"`   // Valid only while the VM is paused and indicates whether this frame can be restarted or not. Note that a `true` value here does not guarantee that Debugger#restartFrame with this CallFrameId will be successful, but it is very likely.
 }
 
 // Scope description.
@@ -62,6 +63,12 @@ type DebuggerBreakLocation struct {
 	LineNumber   int    `json:"lineNumber"`             // Line number in the script (0-based).
 	ColumnNumber int    `json:"columnNumber,omitempty"` // Column number in the script (0-based).
 	Type         string `json:"type,omitempty"`         //
+}
+
+// No Description.
+type DebuggerWasmDisassemblyChunk struct {
+	Lines           []string `json:"lines"`           // The next chunk of disassembled lines.
+	BytecodeOffsets []int    `json:"bytecodeOffsets"` // The bytecode offsets describing the start of each line.
 }
 
 // Debug symbols available for a wasm script.
@@ -104,7 +111,7 @@ type DebuggerScriptFailedToParseEvent struct {
 		EndLine                 int                    `json:"endLine"`                           // Last line of the script.
 		EndColumn               int                    `json:"endColumn"`                         // Length of the last line of the script.
 		ExecutionContextId      int                    `json:"executionContextId"`                // Specifies script creation context.
-		Hash                    string                 `json:"hash"`                              // Content hash of the script.
+		Hash                    string                 `json:"hash"`                              // Content hash of the script, SHA-256.
 		ExecutionContextAuxData map[string]interface{} `json:"executionContextAuxData,omitempty"` // Embedder-specific auxiliary data.
 		SourceMapURL            string                 `json:"sourceMapURL,omitempty"`            // URL of source map associated with script (if any).
 		HasSourceURL            bool                   `json:"hasSourceURL,omitempty"`            // True, if this script has sourceURL.
@@ -128,7 +135,7 @@ type DebuggerScriptParsedEvent struct {
 		EndLine                 int                    `json:"endLine"`                           // Last line of the script.
 		EndColumn               int                    `json:"endColumn"`                         // Length of the last line of the script.
 		ExecutionContextId      int                    `json:"executionContextId"`                // Specifies script creation context.
-		Hash                    string                 `json:"hash"`                              // Content hash of the script.
+		Hash                    string                 `json:"hash"`                              // Content hash of the script, SHA-256.
 		ExecutionContextAuxData map[string]interface{} `json:"executionContextAuxData,omitempty"` // Embedder-specific auxiliary data.
 		IsLiveEdit              bool                   `json:"isLiveEdit,omitempty"`              // True, if this script is generated as a result of the live edit operation.
 		SourceMapURL            string                 `json:"sourceMapURL,omitempty"`            // URL of source map associated with script (if any).
@@ -405,6 +412,101 @@ func (c *Debugger) GetScriptSource(ctx context.Context, scriptId string) (string
 	return c.GetScriptSourceWithParams(ctx, &v)
 }
 
+type DebuggerDisassembleWasmModuleParams struct {
+	// Id of the script to disassemble
+	ScriptId string `json:"scriptId"`
+}
+
+// DisassembleWasmModuleWithParams -
+// Returns -  streamId - For large modules, return a stream from which additional chunks of disassembly can be read successively. totalNumberOfLines - The total number of lines in the disassembly text. functionBodyOffsets - The offsets of all function bodies, in the format [start1, end1, start2, end2, ...] where all ends are exclusive. chunk - The first chunk of disassembly.
+func (c *Debugger) DisassembleWasmModuleWithParams(ctx context.Context, v *DebuggerDisassembleWasmModuleParams) (string, int, []int, *DebuggerWasmDisassemblyChunk, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.disassembleWasmModule", Params: v})
+	if err != nil {
+		return "", 0, nil, nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			StreamId            string
+			TotalNumberOfLines  int
+			FunctionBodyOffsets []int
+			Chunk               *DebuggerWasmDisassemblyChunk
+		}
+	}
+
+	if resp == nil {
+		return "", 0, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return "", 0, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return "", 0, nil, nil, err
+	}
+
+	return chromeData.Result.StreamId, chromeData.Result.TotalNumberOfLines, chromeData.Result.FunctionBodyOffsets, chromeData.Result.Chunk, nil
+}
+
+// DisassembleWasmModule -
+// scriptId - Id of the script to disassemble
+// Returns -  streamId - For large modules, return a stream from which additional chunks of disassembly can be read successively. totalNumberOfLines - The total number of lines in the disassembly text. functionBodyOffsets - The offsets of all function bodies, in the format [start1, end1, start2, end2, ...] where all ends are exclusive. chunk - The first chunk of disassembly.
+func (c *Debugger) DisassembleWasmModule(ctx context.Context, scriptId string) (string, int, []int, *DebuggerWasmDisassemblyChunk, error) {
+	var v DebuggerDisassembleWasmModuleParams
+	v.ScriptId = scriptId
+	return c.DisassembleWasmModuleWithParams(ctx, &v)
+}
+
+type DebuggerNextWasmDisassemblyChunkParams struct {
+	//
+	StreamId string `json:"streamId"`
+}
+
+// NextWasmDisassemblyChunkWithParams - Disassemble the next chunk of lines for the module corresponding to the stream. If disassembly is complete, this API will invalidate the streamId and return an empty chunk. Any subsequent calls for the now invalid stream will return errors.
+// Returns -  chunk - The next chunk of disassembly.
+func (c *Debugger) NextWasmDisassemblyChunkWithParams(ctx context.Context, v *DebuggerNextWasmDisassemblyChunkParams) (*DebuggerWasmDisassemblyChunk, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.nextWasmDisassemblyChunk", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			Chunk *DebuggerWasmDisassemblyChunk
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.Chunk, nil
+}
+
+// NextWasmDisassemblyChunk - Disassemble the next chunk of lines for the module corresponding to the stream. If disassembly is complete, this API will invalidate the streamId and return an empty chunk. Any subsequent calls for the now invalid stream will return errors.
+// streamId -
+// Returns -  chunk - The next chunk of disassembly.
+func (c *Debugger) NextWasmDisassemblyChunk(ctx context.Context, streamId string) (*DebuggerWasmDisassemblyChunk, error) {
+	var v DebuggerNextWasmDisassemblyChunkParams
+	v.StreamId = streamId
+	return c.NextWasmDisassemblyChunkWithParams(ctx, &v)
+}
+
 type DebuggerGetWasmBytecodeParams struct {
 	// Id of the Wasm script to get source for.
 	ScriptId string `json:"scriptId"`
@@ -541,9 +643,11 @@ func (c *Debugger) RemoveBreakpoint(ctx context.Context, breakpointId string) (*
 type DebuggerRestartFrameParams struct {
 	// Call frame identifier to evaluate on.
 	CallFrameId string `json:"callFrameId"`
+	// The `mode` parameter must be present and set to 'StepInto', otherwise `restartFrame` will error out.
+	Mode string `json:"mode,omitempty"`
 }
 
-// RestartFrameWithParams - Restarts particular call frame from the beginning.
+// RestartFrameWithParams - Restarts particular call frame from the beginning. The old, deprecated behavior of `restartFrame` is to stay paused and allow further CDP commands after a restart was scheduled. This can cause problems with restarting, so we now continue execution immediatly after it has been scheduled until we reach the beginning of the restarted frame.  To stay back-wards compatible, `restartFrame` now expects a `mode` parameter to be present. If the `mode` parameter is missing, `restartFrame` errors out.  The various return values are deprecated and `callFrames` is always empty. Use the call frames from the `Debugger#paused` events instead, that fires once V8 pauses at the beginning of the restarted function.
 // Returns -  callFrames - New stack trace. asyncStackTrace - Async stack trace, if any. asyncStackTraceId - Async stack trace, if any.
 func (c *Debugger) RestartFrameWithParams(ctx context.Context, v *DebuggerRestartFrameParams) ([]*DebuggerCallFrame, *RuntimeStackTrace, *RuntimeStackTraceId, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.restartFrame", Params: v})
@@ -577,12 +681,14 @@ func (c *Debugger) RestartFrameWithParams(ctx context.Context, v *DebuggerRestar
 	return chromeData.Result.CallFrames, chromeData.Result.AsyncStackTrace, chromeData.Result.AsyncStackTraceId, nil
 }
 
-// RestartFrame - Restarts particular call frame from the beginning.
+// RestartFrame - Restarts particular call frame from the beginning. The old, deprecated behavior of `restartFrame` is to stay paused and allow further CDP commands after a restart was scheduled. This can cause problems with restarting, so we now continue execution immediatly after it has been scheduled until we reach the beginning of the restarted frame.  To stay back-wards compatible, `restartFrame` now expects a `mode` parameter to be present. If the `mode` parameter is missing, `restartFrame` errors out.  The various return values are deprecated and `callFrames` is always empty. Use the call frames from the `Debugger#paused` events instead, that fires once V8 pauses at the beginning of the restarted function.
 // callFrameId - Call frame identifier to evaluate on.
+// mode - The `mode` parameter must be present and set to 'StepInto', otherwise `restartFrame` will error out.
 // Returns -  callFrames - New stack trace. asyncStackTrace - Async stack trace, if any. asyncStackTraceId - Async stack trace, if any.
-func (c *Debugger) RestartFrame(ctx context.Context, callFrameId string) ([]*DebuggerCallFrame, *RuntimeStackTrace, *RuntimeStackTraceId, error) {
+func (c *Debugger) RestartFrame(ctx context.Context, callFrameId string, mode string) ([]*DebuggerCallFrame, *RuntimeStackTrace, *RuntimeStackTraceId, error) {
 	var v DebuggerRestartFrameParams
 	v.CallFrameId = callFrameId
+	v.Mode = mode
 	return c.RestartFrameWithParams(ctx, &v)
 }
 
@@ -995,14 +1101,16 @@ type DebuggerSetScriptSourceParams struct {
 	ScriptSource string `json:"scriptSource"`
 	// If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code.
 	DryRun bool `json:"dryRun,omitempty"`
+	// If true, then `scriptSource` is allowed to change the function on top of the stack as long as the top-most stack frame is the only activation of that function.
+	AllowTopFrameEditing bool `json:"allowTopFrameEditing,omitempty"`
 }
 
-// SetScriptSourceWithParams - Edits JavaScript source live.
-// Returns -  callFrames - New stack trace in case editing has happened while VM was stopped. stackChanged - Whether current call stack  was modified after applying the changes. asyncStackTrace - Async stack trace, if any. asyncStackTraceId - Async stack trace, if any. exceptionDetails - Exception details if any.
-func (c *Debugger) SetScriptSourceWithParams(ctx context.Context, v *DebuggerSetScriptSourceParams) ([]*DebuggerCallFrame, bool, *RuntimeStackTrace, *RuntimeStackTraceId, *RuntimeExceptionDetails, error) {
+// SetScriptSourceWithParams - Edits JavaScript source live.  In general, functions that are currently on the stack can not be edited with a single exception: If the edited function is the top-most stack frame and that is the only activation of that function on the stack. In this case the live edit will be successful and a `Debugger.restartFrame` for the top-most function is automatically triggered.
+// Returns -  callFrames - New stack trace in case editing has happened while VM was stopped. stackChanged - Whether current call stack  was modified after applying the changes. asyncStackTrace - Async stack trace, if any. asyncStackTraceId - Async stack trace, if any. status - Whether the operation was successful or not. Only `Ok` denotes a successful live edit while the other enum variants denote why the live edit failed. exceptionDetails - Exception details if any. Only present when `status` is `CompileError`.
+func (c *Debugger) SetScriptSourceWithParams(ctx context.Context, v *DebuggerSetScriptSourceParams) ([]*DebuggerCallFrame, bool, *RuntimeStackTrace, *RuntimeStackTraceId, string, *RuntimeExceptionDetails, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setScriptSource", Params: v})
 	if err != nil {
-		return nil, false, nil, nil, nil, err
+		return nil, false, nil, nil, "", nil, err
 	}
 
 	var chromeData struct {
@@ -1011,38 +1119,41 @@ func (c *Debugger) SetScriptSourceWithParams(ctx context.Context, v *DebuggerSet
 			StackChanged      bool
 			AsyncStackTrace   *RuntimeStackTrace
 			AsyncStackTraceId *RuntimeStackTraceId
+			Status            string
 			ExceptionDetails  *RuntimeExceptionDetails
 		}
 	}
 
 	if resp == nil {
-		return nil, false, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, false, nil, nil, "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, false, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, false, nil, nil, "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, false, nil, nil, nil, err
+		return nil, false, nil, nil, "", nil, err
 	}
 
-	return chromeData.Result.CallFrames, chromeData.Result.StackChanged, chromeData.Result.AsyncStackTrace, chromeData.Result.AsyncStackTraceId, chromeData.Result.ExceptionDetails, nil
+	return chromeData.Result.CallFrames, chromeData.Result.StackChanged, chromeData.Result.AsyncStackTrace, chromeData.Result.AsyncStackTraceId, chromeData.Result.Status, chromeData.Result.ExceptionDetails, nil
 }
 
-// SetScriptSource - Edits JavaScript source live.
+// SetScriptSource - Edits JavaScript source live.  In general, functions that are currently on the stack can not be edited with a single exception: If the edited function is the top-most stack frame and that is the only activation of that function on the stack. In this case the live edit will be successful and a `Debugger.restartFrame` for the top-most function is automatically triggered.
 // scriptId - Id of the script to edit.
 // scriptSource - New content of the script.
 // dryRun - If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code.
-// Returns -  callFrames - New stack trace in case editing has happened while VM was stopped. stackChanged - Whether current call stack  was modified after applying the changes. asyncStackTrace - Async stack trace, if any. asyncStackTraceId - Async stack trace, if any. exceptionDetails - Exception details if any.
-func (c *Debugger) SetScriptSource(ctx context.Context, scriptId string, scriptSource string, dryRun bool) ([]*DebuggerCallFrame, bool, *RuntimeStackTrace, *RuntimeStackTraceId, *RuntimeExceptionDetails, error) {
+// allowTopFrameEditing - If true, then `scriptSource` is allowed to change the function on top of the stack as long as the top-most stack frame is the only activation of that function.
+// Returns -  callFrames - New stack trace in case editing has happened while VM was stopped. stackChanged - Whether current call stack  was modified after applying the changes. asyncStackTrace - Async stack trace, if any. asyncStackTraceId - Async stack trace, if any. status - Whether the operation was successful or not. Only `Ok` denotes a successful live edit while the other enum variants denote why the live edit failed. exceptionDetails - Exception details if any. Only present when `status` is `CompileError`.
+func (c *Debugger) SetScriptSource(ctx context.Context, scriptId string, scriptSource string, dryRun bool, allowTopFrameEditing bool) ([]*DebuggerCallFrame, bool, *RuntimeStackTrace, *RuntimeStackTraceId, string, *RuntimeExceptionDetails, error) {
 	var v DebuggerSetScriptSourceParams
 	v.ScriptId = scriptId
 	v.ScriptSource = scriptSource
 	v.DryRun = dryRun
+	v.AllowTopFrameEditing = allowTopFrameEditing
 	return c.SetScriptSourceWithParams(ctx, &v)
 }
 

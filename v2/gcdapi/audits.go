@@ -31,8 +31,8 @@ type AuditsAffectedFrame struct {
 type AuditsCookieIssueDetails struct {
 	Cookie                 *AuditsAffectedCookie  `json:"cookie,omitempty"`         // If AffectedCookie is not set then rawCookieLine contains the raw Set-Cookie header string. This hints at a problem where the cookie line is syntactically or semantically malformed in a way that no valid cookie could be created.
 	RawCookieLine          string                 `json:"rawCookieLine,omitempty"`  //
-	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteStrictLaxDowngradeStrict, WarnSameSiteStrictCrossDowngradeStrict, WarnSameSiteStrictCrossDowngradeLax, WarnSameSiteLaxCrossDowngradeStrict, WarnSameSiteLaxCrossDowngradeLax, WarnAttributeValueExceedsMaxSize
-	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict, ExcludeInvalidSameParty, ExcludeSamePartyCrossPartyContext
+	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteStrictLaxDowngradeStrict, WarnSameSiteStrictCrossDowngradeStrict, WarnSameSiteStrictCrossDowngradeLax, WarnSameSiteLaxCrossDowngradeStrict, WarnSameSiteLaxCrossDowngradeLax, WarnAttributeValueExceedsMaxSize, WarnDomainNonASCII
+	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict, ExcludeInvalidSameParty, ExcludeSamePartyCrossPartyContext, ExcludeDomainNonASCII
 	Operation              string                 `json:"operation"`                // Optionally identifies the site-for-cookies and the cookie url, which may be used by the front-end as additional context. enum values: SetCookie, ReadCookie
 	SiteForCookies         string                 `json:"siteForCookies,omitempty"` //
 	CookieUrl              string                 `json:"cookieUrl,omitempty"`      //
@@ -121,10 +121,9 @@ type AuditsCorsIssueDetails struct {
 	ClientSecurityState    *NetworkClientSecurityState `json:"clientSecurityState,omitempty"`    //
 }
 
-// Details for issues around "Attribution Reporting API" usage. Explainer: https://github.com/WICG/conversion-measurement-api
+// Details for issues around "Attribution Reporting API" usage. Explainer: https://github.com/WICG/attribution-reporting-api
 type AuditsAttributionReportingIssueDetails struct {
-	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, InvalidAttributionSourceEventId, InvalidAttributionData, AttributionSourceUntrustworthyOrigin, AttributionUntrustworthyOrigin, AttributionTriggerDataTooLarge, AttributionEventSourceTriggerDataTooLarge, InvalidAttributionSourceExpiry, InvalidAttributionSourcePriority, InvalidEventSourceTriggerData, InvalidTriggerPriority, InvalidTriggerDedupKey
-	Frame            *AuditsAffectedFrame   `json:"frame,omitempty"`            //
+	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, UntrustworthyReportingOrigin, InsecureContext, InvalidHeader, InvalidRegisterTriggerHeader, InvalidEligibleHeader, TooManyConcurrentRequests, SourceAndTriggerHeaders, SourceIgnored, TriggerIgnored
 	Request          *AuditsAffectedRequest `json:"request,omitempty"`          //
 	ViolatingNodeId  int                    `json:"violatingNodeId,omitempty"`  //
 	InvalidParameter string                 `json:"invalidParameter,omitempty"` //
@@ -151,17 +150,16 @@ type AuditsGenericIssueDetails struct {
 	FrameId   string `json:"frameId,omitempty"` //
 }
 
-// This issue tracks information needed to print a deprecation message. The formatting is inherited from the old console.log version, see more at: https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/deprecation.cc TODO(crbug.com/1264960): Re-work format to add i18n support per: https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/devtools_protocol/README.md
+// This issue tracks information needed to print a deprecation message. https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/third_party/blink/renderer/core/frame/deprecation/README.md
 type AuditsDeprecationIssueDetails struct {
 	AffectedFrame      *AuditsAffectedFrame      `json:"affectedFrame,omitempty"` //
 	SourceCodeLocation *AuditsSourceCodeLocation `json:"sourceCodeLocation"`      //
-	Message            string                    `json:"message,omitempty"`       // The content of an untranslated deprecation issue, e.g. "window.inefficientLegacyStorageMethod will be removed in M97, around January 2022. Please use Web Storage or Indexed Database instead. This standard was abandoned in January, 1970. See https://www.chromestatus.com/feature/5684870116278272 for more details."
-	DeprecationType    string                    `json:"deprecationType"`         // The id of an untranslated deprecation issue e.g. PrefixedStorageInfo.
+	Type               string                    `json:"type"`                    //  enum values: AuthorizationCoveredByWildcard, CanRequestURLHTTPContainingNewline, ChromeLoadTimesConnectionInfo, ChromeLoadTimesFirstPaintAfterLoadTime, ChromeLoadTimesWasAlternateProtocolAvailable, CookieWithTruncatingChar, CrossOriginAccessBasedOnDocumentDomain, CrossOriginWindowAlert, CrossOriginWindowConfirm, CSSSelectorInternalMediaControlsOverlayCastButton, DeprecationExample, DocumentDomainSettingWithoutOriginAgentClusterHeader, EventPath, ExpectCTHeader, GeolocationInsecureOrigin, GeolocationInsecureOriginDeprecatedNotRemoved, GetUserMediaInsecureOrigin, HostCandidateAttributeGetter, IdentityInCanMakePaymentEvent, InsecurePrivateNetworkSubresourceRequest, LegacyConstraintGoogIPv6, LocalCSSFileExtensionRejected, MediaSourceAbortRemove, MediaSourceDurationTruncatingBuffered, NavigateEventRestoreScroll, NavigateEventTransitionWhile, NoSysexWebMIDIWithoutPermission, NotificationInsecureOrigin, NotificationPermissionRequestedIframe, ObsoleteWebRtcCipherSuite, OpenWebDatabaseInsecureContext, OverflowVisibleOnReplacedElement, PersistentQuotaType, PictureSourceSrc, PrefixedCancelAnimationFrame, PrefixedRequestAnimationFrame, PrefixedStorageInfo, PrefixedVideoDisplayingFullscreen, PrefixedVideoEnterFullscreen, PrefixedVideoEnterFullScreen, PrefixedVideoExitFullscreen, PrefixedVideoExitFullScreen, PrefixedVideoSupportsFullscreen, RangeExpand, RequestedSubresourceWithEmbeddedCredentials, RTCConstraintEnableDtlsSrtpFalse, RTCConstraintEnableDtlsSrtpTrue, RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics, RTCPeerConnectionSdpSemanticsPlanB, RtcpMuxPolicyNegotiate, SharedArrayBufferConstructedWithoutIsolation, TextToSpeech_DisallowedByAutoplay, V8SharedArrayBufferConstructedInExtensionWithoutIsolation, XHRJSONEncodingDetection, XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload, XRSupportsSession
 }
 
 // No Description.
 type AuditsFederatedAuthRequestIssueDetails struct {
-	FederatedAuthRequestIssueReason string `json:"federatedAuthRequestIssueReason"` //  enum values: ApprovalDeclined, TooManyRequests, ManifestHttpNotFound, ManifestNoResponse, ManifestInvalidResponse, ClientMetadataHttpNotFound, ClientMetadataNoResponse, ClientMetadataInvalidResponse, ClientMetadataMissingPrivacyPolicyUrl, DisabledInSettings, ErrorFetchingSignin, InvalidSigninResponse, AccountsHttpNotFound, AccountsNoResponse, AccountsInvalidResponse, IdTokenHttpNotFound, IdTokenNoResponse, IdTokenInvalidResponse, IdTokenInvalidRequest, ErrorIdToken, Canceled
+	FederatedAuthRequestIssueReason string `json:"federatedAuthRequestIssueReason"` //  enum values: ShouldEmbargo, TooManyRequests, ManifestListHttpNotFound, ManifestListNoResponse, ManifestListInvalidResponse, ManifestNotInManifestList, ManifestListTooBig, ManifestHttpNotFound, ManifestNoResponse, ManifestInvalidResponse, ClientMetadataHttpNotFound, ClientMetadataNoResponse, ClientMetadataInvalidResponse, DisabledInSettings, ErrorFetchingSignin, InvalidSigninResponse, AccountsHttpNotFound, AccountsNoResponse, AccountsInvalidResponse, IdTokenHttpNotFound, IdTokenNoResponse, IdTokenInvalidResponse, IdTokenInvalidRequest, ErrorIdToken, Canceled, RpPageNotVisible
 }
 
 // This issue tracks client hints related issues. It's used to deprecate old features, encourage the use of new ones, and provide general guidance.

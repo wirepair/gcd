@@ -9,17 +9,25 @@ import (
 	"github.com/wirepair/gcd/v2/gcdmessage"
 )
 
+// Represents the value serialiazed by the WebDriver BiDi specification https://w3c.github.io/webdriver-bidi.
+type RuntimeWebDriverValue struct {
+	Type     string      `json:"type"`               //
+	Value    interface{} `json:"value,omitempty"`    //
+	ObjectId string      `json:"objectId,omitempty"` //
+}
+
 // Mirror object referencing original JavaScript object.
 type RuntimeRemoteObject struct {
-	Type                string                `json:"type"`                          // Object type.
-	Subtype             string                `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only. NOTE: If you change anything here, make sure to also update `subtype` in `ObjectPreview` and `PropertyPreview` below.
-	ClassName           string                `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
-	Value               interface{}           `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
-	UnserializableValue string                `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property.
-	Description         string                `json:"description,omitempty"`         // String representation of the object.
-	ObjectId            string                `json:"objectId,omitempty"`            // Unique object identifier (for non-primitive values).
-	Preview             *RuntimeObjectPreview `json:"preview,omitempty"`             // Preview containing abbreviated property values. Specified for `object` type values only.
-	CustomPreview       *RuntimeCustomPreview `json:"customPreview,omitempty"`       //
+	Type                string                 `json:"type"`                          // Object type.
+	Subtype             string                 `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only. NOTE: If you change anything here, make sure to also update `subtype` in `ObjectPreview` and `PropertyPreview` below.
+	ClassName           string                 `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
+	Value               interface{}            `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
+	UnserializableValue string                 `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property.
+	Description         string                 `json:"description,omitempty"`         // String representation of the object.
+	WebDriverValue      *RuntimeWebDriverValue `json:"webDriverValue,omitempty"`      // WebDriver BiDi representation of the value.
+	ObjectId            string                 `json:"objectId,omitempty"`            // Unique object identifier (for non-primitive values).
+	Preview             *RuntimeObjectPreview  `json:"preview,omitempty"`             // Preview containing abbreviated property values. Specified for `object` type values only.
+	CustomPreview       *RuntimeCustomPreview  `json:"customPreview,omitempty"`       //
 }
 
 // No Description.
@@ -288,6 +296,8 @@ type RuntimeCallFunctionOnParams struct {
 	ObjectGroup string `json:"objectGroup,omitempty"`
 	// Whether to throw an exception if side effect cannot be ruled out during evaluation.
 	ThrowOnSideEffect bool `json:"throwOnSideEffect,omitempty"`
+	// Whether the result should contain `webDriverValue`, serialized according to https://w3c.github.io/webdriver-bidi. This is mutually exclusive with `returnByValue`, but resulting `objectId` is still provided.
+	GenerateWebDriverValue bool `json:"generateWebDriverValue,omitempty"`
 }
 
 // CallFunctionOnWithParams - Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
@@ -335,8 +345,9 @@ func (c *Runtime) CallFunctionOnWithParams(ctx context.Context, v *RuntimeCallFu
 // executionContextId - Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
 // objectGroup - Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
 // throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation.
+// generateWebDriverValue - Whether the result should contain `webDriverValue`, serialized according to https://w3c.github.io/webdriver-bidi. This is mutually exclusive with `returnByValue`, but resulting `objectId` is still provided.
 // Returns -  result - Call result. exceptionDetails - Exception details.
-func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string, throwOnSideEffect bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string, throwOnSideEffect bool, generateWebDriverValue bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeCallFunctionOnParams
 	v.FunctionDeclaration = functionDeclaration
 	v.ObjectId = objectId
@@ -349,6 +360,7 @@ func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string
 	v.ExecutionContextId = executionContextId
 	v.ObjectGroup = objectGroup
 	v.ThrowOnSideEffect = throwOnSideEffect
+	v.GenerateWebDriverValue = generateWebDriverValue
 	return c.CallFunctionOnWithParams(ctx, &v)
 }
 
@@ -457,6 +469,8 @@ type RuntimeEvaluateParams struct {
 	AllowUnsafeEvalBlockedByCSP bool `json:"allowUnsafeEvalBlockedByCSP,omitempty"`
 	// An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `contextId`.
 	UniqueContextId string `json:"uniqueContextId,omitempty"`
+	// Whether the result should be serialized according to https://w3c.github.io/webdriver-bidi.
+	GenerateWebDriverValue bool `json:"generateWebDriverValue,omitempty"`
 }
 
 // EvaluateWithParams - Evaluates expression on global object.
@@ -508,8 +522,9 @@ func (c *Runtime) EvaluateWithParams(ctx context.Context, v *RuntimeEvaluatePara
 // replMode - Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
 // allowUnsafeEvalBlockedByCSP - The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
 // uniqueContextId - An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `contextId`.
+// generateWebDriverValue - Whether the result should be serialized according to https://w3c.github.io/webdriver-bidi.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool, uniqueContextId string) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool, uniqueContextId string, generateWebDriverValue bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
 	v.Expression = expression
 	v.ObjectGroup = objectGroup
@@ -526,6 +541,7 @@ func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup s
 	v.ReplMode = replMode
 	v.AllowUnsafeEvalBlockedByCSP = allowUnsafeEvalBlockedByCSP
 	v.UniqueContextId = uniqueContextId
+	v.GenerateWebDriverValue = generateWebDriverValue
 	return c.EvaluateWithParams(ctx, &v)
 }
 
@@ -972,4 +988,50 @@ func (c *Runtime) RemoveBinding(ctx context.Context, name string) (*gcdmessage.C
 	var v RuntimeRemoveBindingParams
 	v.Name = name
 	return c.RemoveBindingWithParams(ctx, &v)
+}
+
+type RuntimeGetExceptionDetailsParams struct {
+	// The error object for which to resolve the exception details.
+	ErrorObjectId string `json:"errorObjectId"`
+}
+
+// GetExceptionDetailsWithParams - This method tries to lookup and populate exception details for a JavaScript Error object. Note that the stackTrace portion of the resulting exceptionDetails will only be populated if the Runtime domain was enabled at the time when the Error was thrown.
+// Returns -  exceptionDetails -
+func (c *Runtime) GetExceptionDetailsWithParams(ctx context.Context, v *RuntimeGetExceptionDetailsParams) (*RuntimeExceptionDetails, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Runtime.getExceptionDetails", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			ExceptionDetails *RuntimeExceptionDetails
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.ExceptionDetails, nil
+}
+
+// GetExceptionDetails - This method tries to lookup and populate exception details for a JavaScript Error object. Note that the stackTrace portion of the resulting exceptionDetails will only be populated if the Runtime domain was enabled at the time when the Error was thrown.
+// errorObjectId - The error object for which to resolve the exception details.
+// Returns -  exceptionDetails -
+func (c *Runtime) GetExceptionDetails(ctx context.Context, errorObjectId string) (*RuntimeExceptionDetails, error) {
+	var v RuntimeGetExceptionDetailsParams
+	v.ErrorObjectId = errorObjectId
+	return c.GetExceptionDetailsWithParams(ctx, &v)
 }
