@@ -68,12 +68,14 @@ const CHROME_VERSION = "%s"`
 
 var file string
 var update bool
+var rev string
 var templates *template.Template // for code generation
 var funcMap template.FuncMap     // helper funcs
 var revisionInfo *RevisionInfo
 
 func init() {
 	flag.BoolVar(&update, "update", false, "download and merge js_protocol.json and browser_protocol.json into protocol.json")
+	flag.StringVar(&rev, "rev", "master", "with -update, the revision (branch/tag/commit) from which to download protocol files")
 	flag.StringVar(&file, "file", "protocol.json", "open remote debugger protocol file, if -update the filename to write to.")
 	funcMap := template.FuncMap{
 		"Title":    strings.Title,
@@ -91,7 +93,7 @@ func main() {
 	flag.Parse()
 
 	if update {
-		revisionInfo = getApiRevision()
+		revisionInfo = getApiRevision(rev)
 	}
 
 	protocolData := openFile()
