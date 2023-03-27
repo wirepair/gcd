@@ -20,6 +20,7 @@ type TargetTargetInfo struct {
 	CanAccessOpener  bool   `json:"canAccessOpener"`            // Whether the target has access to the originating window.
 	OpenerFrameId    string `json:"openerFrameId,omitempty"`    // Frame id of originating window (is only set if target has an opener).
 	BrowserContextId string `json:"browserContextId,omitempty"` //
+	Subtype          string `json:"subtype,omitempty"`          // Provides additional details for specific target types. For example, for the type of "page", this may be set to "portal" or "prerender".
 }
 
 // A filter used by target query/discovery/auto-attach operations.
@@ -379,6 +380,8 @@ type TargetCreateTargetParams struct {
 	NewWindow bool `json:"newWindow,omitempty"`
 	// Whether to create the target in background or foreground (chrome-only, false by default).
 	Background bool `json:"background,omitempty"`
+	// Whether to create the target of type "tab".
+	ForTab bool `json:"forTab,omitempty"`
 }
 
 // CreateTargetWithParams - Creates a new page.
@@ -421,8 +424,9 @@ func (c *Target) CreateTargetWithParams(ctx context.Context, v *TargetCreateTarg
 // enableBeginFrameControl - Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
 // newWindow - Whether to create a new Window or Tab (chrome-only, false by default).
 // background - Whether to create the target in background or foreground (chrome-only, false by default).
+// forTab - Whether to create the target of type "tab".
 // Returns -  targetId - The id of the page opened.
-func (c *Target) CreateTarget(ctx context.Context, url string, width int, height int, browserContextId string, enableBeginFrameControl bool, newWindow bool, background bool) (string, error) {
+func (c *Target) CreateTarget(ctx context.Context, url string, width int, height int, browserContextId string, enableBeginFrameControl bool, newWindow bool, background bool, forTab bool) (string, error) {
 	var v TargetCreateTargetParams
 	v.Url = url
 	v.Width = width
@@ -431,6 +435,7 @@ func (c *Target) CreateTarget(ctx context.Context, url string, width int, height
 	v.EnableBeginFrameControl = enableBeginFrameControl
 	v.NewWindow = newWindow
 	v.Background = background
+	v.ForTab = forTab
 	return c.CreateTargetWithParams(ctx, &v)
 }
 

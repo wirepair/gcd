@@ -195,7 +195,8 @@ type RuntimeExecutionContextCreatedEvent struct {
 type RuntimeExecutionContextDestroyedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		ExecutionContextId int `json:"executionContextId"` // Id of the destroyed context
+		ExecutionContextId       int    `json:"executionContextId"`       // Id of the destroyed context
+		ExecutionContextUniqueId string `json:"executionContextUniqueId"` // Unique Id of the destroyed context
 	} `json:"Params,omitempty"`
 }
 
@@ -296,6 +297,8 @@ type RuntimeCallFunctionOnParams struct {
 	ObjectGroup string `json:"objectGroup,omitempty"`
 	// Whether to throw an exception if side effect cannot be ruled out during evaluation.
 	ThrowOnSideEffect bool `json:"throwOnSideEffect,omitempty"`
+	// An alternative way to specify the execution context to call function on. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental function call in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `executionContextId`.
+	UniqueContextId string `json:"uniqueContextId,omitempty"`
 	// Whether the result should contain `webDriverValue`, serialized according to https://w3c.github.io/webdriver-bidi. This is mutually exclusive with `returnByValue`, but resulting `objectId` is still provided.
 	GenerateWebDriverValue bool `json:"generateWebDriverValue,omitempty"`
 }
@@ -345,9 +348,10 @@ func (c *Runtime) CallFunctionOnWithParams(ctx context.Context, v *RuntimeCallFu
 // executionContextId - Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
 // objectGroup - Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
 // throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation.
+// uniqueContextId - An alternative way to specify the execution context to call function on. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental function call in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `executionContextId`.
 // generateWebDriverValue - Whether the result should contain `webDriverValue`, serialized according to https://w3c.github.io/webdriver-bidi. This is mutually exclusive with `returnByValue`, but resulting `objectId` is still provided.
 // Returns -  result - Call result. exceptionDetails - Exception details.
-func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string, throwOnSideEffect bool, generateWebDriverValue bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string, throwOnSideEffect bool, uniqueContextId string, generateWebDriverValue bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeCallFunctionOnParams
 	v.FunctionDeclaration = functionDeclaration
 	v.ObjectId = objectId
@@ -360,6 +364,7 @@ func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string
 	v.ExecutionContextId = executionContextId
 	v.ObjectGroup = objectGroup
 	v.ThrowOnSideEffect = throwOnSideEffect
+	v.UniqueContextId = uniqueContextId
 	v.GenerateWebDriverValue = generateWebDriverValue
 	return c.CallFunctionOnWithParams(ctx, &v)
 }

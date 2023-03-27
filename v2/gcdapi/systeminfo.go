@@ -112,6 +112,52 @@ func (c *SystemInfo) GetInfo(ctx context.Context) (*SystemInfoGPUInfo, string, s
 	return chromeData.Result.Gpu, chromeData.Result.ModelName, chromeData.Result.ModelVersion, chromeData.Result.CommandLine, nil
 }
 
+type SystemInfoGetFeatureStateParams struct {
+	//
+	FeatureState string `json:"featureState"`
+}
+
+// GetFeatureStateWithParams - Returns information about the feature state.
+// Returns -  featureEnabled -
+func (c *SystemInfo) GetFeatureStateWithParams(ctx context.Context, v *SystemInfoGetFeatureStateParams) (bool, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "SystemInfo.getFeatureState", Params: v})
+	if err != nil {
+		return false, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			FeatureEnabled bool
+		}
+	}
+
+	if resp == nil {
+		return false, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return false, err
+	}
+
+	return chromeData.Result.FeatureEnabled, nil
+}
+
+// GetFeatureState - Returns information about the feature state.
+// featureState -
+// Returns -  featureEnabled -
+func (c *SystemInfo) GetFeatureState(ctx context.Context, featureState string) (bool, error) {
+	var v SystemInfoGetFeatureStateParams
+	v.FeatureState = featureState
+	return c.GetFeatureStateWithParams(ctx, &v)
+}
+
 // GetProcessInfo - Returns information about all running processes.
 // Returns -  processInfo - An array of process info blocks.
 func (c *SystemInfo) GetProcessInfo(ctx context.Context) ([]*SystemInfoProcessInfo, error) {

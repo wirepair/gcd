@@ -92,8 +92,8 @@ type NetworkCorsErrorStatus struct {
 
 // Determines what type of Trust Token operation is executed and depending on the type, some additional parameters. The values are specified in third_party/blink/renderer/core/fetch/trust_token.idl.
 type NetworkTrustTokenParams struct {
-	Type          string   `json:"type"`              //  enum values: Issuance, Redemption, Signing
-	RefreshPolicy string   `json:"refreshPolicy"`     // Only set for "token-redemption" type and determine whether to request a fresh SRR or use a still valid cached SRR.
+	Operation     string   `json:"operation"`         //  enum values: Issuance, Redemption, Signing
+	RefreshPolicy string   `json:"refreshPolicy"`     // Only set for "token-redemption" operation and determine whether to request a fresh SRR or use a still valid cached SRR.
 	Issuers       []string `json:"issuers,omitempty"` // Origins of issuers from whom to request tokens or redemption records.
 }
 
@@ -120,6 +120,7 @@ type NetworkResponse struct {
 	ResponseTime                float64                 `json:"responseTime,omitempty"`                // The time at which the returned response was generated.
 	CacheStorageCacheName       string                  `json:"cacheStorageCacheName,omitempty"`       // Cache Storage Cache Name.
 	Protocol                    string                  `json:"protocol,omitempty"`                    // Protocol used to fetch this request.
+	AlternateProtocolUsage      string                  `json:"alternateProtocolUsage,omitempty"`      // The reason why Chrome uses a specific transport protocol for HTTP semantics. enum values: alternativeJobWonWithoutRace, alternativeJobWonRace, mainJobWonRace, mappingMissing, broken, dnsAlpnH3JobWonWithoutRace, dnsAlpnH3JobWonRace, unspecifiedReason
 	SecurityState               string                  `json:"securityState"`                         // Security state of the request resource. enum values: unknown, neutral, insecure, secure, info, insecure-broken
 	SecurityDetails             *NetworkSecurityDetails `json:"securityDetails,omitempty"`             // Security details for the request.
 }
@@ -186,14 +187,14 @@ type NetworkCookie struct {
 
 // A cookie which was not stored from a response with the corresponding reason.
 type NetworkBlockedSetCookieWithReason struct {
-	BlockedReasons []string       `json:"blockedReasons"`   // The reason(s) this cookie was blocked. enum values: SecureOnly, SameSiteStrict, SameSiteLax, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, SyntaxError, SchemeNotSupported, OverwriteSecure, InvalidDomain, InvalidPrefix, UnknownError, SchemefulSameSiteStrict, SchemefulSameSiteLax, SchemefulSameSiteUnspecifiedTreatedAsLax, SamePartyFromCrossPartyContext, SamePartyConflictsWithOtherAttributes, NameValuePairExceedsMaxSize
+	BlockedReasons []string       `json:"blockedReasons"`   // The reason(s) this cookie was blocked. enum values: SecureOnly, SameSiteStrict, SameSiteLax, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, ThirdPartyBlockedInFirstPartySet, SyntaxError, SchemeNotSupported, OverwriteSecure, InvalidDomain, InvalidPrefix, UnknownError, SchemefulSameSiteStrict, SchemefulSameSiteLax, SchemefulSameSiteUnspecifiedTreatedAsLax, SamePartyFromCrossPartyContext, SamePartyConflictsWithOtherAttributes, NameValuePairExceedsMaxSize
 	CookieLine     string         `json:"cookieLine"`       // The string representing this individual cookie as it would appear in the header. This is not the entire "cookie" or "set-cookie" header which could have multiple cookies.
 	Cookie         *NetworkCookie `json:"cookie,omitempty"` // The cookie object which represents the cookie which was not stored. It is optional because sometimes complete cookie information is not available, such as in the case of parsing errors.
 }
 
 // A cookie with was not sent with a request with the corresponding reason.
 type NetworkBlockedCookieWithReason struct {
-	BlockedReasons []string       `json:"blockedReasons"` // The reason(s) the cookie was blocked. enum values: SecureOnly, NotOnPath, DomainMismatch, SameSiteStrict, SameSiteLax, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, UnknownError, SchemefulSameSiteStrict, SchemefulSameSiteLax, SchemefulSameSiteUnspecifiedTreatedAsLax, SamePartyFromCrossPartyContext, NameValuePairExceedsMaxSize
+	BlockedReasons []string       `json:"blockedReasons"` // The reason(s) the cookie was blocked. enum values: SecureOnly, NotOnPath, DomainMismatch, SameSiteStrict, SameSiteLax, SameSiteUnspecifiedTreatedAsLax, SameSiteNoneInsecure, UserPreferences, ThirdPartyBlockedInFirstPartySet, UnknownError, SchemefulSameSiteStrict, SchemefulSameSiteLax, SchemefulSameSiteUnspecifiedTreatedAsLax, SamePartyFromCrossPartyContext, NameValuePairExceedsMaxSize
 	Cookie         *NetworkCookie `json:"cookie"`         // The cookie object representing the cookie which was not sent.
 }
 
@@ -573,11 +574,12 @@ type NetworkWebTransportClosedEvent struct {
 type NetworkRequestWillBeSentExtraInfoEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		RequestId           string                            `json:"requestId"`                     // Request identifier. Used to match this information to an existing requestWillBeSent event.
-		AssociatedCookies   []*NetworkBlockedCookieWithReason `json:"associatedCookies"`             // A list of cookies potentially associated to the requested URL. This includes both cookies sent with the request and the ones not sent; the latter are distinguished by having blockedReason field set.
-		Headers             map[string]interface{}            `json:"headers"`                       // Raw request headers as they will be sent over the wire.
-		ConnectTiming       *NetworkConnectTiming             `json:"connectTiming"`                 // Connection timing information for the request.
-		ClientSecurityState *NetworkClientSecurityState       `json:"clientSecurityState,omitempty"` // The client security state set for the request.
+		RequestId                     string                            `json:"requestId"`                               // Request identifier. Used to match this information to an existing requestWillBeSent event.
+		AssociatedCookies             []*NetworkBlockedCookieWithReason `json:"associatedCookies"`                       // A list of cookies potentially associated to the requested URL. This includes both cookies sent with the request and the ones not sent; the latter are distinguished by having blockedReason field set.
+		Headers                       map[string]interface{}            `json:"headers"`                                 // Raw request headers as they will be sent over the wire.
+		ConnectTiming                 *NetworkConnectTiming             `json:"connectTiming"`                           // Connection timing information for the request.
+		ClientSecurityState           *NetworkClientSecurityState       `json:"clientSecurityState,omitempty"`           // The client security state set for the request.
+		SiteHasCookieInOtherPartition bool                              `json:"siteHasCookieInOtherPartition,omitempty"` // Whether the site has partitioned cookies stored in a partition different than the current one.
 	} `json:"Params,omitempty"`
 }
 
@@ -585,12 +587,14 @@ type NetworkRequestWillBeSentExtraInfoEvent struct {
 type NetworkResponseReceivedExtraInfoEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		RequestId              string                               `json:"requestId"`              // Request identifier. Used to match this information to another responseReceived event.
-		BlockedCookies         []*NetworkBlockedSetCookieWithReason `json:"blockedCookies"`         // A list of cookies which were not stored from the response along with the corresponding reasons for blocking. The cookies here may not be valid due to syntax errors, which are represented by the invalid cookie line string instead of a proper cookie.
-		Headers                map[string]interface{}               `json:"headers"`                // Raw response headers as they were received over the wire.
-		ResourceIPAddressSpace string                               `json:"resourceIPAddressSpace"` // The IP address space of the resource. The address space can only be determined once the transport established the connection, so we can't send it in `requestWillBeSentExtraInfo`. enum values: Local, Private, Public, Unknown
-		StatusCode             int                                  `json:"statusCode"`             // The status code of the response. This is useful in cases the request failed and no responseReceived event is triggered, which is the case for, e.g., CORS errors. This is also the correct status code for cached requests, where the status in responseReceived is a 200 and this will be 304.
-		HeadersText            string                               `json:"headersText,omitempty"`  // Raw response header text as it was received over the wire. The raw text may not always be available, such as in the case of HTTP/2 or QUIC.
+		RequestId                string                               `json:"requestId"`                          // Request identifier. Used to match this information to another responseReceived event.
+		BlockedCookies           []*NetworkBlockedSetCookieWithReason `json:"blockedCookies"`                     // A list of cookies which were not stored from the response along with the corresponding reasons for blocking. The cookies here may not be valid due to syntax errors, which are represented by the invalid cookie line string instead of a proper cookie.
+		Headers                  map[string]interface{}               `json:"headers"`                            // Raw response headers as they were received over the wire.
+		ResourceIPAddressSpace   string                               `json:"resourceIPAddressSpace"`             // The IP address space of the resource. The address space can only be determined once the transport established the connection, so we can't send it in `requestWillBeSentExtraInfo`. enum values: Local, Private, Public, Unknown
+		StatusCode               int                                  `json:"statusCode"`                         // The status code of the response. This is useful in cases the request failed and no responseReceived event is triggered, which is the case for, e.g., CORS errors. This is also the correct status code for cached requests, where the status in responseReceived is a 200 and this will be 304.
+		HeadersText              string                               `json:"headersText,omitempty"`              // Raw response header text as it was received over the wire. The raw text may not always be available, such as in the case of HTTP/2 or QUIC.
+		CookiePartitionKey       string                               `json:"cookiePartitionKey,omitempty"`       // The cookie partition key that will be used to store partitioned cookies set in this response. Only sent when partitioned cookies are enabled.
+		CookiePartitionKeyOpaque bool                                 `json:"cookiePartitionKeyOpaque,omitempty"` // True if partitioned cookies are enabled, but the partition key is not serializeable to string.
 	} `json:"Params,omitempty"`
 }
 
@@ -950,7 +954,7 @@ func (c *Network) Enable(ctx context.Context, maxTotalBufferSize int, maxResourc
 	return c.EnableWithParams(ctx, &v)
 }
 
-// GetAllCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the `cookies` field.
+// GetAllCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the `cookies` field. Deprecated. Use Storage.getCookies instead.
 // Returns -  cookies - Array of cookie objects.
 func (c *Network) GetAllCookies(ctx context.Context) ([]*NetworkCookie, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Network.getAllCookies"})

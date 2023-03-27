@@ -61,6 +61,7 @@ type SharedProperties interface {
 // include references to it, we resolve any references directly to 'string'
 // this makes working with the API far easier (no stupid type conversions everywhere)
 func PopulateReferences(domain string, types []*ProtoType) {
+	fmt.Printf("Populating references for %s\n", domain)
 	for _, protoType := range types {
 		ref := &GlobalReference{}
 		ref.LocalRefName = protoType.Id
@@ -81,12 +82,15 @@ func PopulateReferences(domain string, types []*ProtoType) {
 		if len(protoType.Enum) > 0 {
 			ref.EnumDescription = " enum values: " + strings.Join(protoType.Enum, ", ")
 		}
-		globalRefs[domain+"."+protoType.Id] = ref
+		refName := domain + "." + protoType.Id
+		globalRefs[refName] = ref
+		fmt.Printf("REF (%s): %#v\n", refName, ref)
 
 		if ref.IsBaseType == false {
 			populateSubReferences(domain, protoType)
 		}
 	}
+	fmt.Printf("Done populating references for %s\n", domain)
 }
 
 // Check if the type has a nested type and create a new sub type for it and add to our
@@ -99,7 +103,9 @@ func populateSubReferences(domain string, protoType *ProtoType) {
 			ref := &GlobalReference{}
 			ref.LocalRefName = prop.Name
 			ref.ExternalGoName = domain + prefix
-			globalRefs[domain+prefix] = ref
+			refName := domain + prefix
+			globalRefs[refName] = ref
+			fmt.Printf("REF (%s): %#v\n", refName, ref)
 			continue
 		}
 
