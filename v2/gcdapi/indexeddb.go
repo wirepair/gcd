@@ -258,7 +258,7 @@ type IndexedDBGetMetadataParams struct {
 	ObjectStoreName string `json:"objectStoreName"`
 }
 
-// GetMetadataWithParams - Gets metadata of an object store
+// GetMetadataWithParams - Gets metadata of an object store.
 // Returns -  entriesCount - the entries count keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
 func (c *IndexedDB) GetMetadataWithParams(ctx context.Context, v *IndexedDBGetMetadataParams) (float64, float64, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "IndexedDB.getMetadata", Params: v})
@@ -291,7 +291,7 @@ func (c *IndexedDB) GetMetadataWithParams(ctx context.Context, v *IndexedDBGetMe
 	return chromeData.Result.EntriesCount, chromeData.Result.KeyGeneratorValue, nil
 }
 
-// GetMetadata - Gets metadata of an object store
+// GetMetadata - Gets metadata of an object store.
 // securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
 // storageKey - Storage key.
 // databaseName - Database name.

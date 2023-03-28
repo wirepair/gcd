@@ -24,6 +24,7 @@ type BackgroundServiceBackgroundServiceEvent struct {
 	EventName                   string                            `json:"eventName"`                   // A description of the event.
 	InstanceId                  string                            `json:"instanceId"`                  // An identifier that groups related events together.
 	EventMetadata               []*BackgroundServiceEventMetadata `json:"eventMetadata"`               // A list of event-specific information.
+	StorageKey                  string                            `json:"storageKey"`                  // Storage key this event belongs to.
 }
 
 // Called when the recording state for the service has been updated.

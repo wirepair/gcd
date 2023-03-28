@@ -1063,12 +1063,12 @@ type DebuggerSetPauseOnExceptionsParams struct {
 	State string `json:"state"`
 }
 
-// SetPauseOnExceptionsWithParams - Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is `none`.
+// SetPauseOnExceptionsWithParams - Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions, or caught exceptions, no exceptions. Initial pause on exceptions state is `none`.
 func (c *Debugger) SetPauseOnExceptionsWithParams(ctx context.Context, v *DebuggerSetPauseOnExceptionsParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setPauseOnExceptions", Params: v})
 }
 
-// SetPauseOnExceptions - Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is `none`.
+// SetPauseOnExceptions - Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions, or caught exceptions, no exceptions. Initial pause on exceptions state is `none`.
 // state - Pause on exceptions mode.
 func (c *Debugger) SetPauseOnExceptions(ctx context.Context, state string) (*gcdmessage.ChromeResponse, error) {
 	var v DebuggerSetPauseOnExceptionsParams

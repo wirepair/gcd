@@ -11,16 +11,9 @@ import (
 
 // Encoding options for a screenshot.
 type HeadlessExperimentalScreenshotParams struct {
-	Format  string `json:"format,omitempty"`  // Image compression format (defaults to png).
-	Quality int    `json:"quality,omitempty"` // Compression quality from range [0..100] (jpeg only).
-}
-
-// Issued when the target starts or stops needing BeginFrames. Deprecated. Issue beginFrame unconditionally instead and use result from beginFrame to detect whether the frames were suppressed.
-type HeadlessExperimentalNeedsBeginFramesChangedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		NeedsBeginFrames bool `json:"needsBeginFrames"` // True if BeginFrames are needed, false otherwise.
-	} `json:"Params,omitempty"`
+	Format           string `json:"format,omitempty"`           // Image compression format (defaults to png).
+	Quality          int    `json:"quality,omitempty"`          // Compression quality from range [0..100] (jpeg only).
+	OptimizeForSpeed bool   `json:"optimizeForSpeed,omitempty"` // Optimize image encoding for speed, not for resulting size (defaults to false)
 }
 
 type HeadlessExperimental struct {

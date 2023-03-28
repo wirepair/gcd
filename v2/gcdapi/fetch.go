@@ -50,6 +50,7 @@ type FetchRequestPausedEvent struct {
 		ResponseStatusText  string              `json:"responseStatusText,omitempty"`  // Response status text if intercepted at response stage.
 		ResponseHeaders     []*FetchHeaderEntry `json:"responseHeaders,omitempty"`     // Response headers if intercepted at the response stage.
 		NetworkId           string              `json:"networkId,omitempty"`           // If the intercepted request had a corresponding Network.requestWillBeSent event fired for it, then this networkId will be the same as the requestId present in the requestWillBeSent event.
+		RedirectedRequestId string              `json:"redirectedRequestId,omitempty"` // If the request is due to a redirect response from the server, the id of the request that has caused the redirect.
 	} `json:"Params,omitempty"`
 }
 
@@ -170,7 +171,7 @@ type FetchContinueRequestParams struct {
 	Method string `json:"method,omitempty"`
 	// If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
 	PostData string `json:"postData,omitempty"`
-	// If set, overrides the request headers.
+	// If set, overrides the request headers. Note that the overrides do not extend to subsequent redirect hops, if a redirect happens. Another override may be applied to a different request produced by a redirect.
 	Headers []*FetchHeaderEntry `json:"headers,omitempty"`
 	// If set, overrides response interception behavior for this request.
 	InterceptResponse bool `json:"interceptResponse,omitempty"`
@@ -186,7 +187,7 @@ func (c *Fetch) ContinueRequestWithParams(ctx context.Context, v *FetchContinueR
 // url - If set, the request url will be modified in a way that's not observable by page.
 // method - If set, the request method is overridden.
 // postData - If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
-// headers - If set, overrides the request headers.
+// headers - If set, overrides the request headers. Note that the overrides do not extend to subsequent redirect hops, if a redirect happens. Another override may be applied to a different request produced by a redirect.
 // interceptResponse - If set, overrides response interception behavior for this request.
 func (c *Fetch) ContinueRequest(ctx context.Context, requestId string, url string, method string, postData string, headers []*FetchHeaderEntry, interceptResponse bool) (*gcdmessage.ChromeResponse, error) {
 	var v FetchContinueRequestParams

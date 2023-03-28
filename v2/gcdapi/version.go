@@ -8,4 +8,4 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 // Chrome Channel information
 const CHROME_CHANNEL = "stable" 
 // Chrome Version information
-const CHROME_VERSION = "105.0.5195.102"
+const CHROME_VERSION = "111.0.5563.147"

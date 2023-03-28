@@ -1,3 +1,8 @@
+# Changelog (2023)
+- 2.3.0 (Mar 28) Updated JSON endpoint calls to use PUT instead of GET as GET returns an error since 111.
+  - Updates to chrome 111.0.5563.147 protocol
+  - gcdapigen updated to handle different revisions thanks to @eatdrinksleepcode
+
 # Changelog (2022)
 - 2.2.6 (Sept 5th) Fixes a bug where new types that were just arrays to another ref type were not being output correctly
   - Updates to chrome 105.0.5195.102

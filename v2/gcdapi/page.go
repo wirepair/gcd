@@ -29,7 +29,7 @@ type PagePermissionsPolicyBlockLocator struct {
 
 // No Description.
 type PagePermissionsPolicyFeatureState struct {
-	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, bluetooth, browsing-topics, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-rtt, ch-save-data, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-reduced, ch-ua-wow64, ch-viewport-height, ch-viewport-width, ch-width, clipboard-read, clipboard-write, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, federated-credentials, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, local-fonts, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, shared-storage, storage-access, sync-xhr, trust-token-redemption, unload, usb, vertical-scroll, web-share, window-placement, xr-spatial-tracking
+	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, bluetooth, browsing-topics, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-prefers-reduced-motion, ch-rtt, ch-save-data, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-reduced, ch-ua-wow64, ch-viewport-height, ch-viewport-width, ch-width, clipboard-read, clipboard-write, compute-pressure, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, identity-credentials-get, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, local-fonts, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, private-aggregation, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, shared-storage, shared-storage-select-url, smart-card, storage-access, sync-xhr, trust-token-redemption, unload, usb, vertical-scroll, web-share, window-management, window-placement, xr-spatial-tracking
 	Allowed bool                               `json:"allowed"`           //
 	Locator *PagePermissionsPolicyBlockLocator `json:"locator,omitempty"` //
 }
@@ -206,7 +206,7 @@ type PageCompilationCacheParams struct {
 // No Description.
 type PageBackForwardCacheNotRestoredExplanation struct {
 	Type    string `json:"type"`              // Type of the reason enum values: SupportPending, PageSupportNeeded, Circumstantial
-	Reason  string `json:"reason"`            // Not restored reason enum values: NotPrimaryMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, ErrorDocument, FencedFramesEmbedder, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, DedicatedWorkerOrWorklet, OutstandingNetworkRequestOthers, OutstandingIndexedDBTransaction, RequestedNotificationsPermission, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, IndexedDBConnection, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, Portal, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, Dummy, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSessionService, ContentScreenReader, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame
+	Reason  string `json:"reason"`            // Not restored reason enum values: NotPrimaryMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, ErrorDocument, FencedFramesEmbedder, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, DedicatedWorkerOrWorklet, OutstandingNetworkRequestOthers, OutstandingIndexedDBTransaction, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, IndexedDBConnection, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, Portal, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, KeepaliveRequest, IndexedDBEvent, Dummy, AuthorizationHeader, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSessionService, ContentScreenReader, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame
 	Context string `json:"context,omitempty"` // Context associated with the reason. The meaning of this context is dependent on the reason: - EmbedderExtensionSentMessageToCachedFrame: the extension ID.
 }
 
@@ -239,10 +239,9 @@ type PageFileChooserOpenedEvent struct {
 type PageFrameAttachedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		FrameId       string             `json:"frameId"`              // Id of the frame that has been attached.
-		ParentFrameId string             `json:"parentFrameId"`        // Parent frame identifier.
-		Stack         *RuntimeStackTrace `json:"stack,omitempty"`      // JavaScript stack trace of when frame was attached, only set if frame initiated from script.
-		AdScriptId    *PageAdScriptId    `json:"adScriptId,omitempty"` // Identifies the bottom-most script which caused the frame to be labelled as an ad. Only sent if frame is labelled as an ad and id is available.
+		FrameId       string             `json:"frameId"`         // Id of the frame that has been attached.
+		ParentFrameId string             `json:"parentFrameId"`   // Parent frame identifier.
+		Stack         *RuntimeStackTrace `json:"stack,omitempty"` // JavaScript stack trace of when frame was attached, only set if frame initiated from script.
 	} `json:"Params,omitempty"`
 }
 
@@ -380,17 +379,6 @@ type PageBackForwardCacheNotUsedEvent struct {
 		FrameId                     string                                          `json:"frameId"`                               // The frame id of the associated frame.
 		NotRestoredExplanations     []*PageBackForwardCacheNotRestoredExplanation   `json:"notRestoredExplanations"`               // Array of reasons why the page could not be cached. This must not be empty.
 		NotRestoredExplanationsTree *PageBackForwardCacheNotRestoredExplanationTree `json:"notRestoredExplanationsTree,omitempty"` // Tree structure of reasons why the page could not be cached for each frame.
-	} `json:"Params,omitempty"`
-}
-
-// Fired when a prerender attempt is completed.
-type PagePrerenderAttemptCompletedEvent struct {
-	Method string `json:"method"`
-	Params struct {
-		InitiatingFrameId string `json:"initiatingFrameId"`       // The frame id of the frame initiating prerendering.
-		PrerenderingUrl   string `json:"prerenderingUrl"`         //
-		FinalStatus       string `json:"finalStatus"`             //  enum values: Activated, Destroyed, LowEndDevice, CrossOriginRedirect, CrossOriginNavigation, InvalidSchemeRedirect, InvalidSchemeNavigation, InProgressNavigation, NavigationRequestBlockedByCsp, MainFrameNavigation, MojoBinderPolicy, RendererProcessCrashed, RendererProcessKilled, Download, TriggerDestroyed, NavigationNotCommitted, NavigationBadHttpStatus, ClientCertRequested, NavigationRequestNetworkError, MaxNumOfRunningPrerendersExceeded, CancelAllHostsForTesting, DidFailLoad, Stop, SslCertificateError, LoginAuthRequested, UaChangeRequiresReload, BlockedByClient, AudioOutputDeviceRequested, MixedContent, TriggerBackgrounded, EmbedderTriggeredAndSameOriginRedirected, EmbedderTriggeredAndCrossOriginRedirected, MemoryLimitExceeded, FailToGetMemoryUsage, DataSaverEnabled, HasEffectiveUrl
-		ReasonDetails     string `json:"reasonDetails,omitempty"` // This is used to give users more information about the cancellation details, and this will be formatted for display.
 	} `json:"Params,omitempty"`
 }
 
@@ -574,6 +562,8 @@ type PageCaptureScreenshotParams struct {
 	FromSurface bool `json:"fromSurface,omitempty"`
 	// Capture the screenshot beyond the viewport. Defaults to false.
 	CaptureBeyondViewport bool `json:"captureBeyondViewport,omitempty"`
+	// Optimize image encoding for speed, not for resulting size (defaults to false)
+	OptimizeForSpeed bool `json:"optimizeForSpeed,omitempty"`
 }
 
 // CaptureScreenshotWithParams - Capture page screenshot.
@@ -614,14 +604,16 @@ func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureSc
 // clip - Capture the screenshot of a given region only.
 // fromSurface - Capture the screenshot from the surface, rather than the view. Defaults to true.
 // captureBeyondViewport - Capture the screenshot beyond the viewport. Defaults to false.
+// optimizeForSpeed - Optimize image encoding for speed, not for resulting size (defaults to false)
 // Returns -  data - Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
-func (c *Page) CaptureScreenshot(ctx context.Context, format string, quality int, clip *PageViewport, fromSurface bool, captureBeyondViewport bool) (string, error) {
+func (c *Page) CaptureScreenshot(ctx context.Context, format string, quality int, clip *PageViewport, fromSurface bool, captureBeyondViewport bool, optimizeForSpeed bool) (string, error) {
 	var v PageCaptureScreenshotParams
 	v.Format = format
 	v.Quality = quality
 	v.Clip = clip
 	v.FromSurface = fromSurface
 	v.CaptureBeyondViewport = captureBeyondViewport
+	v.OptimizeForSpeed = optimizeForSpeed
 	return c.CaptureScreenshotWithParams(ctx, &v)
 }
 
@@ -839,7 +831,7 @@ func (c *Page) GetInstallabilityErrors(ctx context.Context) ([]*PageInstallabili
 	return chromeData.Result.InstallabilityErrors, nil
 }
 
-// GetManifestIcons -
+// GetManifestIcons - Deprecated because it's not guaranteed that the returned icon is in fact the one used for PWA installation.
 // Returns -  primaryIcon -
 func (c *Page) GetManifestIcons(ctx context.Context) (string, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getManifestIcons"})
@@ -904,7 +896,53 @@ func (c *Page) GetAppId(ctx context.Context) (string, string, error) {
 	return chromeData.Result.AppId, chromeData.Result.RecommendedId, nil
 }
 
-// GetCookies - Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the `cookies` field.
+type PageGetAdScriptIdParams struct {
+	//
+	FrameId string `json:"frameId"`
+}
+
+// GetAdScriptIdWithParams -
+// Returns -  adScriptId - Identifies the bottom-most script which caused the frame to be labelled as an ad. Only sent if frame is labelled as an ad and id is available.
+func (c *Page) GetAdScriptIdWithParams(ctx context.Context, v *PageGetAdScriptIdParams) (*PageAdScriptId, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getAdScriptId", Params: v})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			AdScriptId *PageAdScriptId
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.AdScriptId, nil
+}
+
+// GetAdScriptId -
+// frameId -
+// Returns -  adScriptId - Identifies the bottom-most script which caused the frame to be labelled as an ad. Only sent if frame is labelled as an ad and id is available.
+func (c *Page) GetAdScriptId(ctx context.Context, frameId string) (*PageAdScriptId, error) {
+	var v PageGetAdScriptIdParams
+	v.FrameId = frameId
+	return c.GetAdScriptIdWithParams(ctx, &v)
+}
+
+// GetCookies - Returns all browser cookies for the page and all of its subframes. Depending on the backend support, will return detailed cookie information in the `cookies` field.
 // Returns -  cookies - Array of cookie objects.
 func (c *Page) GetCookies(ctx context.Context) ([]*NetworkCookie, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getCookies"})
@@ -1955,7 +1993,7 @@ func (c *Page) ClearCompilationCache(ctx context.Context) (*gcdmessage.ChromeRes
 }
 
 type PageSetSPCTransactionModeParams struct {
-	//
+	//  enum values: none, autoAccept, autoReject, autoOptOut
 	Mode string `json:"mode"`
 }
 
@@ -1965,11 +2003,29 @@ func (c *Page) SetSPCTransactionModeWithParams(ctx context.Context, v *PageSetSP
 }
 
 // SetSPCTransactionMode - Sets the Secure Payment Confirmation transaction mode. https://w3c.github.io/secure-payment-confirmation/#sctn-automation-set-spc-transaction-mode
-// mode -
+// mode -  enum values: none, autoAccept, autoReject, autoOptOut
 func (c *Page) SetSPCTransactionMode(ctx context.Context, mode string) (*gcdmessage.ChromeResponse, error) {
 	var v PageSetSPCTransactionModeParams
 	v.Mode = mode
 	return c.SetSPCTransactionModeWithParams(ctx, &v)
+}
+
+type PageSetRPHRegistrationModeParams struct {
+	//  enum values: none, autoAccept, autoReject, autoOptOut
+	Mode string `json:"mode"`
+}
+
+// SetRPHRegistrationModeWithParams - Extensions for Custom Handlers API: https://html.spec.whatwg.org/multipage/system-state.html#rph-automation
+func (c *Page) SetRPHRegistrationModeWithParams(ctx context.Context, v *PageSetRPHRegistrationModeParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setRPHRegistrationMode", Params: v})
+}
+
+// SetRPHRegistrationMode - Extensions for Custom Handlers API: https://html.spec.whatwg.org/multipage/system-state.html#rph-automation
+// mode -  enum values: none, autoAccept, autoReject, autoOptOut
+func (c *Page) SetRPHRegistrationMode(ctx context.Context, mode string) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetRPHRegistrationModeParams
+	v.Mode = mode
+	return c.SetRPHRegistrationModeWithParams(ctx, &v)
 }
 
 type PageGenerateTestReportParams struct {

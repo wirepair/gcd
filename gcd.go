@@ -291,6 +291,7 @@ func (c *Gcd) getConnectableTargets() ([]*TargetInfo, error) {
 		targets := make([]*TargetInfo, 0)
 		err = json.Unmarshal(body, &targets)
 		if err != nil {
+			fmt.Printf("%s\n", string(body))
 			return nil, &GcdDecodingErr{Message: err.Error()}
 		}
 

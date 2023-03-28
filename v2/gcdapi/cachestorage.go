@@ -25,6 +25,7 @@ type CacheStorageDataEntry struct {
 type CacheStorageCache struct {
 	CacheId        string `json:"cacheId"`        // An opaque unique id of the cache.
 	SecurityOrigin string `json:"securityOrigin"` // Security origin of the cache.
+	StorageKey     string `json:"storageKey"`     // Storage key of the cache.
 	CacheName      string `json:"cacheName"`      // The name of the cache.
 }
 
@@ -89,8 +90,10 @@ func (c *CacheStorage) DeleteEntry(ctx context.Context, cacheId string, request 
 }
 
 type CacheStorageRequestCacheNamesParams struct {
-	// Security origin.
-	SecurityOrigin string `json:"securityOrigin"`
+	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	SecurityOrigin string `json:"securityOrigin,omitempty"`
+	// Storage key.
+	StorageKey string `json:"storageKey,omitempty"`
 }
 
 // RequestCacheNamesWithParams - Requests cache names.
@@ -126,11 +129,13 @@ func (c *CacheStorage) RequestCacheNamesWithParams(ctx context.Context, v *Cache
 }
 
 // RequestCacheNames - Requests cache names.
-// securityOrigin - Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// storageKey - Storage key.
 // Returns -  caches - Caches for the security origin.
-func (c *CacheStorage) RequestCacheNames(ctx context.Context, securityOrigin string) ([]*CacheStorageCache, error) {
+func (c *CacheStorage) RequestCacheNames(ctx context.Context, securityOrigin string, storageKey string) ([]*CacheStorageCache, error) {
 	var v CacheStorageRequestCacheNamesParams
 	v.SecurityOrigin = securityOrigin
+	v.StorageKey = storageKey
 	return c.RequestCacheNamesWithParams(ctx, &v)
 }
 

@@ -238,6 +238,10 @@ func (c *HeapProfiler) GetSamplingProfile(ctx context.Context) (*HeapProfilerSam
 type HeapProfilerStartSamplingParams struct {
 	// Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes.
 	SamplingInterval float64 `json:"samplingInterval,omitempty"`
+	// By default, the sampling heap profiler reports only objects which are still alive when the profile is returned via getSamplingProfile or stopSampling, which is useful for determining what functions contribute the most to steady-state memory usage. This flag instructs the sampling heap profiler to also include information about objects discarded by major GC, which will show which functions cause large temporary memory usage or long GC pauses.
+	IncludeObjectsCollectedByMajorGC bool `json:"includeObjectsCollectedByMajorGC,omitempty"`
+	// By default, the sampling heap profiler reports only objects which are still alive when the profile is returned via getSamplingProfile or stopSampling, which is useful for determining what functions contribute the most to steady-state memory usage. This flag instructs the sampling heap profiler to also include information about objects discarded by minor GC, which is useful when tuning a latency-sensitive application for minimal GC activity.
+	IncludeObjectsCollectedByMinorGC bool `json:"includeObjectsCollectedByMinorGC,omitempty"`
 }
 
 // StartSamplingWithParams -
@@ -247,9 +251,13 @@ func (c *HeapProfiler) StartSamplingWithParams(ctx context.Context, v *HeapProfi
 
 // StartSampling -
 // samplingInterval - Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes.
-func (c *HeapProfiler) StartSampling(ctx context.Context, samplingInterval float64) (*gcdmessage.ChromeResponse, error) {
+// includeObjectsCollectedByMajorGC - By default, the sampling heap profiler reports only objects which are still alive when the profile is returned via getSamplingProfile or stopSampling, which is useful for determining what functions contribute the most to steady-state memory usage. This flag instructs the sampling heap profiler to also include information about objects discarded by major GC, which will show which functions cause large temporary memory usage or long GC pauses.
+// includeObjectsCollectedByMinorGC - By default, the sampling heap profiler reports only objects which are still alive when the profile is returned via getSamplingProfile or stopSampling, which is useful for determining what functions contribute the most to steady-state memory usage. This flag instructs the sampling heap profiler to also include information about objects discarded by minor GC, which is useful when tuning a latency-sensitive application for minimal GC activity.
+func (c *HeapProfiler) StartSampling(ctx context.Context, samplingInterval float64, includeObjectsCollectedByMajorGC bool, includeObjectsCollectedByMinorGC bool) (*gcdmessage.ChromeResponse, error) {
 	var v HeapProfilerStartSamplingParams
 	v.SamplingInterval = samplingInterval
+	v.IncludeObjectsCollectedByMajorGC = includeObjectsCollectedByMajorGC
+	v.IncludeObjectsCollectedByMinorGC = includeObjectsCollectedByMinorGC
 	return c.StartSamplingWithParams(ctx, &v)
 }
 

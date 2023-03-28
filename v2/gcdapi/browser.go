@@ -104,7 +104,7 @@ func (c *Browser) SetPermission(ctx context.Context, permission *BrowserPermissi
 }
 
 type BrowserGrantPermissionsParams struct {
-	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, videoCapturePanTiltZoom, idleDetection, wakeLockScreen, wakeLockSystem
+	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, idleDetection, localFonts, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, storageAccess, topLevelStorageAccess, videoCapture, videoCapturePanTiltZoom, wakeLockScreen, wakeLockSystem, windowManagement
 	Permissions []string `json:"permissions"`
 	// Origin the permission applies to, all origins if not specified.
 	Origin string `json:"origin,omitempty"`
@@ -118,7 +118,7 @@ func (c *Browser) GrantPermissionsWithParams(ctx context.Context, v *BrowserGran
 }
 
 // GrantPermissions - Grant specific permissions to the given origin and reject all others.
-// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, videoCapture, videoCapturePanTiltZoom, idleDetection, wakeLockScreen, wakeLockSystem
+// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, idleDetection, localFonts, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, storageAccess, topLevelStorageAccess, videoCapture, videoCapturePanTiltZoom, wakeLockScreen, wakeLockSystem, windowManagement
 // origin - Origin the permission applies to, all origins if not specified.
 // browserContextId - BrowserContext to override permissions. When omitted, default browser context is used.
 func (c *Browser) GrantPermissions(ctx context.Context, permissions []string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
@@ -285,7 +285,7 @@ func (c *Browser) GetBrowserCommandLine(ctx context.Context) ([]string, error) {
 type BrowserGetHistogramsParams struct {
 	// Requested substring in name. Only histograms which have query as a substring in their name are extracted. An empty or absent query returns all histograms.
 	Query string `json:"query,omitempty"`
-	// If true, retrieve delta since last call.
+	// If true, retrieve delta since last delta call.
 	Delta bool `json:"delta,omitempty"`
 }
 
@@ -323,7 +323,7 @@ func (c *Browser) GetHistogramsWithParams(ctx context.Context, v *BrowserGetHist
 
 // GetHistograms - Get Chrome histograms.
 // query - Requested substring in name. Only histograms which have query as a substring in their name are extracted. An empty or absent query returns all histograms.
-// delta - If true, retrieve delta since last call.
+// delta - If true, retrieve delta since last delta call.
 // Returns -  histograms - Histograms.
 func (c *Browser) GetHistograms(ctx context.Context, query string, delta bool) ([]*BrowserHistogram, error) {
 	var v BrowserGetHistogramsParams
@@ -335,7 +335,7 @@ func (c *Browser) GetHistograms(ctx context.Context, query string, delta bool) (
 type BrowserGetHistogramParams struct {
 	// Requested histogram name.
 	Name string `json:"name"`
-	// If true, retrieve delta since last call.
+	// If true, retrieve delta since last delta call.
 	Delta bool `json:"delta,omitempty"`
 }
 
@@ -373,7 +373,7 @@ func (c *Browser) GetHistogramWithParams(ctx context.Context, v *BrowserGetHisto
 
 // GetHistogram - Get a Chrome histogram by name.
 // name - Requested histogram name.
-// delta - If true, retrieve delta since last call.
+// delta - If true, retrieve delta since last delta call.
 // Returns -  histogram - Histogram.
 func (c *Browser) GetHistogram(ctx context.Context, name string, delta bool) (*BrowserHistogram, error) {
 	var v BrowserGetHistogramParams
