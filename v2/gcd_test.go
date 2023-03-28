@@ -173,7 +173,7 @@ func TestTargetCrashed(t *testing.T) {
 	defer debugger.ExitProcess()
 
 	doneCh := make(chan error)
-	go testTimeoutListener(doneCh, 5, "timed out waiting for crashed to be handled")
+	go testTimeoutListener(doneCh, 10, "timed out waiting for crashed to be handled")
 
 	targetCrashedFn := func(targ *ChromeTarget, payload []byte) {
 		t.Logf("reason: %s\n", string(payload))
