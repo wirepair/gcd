@@ -28,6 +28,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -38,8 +39,8 @@ const (
 	channel             = "stable"                                  // appears only stable is in github/devtools-protocol.
 	revisionOS          = "win64"                                   // doesn't really matter
 	revisionEndpoint    = "https://omahaproxy.appspot.com/all.json" // get release level info
-	browserProtocolFile = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json"
-	jsProtocolFile      = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/js_protocol.json"
+	browserProtocolFile = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/%s/json/browser_protocol.json"
+	jsProtocolFile      = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/%s/json/js_protocol.json"
 )
 
 type ChromiumRevision []struct {
@@ -70,12 +71,12 @@ type RevisionInfo struct {
 	JsBranch string
 }
 
-func getApiRevision() *RevisionInfo {
+func getApiRevision(rev string) *RevisionInfo {
 	versionInfo := getRevisionData(channel)
 	if versionInfo == nil {
 		log.Fatalf("Error finding version information from %s", revisionEndpoint)
 	}
-	download(browserProtocolFile, jsProtocolFile)
+	download(fmt.Sprintf(browserProtocolFile, rev), fmt.Sprintf(jsProtocolFile, rev))
 	return versionInfo
 }
 
