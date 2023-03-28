@@ -32,7 +32,7 @@ type AuditsCookieIssueDetails struct {
 	Cookie                 *AuditsAffectedCookie  `json:"cookie,omitempty"`         // If AffectedCookie is not set then rawCookieLine contains the raw Set-Cookie header string. This hints at a problem where the cookie line is syntactically or semantically malformed in a way that no valid cookie could be created.
 	RawCookieLine          string                 `json:"rawCookieLine,omitempty"`  //
 	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteStrictLaxDowngradeStrict, WarnSameSiteStrictCrossDowngradeStrict, WarnSameSiteStrictCrossDowngradeLax, WarnSameSiteLaxCrossDowngradeStrict, WarnSameSiteLaxCrossDowngradeLax, WarnAttributeValueExceedsMaxSize, WarnDomainNonASCII
-	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict, ExcludeInvalidSameParty, ExcludeSamePartyCrossPartyContext, ExcludeDomainNonASCII
+	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict, ExcludeInvalidSameParty, ExcludeSamePartyCrossPartyContext, ExcludeDomainNonASCII, ExcludeThirdPartyCookieBlockedInFirstPartySet
 	Operation              string                 `json:"operation"`                // Optionally identifies the site-for-cookies and the cookie url, which may be used by the front-end as additional context. enum values: SetCookie, ReadCookie
 	SiteForCookies         string                 `json:"siteForCookies,omitempty"` //
 	CookieUrl              string                 `json:"cookieUrl,omitempty"`      //
@@ -123,7 +123,7 @@ type AuditsCorsIssueDetails struct {
 
 // Details for issues around "Attribution Reporting API" usage. Explainer: https://github.com/WICG/attribution-reporting-api
 type AuditsAttributionReportingIssueDetails struct {
-	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, UntrustworthyReportingOrigin, InsecureContext, InvalidHeader, InvalidRegisterTriggerHeader, InvalidEligibleHeader, TooManyConcurrentRequests, SourceAndTriggerHeaders, SourceIgnored, TriggerIgnored
+	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, UntrustworthyReportingOrigin, InsecureContext, InvalidHeader, InvalidRegisterTriggerHeader, InvalidEligibleHeader, TooManyConcurrentRequests, SourceAndTriggerHeaders, SourceIgnored, TriggerIgnored, OsSourceIgnored, OsTriggerIgnored, InvalidRegisterOsSourceHeader, InvalidRegisterOsTriggerHeader, WebAndOsHeaders
 	Request          *AuditsAffectedRequest `json:"request,omitempty"`          //
 	ViolatingNodeId  int                    `json:"violatingNodeId,omitempty"`  //
 	InvalidParameter string                 `json:"invalidParameter,omitempty"` //
@@ -146,20 +146,21 @@ type AuditsNavigatorUserAgentIssueDetails struct {
 
 // Depending on the concrete errorType, different properties are set.
 type AuditsGenericIssueDetails struct {
-	ErrorType string `json:"errorType"`         // Issues with the same errorType are aggregated in the frontend. enum values: CrossOriginPortalPostMessageError
-	FrameId   string `json:"frameId,omitempty"` //
+	ErrorType       string `json:"errorType"`                 // Issues with the same errorType are aggregated in the frontend. enum values: CrossOriginPortalPostMessageError, FormLabelForNameError, FormDuplicateIdForInputError, FormInputWithNoLabelError, FormAutocompleteAttributeEmptyError, FormEmptyIdAndNameAttributesForInputError, FormAriaLabelledByToNonExistingId, FormInputAssignedAutocompleteValueToIdOrNameAttributeError, FormLabelHasNeitherForNorNestedInput, FormLabelForMatchesNonExistingIdError
+	FrameId         string `json:"frameId,omitempty"`         //
+	ViolatingNodeId int    `json:"violatingNodeId,omitempty"` //
 }
 
 // This issue tracks information needed to print a deprecation message. https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/third_party/blink/renderer/core/frame/deprecation/README.md
 type AuditsDeprecationIssueDetails struct {
 	AffectedFrame      *AuditsAffectedFrame      `json:"affectedFrame,omitempty"` //
 	SourceCodeLocation *AuditsSourceCodeLocation `json:"sourceCodeLocation"`      //
-	Type               string                    `json:"type"`                    //  enum values: AuthorizationCoveredByWildcard, CanRequestURLHTTPContainingNewline, ChromeLoadTimesConnectionInfo, ChromeLoadTimesFirstPaintAfterLoadTime, ChromeLoadTimesWasAlternateProtocolAvailable, CookieWithTruncatingChar, CrossOriginAccessBasedOnDocumentDomain, CrossOriginWindowAlert, CrossOriginWindowConfirm, CSSSelectorInternalMediaControlsOverlayCastButton, DeprecationExample, DocumentDomainSettingWithoutOriginAgentClusterHeader, EventPath, ExpectCTHeader, GeolocationInsecureOrigin, GeolocationInsecureOriginDeprecatedNotRemoved, GetUserMediaInsecureOrigin, HostCandidateAttributeGetter, IdentityInCanMakePaymentEvent, InsecurePrivateNetworkSubresourceRequest, LegacyConstraintGoogIPv6, LocalCSSFileExtensionRejected, MediaSourceAbortRemove, MediaSourceDurationTruncatingBuffered, NavigateEventRestoreScroll, NavigateEventTransitionWhile, NoSysexWebMIDIWithoutPermission, NotificationInsecureOrigin, NotificationPermissionRequestedIframe, ObsoleteWebRtcCipherSuite, OpenWebDatabaseInsecureContext, OverflowVisibleOnReplacedElement, PersistentQuotaType, PictureSourceSrc, PrefixedCancelAnimationFrame, PrefixedRequestAnimationFrame, PrefixedStorageInfo, PrefixedVideoDisplayingFullscreen, PrefixedVideoEnterFullscreen, PrefixedVideoEnterFullScreen, PrefixedVideoExitFullscreen, PrefixedVideoExitFullScreen, PrefixedVideoSupportsFullscreen, RangeExpand, RequestedSubresourceWithEmbeddedCredentials, RTCConstraintEnableDtlsSrtpFalse, RTCConstraintEnableDtlsSrtpTrue, RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics, RTCPeerConnectionSdpSemanticsPlanB, RtcpMuxPolicyNegotiate, SharedArrayBufferConstructedWithoutIsolation, TextToSpeech_DisallowedByAutoplay, V8SharedArrayBufferConstructedInExtensionWithoutIsolation, XHRJSONEncodingDetection, XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload, XRSupportsSession
+	Type               string                    `json:"type"`                    // One of the deprecation names from third_party/blink/renderer/core/frame/deprecation/deprecation.json5
 }
 
 // No Description.
 type AuditsFederatedAuthRequestIssueDetails struct {
-	FederatedAuthRequestIssueReason string `json:"federatedAuthRequestIssueReason"` //  enum values: ShouldEmbargo, TooManyRequests, ManifestListHttpNotFound, ManifestListNoResponse, ManifestListInvalidResponse, ManifestNotInManifestList, ManifestListTooBig, ManifestHttpNotFound, ManifestNoResponse, ManifestInvalidResponse, ClientMetadataHttpNotFound, ClientMetadataNoResponse, ClientMetadataInvalidResponse, DisabledInSettings, ErrorFetchingSignin, InvalidSigninResponse, AccountsHttpNotFound, AccountsNoResponse, AccountsInvalidResponse, IdTokenHttpNotFound, IdTokenNoResponse, IdTokenInvalidResponse, IdTokenInvalidRequest, ErrorIdToken, Canceled, RpPageNotVisible
+	FederatedAuthRequestIssueReason string `json:"federatedAuthRequestIssueReason"` //  enum values: ShouldEmbargo, TooManyRequests, WellKnownHttpNotFound, WellKnownNoResponse, WellKnownInvalidResponse, WellKnownListEmpty, ConfigNotInWellKnown, WellKnownTooBig, ConfigHttpNotFound, ConfigNoResponse, ConfigInvalidResponse, ClientMetadataHttpNotFound, ClientMetadataNoResponse, ClientMetadataInvalidResponse, DisabledInSettings, ErrorFetchingSignin, InvalidSigninResponse, AccountsHttpNotFound, AccountsNoResponse, AccountsInvalidResponse, AccountsListEmpty, IdTokenHttpNotFound, IdTokenNoResponse, IdTokenInvalidResponse, IdTokenInvalidRequest, ErrorIdToken, Canceled, RpPageNotVisible
 }
 
 // This issue tracks client hints related issues. It's used to deprecate old features, encourage the use of new ones, and provide general guidance.

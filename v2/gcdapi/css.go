@@ -11,7 +11,7 @@ import (
 
 // CSS rule collection for a single pseudo style.
 type CSSPseudoElementMatches struct {
-	PseudoType       string          `json:"pseudoType"`                 // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, page-transition, page-transition-container, page-transition-image-wrapper, page-transition-outgoing-image, page-transition-incoming-image
+	PseudoType       string          `json:"pseudoType"`                 // Pseudo element type. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, view-transition, view-transition-group, view-transition-image-pair, view-transition-old, view-transition-new
 	PseudoIdentifier string          `json:"pseudoIdentifier,omitempty"` // Pseudo element custom ident.
 	Matches          []*CSSRuleMatch `json:"matches"`                    // Matches of CSS rules applicable to the pseudo style.
 }
@@ -70,6 +70,7 @@ type CSSCSSStyleSheetHeader struct {
 type CSSCSSRule struct {
 	StyleSheetId     string                  `json:"styleSheetId,omitempty"`     // The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
 	SelectorList     *CSSSelectorList        `json:"selectorList"`               // Rule selector data.
+	NestingSelectors []string                `json:"nestingSelectors,omitempty"` // Array of selectors from ancestor style rules, sorted by distance from the current rule.
 	Origin           string                  `json:"origin"`                     // Parent stylesheet's origin. enum values: injected, user-agent, inspector, regular
 	Style            *CSSCSSStyle            `json:"style"`                      // Associated style declaration.
 	Media            []*CSSCSSMedia          `json:"media,omitempty"`            // Media list array (for rules involving media queries). The array enumerates media queries starting with the innermost one, going outwards.
@@ -161,6 +162,8 @@ type CSSCSSContainerQuery struct {
 	Range        *CSSSourceRange `json:"range,omitempty"`        // The associated rule header range in the enclosing stylesheet (if available).
 	StyleSheetId string          `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
 	Name         string          `json:"name,omitempty"`         // Optional name for the container.
+	PhysicalAxes string          `json:"physicalAxes,omitempty"` // Optional physical axes queried for the container. enum values: Horizontal, Vertical, Both
+	LogicalAxes  string          `json:"logicalAxes,omitempty"`  // Optional logical axes queried for the container. enum values: Inline, Block, Both
 }
 
 // CSS Supports at-rule descriptor.
@@ -243,7 +246,7 @@ type CSSStyleDeclarationEdit struct {
 	Text         string          `json:"text"`         // New style text.
 }
 
-// Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded web font
+// Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded web font.
 type CSSFontsUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -845,7 +848,7 @@ func (c *CSS) TrackComputedStyleUpdates(ctx context.Context, propertiesToTrack [
 }
 
 // TakeComputedStyleUpdates - Polls the next batch of computed style updates.
-// Returns -  nodeIds - The list of node Ids that have their tracked computed styles updated
+// Returns -  nodeIds - The list of node Ids that have their tracked computed styles updated.
 func (c *CSS) TakeComputedStyleUpdates(ctx context.Context) ([]int, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeComputedStyleUpdates"})
 	if err != nil {
@@ -1327,7 +1330,7 @@ func (c *CSS) StartRuleUsageTracking(ctx context.Context) (*gcdmessage.ChromeRes
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.startRuleUsageTracking"})
 }
 
-// StopRuleUsageTracking - Stop tracking rule usage and return the list of rules that were used since last call to `takeCoverageDelta` (or since start of coverage instrumentation)
+// StopRuleUsageTracking - Stop tracking rule usage and return the list of rules that were used since last call to `takeCoverageDelta` (or since start of coverage instrumentation).
 // Returns -  ruleUsage -
 func (c *CSS) StopRuleUsageTracking(ctx context.Context) ([]*CSSRuleUsage, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.stopRuleUsageTracking"})
@@ -1359,7 +1362,7 @@ func (c *CSS) StopRuleUsageTracking(ctx context.Context) ([]*CSSRuleUsage, error
 	return chromeData.Result.RuleUsage, nil
 }
 
-// TakeCoverageDelta - Obtain list of rules that became used since last call to this method (or since start of coverage instrumentation)
+// TakeCoverageDelta - Obtain list of rules that became used since last call to this method (or since start of coverage instrumentation).
 // Returns -  coverage -  timestamp - Monotonically increasing time, in seconds.
 func (c *CSS) TakeCoverageDelta(ctx context.Context) ([]*CSSRuleUsage, float64, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.takeCoverageDelta"})

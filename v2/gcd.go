@@ -45,7 +45,7 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-var GCDVERSION = "v2.2.6"
+var GCDVERSION = "v2.3.0"
 
 var (
 	ErrNoTabAvailable = errors.New("no available tab found")
@@ -374,7 +374,12 @@ func (c *Gcd) GetNewTargets(knownIds map[string]struct{}) ([]*ChromeTarget, erro
 func (c *Gcd) getConnectableTargets() ([]*TargetInfo, error) {
 	// some times it takes a while to get results, so retry 4x
 	for i := 0; i < 4; i++ {
-		resp, err := http.Get(c.apiEndpoint)
+		req, err := http.NewRequest("PUT", c.apiEndpoint, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -408,7 +413,12 @@ func (c *Gcd) getConnectableTargets() ([]*TargetInfo, error) {
 
 // NewTab a new empty tab, returns the chrome target.
 func (c *Gcd) NewTab() (*ChromeTarget, error) {
-	resp, err := http.Get(c.apiEndpoint + "/new")
+	req, err := http.NewRequest("PUT", c.apiEndpoint+"/new", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -427,22 +437,6 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	return openChromeTarget(c, tabTarget, c.messageObserver)
 }
 
-// GetFirstTab returns the first tab created, to be called when
-// first started, otherwise you will get a random tab returned.
-func (c *Gcd) GetFirstTab() (*ChromeTarget, error) {
-	connectableTargets, err := c.getConnectableTargets()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, tabTarget := range connectableTargets {
-		if tabTarget.Type == "page" {
-			return openChromeTarget(c, tabTarget, c.messageObserver)
-		}
-	}
-	return nil, ErrNoTabAvailable
-}
-
 // GetRevision of chrome
 func (c *Gcd) GetRevision() string {
 	return gcdapi.CHROME_VERSION
@@ -450,7 +444,12 @@ func (c *Gcd) GetRevision() string {
 
 // CloseTab closes the target tab.
 func (c *Gcd) CloseTab(target *ChromeTarget) error {
-	resp, err := http.Get(fmt.Sprintf("%s/close/%s", c.apiEndpoint, target.Target.Id))
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/close/%s", c.apiEndpoint, target.Target.Id), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -461,7 +460,12 @@ func (c *Gcd) CloseTab(target *ChromeTarget) error {
 
 // ActivateTab (focus) the tab.
 func (c *Gcd) ActivateTab(target *ChromeTarget) error {
-	resp, err := http.Get(fmt.Sprintf("%s/activate/%s", c.apiEndpoint, target.Target.Id))
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/activate/%s", c.apiEndpoint, target.Target.Id), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}

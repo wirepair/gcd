@@ -36,7 +36,7 @@ type DOMNode struct {
 	XmlVersion        string            `json:"xmlVersion,omitempty"`        // `Document`'s XML version in case of XML documents.
 	Name              string            `json:"name,omitempty"`              // `Attr`'s name.
 	Value             string            `json:"value,omitempty"`             // `Attr`'s value.
-	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, page-transition, page-transition-container, page-transition-image-wrapper, page-transition-outgoing-image, page-transition-incoming-image
+	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, view-transition, view-transition-group, view-transition-image-pair, view-transition-old, view-transition-new
 	PseudoIdentifier  string            `json:"pseudoIdentifier,omitempty"`  // Pseudo element identifier for this node. Only present if there is a valid pseudoType.
 	ShadowRootType    string            `json:"shadowRootType,omitempty"`    // Shadow root type. enum values: user-agent, open, closed
 	FrameId           string            `json:"frameId,omitempty"`           // Frame ID for frame owner elements.
@@ -133,7 +133,7 @@ type DOMChildNodeInsertedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		ParentNodeId   int      `json:"parentNodeId"`   // Id of the node that has changed.
-		PreviousNodeId int      `json:"previousNodeId"` // If of the previous siblint.
+		PreviousNodeId int      `json:"previousNodeId"` // Id of the previous sibling.
 		Node           *DOMNode `json:"node"`           // Inserted node data.
 	} `json:"Params,omitempty"`
 }
@@ -638,7 +638,7 @@ type DOMGetDocumentParams struct {
 	Pierce bool `json:"pierce,omitempty"`
 }
 
-// GetDocumentWithParams - Returns the root DOM node (and optionally the subtree) to the caller.
+// GetDocumentWithParams - Returns the root DOM node (and optionally the subtree) to the caller. Implicitly enables the DOM domain events for the current target.
 // Returns -  root - Resulting node.
 func (c *DOM) GetDocumentWithParams(ctx context.Context, v *DOMGetDocumentParams) (*DOMNode, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getDocument", Params: v})
@@ -670,7 +670,7 @@ func (c *DOM) GetDocumentWithParams(ctx context.Context, v *DOMGetDocumentParams
 	return chromeData.Result.Root, nil
 }
 
-// GetDocument - Returns the root DOM node (and optionally the subtree) to the caller.
+// GetDocument - Returns the root DOM node (and optionally the subtree) to the caller. Implicitly enables the DOM domain events for the current target.
 // depth - The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
 // pierce - Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
 // Returns -  root - Resulting node.
@@ -1884,9 +1884,13 @@ type DOMGetContainerForNodeParams struct {
 	NodeId int `json:"nodeId"`
 	//
 	ContainerName string `json:"containerName,omitempty"`
+	//  enum values: Horizontal, Vertical, Both
+	PhysicalAxes string `json:"physicalAxes,omitempty"`
+	//  enum values: Inline, Block, Both
+	LogicalAxes string `json:"logicalAxes,omitempty"`
 }
 
-// GetContainerForNodeWithParams - Returns the container of the given node based on container query conditions. If containerName is given, it will find the nearest container with a matching name; otherwise it will find the nearest container regardless of its container name.
+// GetContainerForNodeWithParams - Returns the query container of the given node based on container query conditions: containerName, physical, and logical axes. If no axes are provided, the style container is returned, which is the direct parent or the closest element with a matching container-name.
 // Returns -  nodeId - The container node for the given node, or null if not found.
 func (c *DOM) GetContainerForNodeWithParams(ctx context.Context, v *DOMGetContainerForNodeParams) (int, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getContainerForNode", Params: v})
@@ -1918,14 +1922,18 @@ func (c *DOM) GetContainerForNodeWithParams(ctx context.Context, v *DOMGetContai
 	return chromeData.Result.NodeId, nil
 }
 
-// GetContainerForNode - Returns the container of the given node based on container query conditions. If containerName is given, it will find the nearest container with a matching name; otherwise it will find the nearest container regardless of its container name.
+// GetContainerForNode - Returns the query container of the given node based on container query conditions: containerName, physical, and logical axes. If no axes are provided, the style container is returned, which is the direct parent or the closest element with a matching container-name.
 // nodeId -
 // containerName -
+// physicalAxes -  enum values: Horizontal, Vertical, Both
+// logicalAxes -  enum values: Inline, Block, Both
 // Returns -  nodeId - The container node for the given node, or null if not found.
-func (c *DOM) GetContainerForNode(ctx context.Context, nodeId int, containerName string) (int, error) {
+func (c *DOM) GetContainerForNode(ctx context.Context, nodeId int, containerName string, physicalAxes string, logicalAxes string) (int, error) {
 	var v DOMGetContainerForNodeParams
 	v.NodeId = nodeId
 	v.ContainerName = containerName
+	v.PhysicalAxes = physicalAxes
+	v.LogicalAxes = logicalAxes
 	return c.GetContainerForNodeWithParams(ctx, &v)
 }
 

@@ -83,13 +83,25 @@ func TestGetPages(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
+	newTab, err := debugger.NewTab()
+	if err != nil {
+		t.Fatalf("error creating tab: %s\n", err)
+	}
+
 	targets, err := debugger.GetTargets()
 	if err != nil {
 		t.Fatalf("error getting targets: %s\n", err)
 	}
+
 	if len(targets) <= 0 {
 		t.Fatalf("invalid number of targets, got: %d\n", len(targets))
 	}
+
+	err = debugger.CloseTab(newTab)
+	if err != nil {
+		t.Fatalf("error CloseTab: %s\n", err)
+	}
+
 	t.Logf("page: %s\n", targets[0].Target.Url)
 }
 
@@ -529,7 +541,7 @@ func TestContextCancel(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 	defer cancel()
 
-	target, err := debugger.GetFirstTab()
+	target, err := debugger.NewTab()
 	if err != nil {
 		t.Fatalf("error getting first tab")
 	}
@@ -605,19 +617,10 @@ func TestNetworkIntercept(t *testing.T) {
 	<-doneCh
 }
 
-func TestGetFirstTab(t *testing.T) {
-	testDefaultStartup(t)
-	defer debugger.ExitProcess()
-	_, err := debugger.GetFirstTab()
-	if err != nil {
-		t.Fatalf("error getting first tab: %v\n", err)
-	}
-}
-
 func TestCloseTab(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
-	target, err := debugger.GetFirstTab()
+	target, err := debugger.NewTab()
 	if err != nil {
 		t.Fatalf("error getting first tab: %v\n", err)
 	}
@@ -638,9 +641,9 @@ func TestCustomLogger(t *testing.T) {
 	customLogger := &testLogger{}
 	testDefaultStartup(t, WithLogger(customLogger), WithEventDebugging())
 	defer debugger.ExitProcess()
-	tab, err := debugger.GetFirstTab()
+	tab, err := debugger.NewTab()
 	if err != nil {
-		t.Fatalf("error getting first tab: %v\n", err)
+		t.Fatalf("error getting new tab: %v\n", err)
 	}
 
 	if _, err = tab.Page.Enable(context.TODO()); err != nil {
