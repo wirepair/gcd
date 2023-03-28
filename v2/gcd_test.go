@@ -148,7 +148,7 @@ func TestProcessKilled(t *testing.T) {
 
 	terminatedHandler := func(reason string) {
 		t.Logf("reason: %s\n", reason)
-		doneCh <- struct{}{}
+		doneCh <- nil
 	}
 
 	testDefaultStartup(t, WithTerminationHandler(terminatedHandler))
@@ -357,7 +357,7 @@ func TestDOMEnableWithWhiteSpace(t *testing.T) {
 		if doc.ChildNodeCount != 2 {
 			t.Fatalf("failed to get 2 child nodes, got %d\n", doc.ChildNodeCount)
 		}
-		doneCh <- struct{}{}
+		doneCh <- nil
 	})
 
 	navParams := &gcdapi.PageNavigateParams{Url: testServerAddr + "cookie.html", TransitionType: "typed"}
