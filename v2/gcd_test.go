@@ -144,7 +144,7 @@ func TestGoRoutineCount(t *testing.T) {
 }
 
 func TestProcessKilled(t *testing.T) {
-	doneCh := make(chan struct{})
+	doneCh := make(chan error)
 
 	terminatedHandler := func(reason string) {
 		t.Logf("reason: %s\n", reason)
@@ -172,8 +172,8 @@ func TestTargetCrashed(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan struct{})
-	go testTimeoutListener(t, doneCh, 5, "timed out waiting for crashed to be handled")
+	doneCh := make(chan error)
+	go testTimeoutListener(doneCh, 5, "timed out waiting for crashed to be handled")
 
 	targetCrashedFn := func(targ *ChromeTarget, payload []byte) {
 		t.Logf("reason: %s\n", string(payload))
@@ -190,7 +190,11 @@ func TestTargetCrashed(t *testing.T) {
 
 	navParams := &gcdapi.PageNavigateParams{Url: "chrome://crash", TransitionType: "typed"}
 	tab.Page.NavigateWithParams(testCtx, navParams)
-	<-doneCh
+
+	err = <-doneCh
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestEvents(t *testing.T) {
@@ -203,7 +207,7 @@ func TestEvents(t *testing.T) {
 	}
 	console := target.Console
 
-	doneCh := make(chan struct{}, 1)
+	doneCh := make(chan error, 1)
 	target.Subscribe("Console.messageAdded", func(target *ChromeTarget, v []byte) {
 		target.Unsubscribe("Console.messageAdded")
 		msg := &gcdapi.ConsoleMessageAddedEvent{}
@@ -227,9 +231,12 @@ func TestEvents(t *testing.T) {
 		t.Fatalf("error attempting to navigate: %s\n", err)
 	}
 
-	go testTimeoutListener(t, doneCh, 5, "console message")
+	go testTimeoutListener(doneCh, 5, "console message")
 
-	<-doneCh
+	err = <-doneCh
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestEvaluate(t *testing.T) {
@@ -339,7 +346,7 @@ func TestDOMEnableWithWhiteSpace(t *testing.T) {
 		t.Fatalf("got error enabling DOM: %s\n", err)
 	}
 
-	doneCh := make(chan struct{})
+	doneCh := make(chan error)
 	target.Subscribe("Page.loadEventFired", func(target *ChromeTarget, payload []byte) {
 
 		doc, err := target.DOM.GetDocument(context.Background(), -1, true)
@@ -420,8 +427,8 @@ func TestComplexReturn(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan struct{}, 1)
-	go testTimeoutListener(t, doneCh, 7, "waiting for page load to get cookies")
+	doneCh := make(chan error, 1)
+	go testTimeoutListener(doneCh, 7, "waiting for page load to get cookies")
 	target, err := debugger.NewTab()
 
 	if err != nil {
@@ -462,16 +469,20 @@ func TestComplexReturn(t *testing.T) {
 	}
 
 	t.Logf("waiting for loadEventFired")
-	<-doneCh
+	err = <-doneCh
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestConnectToInstance(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan struct{})
+	doneCh := make(chan error)
 
-	go testTimeoutListener(t, doneCh, 15, "timed out waiting for remote connection")
+	go testTimeoutListener(doneCh, 15, "timed out waiting for remote connection")
+
 	go func() {
 		remoteDebugger := NewChromeDebugger()
 		remoteDebugger.ConnectToInstance(debugger.host, debugger.port)
@@ -493,7 +504,11 @@ func TestConnectToInstance(t *testing.T) {
 		}
 		close(doneCh)
 	}()
-	<-doneCh
+
+	err := <-doneCh
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestLocalExtension(t *testing.T) {
@@ -504,7 +519,7 @@ func TestLocalExtension(t *testing.T) {
 
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan struct{})
+	doneCh := make(chan error)
 
 	target, err := debugger.NewTab()
 	if err != nil {
@@ -530,8 +545,11 @@ func TestLocalExtension(t *testing.T) {
 		t.Fatalf("error navigating: %s\n", err)
 	}
 
-	go testTimeoutListener(t, doneCh, 15, "timed out waiting for remote connection")
-	<-doneCh
+	go testTimeoutListener(doneCh, 15, "timed out waiting for remote connection")
+	err = <-doneCh
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestContextCancel(t *testing.T) {
@@ -560,14 +578,14 @@ func TestNetworkIntercept(t *testing.T) {
 	testDefaultStartup(t, WithEventDebugging(), WithInternalDebugMessages(), WithLogger(&DebugLogger{}))
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan struct{})
+	doneCh := make(chan error)
 
 	target, err := debugger.NewTab()
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
 
-	go testTimeoutListener(t, doneCh, 5, "timed out waiting for requestIntercepted")
+	go testTimeoutListener(doneCh, 5, "timed out waiting for requestIntercepted")
 	ctx := context.Background()
 	if _, err := target.Fetch.Enable(ctx, []*gcdapi.FetchRequestPattern{
 		{
@@ -614,7 +632,10 @@ func TestNetworkIntercept(t *testing.T) {
 		t.Fatalf("error navigating: %s\n", err)
 	}
 
-	<-doneCh
+	err = <-doneCh
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestCloseTab(t *testing.T) {
@@ -686,7 +707,7 @@ func testServer() {
 	go http.Serve(testListener, http.FileServer(http.Dir("testdata/")))
 }
 
-func testTimeoutListener(t *testing.T, closeCh chan struct{}, seconds time.Duration, message string) {
+func testTimeoutListener(closeCh chan error, seconds time.Duration, message string) {
 	timeout := time.NewTimer(seconds * time.Second)
 	for {
 		select {
@@ -694,8 +715,8 @@ func testTimeoutListener(t *testing.T, closeCh chan struct{}, seconds time.Durat
 			timeout.Stop()
 			return
 		case <-timeout.C:
+			closeCh <- fmt.Errorf("timed out waiting %s", message)
 			close(closeCh)
-			t.Fatalf("timed out waiting for %s", message)
 			return
 		}
 	}
