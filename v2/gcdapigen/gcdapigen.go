@@ -63,7 +63,11 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 // Chrome Channel information
 const CHROME_CHANNEL = "%s" 
 // Chrome Version information
-const CHROME_VERSION = "%s"`
+const CHROME_VERSION = "%s"
+// Protocol Major version
+const DEVTOOLS_MAJOR_VERSION = "%s"
+// Protocol Minor version
+const DEVTOOLS_MINOR_VERSION = "%s"`
 )
 
 var file string
@@ -133,18 +137,25 @@ func main() {
 		domain.WriteDomain()
 	}
 
-	if revisionInfo != nil {
-		writeVersionFile()
-	}
+	writeVersionFile(revisionInfo, protocolApi.Version)
 }
 
-func writeVersionFile() {
+func writeVersionFile(revision *RevisionInfo, apiVersion *ProtoApiVersion) {
 	versionFile := outputDir + string(os.PathSeparator) + "version.go"
 	wr, err := os.Create(versionFile)
 	if err != nil {
 		log.Fatalf("error creating version output file: %s\n", err)
 	}
-	wr.WriteString(fmt.Sprintf(versionData, revisionInfo.Channel, revisionInfo.Version))
+	
+	chromeChannel := "unknown"
+	chromeVersion := "unknown"
+
+	if revision != nil {
+		chromeChannel = revision.Channel
+		chromeVersion = revision.Version
+	}
+
+	wr.WriteString(fmt.Sprintf(versionData, chromeChannel, chromeVersion, apiVersion.Major, apiVersion.Minor))
 	wr.Close()
 }
 
