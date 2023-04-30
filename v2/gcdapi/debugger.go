@@ -112,7 +112,7 @@ type DebuggerScriptFailedToParseEvent struct {
 		EndColumn               int                    `json:"endColumn"`                         // Length of the last line of the script.
 		ExecutionContextId      int                    `json:"executionContextId"`                // Specifies script creation context.
 		Hash                    string                 `json:"hash"`                              // Content hash of the script, SHA-256.
-		ExecutionContextAuxData map[string]interface{} `json:"executionContextAuxData,omitempty"` // Embedder-specific auxiliary data.
+		ExecutionContextAuxData map[string]interface{} `json:"executionContextAuxData,omitempty"` // Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
 		SourceMapURL            string                 `json:"sourceMapURL,omitempty"`            // URL of source map associated with script (if any).
 		HasSourceURL            bool                   `json:"hasSourceURL,omitempty"`            // True, if this script has sourceURL.
 		IsModule                bool                   `json:"isModule,omitempty"`                // True, if this script is ES6 module.
@@ -136,7 +136,7 @@ type DebuggerScriptParsedEvent struct {
 		EndColumn               int                    `json:"endColumn"`                         // Length of the last line of the script.
 		ExecutionContextId      int                    `json:"executionContextId"`                // Specifies script creation context.
 		Hash                    string                 `json:"hash"`                              // Content hash of the script, SHA-256.
-		ExecutionContextAuxData map[string]interface{} `json:"executionContextAuxData,omitempty"` // Embedder-specific auxiliary data.
+		ExecutionContextAuxData map[string]interface{} `json:"executionContextAuxData,omitempty"` // Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
 		IsLiveEdit              bool                   `json:"isLiveEdit,omitempty"`              // True, if this script is generated as a result of the live edit operation.
 		SourceMapURL            string                 `json:"sourceMapURL,omitempty"`            // URL of source map associated with script (if any).
 		HasSourceURL            bool                   `json:"hasSourceURL,omitempty"`            // True, if this script has sourceURL.

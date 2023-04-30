@@ -47,23 +47,24 @@ type CSSSelectorList struct {
 
 // CSS stylesheet metainformation.
 type CSSCSSStyleSheetHeader struct {
-	StyleSheetId  string  `json:"styleSheetId"`           // The stylesheet identifier.
-	FrameId       string  `json:"frameId"`                // Owner frame identifier.
-	SourceURL     string  `json:"sourceURL"`              // Stylesheet resource URL. Empty if this is a constructed stylesheet created using new CSSStyleSheet() (but non-empty if this is a constructed sylesheet imported as a CSS module script).
-	SourceMapURL  string  `json:"sourceMapURL,omitempty"` // URL of source map associated with the stylesheet (if any).
-	Origin        string  `json:"origin"`                 // Stylesheet origin. enum values: injected, user-agent, inspector, regular
-	Title         string  `json:"title"`                  // Stylesheet title.
-	OwnerNode     int     `json:"ownerNode,omitempty"`    // The backend id for the owner node of the stylesheet.
-	Disabled      bool    `json:"disabled"`               // Denotes whether the stylesheet is disabled.
-	HasSourceURL  bool    `json:"hasSourceURL,omitempty"` // Whether the sourceURL field value comes from the sourceURL comment.
-	IsInline      bool    `json:"isInline"`               // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
-	IsMutable     bool    `json:"isMutable"`              // Whether this stylesheet is mutable. Inline stylesheets become mutable after they have been modified via CSSOM API. <link> element's stylesheets become mutable only if DevTools modifies them. Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
-	IsConstructed bool    `json:"isConstructed"`          // True if this stylesheet is created through new CSSStyleSheet() or imported as a CSS module script.
-	StartLine     float64 `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
-	StartColumn   float64 `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
-	Length        float64 `json:"length"`                 // Size of the content (in characters).
-	EndLine       float64 `json:"endLine"`                // Line offset of the end of the stylesheet within the resource (zero based).
-	EndColumn     float64 `json:"endColumn"`              // Column offset of the end of the stylesheet within the resource (zero based).
+	StyleSheetId  string  `json:"styleSheetId"`            // The stylesheet identifier.
+	FrameId       string  `json:"frameId"`                 // Owner frame identifier.
+	SourceURL     string  `json:"sourceURL"`               // Stylesheet resource URL. Empty if this is a constructed stylesheet created using new CSSStyleSheet() (but non-empty if this is a constructed sylesheet imported as a CSS module script).
+	SourceMapURL  string  `json:"sourceMapURL,omitempty"`  // URL of source map associated with the stylesheet (if any).
+	Origin        string  `json:"origin"`                  // Stylesheet origin. enum values: injected, user-agent, inspector, regular
+	Title         string  `json:"title"`                   // Stylesheet title.
+	OwnerNode     int     `json:"ownerNode,omitempty"`     // The backend id for the owner node of the stylesheet.
+	Disabled      bool    `json:"disabled"`                // Denotes whether the stylesheet is disabled.
+	HasSourceURL  bool    `json:"hasSourceURL,omitempty"`  // Whether the sourceURL field value comes from the sourceURL comment.
+	IsInline      bool    `json:"isInline"`                // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
+	IsMutable     bool    `json:"isMutable"`               // Whether this stylesheet is mutable. Inline stylesheets become mutable after they have been modified via CSSOM API. <link> element's stylesheets become mutable only if DevTools modifies them. Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
+	IsConstructed bool    `json:"isConstructed"`           // True if this stylesheet is created through new CSSStyleSheet() or imported as a CSS module script.
+	StartLine     float64 `json:"startLine"`               // Line offset of the stylesheet within the resource (zero based).
+	StartColumn   float64 `json:"startColumn"`             // Column offset of the stylesheet within the resource (zero based).
+	Length        float64 `json:"length"`                  // Size of the content (in characters).
+	EndLine       float64 `json:"endLine"`                 // Line offset of the end of the stylesheet within the resource (zero based).
+	EndColumn     float64 `json:"endColumn"`               // Column offset of the end of the stylesheet within the resource (zero based).
+	LoadingFailed bool    `json:"loadingFailed,omitempty"` // If the style sheet was loaded from a network resource, this indicates when the resource failed to load
 }
 
 // CSS rule representation.
@@ -223,6 +224,19 @@ type CSSFontFace struct {
 	Src                string                  `json:"src"`                         // The src.
 	PlatformFontFamily string                  `json:"platformFontFamily"`          // The resolved platform font family
 	FontVariationAxes  []*CSSFontVariationAxis `json:"fontVariationAxes,omitempty"` // Available variation settings (a.k.a. "axes").
+}
+
+// CSS try rule representation.
+type CSSCSSTryRule struct {
+	StyleSheetId string       `json:"styleSheetId,omitempty"` // The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
+	Origin       string       `json:"origin"`                 // Parent stylesheet's origin. enum values: injected, user-agent, inspector, regular
+	Style        *CSSCSSStyle `json:"style"`                  // Associated style declaration.
+}
+
+// CSS position-fallback rule representation.
+type CSSCSSPositionFallbackRule struct {
+	Name     *CSSValue        `json:"name"`     //
+	TryRules []*CSSCSSTryRule `json:"tryRules"` // List of keyframes.
 }
 
 // CSS keyframes rule representation.
@@ -612,48 +626,49 @@ type CSSGetMatchedStylesForNodeParams struct {
 }
 
 // GetMatchedStylesForNodeWithParams - Returns requested styles for a DOM node identified by `nodeId`.
-// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node. parentLayoutNodeId - Id of the first parent element that does not have display: contents.
-func (c *CSS) GetMatchedStylesForNodeWithParams(ctx context.Context, v *CSSGetMatchedStylesForNodeParams) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSInheritedPseudoElementMatches, []*CSSCSSKeyframesRule, int, error) {
+// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node. cssPositionFallbackRules - A list of CSS position fallbacks matching this node. parentLayoutNodeId - Id of the first parent element that does not have display: contents.
+func (c *CSS) GetMatchedStylesForNodeWithParams(ctx context.Context, v *CSSGetMatchedStylesForNodeParams) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSInheritedPseudoElementMatches, []*CSSCSSKeyframesRule, []*CSSCSSPositionFallbackRule, int, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "CSS.getMatchedStylesForNode", Params: v})
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, 0, err
+		return nil, nil, nil, nil, nil, nil, nil, nil, 0, err
 	}
 
 	var chromeData struct {
 		Result struct {
-			InlineStyle             *CSSCSSStyle
-			AttributesStyle         *CSSCSSStyle
-			MatchedCSSRules         []*CSSRuleMatch
-			PseudoElements          []*CSSPseudoElementMatches
-			Inherited               []*CSSInheritedStyleEntry
-			InheritedPseudoElements []*CSSInheritedPseudoElementMatches
-			CssKeyframesRules       []*CSSCSSKeyframesRule
-			ParentLayoutNodeId      int
+			InlineStyle              *CSSCSSStyle
+			AttributesStyle          *CSSCSSStyle
+			MatchedCSSRules          []*CSSRuleMatch
+			PseudoElements           []*CSSPseudoElementMatches
+			Inherited                []*CSSInheritedStyleEntry
+			InheritedPseudoElements  []*CSSInheritedPseudoElementMatches
+			CssKeyframesRules        []*CSSCSSKeyframesRule
+			CssPositionFallbackRules []*CSSCSSPositionFallbackRule
+			ParentLayoutNodeId       int
 		}
 	}
 
 	if resp == nil {
-		return nil, nil, nil, nil, nil, nil, nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
+		return nil, nil, nil, nil, nil, nil, nil, nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	// test if error first
 	cerr := &gcdmessage.ChromeErrorResponse{}
 	json.Unmarshal(resp.Data, cerr)
 	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, nil, nil, nil, nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+		return nil, nil, nil, nil, nil, nil, nil, nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
 	}
 
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, 0, err
+		return nil, nil, nil, nil, nil, nil, nil, nil, 0, err
 	}
 
-	return chromeData.Result.InlineStyle, chromeData.Result.AttributesStyle, chromeData.Result.MatchedCSSRules, chromeData.Result.PseudoElements, chromeData.Result.Inherited, chromeData.Result.InheritedPseudoElements, chromeData.Result.CssKeyframesRules, chromeData.Result.ParentLayoutNodeId, nil
+	return chromeData.Result.InlineStyle, chromeData.Result.AttributesStyle, chromeData.Result.MatchedCSSRules, chromeData.Result.PseudoElements, chromeData.Result.Inherited, chromeData.Result.InheritedPseudoElements, chromeData.Result.CssKeyframesRules, chromeData.Result.CssPositionFallbackRules, chromeData.Result.ParentLayoutNodeId, nil
 }
 
 // GetMatchedStylesForNode - Returns requested styles for a DOM node identified by `nodeId`.
 // nodeId -
-// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node. parentLayoutNodeId - Id of the first parent element that does not have display: contents.
-func (c *CSS) GetMatchedStylesForNode(ctx context.Context, nodeId int) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSInheritedPseudoElementMatches, []*CSSCSSKeyframesRule, int, error) {
+// Returns -  inlineStyle - Inline style for the specified DOM node. attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%"). matchedCSSRules - CSS rules matching this node, from all applicable stylesheets. pseudoElements - Pseudo style matches for this node. inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root). inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root). cssKeyframesRules - A list of CSS keyframed animations matching this node. cssPositionFallbackRules - A list of CSS position fallbacks matching this node. parentLayoutNodeId - Id of the first parent element that does not have display: contents.
+func (c *CSS) GetMatchedStylesForNode(ctx context.Context, nodeId int) (*CSSCSSStyle, *CSSCSSStyle, []*CSSRuleMatch, []*CSSPseudoElementMatches, []*CSSInheritedStyleEntry, []*CSSInheritedPseudoElementMatches, []*CSSCSSKeyframesRule, []*CSSCSSPositionFallbackRule, int, error) {
 	var v CSSGetMatchedStylesForNodeParams
 	v.NodeId = nodeId
 	return c.GetMatchedStylesForNodeWithParams(ctx, &v)
