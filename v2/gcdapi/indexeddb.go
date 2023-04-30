@@ -73,10 +73,12 @@ func NewIndexedDB(target gcdmessage.ChromeTargeter) *IndexedDB {
 }
 
 type IndexedDBClearObjectStoreParams struct {
-	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	// At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 	SecurityOrigin string `json:"securityOrigin,omitempty"`
 	// Storage key.
 	StorageKey string `json:"storageKey,omitempty"`
+	// Storage bucket. If not specified, it uses the default bucket.
+	StorageBucket *StorageStorageBucket `json:"storageBucket,omitempty"`
 	// Database name.
 	DatabaseName string `json:"databaseName"`
 	// Object store name.
@@ -89,24 +91,28 @@ func (c *IndexedDB) ClearObjectStoreWithParams(ctx context.Context, v *IndexedDB
 }
 
 // ClearObjectStore - Clears all entries from an object store.
-// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 // storageKey - Storage key.
+// storageBucket - Storage bucket. If not specified, it uses the default bucket.
 // databaseName - Database name.
 // objectStoreName - Object store name.
-func (c *IndexedDB) ClearObjectStore(ctx context.Context, securityOrigin string, storageKey string, databaseName string, objectStoreName string) (*gcdmessage.ChromeResponse, error) {
+func (c *IndexedDB) ClearObjectStore(ctx context.Context, securityOrigin string, storageKey string, storageBucket *StorageStorageBucket, databaseName string, objectStoreName string) (*gcdmessage.ChromeResponse, error) {
 	var v IndexedDBClearObjectStoreParams
 	v.SecurityOrigin = securityOrigin
 	v.StorageKey = storageKey
+	v.StorageBucket = storageBucket
 	v.DatabaseName = databaseName
 	v.ObjectStoreName = objectStoreName
 	return c.ClearObjectStoreWithParams(ctx, &v)
 }
 
 type IndexedDBDeleteDatabaseParams struct {
-	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	// At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 	SecurityOrigin string `json:"securityOrigin,omitempty"`
 	// Storage key.
 	StorageKey string `json:"storageKey,omitempty"`
+	// Storage bucket. If not specified, it uses the default bucket.
+	StorageBucket *StorageStorageBucket `json:"storageBucket,omitempty"`
 	// Database name.
 	DatabaseName string `json:"databaseName"`
 }
@@ -117,22 +123,26 @@ func (c *IndexedDB) DeleteDatabaseWithParams(ctx context.Context, v *IndexedDBDe
 }
 
 // DeleteDatabase - Deletes a database.
-// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 // storageKey - Storage key.
+// storageBucket - Storage bucket. If not specified, it uses the default bucket.
 // databaseName - Database name.
-func (c *IndexedDB) DeleteDatabase(ctx context.Context, securityOrigin string, storageKey string, databaseName string) (*gcdmessage.ChromeResponse, error) {
+func (c *IndexedDB) DeleteDatabase(ctx context.Context, securityOrigin string, storageKey string, storageBucket *StorageStorageBucket, databaseName string) (*gcdmessage.ChromeResponse, error) {
 	var v IndexedDBDeleteDatabaseParams
 	v.SecurityOrigin = securityOrigin
 	v.StorageKey = storageKey
+	v.StorageBucket = storageBucket
 	v.DatabaseName = databaseName
 	return c.DeleteDatabaseWithParams(ctx, &v)
 }
 
 type IndexedDBDeleteObjectStoreEntriesParams struct {
-	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	// At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 	SecurityOrigin string `json:"securityOrigin,omitempty"`
 	// Storage key.
 	StorageKey string `json:"storageKey,omitempty"`
+	// Storage bucket. If not specified, it uses the default bucket.
+	StorageBucket *StorageStorageBucket `json:"storageBucket,omitempty"`
 	//
 	DatabaseName string `json:"databaseName"`
 	//
@@ -147,15 +157,17 @@ func (c *IndexedDB) DeleteObjectStoreEntriesWithParams(ctx context.Context, v *I
 }
 
 // DeleteObjectStoreEntries - Delete a range of entries from an object store
-// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 // storageKey - Storage key.
+// storageBucket - Storage bucket. If not specified, it uses the default bucket.
 // databaseName -
 // objectStoreName -
 // keyRange - Range of entry keys to delete
-func (c *IndexedDB) DeleteObjectStoreEntries(ctx context.Context, securityOrigin string, storageKey string, databaseName string, objectStoreName string, keyRange *IndexedDBKeyRange) (*gcdmessage.ChromeResponse, error) {
+func (c *IndexedDB) DeleteObjectStoreEntries(ctx context.Context, securityOrigin string, storageKey string, storageBucket *StorageStorageBucket, databaseName string, objectStoreName string, keyRange *IndexedDBKeyRange) (*gcdmessage.ChromeResponse, error) {
 	var v IndexedDBDeleteObjectStoreEntriesParams
 	v.SecurityOrigin = securityOrigin
 	v.StorageKey = storageKey
+	v.StorageBucket = storageBucket
 	v.DatabaseName = databaseName
 	v.ObjectStoreName = objectStoreName
 	v.KeyRange = keyRange
@@ -173,10 +185,12 @@ func (c *IndexedDB) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, err
 }
 
 type IndexedDBRequestDataParams struct {
-	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	// At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 	SecurityOrigin string `json:"securityOrigin,omitempty"`
 	// Storage key.
 	StorageKey string `json:"storageKey,omitempty"`
+	// Storage bucket. If not specified, it uses the default bucket.
+	StorageBucket *StorageStorageBucket `json:"storageBucket,omitempty"`
 	// Database name.
 	DatabaseName string `json:"databaseName"`
 	// Object store name.
@@ -225,8 +239,9 @@ func (c *IndexedDB) RequestDataWithParams(ctx context.Context, v *IndexedDBReque
 }
 
 // RequestData - Requests data from object store or index.
-// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 // storageKey - Storage key.
+// storageBucket - Storage bucket. If not specified, it uses the default bucket.
 // databaseName - Database name.
 // objectStoreName - Object store name.
 // indexName - Index name, empty string for object store data requests.
@@ -234,10 +249,11 @@ func (c *IndexedDB) RequestDataWithParams(ctx context.Context, v *IndexedDBReque
 // pageSize - Number of records to fetch.
 // keyRange - Key range.
 // Returns -  objectStoreDataEntries - Array of object store data entries. hasMore - If true, there are more entries to fetch in the given range.
-func (c *IndexedDB) RequestData(ctx context.Context, securityOrigin string, storageKey string, databaseName string, objectStoreName string, indexName string, skipCount int, pageSize int, keyRange *IndexedDBKeyRange) ([]*IndexedDBDataEntry, bool, error) {
+func (c *IndexedDB) RequestData(ctx context.Context, securityOrigin string, storageKey string, storageBucket *StorageStorageBucket, databaseName string, objectStoreName string, indexName string, skipCount int, pageSize int, keyRange *IndexedDBKeyRange) ([]*IndexedDBDataEntry, bool, error) {
 	var v IndexedDBRequestDataParams
 	v.SecurityOrigin = securityOrigin
 	v.StorageKey = storageKey
+	v.StorageBucket = storageBucket
 	v.DatabaseName = databaseName
 	v.ObjectStoreName = objectStoreName
 	v.IndexName = indexName
@@ -248,10 +264,12 @@ func (c *IndexedDB) RequestData(ctx context.Context, securityOrigin string, stor
 }
 
 type IndexedDBGetMetadataParams struct {
-	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	// At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 	SecurityOrigin string `json:"securityOrigin,omitempty"`
 	// Storage key.
 	StorageKey string `json:"storageKey,omitempty"`
+	// Storage bucket. If not specified, it uses the default bucket.
+	StorageBucket *StorageStorageBucket `json:"storageBucket,omitempty"`
 	// Database name.
 	DatabaseName string `json:"databaseName"`
 	// Object store name.
@@ -292,25 +310,29 @@ func (c *IndexedDB) GetMetadataWithParams(ctx context.Context, v *IndexedDBGetMe
 }
 
 // GetMetadata - Gets metadata of an object store.
-// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 // storageKey - Storage key.
+// storageBucket - Storage bucket. If not specified, it uses the default bucket.
 // databaseName - Database name.
 // objectStoreName - Object store name.
 // Returns -  entriesCount - the entries count keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
-func (c *IndexedDB) GetMetadata(ctx context.Context, securityOrigin string, storageKey string, databaseName string, objectStoreName string) (float64, float64, error) {
+func (c *IndexedDB) GetMetadata(ctx context.Context, securityOrigin string, storageKey string, storageBucket *StorageStorageBucket, databaseName string, objectStoreName string) (float64, float64, error) {
 	var v IndexedDBGetMetadataParams
 	v.SecurityOrigin = securityOrigin
 	v.StorageKey = storageKey
+	v.StorageBucket = storageBucket
 	v.DatabaseName = databaseName
 	v.ObjectStoreName = objectStoreName
 	return c.GetMetadataWithParams(ctx, &v)
 }
 
 type IndexedDBRequestDatabaseParams struct {
-	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	// At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 	SecurityOrigin string `json:"securityOrigin,omitempty"`
 	// Storage key.
 	StorageKey string `json:"storageKey,omitempty"`
+	// Storage bucket. If not specified, it uses the default bucket.
+	StorageBucket *StorageStorageBucket `json:"storageBucket,omitempty"`
 	// Database name.
 	DatabaseName string `json:"databaseName"`
 }
@@ -348,23 +370,27 @@ func (c *IndexedDB) RequestDatabaseWithParams(ctx context.Context, v *IndexedDBR
 }
 
 // RequestDatabase - Requests database with given name in given frame.
-// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 // storageKey - Storage key.
+// storageBucket - Storage bucket. If not specified, it uses the default bucket.
 // databaseName - Database name.
 // Returns -  databaseWithObjectStores - Database with an array of object stores.
-func (c *IndexedDB) RequestDatabase(ctx context.Context, securityOrigin string, storageKey string, databaseName string) (*IndexedDBDatabaseWithObjectStores, error) {
+func (c *IndexedDB) RequestDatabase(ctx context.Context, securityOrigin string, storageKey string, storageBucket *StorageStorageBucket, databaseName string) (*IndexedDBDatabaseWithObjectStores, error) {
 	var v IndexedDBRequestDatabaseParams
 	v.SecurityOrigin = securityOrigin
 	v.StorageKey = storageKey
+	v.StorageBucket = storageBucket
 	v.DatabaseName = databaseName
 	return c.RequestDatabaseWithParams(ctx, &v)
 }
 
 type IndexedDBRequestDatabaseNamesParams struct {
-	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	// At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 	SecurityOrigin string `json:"securityOrigin,omitempty"`
 	// Storage key.
 	StorageKey string `json:"storageKey,omitempty"`
+	// Storage bucket. If not specified, it uses the default bucket.
+	StorageBucket *StorageStorageBucket `json:"storageBucket,omitempty"`
 }
 
 // RequestDatabaseNamesWithParams - Requests database names for given security origin.
@@ -400,12 +426,14 @@ func (c *IndexedDB) RequestDatabaseNamesWithParams(ctx context.Context, v *Index
 }
 
 // RequestDatabaseNames - Requests database names for given security origin.
-// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey, or storageBucket must be specified. Security origin.
 // storageKey - Storage key.
+// storageBucket - Storage bucket. If not specified, it uses the default bucket.
 // Returns -  databaseNames - Database names for origin.
-func (c *IndexedDB) RequestDatabaseNames(ctx context.Context, securityOrigin string, storageKey string) ([]string, error) {
+func (c *IndexedDB) RequestDatabaseNames(ctx context.Context, securityOrigin string, storageKey string, storageBucket *StorageStorageBucket) ([]string, error) {
 	var v IndexedDBRequestDatabaseNamesParams
 	v.SecurityOrigin = securityOrigin
 	v.StorageKey = storageKey
+	v.StorageBucket = storageBucket
 	return c.RequestDatabaseNamesWithParams(ctx, &v)
 }

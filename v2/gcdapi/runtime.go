@@ -102,7 +102,7 @@ type RuntimeExecutionContextDescription struct {
 	Origin   string                 `json:"origin"`            // Execution context origin.
 	Name     string                 `json:"name"`              // Human readable name describing given context.
 	UniqueId string                 `json:"uniqueId"`          // A system-unique execution context identifier. Unlike the id, this is unique across multiple processes, so can be reliably used to identify specific context while backend performs a cross-process navigation.
-	AuxData  map[string]interface{} `json:"auxData,omitempty"` // Embedder-specific auxiliary data.
+	AuxData  map[string]interface{} `json:"auxData,omitempty"` // Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
 }
 
 // Detailed information about exception (or error) that was thrown during script compilation or execution.

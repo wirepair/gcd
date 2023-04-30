@@ -123,7 +123,7 @@ type AuditsCorsIssueDetails struct {
 
 // Details for issues around "Attribution Reporting API" usage. Explainer: https://github.com/WICG/attribution-reporting-api
 type AuditsAttributionReportingIssueDetails struct {
-	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, UntrustworthyReportingOrigin, InsecureContext, InvalidHeader, InvalidRegisterTriggerHeader, InvalidEligibleHeader, TooManyConcurrentRequests, SourceAndTriggerHeaders, SourceIgnored, TriggerIgnored, OsSourceIgnored, OsTriggerIgnored, InvalidRegisterOsSourceHeader, InvalidRegisterOsTriggerHeader, WebAndOsHeaders
+	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, UntrustworthyReportingOrigin, InsecureContext, InvalidHeader, InvalidRegisterTriggerHeader, InvalidEligibleHeader, SourceAndTriggerHeaders, SourceIgnored, TriggerIgnored, OsSourceIgnored, OsTriggerIgnored, InvalidRegisterOsSourceHeader, InvalidRegisterOsTriggerHeader, WebAndOsHeaders, NoWebOrOsSupport
 	Request          *AuditsAffectedRequest `json:"request,omitempty"`          //
 	ViolatingNodeId  int                    `json:"violatingNodeId,omitempty"`  //
 	InvalidParameter string                 `json:"invalidParameter,omitempty"` //
@@ -146,9 +146,10 @@ type AuditsNavigatorUserAgentIssueDetails struct {
 
 // Depending on the concrete errorType, different properties are set.
 type AuditsGenericIssueDetails struct {
-	ErrorType       string `json:"errorType"`                 // Issues with the same errorType are aggregated in the frontend. enum values: CrossOriginPortalPostMessageError, FormLabelForNameError, FormDuplicateIdForInputError, FormInputWithNoLabelError, FormAutocompleteAttributeEmptyError, FormEmptyIdAndNameAttributesForInputError, FormAriaLabelledByToNonExistingId, FormInputAssignedAutocompleteValueToIdOrNameAttributeError, FormLabelHasNeitherForNorNestedInput, FormLabelForMatchesNonExistingIdError
-	FrameId         string `json:"frameId,omitempty"`         //
-	ViolatingNodeId int    `json:"violatingNodeId,omitempty"` //
+	ErrorType              string `json:"errorType"`                        // Issues with the same errorType are aggregated in the frontend. enum values: CrossOriginPortalPostMessageError, FormLabelForNameError, FormDuplicateIdForInputError, FormInputWithNoLabelError, FormAutocompleteAttributeEmptyError, FormEmptyIdAndNameAttributesForInputError, FormAriaLabelledByToNonExistingId, FormInputAssignedAutocompleteValueToIdOrNameAttributeError, FormLabelHasNeitherForNorNestedInput, FormLabelForMatchesNonExistingIdError, FormInputHasWrongButWellIntendedAutocompleteValueError
+	FrameId                string `json:"frameId,omitempty"`                //
+	ViolatingNodeId        int    `json:"violatingNodeId,omitempty"`        //
+	ViolatingNodeAttribute string `json:"violatingNodeAttribute,omitempty"` //
 }
 
 // This issue tracks information needed to print a deprecation message. https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/third_party/blink/renderer/core/frame/deprecation/README.md
@@ -158,9 +159,14 @@ type AuditsDeprecationIssueDetails struct {
 	Type               string                    `json:"type"`                    // One of the deprecation names from third_party/blink/renderer/core/frame/deprecation/deprecation.json5
 }
 
+// This issue warns about sites in the redirect chain of a finished navigation that may be flagged as trackers and have their state cleared if they don't receive a user interaction. Note that in this context 'site' means eTLD+1. For example, if the URL `https://example.test:80/bounce` was in the redirect chain, the site reported would be `example.test`.
+type AuditsBounceTrackingIssueDetails struct {
+	TrackingSites []string `json:"trackingSites"` //
+}
+
 // No Description.
 type AuditsFederatedAuthRequestIssueDetails struct {
-	FederatedAuthRequestIssueReason string `json:"federatedAuthRequestIssueReason"` //  enum values: ShouldEmbargo, TooManyRequests, WellKnownHttpNotFound, WellKnownNoResponse, WellKnownInvalidResponse, WellKnownListEmpty, ConfigNotInWellKnown, WellKnownTooBig, ConfigHttpNotFound, ConfigNoResponse, ConfigInvalidResponse, ClientMetadataHttpNotFound, ClientMetadataNoResponse, ClientMetadataInvalidResponse, DisabledInSettings, ErrorFetchingSignin, InvalidSigninResponse, AccountsHttpNotFound, AccountsNoResponse, AccountsInvalidResponse, AccountsListEmpty, IdTokenHttpNotFound, IdTokenNoResponse, IdTokenInvalidResponse, IdTokenInvalidRequest, ErrorIdToken, Canceled, RpPageNotVisible
+	FederatedAuthRequestIssueReason string `json:"federatedAuthRequestIssueReason"` //  enum values: ShouldEmbargo, TooManyRequests, WellKnownHttpNotFound, WellKnownNoResponse, WellKnownInvalidResponse, WellKnownListEmpty, WellKnownInvalidContentType, ConfigNotInWellKnown, WellKnownTooBig, ConfigHttpNotFound, ConfigNoResponse, ConfigInvalidResponse, ConfigInvalidContentType, ClientMetadataHttpNotFound, ClientMetadataNoResponse, ClientMetadataInvalidResponse, ClientMetadataInvalidContentType, DisabledInSettings, ErrorFetchingSignin, InvalidSigninResponse, AccountsHttpNotFound, AccountsNoResponse, AccountsInvalidResponse, AccountsListEmpty, AccountsInvalidContentType, IdTokenHttpNotFound, IdTokenNoResponse, IdTokenInvalidResponse, IdTokenInvalidRequest, IdTokenInvalidContentType, ErrorIdToken, Canceled, RpPageNotVisible
 }
 
 // This issue tracks client hints related issues. It's used to deprecate old features, encourage the use of new ones, and provide general guidance.
@@ -187,11 +193,12 @@ type AuditsInspectorIssueDetails struct {
 	DeprecationIssueDetails           *AuditsDeprecationIssueDetails           `json:"deprecationIssueDetails,omitempty"`           //
 	ClientHintIssueDetails            *AuditsClientHintIssueDetails            `json:"clientHintIssueDetails,omitempty"`            //
 	FederatedAuthRequestIssueDetails  *AuditsFederatedAuthRequestIssueDetails  `json:"federatedAuthRequestIssueDetails,omitempty"`  //
+	BounceTrackingIssueDetails        *AuditsBounceTrackingIssueDetails        `json:"bounceTrackingIssueDetails,omitempty"`        //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`              //  enum values: CookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue, QuirksModeIssue, NavigatorUserAgentIssue, GenericIssue, DeprecationIssue, ClientHintIssue, FederatedAuthRequestIssue
+	Code    string                       `json:"code"`              //  enum values: CookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue, QuirksModeIssue, NavigatorUserAgentIssue, GenericIssue, DeprecationIssue, ClientHintIssue, FederatedAuthRequestIssue, BounceTrackingIssue
 	Details *AuditsInspectorIssueDetails `json:"details"`           //
 	IssueId string                       `json:"issueId,omitempty"` // A unique id for this issue. May be omitted if no other entity (e.g. exception, CDP message, etc.) is referencing this issue.
 }

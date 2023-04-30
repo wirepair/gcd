@@ -11,7 +11,7 @@ import (
 
 // Usage for a storage type.
 type StorageUsageForType struct {
-	StorageType string  `json:"storageType"` // Name of storage type. enum values: appcache, cookies, file_systems, indexeddb, local_storage, shader_cache, websql, service_workers, cache_storage, interest_groups, shared_storage, all, other
+	StorageType string  `json:"storageType"` // Name of storage type. enum values: appcache, cookies, file_systems, indexeddb, local_storage, shader_cache, websql, service_workers, cache_storage, interest_groups, shared_storage, storage_buckets, all, other
 	Usage       float64 `json:"usage"`       // Storage usage (bytes).
 }
 
@@ -79,6 +79,22 @@ type StorageSharedStorageAccessParams struct {
 	IgnoreIfPresent  bool                                   `json:"ignoreIfPresent,omitempty"`  // Whether or not to set an entry for a key if that key is already present. Present only for SharedStorageAccessType.documentSet and SharedStorageAccessType.workletSet.
 }
 
+// No Description.
+type StorageStorageBucket struct {
+	StorageKey string `json:"storageKey"`     //
+	Name       string `json:"name,omitempty"` // If not specified, it is the default bucket of the storageKey.
+}
+
+// No Description.
+type StorageStorageBucketInfo struct {
+	Bucket     *StorageStorageBucket `json:"bucket"`     //
+	Id         string                `json:"id"`         //
+	Expiration float64               `json:"expiration"` //
+	Quota      float64               `json:"quota"`      // Storage quota (bytes).
+	Persistent bool                  `json:"persistent"` //
+	Durability string                `json:"durability"` //  enum values: relaxed, strict
+}
+
 // A cache's contents have been modified.
 type StorageCacheStorageContentUpdatedEvent struct {
 	Method string `json:"method"`
@@ -104,6 +120,7 @@ type StorageIndexedDBContentUpdatedEvent struct {
 	Params struct {
 		Origin          string `json:"origin"`          // Origin to update.
 		StorageKey      string `json:"storageKey"`      // Storage key to update.
+		BucketId        string `json:"bucketId"`        // Storage bucket to update.
 		DatabaseName    string `json:"databaseName"`    // Database to update.
 		ObjectStoreName string `json:"objectStoreName"` // ObjectStore to update.
 	} `json:"Params,omitempty"`
@@ -115,6 +132,7 @@ type StorageIndexedDBListUpdatedEvent struct {
 	Params struct {
 		Origin     string `json:"origin"`     // Origin to update.
 		StorageKey string `json:"storageKey"` // Storage key to update.
+		BucketId   string `json:"bucketId"`   // Storage bucket to update.
 	} `json:"Params,omitempty"`
 }
 
@@ -138,6 +156,22 @@ type StorageSharedStorageAccessedEvent struct {
 		MainFrameId string                            `json:"mainFrameId"` // DevTools Frame Token for the primary frame tree's root.
 		OwnerOrigin string                            `json:"ownerOrigin"` // Serialized origin for the context that invoked the Shared Storage API.
 		Params      *StorageSharedStorageAccessParams `json:"params"`      // The sub-parameters warapped by `params` are all optional and their presence/absence depends on `type`.
+	} `json:"Params,omitempty"`
+}
+
+//
+type StorageStorageBucketCreatedOrUpdatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		BucketInfo *StorageStorageBucketInfo `json:"bucketInfo"` //
+	} `json:"Params,omitempty"`
+}
+
+//
+type StorageStorageBucketDeletedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		BucketId string `json:"bucketId"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -883,4 +917,76 @@ func (c *Storage) SetSharedStorageTracking(ctx context.Context, enable bool) (*g
 	var v StorageSetSharedStorageTrackingParams
 	v.Enable = enable
 	return c.SetSharedStorageTrackingWithParams(ctx, &v)
+}
+
+type StorageSetStorageBucketTrackingParams struct {
+	//
+	StorageKey string `json:"storageKey"`
+	//
+	Enable bool `json:"enable"`
+}
+
+// SetStorageBucketTrackingWithParams - Set tracking for a storage key's buckets.
+func (c *Storage) SetStorageBucketTrackingWithParams(ctx context.Context, v *StorageSetStorageBucketTrackingParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.setStorageBucketTracking", Params: v})
+}
+
+// SetStorageBucketTracking - Set tracking for a storage key's buckets.
+// storageKey -
+// enable -
+func (c *Storage) SetStorageBucketTracking(ctx context.Context, storageKey string, enable bool) (*gcdmessage.ChromeResponse, error) {
+	var v StorageSetStorageBucketTrackingParams
+	v.StorageKey = storageKey
+	v.Enable = enable
+	return c.SetStorageBucketTrackingWithParams(ctx, &v)
+}
+
+type StorageDeleteStorageBucketParams struct {
+	//
+	Bucket *StorageStorageBucket `json:"bucket"`
+}
+
+// DeleteStorageBucketWithParams - Deletes the Storage Bucket with the given storage key and bucket name.
+func (c *Storage) DeleteStorageBucketWithParams(ctx context.Context, v *StorageDeleteStorageBucketParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.deleteStorageBucket", Params: v})
+}
+
+// DeleteStorageBucket - Deletes the Storage Bucket with the given storage key and bucket name.
+// bucket -
+func (c *Storage) DeleteStorageBucket(ctx context.Context, bucket *StorageStorageBucket) (*gcdmessage.ChromeResponse, error) {
+	var v StorageDeleteStorageBucketParams
+	v.Bucket = bucket
+	return c.DeleteStorageBucketWithParams(ctx, &v)
+}
+
+// RunBounceTrackingMitigations - Deletes state for sites identified as potential bounce trackers, immediately.
+// Returns -  deletedSites -
+func (c *Storage) RunBounceTrackingMitigations(ctx context.Context) ([]string, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Storage.runBounceTrackingMitigations"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		Result struct {
+			DeletedSites []string
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	// test if error first
+	cerr := &gcdmessage.ChromeErrorResponse{}
+	json.Unmarshal(resp.Data, cerr)
+	if cerr != nil && cerr.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	}
+
+	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	return chromeData.Result.DeletedSites, nil
 }

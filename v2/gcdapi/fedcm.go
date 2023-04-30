@@ -27,8 +27,10 @@ type FedCmAccount struct {
 type FedCmDialogShownEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		DialogId string          `json:"dialogId"` //
-		Accounts []*FedCmAccount `json:"accounts"` //
+		DialogId string          `json:"dialogId"`           //
+		Accounts []*FedCmAccount `json:"accounts"`           //
+		Title    string          `json:"title"`              // These exist primarily so that the caller can verify the RP context was used appropriately.
+		Subtitle string          `json:"subtitle,omitempty"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -89,6 +91,8 @@ func (c *FedCm) SelectAccount(ctx context.Context, dialogId string, accountIndex
 type FedCmDismissDialogParams struct {
 	//
 	DialogId string `json:"dialogId"`
+	//
+	TriggerCooldown bool `json:"triggerCooldown,omitempty"`
 }
 
 // DismissDialogWithParams -
@@ -98,8 +102,15 @@ func (c *FedCm) DismissDialogWithParams(ctx context.Context, v *FedCmDismissDial
 
 // DismissDialog -
 // dialogId -
-func (c *FedCm) DismissDialog(ctx context.Context, dialogId string) (*gcdmessage.ChromeResponse, error) {
+// triggerCooldown -
+func (c *FedCm) DismissDialog(ctx context.Context, dialogId string, triggerCooldown bool) (*gcdmessage.ChromeResponse, error) {
 	var v FedCmDismissDialogParams
 	v.DialogId = dialogId
+	v.TriggerCooldown = triggerCooldown
 	return c.DismissDialogWithParams(ctx, &v)
+}
+
+// Resets the cooldown time, if any, to allow the next FedCM call to show a dialog even if one was recently dismissed by the user.
+func (c *FedCm) ResetCooldown(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FedCm.resetCooldown"})
 }

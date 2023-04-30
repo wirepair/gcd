@@ -11,9 +11,14 @@ import (
 
 // Corresponds to SpeculationRuleSet
 type PreloadRuleSet struct {
-	Id         string `json:"id"`         //
-	LoaderId   string `json:"loaderId"`   // Identifies a document which the rule set is associated with.
-	SourceText string `json:"sourceText"` // Source text of JSON representing the rule set. If it comes from <script> tag, it is the textContent of the node. Note that it is a JSON for valid case.  See also: - https://wicg.github.io/nav-speculation/speculation-rules.html - https://github.com/WICG/nav-speculation/blob/main/triggers.md
+	Id            string `json:"id"`                      //
+	LoaderId      string `json:"loaderId"`                // Identifies a document which the rule set is associated with.
+	SourceText    string `json:"sourceText"`              // Source text of JSON representing the rule set. If it comes from <script> tag, it is the textContent of the node. Note that it is a JSON for valid case.  See also: - https://wicg.github.io/nav-speculation/speculation-rules.html - https://github.com/WICG/nav-speculation/blob/main/triggers.md
+	BackendNodeId int    `json:"backendNodeId,omitempty"` // A speculation rule set is either added through an inline <script> tag or through an external resource via the 'Speculation-Rules' HTTP header. For the first case, we include the BackendNodeId of the relevant <script> tag. For the second case, we include the external URL where the rule set was loaded from, and also RequestId if Network domain is enabled.  See also: - https://wicg.github.io/nav-speculation/speculation-rules.html#speculation-rules-script - https://wicg.github.io/nav-speculation/speculation-rules.html#speculation-rules-header
+	Url           string `json:"url,omitempty"`           //
+	RequestId     string `json:"requestId,omitempty"`     //
+	ErrorType     string `json:"errorType,omitempty"`     // Error information `errorMessage` is null iff `errorType` is null. enum values: SourceIsNotJsonObject, InvalidRulesSkipped
+	ErrorMessage  string `json:"errorMessage,omitempty"`  // TODO(https://crbug.com/1425354): Replace this property with structured error.
 }
 
 // A key that identifies a preloading attempt.  The url used is the url specified by the trigger (i.e. the initial URL), and not the final url that is navigated to. For example, prerendering allows same-origin main frame navigations during the attempt, but the attempt is still keyed with the initial URL.
@@ -51,10 +56,19 @@ type PreloadRuleSetRemovedEvent struct {
 type PreloadPrerenderAttemptCompletedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		InitiatingFrameId   string `json:"initiatingFrameId"`             // The frame id of the frame initiating prerendering.
-		PrerenderingUrl     string `json:"prerenderingUrl"`               //
-		FinalStatus         string `json:"finalStatus"`                   //  enum values: Activated, Destroyed, LowEndDevice, InvalidSchemeRedirect, InvalidSchemeNavigation, InProgressNavigation, NavigationRequestBlockedByCsp, MainFrameNavigation, MojoBinderPolicy, RendererProcessCrashed, RendererProcessKilled, Download, TriggerDestroyed, NavigationNotCommitted, NavigationBadHttpStatus, ClientCertRequested, NavigationRequestNetworkError, MaxNumOfRunningPrerendersExceeded, CancelAllHostsForTesting, DidFailLoad, Stop, SslCertificateError, LoginAuthRequested, UaChangeRequiresReload, BlockedByClient, AudioOutputDeviceRequested, MixedContent, TriggerBackgrounded, EmbedderTriggeredAndCrossOriginRedirected, MemoryLimitExceeded, FailToGetMemoryUsage, DataSaverEnabled, HasEffectiveUrl, ActivatedBeforeStarted, InactivePageRestriction, StartFailed, TimeoutBackgrounded, CrossSiteRedirectInInitialNavigation, CrossSiteNavigationInInitialNavigation, SameSiteCrossOriginRedirectNotOptInInInitialNavigation, SameSiteCrossOriginNavigationNotOptInInInitialNavigation, ActivationNavigationParameterMismatch, ActivatedInBackground, EmbedderHostDisallowed, ActivationNavigationDestroyedBeforeSuccess, TabClosedByUserGesture, TabClosedWithoutUserGesture, PrimaryMainFrameRendererProcessCrashed, PrimaryMainFrameRendererProcessKilled, ActivationFramePolicyNotCompatible, PreloadingDisabled, BatterySaverEnabled, ActivatedDuringMainFrameNavigation, PreloadingUnsupportedByWebContents, CrossSiteRedirectInMainFrameNavigation, CrossSiteNavigationInMainFrameNavigation, SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation, SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation
-		DisallowedApiMethod string `json:"disallowedApiMethod,omitempty"` // This is used to give users more information about the name of the API call that is incompatible with prerender and has caused the cancellation of the attempt
+		Key                 *PreloadPreloadingAttemptKey `json:"key"`                           //
+		InitiatingFrameId   string                       `json:"initiatingFrameId"`             // The frame id of the frame initiating prerendering.
+		PrerenderingUrl     string                       `json:"prerenderingUrl"`               //
+		FinalStatus         string                       `json:"finalStatus"`                   //  enum values: Activated, Destroyed, LowEndDevice, InvalidSchemeRedirect, InvalidSchemeNavigation, InProgressNavigation, NavigationRequestBlockedByCsp, MainFrameNavigation, MojoBinderPolicy, RendererProcessCrashed, RendererProcessKilled, Download, TriggerDestroyed, NavigationNotCommitted, NavigationBadHttpStatus, ClientCertRequested, NavigationRequestNetworkError, MaxNumOfRunningPrerendersExceeded, CancelAllHostsForTesting, DidFailLoad, Stop, SslCertificateError, LoginAuthRequested, UaChangeRequiresReload, BlockedByClient, AudioOutputDeviceRequested, MixedContent, TriggerBackgrounded, EmbedderTriggeredAndCrossOriginRedirected, MemoryLimitExceeded, FailToGetMemoryUsage, DataSaverEnabled, HasEffectiveUrl, ActivatedBeforeStarted, InactivePageRestriction, StartFailed, TimeoutBackgrounded, CrossSiteRedirectInInitialNavigation, CrossSiteNavigationInInitialNavigation, SameSiteCrossOriginRedirectNotOptInInInitialNavigation, SameSiteCrossOriginNavigationNotOptInInInitialNavigation, ActivationNavigationParameterMismatch, ActivatedInBackground, EmbedderHostDisallowed, ActivationNavigationDestroyedBeforeSuccess, TabClosedByUserGesture, TabClosedWithoutUserGesture, PrimaryMainFrameRendererProcessCrashed, PrimaryMainFrameRendererProcessKilled, ActivationFramePolicyNotCompatible, PreloadingDisabled, BatterySaverEnabled, ActivatedDuringMainFrameNavigation, PreloadingUnsupportedByWebContents, CrossSiteRedirectInMainFrameNavigation, CrossSiteNavigationInMainFrameNavigation, SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation, SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation, MemoryPressureOnTrigger, MemoryPressureAfterTriggered
+		DisallowedApiMethod string                       `json:"disallowedApiMethod,omitempty"` // This is used to give users more information about the name of the API call that is incompatible with prerender and has caused the cancellation of the attempt
+	} `json:"Params,omitempty"`
+}
+
+// Fired when a preload enabled state is updated.
+type PreloadPreloadEnabledStateUpdatedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		State string `json:"state"` //  enum values: Enabled, DisabledByDataSaver, DisabledByBatterySaver, DisabledByPreference, NotSupported
 	} `json:"Params,omitempty"`
 }
 
@@ -62,9 +76,10 @@ type PreloadPrerenderAttemptCompletedEvent struct {
 type PreloadPrefetchStatusUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		InitiatingFrameId string `json:"initiatingFrameId"` // The frame id of the frame initiating prefetch.
-		PrefetchUrl       string `json:"prefetchUrl"`       //
-		Status            string `json:"status"`            //  enum values: Pending, Running, Ready, Success, Failure, NotSupported
+		Key               *PreloadPreloadingAttemptKey `json:"key"`               //
+		InitiatingFrameId string                       `json:"initiatingFrameId"` // The frame id of the frame initiating prefetch.
+		PrefetchUrl       string                       `json:"prefetchUrl"`       //
+		Status            string                       `json:"status"`            //  enum values: Pending, Running, Ready, Success, Failure, NotSupported
 	} `json:"Params,omitempty"`
 }
 
@@ -72,16 +87,18 @@ type PreloadPrefetchStatusUpdatedEvent struct {
 type PreloadPrerenderStatusUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		InitiatingFrameId string `json:"initiatingFrameId"` // The frame id of the frame initiating prerender.
-		PrerenderingUrl   string `json:"prerenderingUrl"`   //
-		Status            string `json:"status"`            //  enum values: Pending, Running, Ready, Success, Failure, NotSupported
+		Key               *PreloadPreloadingAttemptKey `json:"key"`               //
+		InitiatingFrameId string                       `json:"initiatingFrameId"` // The frame id of the frame initiating prerender.
+		PrerenderingUrl   string                       `json:"prerenderingUrl"`   //
+		Status            string                       `json:"status"`            //  enum values: Pending, Running, Ready, Success, Failure, NotSupported
 	} `json:"Params,omitempty"`
 }
 
-// Send a list of sources for all preloading attempts.
+// Send a list of sources for all preloading attempts in a document.
 type PreloadPreloadingAttemptSourcesUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
+		LoaderId                 string                            `json:"loaderId"`                 //
 		PreloadingAttemptSources []*PreloadPreloadingAttemptSource `json:"preloadingAttemptSources"` //
 	} `json:"Params,omitempty"`
 }
