@@ -1,4 +1,7 @@
 # Changelog (2023)
+- 2.3.1 (May 30) 
+  - Applied patch from @camswords to expose dev tools version
+  - Updates to chrome 112.0.5615.138
 - 2.3.0 (Mar 28) Updated JSON endpoint calls to use PUT instead of GET as GET returns an error since 111.
   - Updates to chrome 111.0.5563.147 protocol
   - gcdapigen updated to handle different revisions thanks to @eatdrinksleepcode
