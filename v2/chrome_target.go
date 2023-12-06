@@ -89,6 +89,8 @@ type ChromeTarget struct {
 	DOMSnapshot          *gcdapi.DOMSnapshot
 	DOMStorage           *gcdapi.DOMStorage // DOM Storage API
 	Emulation            *gcdapi.Emulation
+	EventBreakpoints     *gcdapi.EventBreakpoints
+	FedCm                *gcdapi.FedCm
 	Fetch                *gcdapi.Fetch
 	HeadlessExperimental *gcdapi.HeadlessExperimental
 	HeapProfiler         *gcdapi.HeapProfiler // HeapProfiler API
@@ -98,12 +100,14 @@ type ChromeTarget struct {
 	IO                   *gcdapi.IO
 	LayerTree            *gcdapi.LayerTree
 	Log                  *gcdapi.Log
+	Media                *gcdapi.Media
 	Memory               *gcdapi.Memory
 	Network              *gcdapi.Network
 	Overlay              *gcdapi.Overlay
 	Page                 *gcdapi.Page
 	Performance          *gcdapi.Performance // if stable channel you'll need to uncomment
 	PerformanceTimeline  *gcdapi.PerformanceTimeline
+	Preload              *gcdapi.Preload
 	Profiler             *gcdapi.Profiler
 	Runtime              *gcdapi.Runtime
 	Schema               *gcdapi.Schema
@@ -114,10 +118,8 @@ type ChromeTarget struct {
 	TargetApi            *gcdapi.Target // buh name collision
 	Tracing              *gcdapi.Tracing
 	Tethering            *gcdapi.Tethering
-	Media                *gcdapi.Media
 	WebAudio             *gcdapi.WebAudio
 	WebAuthn             *gcdapi.WebAuthn
-	EventBreakpoints     *gcdapi.EventBreakpoints
 
 	Target          *TargetInfo                 // The target information see, TargetInfo
 	sendCh          chan *gcdmessage.Message    // The channel used for API components to send back to use
@@ -163,8 +165,8 @@ func (c *ChromeTarget) Init() {
 	c.Accessibility = gcdapi.NewAccessibility(c)
 	c.Animation = gcdapi.NewAnimation(c)
 	c.Audits = gcdapi.NewAudits(c)
-	c.Browser = gcdapi.NewBrowser(c)
 	c.BackgroundService = gcdapi.NewBackgroundService(c)
+	c.Browser = gcdapi.NewBrowser(c)
 	c.CacheStorage = gcdapi.NewCacheStorage(c)
 	c.Cast = gcdapi.NewCast(c)
 	c.Console = gcdapi.NewConsole(c)
@@ -172,41 +174,42 @@ func (c *ChromeTarget) Init() {
 	c.Database = gcdapi.NewDatabase(c)
 	c.Debugger = gcdapi.NewDebugger(c)
 	c.DeviceOrientation = gcdapi.NewDeviceOrientation(c)
-	c.DOMDebugger = gcdapi.NewDOMDebugger(c)
 	c.DOM = gcdapi.NewDOM(c)
+	c.DOMDebugger = gcdapi.NewDOMDebugger(c)
 	c.DOMSnapshot = gcdapi.NewDOMSnapshot(c)
 	c.DOMStorage = gcdapi.NewDOMStorage(c)
 	c.Emulation = gcdapi.NewEmulation(c)
+	c.EventBreakpoints = gcdapi.NewEventBreakpoints(c)
+	c.FedCm = gcdapi.NewFedCm(c)
+	c.Fetch = gcdapi.NewFetch(c)
+	c.HeadlessExperimental = gcdapi.NewHeadlessExperimental(c)
 	c.HeapProfiler = gcdapi.NewHeapProfiler(c)
 	c.IndexedDB = gcdapi.NewIndexedDB(c)
 	c.Input = gcdapi.NewInput(c)
 	c.Inspector = gcdapi.NewInspector(c)
 	c.IO = gcdapi.NewIO(c)
 	c.LayerTree = gcdapi.NewLayerTree(c)
-	c.Memory = gcdapi.NewMemory(c)
 	c.Log = gcdapi.NewLog(c)
+	c.Media = gcdapi.NewMedia(c)
+	c.Memory = gcdapi.NewMemory(c)
 	c.Network = gcdapi.NewNetwork(c)
 	c.Overlay = gcdapi.NewOverlay(c)
 	c.Page = gcdapi.NewPage(c)
+	c.Performance = gcdapi.NewPerformance(c)
+	c.PerformanceTimeline = gcdapi.NewPerformanceTimeline(c)
+	c.Preload = gcdapi.NewPreload(c)
 	c.Profiler = gcdapi.NewProfiler(c)
 	c.Runtime = gcdapi.NewRuntime(c)
 	c.Schema = gcdapi.NewSchema(c)
 	c.Security = gcdapi.NewSecurity(c)
-	c.SystemInfo = gcdapi.NewSystemInfo(c)
 	c.ServiceWorker = gcdapi.NewServiceWorker(c)
+	c.Storage = gcdapi.NewStorage(c)
+	c.SystemInfo = gcdapi.NewSystemInfo(c)
 	c.TargetApi = gcdapi.NewTarget(c)
 	c.Tracing = gcdapi.NewTracing(c)
 	c.Tethering = gcdapi.NewTethering(c)
-	c.HeadlessExperimental = gcdapi.NewHeadlessExperimental(c)
-	c.Performance = gcdapi.NewPerformance(c)
-	c.PerformanceTimeline = gcdapi.NewPerformanceTimeline(c)
-	c.Fetch = gcdapi.NewFetch(c)
-	c.Cast = gcdapi.NewCast(c)
-	c.Media = gcdapi.NewMedia(c)
 	c.WebAudio = gcdapi.NewWebAudio(c)
 	c.WebAuthn = gcdapi.NewWebAuthn(c)
-	c.BackgroundService = gcdapi.NewBackgroundService(c)
-	c.EventBreakpoints = gcdapi.NewEventBreakpoints(c)
 }
 
 // clean up this target
