@@ -159,7 +159,6 @@ type StorageSharedStorageAccessedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type StorageStorageBucketCreatedOrUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -167,7 +166,6 @@ type StorageStorageBucketCreatedOrUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type StorageStorageBucketDeletedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -198,6 +196,7 @@ func (c *Storage) GetStorageKeyForFrameWithParams(ctx context.Context, v *Storag
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			StorageKey string
 		}
@@ -207,15 +206,12 @@ func (c *Storage) GetStorageKeyForFrameWithParams(ctx context.Context, v *Storag
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.StorageKey, nil
@@ -288,6 +284,7 @@ func (c *Storage) GetCookiesWithParams(ctx context.Context, v *StorageGetCookies
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Cookies []*NetworkCookie
 		}
@@ -297,15 +294,12 @@ func (c *Storage) GetCookiesWithParams(ctx context.Context, v *StorageGetCookies
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Cookies, nil
@@ -374,6 +368,7 @@ func (c *Storage) GetUsageAndQuotaWithParams(ctx context.Context, v *StorageGetU
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Usage          float64
 			Quota          float64
@@ -386,15 +381,12 @@ func (c *Storage) GetUsageAndQuotaWithParams(ctx context.Context, v *StorageGetU
 		return 0, 0, false, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, 0, false, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, 0, false, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, 0, false, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Usage, chromeData.Result.Quota, chromeData.Result.OverrideActive, chromeData.Result.UsageBreakdown, nil
@@ -584,6 +576,7 @@ func (c *Storage) GetTrustTokens(ctx context.Context) ([]*StorageTrustTokens, er
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Tokens []*StorageTrustTokens
 		}
@@ -593,15 +586,12 @@ func (c *Storage) GetTrustTokens(ctx context.Context) ([]*StorageTrustTokens, er
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Tokens, nil
@@ -621,6 +611,7 @@ func (c *Storage) ClearTrustTokensWithParams(ctx context.Context, v *StorageClea
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			DidDeleteTokens bool
 		}
@@ -630,15 +621,12 @@ func (c *Storage) ClearTrustTokensWithParams(ctx context.Context, v *StorageClea
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
+	}
+
+	if chromeData.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.DidDeleteTokens, nil
@@ -669,6 +657,7 @@ func (c *Storage) GetInterestGroupDetailsWithParams(ctx context.Context, v *Stor
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Details *StorageInterestGroupDetails
 		}
@@ -678,15 +667,12 @@ func (c *Storage) GetInterestGroupDetailsWithParams(ctx context.Context, v *Stor
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Details, nil
@@ -735,6 +721,7 @@ func (c *Storage) GetSharedStorageMetadataWithParams(ctx context.Context, v *Sto
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Metadata *StorageSharedStorageMetadata
 		}
@@ -744,15 +731,12 @@ func (c *Storage) GetSharedStorageMetadataWithParams(ctx context.Context, v *Sto
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Metadata, nil
@@ -781,6 +765,7 @@ func (c *Storage) GetSharedStorageEntriesWithParams(ctx context.Context, v *Stor
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Entries []*StorageSharedStorageEntry
 		}
@@ -790,15 +775,12 @@ func (c *Storage) GetSharedStorageEntriesWithParams(ctx context.Context, v *Stor
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Entries, nil
@@ -968,6 +950,7 @@ func (c *Storage) RunBounceTrackingMitigations(ctx context.Context) ([]string, e
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			DeletedSites []string
 		}
@@ -977,15 +960,12 @@ func (c *Storage) RunBounceTrackingMitigations(ctx context.Context) ([]string, e
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.DeletedSites, nil

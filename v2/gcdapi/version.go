@@ -6,9 +6,9 @@ import "github.com/json-iterator/go"
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // Chrome Channel information
-const CHROME_CHANNEL = "stable" 
+const CHROME_CHANNEL = "unknown" 
 // Chrome Version information
-const CHROME_VERSION = "112.0.5615.138"
+const CHROME_VERSION = "unknown"
 // Protocol Major version
 const DEVTOOLS_MAJOR_VERSION = "1"
 // Protocol Minor version

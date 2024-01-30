@@ -106,6 +106,7 @@ func (c *Animation) GetCurrentTimeWithParams(ctx context.Context, v *AnimationGe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			CurrentTime float64
 		}
@@ -115,15 +116,12 @@ func (c *Animation) GetCurrentTimeWithParams(ctx context.Context, v *AnimationGe
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.CurrentTime, nil
@@ -147,6 +145,7 @@ func (c *Animation) GetPlaybackRate(ctx context.Context) (float64, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			PlaybackRate float64
 		}
@@ -156,15 +155,12 @@ func (c *Animation) GetPlaybackRate(ctx context.Context) (float64, error) {
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.PlaybackRate, nil
@@ -202,6 +198,7 @@ func (c *Animation) ResolveAnimationWithParams(ctx context.Context, v *Animation
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			RemoteObject *RuntimeRemoteObject
 		}
@@ -211,15 +208,12 @@ func (c *Animation) ResolveAnimationWithParams(ctx context.Context, v *Animation
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.RemoteObject, nil

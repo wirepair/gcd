@@ -23,7 +23,6 @@ type DatabaseError struct {
 	Code    int    `json:"code"`    // Error code.
 }
 
-//
 type DatabaseAddDatabaseEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -66,6 +65,7 @@ func (c *Database) ExecuteSQLWithParams(ctx context.Context, v *DatabaseExecuteS
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ColumnNames []string
 			Values      []interface{}
@@ -77,15 +77,12 @@ func (c *Database) ExecuteSQLWithParams(ctx context.Context, v *DatabaseExecuteS
 		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ColumnNames, chromeData.Result.Values, chromeData.Result.SqlError, nil
@@ -116,6 +113,7 @@ func (c *Database) GetDatabaseTableNamesWithParams(ctx context.Context, v *Datab
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			TableNames []string
 		}
@@ -125,15 +123,12 @@ func (c *Database) GetDatabaseTableNamesWithParams(ctx context.Context, v *Datab
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.TableNames, nil

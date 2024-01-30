@@ -200,6 +200,7 @@ func (c *Debugger) EnableWithParams(ctx context.Context, v *DebuggerEnableParams
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			DebuggerId string
 		}
@@ -209,15 +210,12 @@ func (c *Debugger) EnableWithParams(ctx context.Context, v *DebuggerEnableParams
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.DebuggerId, nil
@@ -262,6 +260,7 @@ func (c *Debugger) EvaluateOnCallFrameWithParams(ctx context.Context, v *Debugge
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result           *RuntimeRemoteObject
 			ExceptionDetails *RuntimeExceptionDetails
@@ -272,15 +271,12 @@ func (c *Debugger) EvaluateOnCallFrameWithParams(ctx context.Context, v *Debugge
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, chromeData.Result.ExceptionDetails, nil
@@ -329,6 +325,7 @@ func (c *Debugger) GetPossibleBreakpointsWithParams(ctx context.Context, v *Debu
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Locations []*DebuggerBreakLocation
 		}
@@ -338,15 +335,12 @@ func (c *Debugger) GetPossibleBreakpointsWithParams(ctx context.Context, v *Debu
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Locations, nil
@@ -379,6 +373,7 @@ func (c *Debugger) GetScriptSourceWithParams(ctx context.Context, v *DebuggerGet
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ScriptSource string
 			Bytecode     string
@@ -389,15 +384,12 @@ func (c *Debugger) GetScriptSourceWithParams(ctx context.Context, v *DebuggerGet
 		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ScriptSource, chromeData.Result.Bytecode, nil
@@ -426,6 +418,7 @@ func (c *Debugger) DisassembleWasmModuleWithParams(ctx context.Context, v *Debug
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			StreamId            string
 			TotalNumberOfLines  int
@@ -438,15 +431,12 @@ func (c *Debugger) DisassembleWasmModuleWithParams(ctx context.Context, v *Debug
 		return "", 0, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", 0, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", 0, nil, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return "", 0, nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.StreamId, chromeData.Result.TotalNumberOfLines, chromeData.Result.FunctionBodyOffsets, chromeData.Result.Chunk, nil
@@ -475,6 +465,7 @@ func (c *Debugger) NextWasmDisassemblyChunkWithParams(ctx context.Context, v *De
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Chunk *DebuggerWasmDisassemblyChunk
 		}
@@ -484,15 +475,12 @@ func (c *Debugger) NextWasmDisassemblyChunkWithParams(ctx context.Context, v *De
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Chunk, nil
@@ -521,6 +509,7 @@ func (c *Debugger) GetWasmBytecodeWithParams(ctx context.Context, v *DebuggerGet
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Bytecode string
 		}
@@ -530,15 +519,12 @@ func (c *Debugger) GetWasmBytecodeWithParams(ctx context.Context, v *DebuggerGet
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Bytecode, nil
@@ -567,6 +553,7 @@ func (c *Debugger) GetStackTraceWithParams(ctx context.Context, v *DebuggerGetSt
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			StackTrace *RuntimeStackTrace
 		}
@@ -576,15 +563,12 @@ func (c *Debugger) GetStackTraceWithParams(ctx context.Context, v *DebuggerGetSt
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.StackTrace, nil
@@ -656,6 +640,7 @@ func (c *Debugger) RestartFrameWithParams(ctx context.Context, v *DebuggerRestar
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			CallFrames        []*DebuggerCallFrame
 			AsyncStackTrace   *RuntimeStackTrace
@@ -667,15 +652,12 @@ func (c *Debugger) RestartFrameWithParams(ctx context.Context, v *DebuggerRestar
 		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.CallFrames, chromeData.Result.AsyncStackTrace, chromeData.Result.AsyncStackTraceId, nil
@@ -730,6 +712,7 @@ func (c *Debugger) SearchInContentWithParams(ctx context.Context, v *DebuggerSea
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result []*DebuggerSearchMatch
 		}
@@ -739,15 +722,12 @@ func (c *Debugger) SearchInContentWithParams(ctx context.Context, v *DebuggerSea
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -842,6 +822,7 @@ func (c *Debugger) SetBreakpointWithParams(ctx context.Context, v *DebuggerSetBr
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			BreakpointId   string
 			ActualLocation *DebuggerLocation
@@ -852,15 +833,12 @@ func (c *Debugger) SetBreakpointWithParams(ctx context.Context, v *DebuggerSetBr
 		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, err
+	}
+
+	if chromeData.Error != nil {
+		return "", nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.BreakpointId, chromeData.Result.ActualLocation, nil
@@ -891,6 +869,7 @@ func (c *Debugger) SetInstrumentationBreakpointWithParams(ctx context.Context, v
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			BreakpointId string
 		}
@@ -900,15 +879,12 @@ func (c *Debugger) SetInstrumentationBreakpointWithParams(ctx context.Context, v
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.BreakpointId, nil
@@ -947,6 +923,7 @@ func (c *Debugger) SetBreakpointByUrlWithParams(ctx context.Context, v *Debugger
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			BreakpointId string
 			Locations    []*DebuggerLocation
@@ -957,15 +934,12 @@ func (c *Debugger) SetBreakpointByUrlWithParams(ctx context.Context, v *Debugger
 		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, err
+	}
+
+	if chromeData.Error != nil {
+		return "", nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.BreakpointId, chromeData.Result.Locations, nil
@@ -1006,6 +980,7 @@ func (c *Debugger) SetBreakpointOnFunctionCallWithParams(ctx context.Context, v 
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			BreakpointId string
 		}
@@ -1015,15 +990,12 @@ func (c *Debugger) SetBreakpointOnFunctionCallWithParams(ctx context.Context, v 
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.BreakpointId, nil
@@ -1114,6 +1086,7 @@ func (c *Debugger) SetScriptSourceWithParams(ctx context.Context, v *DebuggerSet
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			CallFrames        []*DebuggerCallFrame
 			StackChanged      bool
@@ -1128,15 +1101,12 @@ func (c *Debugger) SetScriptSourceWithParams(ctx context.Context, v *DebuggerSet
 		return nil, false, nil, nil, "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, false, nil, nil, "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, nil, nil, "", nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, false, nil, nil, "", nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.CallFrames, chromeData.Result.StackChanged, chromeData.Result.AsyncStackTrace, chromeData.Result.AsyncStackTraceId, chromeData.Result.Status, chromeData.Result.ExceptionDetails, nil

@@ -39,7 +39,6 @@ type ServiceWorkerServiceWorkerErrorMessage struct {
 	ColumnNumber   int    `json:"columnNumber"`   //
 }
 
-//
 type ServiceWorkerWorkerErrorReportedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -47,7 +46,6 @@ type ServiceWorkerWorkerErrorReportedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type ServiceWorkerWorkerRegistrationUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -55,7 +53,6 @@ type ServiceWorkerWorkerRegistrationUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type ServiceWorkerWorkerVersionUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -98,7 +95,6 @@ func (c *ServiceWorker) DeliverPushMessage(ctx context.Context, origin string, r
 	return c.DeliverPushMessageWithParams(ctx, &v)
 }
 
-//
 func (c *ServiceWorker) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.disable"})
 }
@@ -159,7 +155,6 @@ func (c *ServiceWorker) DispatchPeriodicSyncEvent(ctx context.Context, origin st
 	return c.DispatchPeriodicSyncEventWithParams(ctx, &v)
 }
 
-//
 func (c *ServiceWorker) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.enable"})
 }
@@ -236,7 +231,6 @@ func (c *ServiceWorker) StartWorker(ctx context.Context, scopeURL string) (*gcdm
 	return c.StartWorkerWithParams(ctx, &v)
 }
 
-//
 func (c *ServiceWorker) StopAllWorkers(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "ServiceWorker.stopAllWorkers"})
 }

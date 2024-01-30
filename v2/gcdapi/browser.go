@@ -223,6 +223,7 @@ func (c *Browser) GetVersion(ctx context.Context) (string, string, string, strin
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ProtocolVersion string
 			Product         string
@@ -236,15 +237,12 @@ func (c *Browser) GetVersion(ctx context.Context) (string, string, string, strin
 		return "", "", "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", "", "", "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", "", "", "", "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", "", "", "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ProtocolVersion, chromeData.Result.Product, chromeData.Result.Revision, chromeData.Result.UserAgent, chromeData.Result.JsVersion, nil
@@ -259,6 +257,7 @@ func (c *Browser) GetBrowserCommandLine(ctx context.Context) ([]string, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Arguments []string
 		}
@@ -268,15 +267,12 @@ func (c *Browser) GetBrowserCommandLine(ctx context.Context) ([]string, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Arguments, nil
@@ -298,6 +294,7 @@ func (c *Browser) GetHistogramsWithParams(ctx context.Context, v *BrowserGetHist
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Histograms []*BrowserHistogram
 		}
@@ -307,15 +304,12 @@ func (c *Browser) GetHistogramsWithParams(ctx context.Context, v *BrowserGetHist
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Histograms, nil
@@ -348,6 +342,7 @@ func (c *Browser) GetHistogramWithParams(ctx context.Context, v *BrowserGetHisto
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Histogram *BrowserHistogram
 		}
@@ -357,15 +352,12 @@ func (c *Browser) GetHistogramWithParams(ctx context.Context, v *BrowserGetHisto
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Histogram, nil
@@ -396,6 +388,7 @@ func (c *Browser) GetWindowBoundsWithParams(ctx context.Context, v *BrowserGetWi
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Bounds *BrowserBounds
 		}
@@ -405,15 +398,12 @@ func (c *Browser) GetWindowBoundsWithParams(ctx context.Context, v *BrowserGetWi
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Bounds, nil
@@ -442,6 +432,7 @@ func (c *Browser) GetWindowForTargetWithParams(ctx context.Context, v *BrowserGe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			WindowId int
 			Bounds   *BrowserBounds
@@ -452,15 +443,12 @@ func (c *Browser) GetWindowForTargetWithParams(ctx context.Context, v *BrowserGe
 		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.WindowId, chromeData.Result.Bounds, nil

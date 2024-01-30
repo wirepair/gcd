@@ -99,6 +99,7 @@ func (c *WebAuthn) AddVirtualAuthenticatorWithParams(ctx context.Context, v *Web
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			AuthenticatorId string
 		}
@@ -108,15 +109,12 @@ func (c *WebAuthn) AddVirtualAuthenticatorWithParams(ctx context.Context, v *Web
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.AuthenticatorId, nil
@@ -217,6 +215,7 @@ func (c *WebAuthn) GetCredentialWithParams(ctx context.Context, v *WebAuthnGetCr
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Credential *WebAuthnCredential
 		}
@@ -226,15 +225,12 @@ func (c *WebAuthn) GetCredentialWithParams(ctx context.Context, v *WebAuthnGetCr
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Credential, nil
@@ -265,6 +261,7 @@ func (c *WebAuthn) GetCredentialsWithParams(ctx context.Context, v *WebAuthnGetC
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Credentials []*WebAuthnCredential
 		}
@@ -274,15 +271,12 @@ func (c *WebAuthn) GetCredentialsWithParams(ctx context.Context, v *WebAuthnGetC
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Credentials, nil

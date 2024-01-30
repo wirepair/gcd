@@ -189,6 +189,7 @@ func (c *DOMSnapshot) GetSnapshotWithParams(ctx context.Context, v *DOMSnapshotG
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			DomNodes        []*DOMSnapshotDOMNode
 			LayoutTreeNodes []*DOMSnapshotLayoutTreeNode
@@ -200,15 +201,12 @@ func (c *DOMSnapshot) GetSnapshotWithParams(ctx context.Context, v *DOMSnapshotG
 		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.DomNodes, chromeData.Result.LayoutTreeNodes, chromeData.Result.ComputedStyles, nil
@@ -251,6 +249,7 @@ func (c *DOMSnapshot) CaptureSnapshotWithParams(ctx context.Context, v *DOMSnaps
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Documents []*DOMSnapshotDocumentSnapshot
 			Strings   []string
@@ -261,15 +260,12 @@ func (c *DOMSnapshot) CaptureSnapshotWithParams(ctx context.Context, v *DOMSnaps
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Documents, chromeData.Result.Strings, nil

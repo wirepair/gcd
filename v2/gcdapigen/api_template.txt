@@ -92,6 +92,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}(ctx context.Context) ({{range $rets 
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct { {{range $rets := .Returns}}
 			{{$rets.Name | Title | Reserved }}  {{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}} {{end}}
 		}
@@ -101,15 +102,12 @@ func (c *{{$api.Domain}}) {{.Name | Title}}(ctx context.Context) ({{range $rets 
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
+	}
+
+	if chromeData.Error != nil {
+		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return {{range $rets := .Returns}}chromeData.Result.{{$rets.Name | Title | Reserved}}, {{end}}nil
@@ -134,6 +132,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}WithParams(ctx context.Context, v *{{
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct { {{range $rets := .Returns}}
 			{{$rets.Name | Title | Reserved }}  {{if $rets.IsTypeArray}}[]{{end}}{{if $rets.IsPointer}}*{{end}}{{$rets.GoType}} {{end}}
 		}
@@ -143,15 +142,12 @@ func (c *{{$api.Domain}}) {{.Name | Title}}WithParams(ctx context.Context, v *{{
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
+	}
+
+	if chromeData.Error != nil {
+		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return {{range $rets := .Returns}}chromeData.Result.{{$rets.Name | Title | Reserved}}, {{end}}nil

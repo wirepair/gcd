@@ -30,7 +30,6 @@ type HeapProfilerSamplingHeapProfile struct {
 	Samples []*HeapProfilerSamplingHeapProfileSample `json:"samples"` //
 }
 
-//
 type HeapProfilerAddHeapSnapshotChunkEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -55,7 +54,6 @@ type HeapProfilerLastSeenObjectIdEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type HeapProfilerReportHeapSnapshotProgressEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -92,17 +90,14 @@ func (c *HeapProfiler) AddInspectedHeapObject(ctx context.Context, heapObjectId 
 	return c.AddInspectedHeapObjectWithParams(ctx, &v)
 }
 
-//
 func (c *HeapProfiler) CollectGarbage(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.collectGarbage"})
 }
 
-//
 func (c *HeapProfiler) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.disable"})
 }
 
-//
 func (c *HeapProfiler) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.enable"})
 }
@@ -121,6 +116,7 @@ func (c *HeapProfiler) GetHeapObjectIdWithParams(ctx context.Context, v *HeapPro
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			HeapSnapshotObjectId string
 		}
@@ -130,15 +126,12 @@ func (c *HeapProfiler) GetHeapObjectIdWithParams(ctx context.Context, v *HeapPro
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.HeapSnapshotObjectId, nil
@@ -169,6 +162,7 @@ func (c *HeapProfiler) GetObjectByHeapObjectIdWithParams(ctx context.Context, v 
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result *RuntimeRemoteObject
 		}
@@ -178,15 +172,12 @@ func (c *HeapProfiler) GetObjectByHeapObjectIdWithParams(ctx context.Context, v 
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -212,6 +203,7 @@ func (c *HeapProfiler) GetSamplingProfile(ctx context.Context) (*HeapProfilerSam
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Profile *HeapProfilerSamplingHeapProfile
 		}
@@ -221,15 +213,12 @@ func (c *HeapProfiler) GetSamplingProfile(ctx context.Context) (*HeapProfilerSam
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Profile, nil
@@ -288,6 +277,7 @@ func (c *HeapProfiler) StopSampling(ctx context.Context) (*HeapProfilerSamplingH
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Profile *HeapProfilerSamplingHeapProfile
 		}
@@ -297,15 +287,12 @@ func (c *HeapProfiler) StopSampling(ctx context.Context) (*HeapProfilerSamplingH
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Profile, nil

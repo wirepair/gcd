@@ -232,6 +232,7 @@ func (c *DOM) CollectClassNamesFromSubtreeWithParams(ctx context.Context, v *DOM
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ClassNames []string
 		}
@@ -241,15 +242,12 @@ func (c *DOM) CollectClassNamesFromSubtreeWithParams(ctx context.Context, v *DOM
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ClassNames, nil
@@ -282,6 +280,7 @@ func (c *DOM) CopyToWithParams(ctx context.Context, v *DOMCopyToParams) (int, er
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeId int
 		}
@@ -291,15 +290,12 @@ func (c *DOM) CopyToWithParams(ctx context.Context, v *DOMCopyToParams) (int, er
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeId, nil
@@ -340,6 +336,7 @@ func (c *DOM) DescribeNodeWithParams(ctx context.Context, v *DOMDescribeNodePara
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Node *DOMNode
 		}
@@ -349,15 +346,12 @@ func (c *DOM) DescribeNodeWithParams(ctx context.Context, v *DOMDescribeNodePara
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Node, nil
@@ -491,6 +485,7 @@ func (c *DOM) GetAttributesWithParams(ctx context.Context, v *DOMGetAttributesPa
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Attributes []string
 		}
@@ -500,15 +495,12 @@ func (c *DOM) GetAttributesWithParams(ctx context.Context, v *DOMGetAttributesPa
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Attributes, nil
@@ -541,6 +533,7 @@ func (c *DOM) GetBoxModelWithParams(ctx context.Context, v *DOMGetBoxModelParams
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Model *DOMBoxModel
 		}
@@ -550,15 +543,12 @@ func (c *DOM) GetBoxModelWithParams(ctx context.Context, v *DOMGetBoxModelParams
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Model, nil
@@ -595,6 +585,7 @@ func (c *DOM) GetContentQuadsWithParams(ctx context.Context, v *DOMGetContentQua
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Quads []float64
 		}
@@ -604,15 +595,12 @@ func (c *DOM) GetContentQuadsWithParams(ctx context.Context, v *DOMGetContentQua
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Quads, nil
@@ -647,6 +635,7 @@ func (c *DOM) GetDocumentWithParams(ctx context.Context, v *DOMGetDocumentParams
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Root *DOMNode
 		}
@@ -656,15 +645,12 @@ func (c *DOM) GetDocumentWithParams(ctx context.Context, v *DOMGetDocumentParams
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Root, nil
@@ -697,6 +683,7 @@ func (c *DOM) GetFlattenedDocumentWithParams(ctx context.Context, v *DOMGetFlatt
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Nodes []*DOMNode
 		}
@@ -706,15 +693,12 @@ func (c *DOM) GetFlattenedDocumentWithParams(ctx context.Context, v *DOMGetFlatt
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Nodes, nil
@@ -749,6 +733,7 @@ func (c *DOM) GetNodesForSubtreeByStyleWithParams(ctx context.Context, v *DOMGet
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeIds []int
 		}
@@ -758,15 +743,12 @@ func (c *DOM) GetNodesForSubtreeByStyleWithParams(ctx context.Context, v *DOMGet
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeIds, nil
@@ -805,6 +787,7 @@ func (c *DOM) GetNodeForLocationWithParams(ctx context.Context, v *DOMGetNodeFor
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			BackendNodeId int
 			FrameId       string
@@ -816,15 +799,12 @@ func (c *DOM) GetNodeForLocationWithParams(ctx context.Context, v *DOMGetNodeFor
 		return 0, "", 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, "", 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, "", 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, "", 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.BackendNodeId, chromeData.Result.FrameId, chromeData.Result.NodeId, nil
@@ -863,6 +843,7 @@ func (c *DOM) GetOuterHTMLWithParams(ctx context.Context, v *DOMGetOuterHTMLPara
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			OuterHTML string
 		}
@@ -872,15 +853,12 @@ func (c *DOM) GetOuterHTMLWithParams(ctx context.Context, v *DOMGetOuterHTMLPara
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.OuterHTML, nil
@@ -913,6 +891,7 @@ func (c *DOM) GetRelayoutBoundaryWithParams(ctx context.Context, v *DOMGetRelayo
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeId int
 		}
@@ -922,15 +901,12 @@ func (c *DOM) GetRelayoutBoundaryWithParams(ctx context.Context, v *DOMGetRelayo
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeId, nil
@@ -963,6 +939,7 @@ func (c *DOM) GetSearchResultsWithParams(ctx context.Context, v *DOMGetSearchRes
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeIds []int
 		}
@@ -972,15 +949,12 @@ func (c *DOM) GetSearchResultsWithParams(ctx context.Context, v *DOMGetSearchRes
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeIds, nil
@@ -1037,6 +1011,7 @@ func (c *DOM) MoveToWithParams(ctx context.Context, v *DOMMoveToParams) (int, er
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeId int
 		}
@@ -1046,15 +1021,12 @@ func (c *DOM) MoveToWithParams(ctx context.Context, v *DOMMoveToParams) (int, er
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeId, nil
@@ -1089,6 +1061,7 @@ func (c *DOM) PerformSearchWithParams(ctx context.Context, v *DOMPerformSearchPa
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			SearchId    string
 			ResultCount int
@@ -1099,15 +1072,12 @@ func (c *DOM) PerformSearchWithParams(ctx context.Context, v *DOMPerformSearchPa
 		return "", 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", 0, err
+	}
+
+	if chromeData.Error != nil {
+		return "", 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.SearchId, chromeData.Result.ResultCount, nil
@@ -1138,6 +1108,7 @@ func (c *DOM) PushNodeByPathToFrontendWithParams(ctx context.Context, v *DOMPush
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeId int
 		}
@@ -1147,15 +1118,12 @@ func (c *DOM) PushNodeByPathToFrontendWithParams(ctx context.Context, v *DOMPush
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeId, nil
@@ -1184,6 +1152,7 @@ func (c *DOM) PushNodesByBackendIdsToFrontendWithParams(ctx context.Context, v *
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeIds []int
 		}
@@ -1193,15 +1162,12 @@ func (c *DOM) PushNodesByBackendIdsToFrontendWithParams(ctx context.Context, v *
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeIds, nil
@@ -1232,6 +1198,7 @@ func (c *DOM) QuerySelectorWithParams(ctx context.Context, v *DOMQuerySelectorPa
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeId int
 		}
@@ -1241,15 +1208,12 @@ func (c *DOM) QuerySelectorWithParams(ctx context.Context, v *DOMQuerySelectorPa
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeId, nil
@@ -1282,6 +1246,7 @@ func (c *DOM) QuerySelectorAllWithParams(ctx context.Context, v *DOMQuerySelecto
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeIds []int
 		}
@@ -1291,15 +1256,12 @@ func (c *DOM) QuerySelectorAllWithParams(ctx context.Context, v *DOMQuerySelecto
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeIds, nil
@@ -1325,6 +1287,7 @@ func (c *DOM) GetTopLayerElements(ctx context.Context) ([]int, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeIds []int
 		}
@@ -1334,15 +1297,12 @@ func (c *DOM) GetTopLayerElements(ctx context.Context) ([]int, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeIds, nil
@@ -1433,6 +1393,7 @@ func (c *DOM) RequestNodeWithParams(ctx context.Context, v *DOMRequestNodeParams
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeId int
 		}
@@ -1442,15 +1403,12 @@ func (c *DOM) RequestNodeWithParams(ctx context.Context, v *DOMRequestNodeParams
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeId, nil
@@ -1485,6 +1443,7 @@ func (c *DOM) ResolveNodeWithParams(ctx context.Context, v *DOMResolveNodeParams
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Object *RuntimeRemoteObject
 		}
@@ -1494,15 +1453,12 @@ func (c *DOM) ResolveNodeWithParams(ctx context.Context, v *DOMResolveNodeParams
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Object, nil
@@ -1637,6 +1593,7 @@ func (c *DOM) GetNodeStackTracesWithParams(ctx context.Context, v *DOMGetNodeSta
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Creation *RuntimeStackTrace
 		}
@@ -1646,15 +1603,12 @@ func (c *DOM) GetNodeStackTracesWithParams(ctx context.Context, v *DOMGetNodeSta
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Creation, nil
@@ -1683,6 +1637,7 @@ func (c *DOM) GetFileInfoWithParams(ctx context.Context, v *DOMGetFileInfoParams
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Path string
 		}
@@ -1692,15 +1647,12 @@ func (c *DOM) GetFileInfoWithParams(ctx context.Context, v *DOMGetFileInfoParams
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Path, nil
@@ -1749,6 +1701,7 @@ func (c *DOM) SetNodeNameWithParams(ctx context.Context, v *DOMSetNodeNameParams
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeId int
 		}
@@ -1758,15 +1711,12 @@ func (c *DOM) SetNodeNameWithParams(ctx context.Context, v *DOMSetNodeNameParams
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeId, nil
@@ -1846,6 +1796,7 @@ func (c *DOM) GetFrameOwnerWithParams(ctx context.Context, v *DOMGetFrameOwnerPa
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			BackendNodeId int
 			NodeId        int
@@ -1856,15 +1807,12 @@ func (c *DOM) GetFrameOwnerWithParams(ctx context.Context, v *DOMGetFrameOwnerPa
 		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.BackendNodeId, chromeData.Result.NodeId, nil
@@ -1899,6 +1847,7 @@ func (c *DOM) GetContainerForNodeWithParams(ctx context.Context, v *DOMGetContai
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeId int
 		}
@@ -1908,15 +1857,12 @@ func (c *DOM) GetContainerForNodeWithParams(ctx context.Context, v *DOMGetContai
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeId, nil
@@ -1951,6 +1897,7 @@ func (c *DOM) GetQueryingDescendantsForContainerWithParams(ctx context.Context, 
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeIds []int
 		}
@@ -1960,15 +1907,12 @@ func (c *DOM) GetQueryingDescendantsForContainerWithParams(ctx context.Context, 
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeIds, nil

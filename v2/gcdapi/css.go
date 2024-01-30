@@ -319,6 +319,7 @@ func (c *CSS) AddRuleWithParams(ctx context.Context, v *CSSAddRuleParams) (*CSSC
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Rule *CSSCSSRule
 		}
@@ -328,15 +329,12 @@ func (c *CSS) AddRuleWithParams(ctx context.Context, v *CSSAddRuleParams) (*CSSC
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Rule, nil
@@ -369,6 +367,7 @@ func (c *CSS) CollectClassNamesWithParams(ctx context.Context, v *CSSCollectClas
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ClassNames []string
 		}
@@ -378,15 +377,12 @@ func (c *CSS) CollectClassNamesWithParams(ctx context.Context, v *CSSCollectClas
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ClassNames, nil
@@ -415,6 +411,7 @@ func (c *CSS) CreateStyleSheetWithParams(ctx context.Context, v *CSSCreateStyleS
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			StyleSheetId string
 		}
@@ -424,15 +421,12 @@ func (c *CSS) CreateStyleSheetWithParams(ctx context.Context, v *CSSCreateStyleS
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.StyleSheetId, nil
@@ -493,6 +487,7 @@ func (c *CSS) GetBackgroundColorsWithParams(ctx context.Context, v *CSSGetBackgr
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			BackgroundColors   []string
 			ComputedFontSize   string
@@ -504,15 +499,12 @@ func (c *CSS) GetBackgroundColorsWithParams(ctx context.Context, v *CSSGetBackgr
 		return nil, "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, "", "", err
+	}
+
+	if chromeData.Error != nil {
+		return nil, "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.BackgroundColors, chromeData.Result.ComputedFontSize, chromeData.Result.ComputedFontWeight, nil
@@ -541,6 +533,7 @@ func (c *CSS) GetComputedStyleForNodeWithParams(ctx context.Context, v *CSSGetCo
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ComputedStyle []*CSSCSSComputedStyleProperty
 		}
@@ -550,15 +543,12 @@ func (c *CSS) GetComputedStyleForNodeWithParams(ctx context.Context, v *CSSGetCo
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ComputedStyle, nil
@@ -587,6 +577,7 @@ func (c *CSS) GetInlineStylesForNodeWithParams(ctx context.Context, v *CSSGetInl
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			InlineStyle     *CSSCSSStyle
 			AttributesStyle *CSSCSSStyle
@@ -597,15 +588,12 @@ func (c *CSS) GetInlineStylesForNodeWithParams(ctx context.Context, v *CSSGetInl
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.InlineStyle, chromeData.Result.AttributesStyle, nil
@@ -634,6 +622,7 @@ func (c *CSS) GetMatchedStylesForNodeWithParams(ctx context.Context, v *CSSGetMa
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			InlineStyle              *CSSCSSStyle
 			AttributesStyle          *CSSCSSStyle
@@ -651,15 +640,12 @@ func (c *CSS) GetMatchedStylesForNodeWithParams(ctx context.Context, v *CSSGetMa
 		return nil, nil, nil, nil, nil, nil, nil, nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, 0, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, nil, nil, nil, nil, nil, nil, nil, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.InlineStyle, chromeData.Result.AttributesStyle, chromeData.Result.MatchedCSSRules, chromeData.Result.PseudoElements, chromeData.Result.Inherited, chromeData.Result.InheritedPseudoElements, chromeData.Result.CssKeyframesRules, chromeData.Result.CssPositionFallbackRules, chromeData.Result.ParentLayoutNodeId, nil
@@ -683,6 +669,7 @@ func (c *CSS) GetMediaQueries(ctx context.Context) ([]*CSSCSSMedia, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Medias []*CSSCSSMedia
 		}
@@ -692,15 +679,12 @@ func (c *CSS) GetMediaQueries(ctx context.Context) ([]*CSSCSSMedia, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Medias, nil
@@ -720,6 +704,7 @@ func (c *CSS) GetPlatformFontsForNodeWithParams(ctx context.Context, v *CSSGetPl
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Fonts []*CSSPlatformFontUsage
 		}
@@ -729,15 +714,12 @@ func (c *CSS) GetPlatformFontsForNodeWithParams(ctx context.Context, v *CSSGetPl
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Fonts, nil
@@ -766,6 +748,7 @@ func (c *CSS) GetStyleSheetTextWithParams(ctx context.Context, v *CSSGetStyleShe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Text string
 		}
@@ -775,15 +758,12 @@ func (c *CSS) GetStyleSheetTextWithParams(ctx context.Context, v *CSSGetStyleShe
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Text, nil
@@ -812,6 +792,7 @@ func (c *CSS) GetLayersForNodeWithParams(ctx context.Context, v *CSSGetLayersFor
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			RootLayer *CSSCSSLayerData
 		}
@@ -821,15 +802,12 @@ func (c *CSS) GetLayersForNodeWithParams(ctx context.Context, v *CSSGetLayersFor
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.RootLayer, nil
@@ -871,6 +849,7 @@ func (c *CSS) TakeComputedStyleUpdates(ctx context.Context) ([]int, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			NodeIds []int
 		}
@@ -880,15 +859,12 @@ func (c *CSS) TakeComputedStyleUpdates(ctx context.Context) ([]int, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.NodeIds, nil
@@ -938,6 +914,7 @@ func (c *CSS) SetKeyframeKeyWithParams(ctx context.Context, v *CSSSetKeyframeKey
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			KeyText *CSSValue
 		}
@@ -947,15 +924,12 @@ func (c *CSS) SetKeyframeKeyWithParams(ctx context.Context, v *CSSSetKeyframeKey
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.KeyText, nil
@@ -992,6 +966,7 @@ func (c *CSS) SetMediaTextWithParams(ctx context.Context, v *CSSSetMediaTextPara
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Media *CSSCSSMedia
 		}
@@ -1001,15 +976,12 @@ func (c *CSS) SetMediaTextWithParams(ctx context.Context, v *CSSSetMediaTextPara
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Media, nil
@@ -1046,6 +1018,7 @@ func (c *CSS) SetContainerQueryTextWithParams(ctx context.Context, v *CSSSetCont
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ContainerQuery *CSSCSSContainerQuery
 		}
@@ -1055,15 +1028,12 @@ func (c *CSS) SetContainerQueryTextWithParams(ctx context.Context, v *CSSSetCont
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ContainerQuery, nil
@@ -1100,6 +1070,7 @@ func (c *CSS) SetSupportsTextWithParams(ctx context.Context, v *CSSSetSupportsTe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Supports *CSSCSSSupports
 		}
@@ -1109,15 +1080,12 @@ func (c *CSS) SetSupportsTextWithParams(ctx context.Context, v *CSSSetSupportsTe
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Supports, nil
@@ -1154,6 +1122,7 @@ func (c *CSS) SetScopeTextWithParams(ctx context.Context, v *CSSSetScopeTextPara
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Scope *CSSCSSScope
 		}
@@ -1163,15 +1132,12 @@ func (c *CSS) SetScopeTextWithParams(ctx context.Context, v *CSSSetScopeTextPara
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Scope, nil
@@ -1208,6 +1174,7 @@ func (c *CSS) SetRuleSelectorWithParams(ctx context.Context, v *CSSSetRuleSelect
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			SelectorList *CSSSelectorList
 		}
@@ -1217,15 +1184,12 @@ func (c *CSS) SetRuleSelectorWithParams(ctx context.Context, v *CSSSetRuleSelect
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.SelectorList, nil
@@ -1260,6 +1224,7 @@ func (c *CSS) SetStyleSheetTextWithParams(ctx context.Context, v *CSSSetStyleShe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			SourceMapURL string
 		}
@@ -1269,15 +1234,12 @@ func (c *CSS) SetStyleSheetTextWithParams(ctx context.Context, v *CSSSetStyleShe
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.SourceMapURL, nil
@@ -1308,6 +1270,7 @@ func (c *CSS) SetStyleTextsWithParams(ctx context.Context, v *CSSSetStyleTextsPa
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Styles []*CSSCSSStyle
 		}
@@ -1317,15 +1280,12 @@ func (c *CSS) SetStyleTextsWithParams(ctx context.Context, v *CSSSetStyleTextsPa
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Styles, nil
@@ -1354,6 +1314,7 @@ func (c *CSS) StopRuleUsageTracking(ctx context.Context) ([]*CSSRuleUsage, error
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			RuleUsage []*CSSRuleUsage
 		}
@@ -1363,15 +1324,12 @@ func (c *CSS) StopRuleUsageTracking(ctx context.Context) ([]*CSSRuleUsage, error
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.RuleUsage, nil
@@ -1386,6 +1344,7 @@ func (c *CSS) TakeCoverageDelta(ctx context.Context) ([]*CSSRuleUsage, float64, 
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Coverage  []*CSSRuleUsage
 			Timestamp float64
@@ -1396,15 +1355,12 @@ func (c *CSS) TakeCoverageDelta(ctx context.Context) ([]*CSSRuleUsage, float64, 
 		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, 0, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Coverage, chromeData.Result.Timestamp, nil

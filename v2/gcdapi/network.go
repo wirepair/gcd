@@ -658,7 +658,6 @@ type NetworkReportingApiReportAddedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type NetworkReportingApiReportUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -666,7 +665,6 @@ type NetworkReportingApiReportUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type NetworkReportingApiEndpointsChangedForOriginEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -716,6 +714,7 @@ func (c *Network) CanClearBrowserCache(ctx context.Context) (bool, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result bool
 		}
@@ -725,15 +724,12 @@ func (c *Network) CanClearBrowserCache(ctx context.Context) (bool, error) {
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
+	}
+
+	if chromeData.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -748,6 +744,7 @@ func (c *Network) CanClearBrowserCookies(ctx context.Context) (bool, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result bool
 		}
@@ -757,15 +754,12 @@ func (c *Network) CanClearBrowserCookies(ctx context.Context) (bool, error) {
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
+	}
+
+	if chromeData.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -780,6 +774,7 @@ func (c *Network) CanEmulateNetworkConditions(ctx context.Context) (bool, error)
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result bool
 		}
@@ -789,15 +784,12 @@ func (c *Network) CanEmulateNetworkConditions(ctx context.Context) (bool, error)
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
+	}
+
+	if chromeData.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -963,6 +955,7 @@ func (c *Network) GetAllCookies(ctx context.Context) ([]*NetworkCookie, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Cookies []*NetworkCookie
 		}
@@ -972,15 +965,12 @@ func (c *Network) GetAllCookies(ctx context.Context) ([]*NetworkCookie, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Cookies, nil
@@ -1000,6 +990,7 @@ func (c *Network) GetCertificateWithParams(ctx context.Context, v *NetworkGetCer
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			TableNames []string
 		}
@@ -1009,15 +1000,12 @@ func (c *Network) GetCertificateWithParams(ctx context.Context, v *NetworkGetCer
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.TableNames, nil
@@ -1046,6 +1034,7 @@ func (c *Network) GetCookiesWithParams(ctx context.Context, v *NetworkGetCookies
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Cookies []*NetworkCookie
 		}
@@ -1055,15 +1044,12 @@ func (c *Network) GetCookiesWithParams(ctx context.Context, v *NetworkGetCookies
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Cookies, nil
@@ -1092,6 +1078,7 @@ func (c *Network) GetResponseBodyWithParams(ctx context.Context, v *NetworkGetRe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Body          string
 			Base64Encoded bool
@@ -1102,15 +1089,12 @@ func (c *Network) GetResponseBodyWithParams(ctx context.Context, v *NetworkGetRe
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
+	}
+
+	if chromeData.Error != nil {
+		return "", false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Body, chromeData.Result.Base64Encoded, nil
@@ -1139,6 +1123,7 @@ func (c *Network) GetRequestPostDataWithParams(ctx context.Context, v *NetworkGe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			PostData string
 		}
@@ -1148,15 +1133,12 @@ func (c *Network) GetRequestPostDataWithParams(ctx context.Context, v *NetworkGe
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.PostData, nil
@@ -1185,6 +1167,7 @@ func (c *Network) GetResponseBodyForInterceptionWithParams(ctx context.Context, 
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Body          string
 			Base64Encoded bool
@@ -1195,15 +1178,12 @@ func (c *Network) GetResponseBodyForInterceptionWithParams(ctx context.Context, 
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
+	}
+
+	if chromeData.Error != nil {
+		return "", false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Body, chromeData.Result.Base64Encoded, nil
@@ -1232,6 +1212,7 @@ func (c *Network) TakeResponseBodyForInterceptionAsStreamWithParams(ctx context.
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Stream string
 		}
@@ -1241,15 +1222,12 @@ func (c *Network) TakeResponseBodyForInterceptionAsStreamWithParams(ctx context.
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Stream, nil
@@ -1302,6 +1280,7 @@ func (c *Network) SearchInResponseBodyWithParams(ctx context.Context, v *Network
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result []*DebuggerSearchMatch
 		}
@@ -1311,15 +1290,12 @@ func (c *Network) SearchInResponseBodyWithParams(ctx context.Context, v *Network
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -1434,6 +1410,7 @@ func (c *Network) SetCookieWithParams(ctx context.Context, v *NetworkSetCookiePa
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Success bool
 		}
@@ -1443,15 +1420,12 @@ func (c *Network) SetCookieWithParams(ctx context.Context, v *NetworkSetCookiePa
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
+	}
+
+	if chromeData.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Success, nil
@@ -1608,6 +1582,7 @@ func (c *Network) GetSecurityIsolationStatusWithParams(ctx context.Context, v *N
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Status *NetworkSecurityIsolationStatus
 		}
@@ -1617,15 +1592,12 @@ func (c *Network) GetSecurityIsolationStatusWithParams(ctx context.Context, v *N
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Status, nil
@@ -1676,6 +1648,7 @@ func (c *Network) LoadNetworkResourceWithParams(ctx context.Context, v *NetworkL
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Resource *NetworkLoadNetworkResourcePageResult
 		}
@@ -1685,15 +1658,12 @@ func (c *Network) LoadNetworkResourceWithParams(ctx context.Context, v *NetworkL
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Resource, nil

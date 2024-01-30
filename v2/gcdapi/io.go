@@ -54,6 +54,7 @@ func (c *IO) ReadWithParams(ctx context.Context, v *IOReadParams) (bool, string,
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Base64Encoded bool
 			Data          string
@@ -65,15 +66,12 @@ func (c *IO) ReadWithParams(ctx context.Context, v *IOReadParams) (bool, string,
 		return false, "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, "", false, err
+	}
+
+	if chromeData.Error != nil {
+		return false, "", false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Base64Encoded, chromeData.Result.Data, chromeData.Result.Eof, nil
@@ -106,6 +104,7 @@ func (c *IO) ResolveBlobWithParams(ctx context.Context, v *IOResolveBlobParams) 
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Uuid string
 		}
@@ -115,15 +114,12 @@ func (c *IO) ResolveBlobWithParams(ctx context.Context, v *IOResolveBlobParams) 
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Uuid, nil

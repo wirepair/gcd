@@ -50,7 +50,6 @@ type LayerTreeLayer struct {
 	StickyPositionConstraint *LayerTreeStickyPositionConstraint `json:"stickyPositionConstraint,omitempty"` // Sticky position constraint information
 }
 
-//
 type LayerTreeLayerPaintedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -59,7 +58,6 @@ type LayerTreeLayerPaintedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type LayerTreeLayerTreeDidChangeEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -90,6 +88,7 @@ func (c *LayerTree) CompositingReasonsWithParams(ctx context.Context, v *LayerTr
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			CompositingReasons   []string
 			CompositingReasonIds []string
@@ -100,15 +99,12 @@ func (c *LayerTree) CompositingReasonsWithParams(ctx context.Context, v *LayerTr
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.CompositingReasons, chromeData.Result.CompositingReasonIds, nil
@@ -147,6 +143,7 @@ func (c *LayerTree) LoadSnapshotWithParams(ctx context.Context, v *LayerTreeLoad
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			SnapshotId string
 		}
@@ -156,15 +153,12 @@ func (c *LayerTree) LoadSnapshotWithParams(ctx context.Context, v *LayerTreeLoad
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.SnapshotId, nil
@@ -193,6 +187,7 @@ func (c *LayerTree) MakeSnapshotWithParams(ctx context.Context, v *LayerTreeMake
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			SnapshotId string
 		}
@@ -202,15 +197,12 @@ func (c *LayerTree) MakeSnapshotWithParams(ctx context.Context, v *LayerTreeMake
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.SnapshotId, nil
@@ -245,6 +237,7 @@ func (c *LayerTree) ProfileSnapshotWithParams(ctx context.Context, v *LayerTreeP
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Timings []float64
 		}
@@ -254,15 +247,12 @@ func (c *LayerTree) ProfileSnapshotWithParams(ctx context.Context, v *LayerTreeP
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Timings, nil
@@ -321,6 +311,7 @@ func (c *LayerTree) ReplaySnapshotWithParams(ctx context.Context, v *LayerTreeRe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			DataURL string
 		}
@@ -330,15 +321,12 @@ func (c *LayerTree) ReplaySnapshotWithParams(ctx context.Context, v *LayerTreeRe
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
+	}
+
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.DataURL, nil
@@ -373,6 +361,7 @@ func (c *LayerTree) SnapshotCommandLogWithParams(ctx context.Context, v *LayerTr
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 		}
 	}
@@ -381,15 +370,12 @@ func (c *LayerTree) SnapshotCommandLogWithParams(ctx context.Context, v *LayerTr
 		return &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return err
+	}
+
+	if chromeData.Error != nil {
+		return &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return nil

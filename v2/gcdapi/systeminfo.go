@@ -86,6 +86,7 @@ func (c *SystemInfo) GetInfo(ctx context.Context) (*SystemInfoGPUInfo, string, s
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Gpu          *SystemInfoGPUInfo
 			ModelName    string
@@ -98,15 +99,12 @@ func (c *SystemInfo) GetInfo(ctx context.Context) (*SystemInfoGPUInfo, string, s
 		return nil, "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, "", "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, "", "", "", err
+	}
+
+	if chromeData.Error != nil {
+		return nil, "", "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Gpu, chromeData.Result.ModelName, chromeData.Result.ModelVersion, chromeData.Result.CommandLine, nil
@@ -126,6 +124,7 @@ func (c *SystemInfo) GetFeatureStateWithParams(ctx context.Context, v *SystemInf
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			FeatureEnabled bool
 		}
@@ -135,15 +134,12 @@ func (c *SystemInfo) GetFeatureStateWithParams(ctx context.Context, v *SystemInf
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
+	}
+
+	if chromeData.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.FeatureEnabled, nil
@@ -167,6 +163,7 @@ func (c *SystemInfo) GetProcessInfo(ctx context.Context) ([]*SystemInfoProcessIn
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ProcessInfo []*SystemInfoProcessInfo
 		}
@@ -176,15 +173,12 @@ func (c *SystemInfo) GetProcessInfo(ctx context.Context) ([]*SystemInfoProcessIn
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ProcessInfo, nil

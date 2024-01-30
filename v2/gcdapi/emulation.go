@@ -66,6 +66,7 @@ func (c *Emulation) CanEmulate(ctx context.Context) (bool, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result bool
 		}
@@ -75,15 +76,12 @@ func (c *Emulation) CanEmulate(ctx context.Context) (bool, error) {
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
+	}
+
+	if chromeData.Error != nil {
+		return false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -489,6 +487,7 @@ func (c *Emulation) SetVirtualTimePolicyWithParams(ctx context.Context, v *Emula
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			VirtualTimeTicksBase float64
 		}
@@ -498,15 +497,12 @@ func (c *Emulation) SetVirtualTimePolicyWithParams(ctx context.Context, v *Emula
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
-	}
-
 	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.VirtualTimeTicksBase, nil
