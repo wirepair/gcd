@@ -102,7 +102,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}(ctx context.Context) ({{range $rets 
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
 	}
 
@@ -142,7 +142,7 @@ func (c *{{$api.Domain}}) {{.Name | Title}}WithParams(ctx context.Context, v *{{
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}&gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return {{range $rets := .Returns}}{{if $rets.IsTypeArray}}nil{{else}}{{$rets.GoType | NullType}}{{end}}, {{end}}err
 	}
 

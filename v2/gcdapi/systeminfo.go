@@ -99,7 +99,7 @@ func (c *SystemInfo) GetInfo(ctx context.Context) (*SystemInfoGPUInfo, string, s
 		return nil, "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, "", "", "", err
 	}
 
@@ -134,7 +134,7 @@ func (c *SystemInfo) GetFeatureStateWithParams(ctx context.Context, v *SystemInf
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -173,7 +173,7 @@ func (c *SystemInfo) GetProcessInfo(ctx context.Context) ([]*SystemInfoProcessIn
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

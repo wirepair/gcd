@@ -60,7 +60,7 @@ func (c *Memory) GetDOMCounters(ctx context.Context) (int, int, int, error) {
 		return 0, 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, 0, 0, err
 	}
 
@@ -162,7 +162,7 @@ func (c *Memory) GetAllTimeSamplingProfile(ctx context.Context) (*MemorySampling
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -192,7 +192,7 @@ func (c *Memory) GetBrowserSamplingProfile(ctx context.Context) (*MemorySampling
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -222,7 +222,7 @@ func (c *Memory) GetSamplingProfile(ctx context.Context) (*MemorySamplingProfile
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

@@ -126,7 +126,7 @@ func (c *HeapProfiler) GetHeapObjectIdWithParams(ctx context.Context, v *HeapPro
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -172,7 +172,7 @@ func (c *HeapProfiler) GetObjectByHeapObjectIdWithParams(ctx context.Context, v 
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -213,7 +213,7 @@ func (c *HeapProfiler) GetSamplingProfile(ctx context.Context) (*HeapProfilerSam
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -287,7 +287,7 @@ func (c *HeapProfiler) StopSampling(ctx context.Context) (*HeapProfilerSamplingH
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

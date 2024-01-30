@@ -109,7 +109,7 @@ func (c *WebAuthn) AddVirtualAuthenticatorWithParams(ctx context.Context, v *Web
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -225,7 +225,7 @@ func (c *WebAuthn) GetCredentialWithParams(ctx context.Context, v *WebAuthnGetCr
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -271,7 +271,7 @@ func (c *WebAuthn) GetCredentialsWithParams(ctx context.Context, v *WebAuthnGetC
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

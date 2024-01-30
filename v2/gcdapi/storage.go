@@ -206,7 +206,7 @@ func (c *Storage) GetStorageKeyForFrameWithParams(ctx context.Context, v *Storag
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -294,7 +294,7 @@ func (c *Storage) GetCookiesWithParams(ctx context.Context, v *StorageGetCookies
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -381,7 +381,7 @@ func (c *Storage) GetUsageAndQuotaWithParams(ctx context.Context, v *StorageGetU
 		return 0, 0, false, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, 0, false, nil, err
 	}
 
@@ -586,7 +586,7 @@ func (c *Storage) GetTrustTokens(ctx context.Context) ([]*StorageTrustTokens, er
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -621,7 +621,7 @@ func (c *Storage) ClearTrustTokensWithParams(ctx context.Context, v *StorageClea
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -667,7 +667,7 @@ func (c *Storage) GetInterestGroupDetailsWithParams(ctx context.Context, v *Stor
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -731,7 +731,7 @@ func (c *Storage) GetSharedStorageMetadataWithParams(ctx context.Context, v *Sto
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -775,7 +775,7 @@ func (c *Storage) GetSharedStorageEntriesWithParams(ctx context.Context, v *Stor
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -960,7 +960,7 @@ func (c *Storage) RunBounceTrackingMitigations(ctx context.Context) ([]string, e
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

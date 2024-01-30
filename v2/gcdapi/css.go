@@ -329,7 +329,7 @@ func (c *CSS) AddRuleWithParams(ctx context.Context, v *CSSAddRuleParams) (*CSSC
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -377,7 +377,7 @@ func (c *CSS) CollectClassNamesWithParams(ctx context.Context, v *CSSCollectClas
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -421,7 +421,7 @@ func (c *CSS) CreateStyleSheetWithParams(ctx context.Context, v *CSSCreateStyleS
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -499,7 +499,7 @@ func (c *CSS) GetBackgroundColorsWithParams(ctx context.Context, v *CSSGetBackgr
 		return nil, "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, "", "", err
 	}
 
@@ -543,7 +543,7 @@ func (c *CSS) GetComputedStyleForNodeWithParams(ctx context.Context, v *CSSGetCo
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -588,7 +588,7 @@ func (c *CSS) GetInlineStylesForNodeWithParams(ctx context.Context, v *CSSGetInl
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -640,7 +640,7 @@ func (c *CSS) GetMatchedStylesForNodeWithParams(ctx context.Context, v *CSSGetMa
 		return nil, nil, nil, nil, nil, nil, nil, nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, 0, err
 	}
 
@@ -679,7 +679,7 @@ func (c *CSS) GetMediaQueries(ctx context.Context) ([]*CSSCSSMedia, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -714,7 +714,7 @@ func (c *CSS) GetPlatformFontsForNodeWithParams(ctx context.Context, v *CSSGetPl
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -758,7 +758,7 @@ func (c *CSS) GetStyleSheetTextWithParams(ctx context.Context, v *CSSGetStyleShe
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -802,7 +802,7 @@ func (c *CSS) GetLayersForNodeWithParams(ctx context.Context, v *CSSGetLayersFor
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -859,7 +859,7 @@ func (c *CSS) TakeComputedStyleUpdates(ctx context.Context) ([]int, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -924,7 +924,7 @@ func (c *CSS) SetKeyframeKeyWithParams(ctx context.Context, v *CSSSetKeyframeKey
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -976,7 +976,7 @@ func (c *CSS) SetMediaTextWithParams(ctx context.Context, v *CSSSetMediaTextPara
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1028,7 +1028,7 @@ func (c *CSS) SetContainerQueryTextWithParams(ctx context.Context, v *CSSSetCont
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1080,7 +1080,7 @@ func (c *CSS) SetSupportsTextWithParams(ctx context.Context, v *CSSSetSupportsTe
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1132,7 +1132,7 @@ func (c *CSS) SetScopeTextWithParams(ctx context.Context, v *CSSSetScopeTextPara
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1184,7 +1184,7 @@ func (c *CSS) SetRuleSelectorWithParams(ctx context.Context, v *CSSSetRuleSelect
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1234,7 +1234,7 @@ func (c *CSS) SetStyleSheetTextWithParams(ctx context.Context, v *CSSSetStyleShe
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -1280,7 +1280,7 @@ func (c *CSS) SetStyleTextsWithParams(ctx context.Context, v *CSSSetStyleTextsPa
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1324,7 +1324,7 @@ func (c *CSS) StopRuleUsageTracking(ctx context.Context) ([]*CSSRuleUsage, error
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1355,7 +1355,7 @@ func (c *CSS) TakeCoverageDelta(ctx context.Context) ([]*CSSRuleUsage, float64, 
 		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, 0, err
 	}
 

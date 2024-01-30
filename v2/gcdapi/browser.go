@@ -237,7 +237,7 @@ func (c *Browser) GetVersion(ctx context.Context) (string, string, string, strin
 		return "", "", "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", "", "", "", "", err
 	}
 
@@ -267,7 +267,7 @@ func (c *Browser) GetBrowserCommandLine(ctx context.Context) ([]string, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -304,7 +304,7 @@ func (c *Browser) GetHistogramsWithParams(ctx context.Context, v *BrowserGetHist
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -352,7 +352,7 @@ func (c *Browser) GetHistogramWithParams(ctx context.Context, v *BrowserGetHisto
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -398,7 +398,7 @@ func (c *Browser) GetWindowBoundsWithParams(ctx context.Context, v *BrowserGetWi
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -443,7 +443,7 @@ func (c *Browser) GetWindowForTargetWithParams(ctx context.Context, v *BrowserGe
 		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, nil, err
 	}
 

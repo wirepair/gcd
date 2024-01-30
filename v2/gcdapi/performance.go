@@ -93,7 +93,7 @@ func (c *Performance) GetMetrics(ctx context.Context) ([]*PerformanceMetric, err
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

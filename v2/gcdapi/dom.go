@@ -242,7 +242,7 @@ func (c *DOM) CollectClassNamesFromSubtreeWithParams(ctx context.Context, v *DOM
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -290,7 +290,7 @@ func (c *DOM) CopyToWithParams(ctx context.Context, v *DOMCopyToParams) (int, er
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -346,7 +346,7 @@ func (c *DOM) DescribeNodeWithParams(ctx context.Context, v *DOMDescribeNodePara
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -495,7 +495,7 @@ func (c *DOM) GetAttributesWithParams(ctx context.Context, v *DOMGetAttributesPa
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -543,7 +543,7 @@ func (c *DOM) GetBoxModelWithParams(ctx context.Context, v *DOMGetBoxModelParams
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -595,7 +595,7 @@ func (c *DOM) GetContentQuadsWithParams(ctx context.Context, v *DOMGetContentQua
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -645,7 +645,7 @@ func (c *DOM) GetDocumentWithParams(ctx context.Context, v *DOMGetDocumentParams
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -693,7 +693,7 @@ func (c *DOM) GetFlattenedDocumentWithParams(ctx context.Context, v *DOMGetFlatt
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -743,7 +743,7 @@ func (c *DOM) GetNodesForSubtreeByStyleWithParams(ctx context.Context, v *DOMGet
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -799,7 +799,7 @@ func (c *DOM) GetNodeForLocationWithParams(ctx context.Context, v *DOMGetNodeFor
 		return 0, "", 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, "", 0, err
 	}
 
@@ -853,7 +853,7 @@ func (c *DOM) GetOuterHTMLWithParams(ctx context.Context, v *DOMGetOuterHTMLPara
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -901,7 +901,7 @@ func (c *DOM) GetRelayoutBoundaryWithParams(ctx context.Context, v *DOMGetRelayo
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -949,7 +949,7 @@ func (c *DOM) GetSearchResultsWithParams(ctx context.Context, v *DOMGetSearchRes
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1021,7 +1021,7 @@ func (c *DOM) MoveToWithParams(ctx context.Context, v *DOMMoveToParams) (int, er
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -1072,7 +1072,7 @@ func (c *DOM) PerformSearchWithParams(ctx context.Context, v *DOMPerformSearchPa
 		return "", 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", 0, err
 	}
 
@@ -1118,7 +1118,7 @@ func (c *DOM) PushNodeByPathToFrontendWithParams(ctx context.Context, v *DOMPush
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -1162,7 +1162,7 @@ func (c *DOM) PushNodesByBackendIdsToFrontendWithParams(ctx context.Context, v *
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1208,7 +1208,7 @@ func (c *DOM) QuerySelectorWithParams(ctx context.Context, v *DOMQuerySelectorPa
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -1256,7 +1256,7 @@ func (c *DOM) QuerySelectorAllWithParams(ctx context.Context, v *DOMQuerySelecto
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1297,7 +1297,7 @@ func (c *DOM) GetTopLayerElements(ctx context.Context) ([]int, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1403,7 +1403,7 @@ func (c *DOM) RequestNodeWithParams(ctx context.Context, v *DOMRequestNodeParams
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -1453,7 +1453,7 @@ func (c *DOM) ResolveNodeWithParams(ctx context.Context, v *DOMResolveNodeParams
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1603,7 +1603,7 @@ func (c *DOM) GetNodeStackTracesWithParams(ctx context.Context, v *DOMGetNodeSta
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1647,7 +1647,7 @@ func (c *DOM) GetFileInfoWithParams(ctx context.Context, v *DOMGetFileInfoParams
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -1711,7 +1711,7 @@ func (c *DOM) SetNodeNameWithParams(ctx context.Context, v *DOMSetNodeNameParams
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -1807,7 +1807,7 @@ func (c *DOM) GetFrameOwnerWithParams(ctx context.Context, v *DOMGetFrameOwnerPa
 		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, 0, err
 	}
 
@@ -1857,7 +1857,7 @@ func (c *DOM) GetContainerForNodeWithParams(ctx context.Context, v *DOMGetContai
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -1907,7 +1907,7 @@ func (c *DOM) GetQueryingDescendantsForContainerWithParams(ctx context.Context, 
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

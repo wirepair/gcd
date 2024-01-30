@@ -111,7 +111,7 @@ func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMSto
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

@@ -251,7 +251,7 @@ func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetE
 		return "", 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", 0, 0, err
 	}
 

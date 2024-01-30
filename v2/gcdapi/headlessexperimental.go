@@ -56,7 +56,7 @@ func (c *HeadlessExperimental) BeginFrameWithParams(ctx context.Context, v *Head
 		return false, "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, "", err
 	}
 

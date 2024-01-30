@@ -66,7 +66,7 @@ func (c *IO) ReadWithParams(ctx context.Context, v *IOReadParams) (bool, string,
 		return false, "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, "", false, err
 	}
 
@@ -114,7 +114,7 @@ func (c *IO) ResolveBlobWithParams(ctx context.Context, v *IOResolveBlobParams) 
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 

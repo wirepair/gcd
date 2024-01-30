@@ -116,7 +116,7 @@ func (c *Animation) GetCurrentTimeWithParams(ctx context.Context, v *AnimationGe
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -155,7 +155,7 @@ func (c *Animation) GetPlaybackRate(ctx context.Context) (float64, error) {
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -208,7 +208,7 @@ func (c *Animation) ResolveAnimationWithParams(ctx context.Context, v *Animation
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

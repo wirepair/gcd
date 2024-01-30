@@ -281,7 +281,7 @@ func (c *Fetch) GetResponseBodyWithParams(ctx context.Context, v *FetchGetRespon
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
 	}
 
@@ -325,7 +325,7 @@ func (c *Fetch) TakeResponseBodyAsStreamWithParams(ctx context.Context, v *Fetch
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 

@@ -60,7 +60,7 @@ func (c *DOMDebugger) GetEventListenersWithParams(ctx context.Context, v *DOMDeb
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

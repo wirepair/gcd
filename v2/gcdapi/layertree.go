@@ -99,7 +99,7 @@ func (c *LayerTree) CompositingReasonsWithParams(ctx context.Context, v *LayerTr
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -153,7 +153,7 @@ func (c *LayerTree) LoadSnapshotWithParams(ctx context.Context, v *LayerTreeLoad
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -197,7 +197,7 @@ func (c *LayerTree) MakeSnapshotWithParams(ctx context.Context, v *LayerTreeMake
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -247,7 +247,7 @@ func (c *LayerTree) ProfileSnapshotWithParams(ctx context.Context, v *LayerTreeP
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -321,7 +321,7 @@ func (c *LayerTree) ReplaySnapshotWithParams(ctx context.Context, v *LayerTreeRe
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -370,7 +370,7 @@ func (c *LayerTree) SnapshotCommandLogWithParams(ctx context.Context, v *LayerTr
 		return &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return err
 	}
 

@@ -121,7 +121,7 @@ func (c *Profiler) GetBestEffortCoverage(ctx context.Context) ([]*ProfilerScript
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -182,7 +182,7 @@ func (c *Profiler) StartPreciseCoverageWithParams(ctx context.Context, v *Profil
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -225,7 +225,7 @@ func (c *Profiler) Stop(ctx context.Context) (*ProfilerProfile, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -261,7 +261,7 @@ func (c *Profiler) TakePreciseCoverage(ctx context.Context) ([]*ProfilerScriptCo
 		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, 0, err
 	}
 

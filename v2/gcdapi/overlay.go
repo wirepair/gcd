@@ -226,7 +226,7 @@ func (c *Overlay) GetHighlightObjectForTestWithParams(ctx context.Context, v *Ov
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -278,7 +278,7 @@ func (c *Overlay) GetGridHighlightObjectsForTestWithParams(ctx context.Context, 
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -322,7 +322,7 @@ func (c *Overlay) GetSourceOrderHighlightObjectForTestWithParams(ctx context.Con
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

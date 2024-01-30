@@ -1,9 +1,10 @@
 package gcdapi
 
-import "github.com/json-iterator/go"
+import "github.com/goccy/go-json"
 
 // define json here for all Domains
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// useful so that each generated file doesn't need to know whether to import the JSON library
+var jsonUnmarshal = json.Unmarshal
 
 // Chrome Channel information
 const CHROME_CHANNEL = "unknown" 

@@ -468,7 +468,7 @@ func (c *Page) AddScriptToEvaluateOnLoadWithParams(ctx context.Context, v *PageA
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -516,7 +516,7 @@ func (c *Page) AddScriptToEvaluateOnNewDocumentWithParams(ctx context.Context, v
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -579,7 +579,7 @@ func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureSc
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -633,7 +633,7 @@ func (c *Page) CaptureSnapshotWithParams(ctx context.Context, v *PageCaptureSnap
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -696,7 +696,7 @@ func (c *Page) CreateIsolatedWorldWithParams(ctx context.Context, v *PageCreateI
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 
@@ -774,7 +774,7 @@ func (c *Page) GetAppManifest(ctx context.Context) (string, []*PageAppManifestEr
 		return "", nil, "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, "", nil, err
 	}
 
@@ -804,7 +804,7 @@ func (c *Page) GetInstallabilityErrors(ctx context.Context) ([]*PageInstallabili
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -834,7 +834,7 @@ func (c *Page) GetManifestIcons(ctx context.Context) (string, error) {
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -865,7 +865,7 @@ func (c *Page) GetAppId(ctx context.Context) (string, string, error) {
 		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", "", err
 	}
 
@@ -900,7 +900,7 @@ func (c *Page) GetAdScriptIdWithParams(ctx context.Context, v *PageGetAdScriptId
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -939,7 +939,7 @@ func (c *Page) GetCookies(ctx context.Context) ([]*NetworkCookie, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -969,7 +969,7 @@ func (c *Page) GetFrameTree(ctx context.Context) (*PageFrameTree, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1004,7 +1004,7 @@ func (c *Page) GetLayoutMetrics(ctx context.Context) (*PageLayoutViewport, *Page
 		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, nil, nil, nil, err
 	}
 
@@ -1035,7 +1035,7 @@ func (c *Page) GetNavigationHistory(ctx context.Context) (int, []*PageNavigation
 		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, nil, err
 	}
 
@@ -1078,7 +1078,7 @@ func (c *Page) GetResourceContentWithParams(ctx context.Context, v *PageGetResou
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
 	}
 
@@ -1119,7 +1119,7 @@ func (c *Page) GetResourceTree(ctx context.Context) (*PageFrameResourceTree, err
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1186,7 +1186,7 @@ func (c *Page) NavigateWithParams(ctx context.Context, v *PageNavigateParams) (s
 		return "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", "", "", err
 	}
 
@@ -1285,7 +1285,7 @@ func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams
 		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", "", err
 	}
 
@@ -1441,7 +1441,7 @@ func (c *Page) SearchInResourceWithParams(ctx context.Context, v *PageSearchInRe
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1529,7 +1529,7 @@ func (c *Page) GetPermissionsPolicyStateWithParams(ctx context.Context, v *PageG
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1573,7 +1573,7 @@ func (c *Page) GetOriginTrialsWithParams(ctx context.Context, v *PageGetOriginTr
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

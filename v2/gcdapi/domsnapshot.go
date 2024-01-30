@@ -201,7 +201,7 @@ func (c *DOMSnapshot) GetSnapshotWithParams(ctx context.Context, v *DOMSnapshotG
 		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
 	}
 
@@ -260,7 +260,7 @@ func (c *DOMSnapshot) CaptureSnapshotWithParams(ctx context.Context, v *DOMSnaps
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 

@@ -76,7 +76,7 @@ func (c *Emulation) CanEmulate(ctx context.Context) (bool, error) {
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -497,7 +497,7 @@ func (c *Emulation) SetVirtualTimePolicyWithParams(ctx context.Context, v *Emula
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, err
 	}
 

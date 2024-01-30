@@ -210,7 +210,7 @@ func (c *Debugger) EnableWithParams(ctx context.Context, v *DebuggerEnableParams
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -271,7 +271,7 @@ func (c *Debugger) EvaluateOnCallFrameWithParams(ctx context.Context, v *Debugge
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -335,7 +335,7 @@ func (c *Debugger) GetPossibleBreakpointsWithParams(ctx context.Context, v *Debu
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -384,7 +384,7 @@ func (c *Debugger) GetScriptSourceWithParams(ctx context.Context, v *DebuggerGet
 		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", "", err
 	}
 
@@ -431,7 +431,7 @@ func (c *Debugger) DisassembleWasmModuleWithParams(ctx context.Context, v *Debug
 		return "", 0, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", 0, nil, nil, err
 	}
 
@@ -475,7 +475,7 @@ func (c *Debugger) NextWasmDisassemblyChunkWithParams(ctx context.Context, v *De
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -519,7 +519,7 @@ func (c *Debugger) GetWasmBytecodeWithParams(ctx context.Context, v *DebuggerGet
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -563,7 +563,7 @@ func (c *Debugger) GetStackTraceWithParams(ctx context.Context, v *DebuggerGetSt
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -652,7 +652,7 @@ func (c *Debugger) RestartFrameWithParams(ctx context.Context, v *DebuggerRestar
 		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
 	}
 
@@ -722,7 +722,7 @@ func (c *Debugger) SearchInContentWithParams(ctx context.Context, v *DebuggerSea
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -833,7 +833,7 @@ func (c *Debugger) SetBreakpointWithParams(ctx context.Context, v *DebuggerSetBr
 		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, err
 	}
 
@@ -879,7 +879,7 @@ func (c *Debugger) SetInstrumentationBreakpointWithParams(ctx context.Context, v
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -934,7 +934,7 @@ func (c *Debugger) SetBreakpointByUrlWithParams(ctx context.Context, v *Debugger
 		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, err
 	}
 
@@ -990,7 +990,7 @@ func (c *Debugger) SetBreakpointOnFunctionCallWithParams(ctx context.Context, v 
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -1101,7 +1101,7 @@ func (c *Debugger) SetScriptSourceWithParams(ctx context.Context, v *DebuggerSet
 		return nil, false, nil, nil, "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, nil, nil, "", nil, err
 	}
 

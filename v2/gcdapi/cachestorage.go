@@ -115,7 +115,7 @@ func (c *CacheStorage) RequestCacheNamesWithParams(ctx context.Context, v *Cache
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -165,7 +165,7 @@ func (c *CacheStorage) RequestCachedResponseWithParams(ctx context.Context, v *C
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -220,7 +220,7 @@ func (c *CacheStorage) RequestEntriesWithParams(ctx context.Context, v *CacheSto
 		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, 0, err
 	}
 

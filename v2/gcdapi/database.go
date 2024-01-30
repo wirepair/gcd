@@ -77,7 +77,7 @@ func (c *Database) ExecuteSQLWithParams(ctx context.Context, v *DatabaseExecuteS
 		return nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, err
 	}
 
@@ -123,7 +123,7 @@ func (c *Database) GetDatabaseTableNamesWithParams(ctx context.Context, v *Datab
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

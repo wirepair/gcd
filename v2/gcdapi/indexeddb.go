@@ -225,7 +225,7 @@ func (c *IndexedDB) RequestDataWithParams(ctx context.Context, v *IndexedDBReque
 		return nil, false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, false, err
 	}
 
@@ -294,7 +294,7 @@ func (c *IndexedDB) GetMetadataWithParams(ctx context.Context, v *IndexedDBGetMe
 		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, 0, err
 	}
 
@@ -352,7 +352,7 @@ func (c *IndexedDB) RequestDatabaseWithParams(ctx context.Context, v *IndexedDBR
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -406,7 +406,7 @@ func (c *IndexedDB) RequestDatabaseNamesWithParams(ctx context.Context, v *Index
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

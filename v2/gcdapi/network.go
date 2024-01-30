@@ -724,7 +724,7 @@ func (c *Network) CanClearBrowserCache(ctx context.Context) (bool, error) {
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -754,7 +754,7 @@ func (c *Network) CanClearBrowserCookies(ctx context.Context) (bool, error) {
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -784,7 +784,7 @@ func (c *Network) CanEmulateNetworkConditions(ctx context.Context) (bool, error)
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -965,7 +965,7 @@ func (c *Network) GetAllCookies(ctx context.Context) ([]*NetworkCookie, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1000,7 +1000,7 @@ func (c *Network) GetCertificateWithParams(ctx context.Context, v *NetworkGetCer
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1044,7 +1044,7 @@ func (c *Network) GetCookiesWithParams(ctx context.Context, v *NetworkGetCookies
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1089,7 +1089,7 @@ func (c *Network) GetResponseBodyWithParams(ctx context.Context, v *NetworkGetRe
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
 	}
 
@@ -1133,7 +1133,7 @@ func (c *Network) GetRequestPostDataWithParams(ctx context.Context, v *NetworkGe
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -1178,7 +1178,7 @@ func (c *Network) GetResponseBodyForInterceptionWithParams(ctx context.Context, 
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
 	}
 
@@ -1222,7 +1222,7 @@ func (c *Network) TakeResponseBodyForInterceptionAsStreamWithParams(ctx context.
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -1290,7 +1290,7 @@ func (c *Network) SearchInResponseBodyWithParams(ctx context.Context, v *Network
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1420,7 +1420,7 @@ func (c *Network) SetCookieWithParams(ctx context.Context, v *NetworkSetCookiePa
 		return false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return false, err
 	}
 
@@ -1592,7 +1592,7 @@ func (c *Network) GetSecurityIsolationStatusWithParams(ctx context.Context, v *N
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -1658,7 +1658,7 @@ func (c *Network) LoadNetworkResourceWithParams(ctx context.Context, v *NetworkL
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

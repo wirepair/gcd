@@ -248,7 +248,7 @@ func (c *Runtime) AwaitPromiseWithParams(ctx context.Context, v *RuntimeAwaitPro
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -321,7 +321,7 @@ func (c *Runtime) CallFunctionOnWithParams(ctx context.Context, v *RuntimeCallFu
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -396,7 +396,7 @@ func (c *Runtime) CompileScriptWithParams(ctx context.Context, v *RuntimeCompile
 		return "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", nil, err
 	}
 
@@ -492,7 +492,7 @@ func (c *Runtime) EvaluateWithParams(ctx context.Context, v *RuntimeEvaluatePara
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -561,7 +561,7 @@ func (c *Runtime) GetIsolateId(ctx context.Context) (string, error) {
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", err
 	}
 
@@ -592,7 +592,7 @@ func (c *Runtime) GetHeapUsage(ctx context.Context) (float64, float64, error) {
 		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return 0, 0, err
 	}
 
@@ -638,7 +638,7 @@ func (c *Runtime) GetPropertiesWithParams(ctx context.Context, v *RuntimeGetProp
 		return nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, nil, nil, err
 	}
 
@@ -690,7 +690,7 @@ func (c *Runtime) GlobalLexicalScopeNamesWithParams(ctx context.Context, v *Runt
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -736,7 +736,7 @@ func (c *Runtime) QueryObjectsWithParams(ctx context.Context, v *RuntimeQueryObj
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -838,7 +838,7 @@ func (c *Runtime) RunScriptWithParams(ctx context.Context, v *RuntimeRunScriptPa
 		return nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, nil, err
 	}
 
@@ -999,7 +999,7 @@ func (c *Runtime) GetExceptionDetailsWithParams(ctx context.Context, v *RuntimeG
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 

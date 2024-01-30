@@ -75,7 +75,7 @@ func (c *Tracing) GetCategories(ctx context.Context) ([]string, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return nil, err
 	}
 
@@ -131,7 +131,7 @@ func (c *Tracing) RequestMemoryDumpWithParams(ctx context.Context, v *TracingReq
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
 		return "", false, err
 	}
 
