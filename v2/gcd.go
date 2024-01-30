@@ -26,6 +26,7 @@ package gcd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -38,12 +39,8 @@ import (
 
 	"github.com/wirepair/gcd/v2/observer"
 
-	jsoniter "github.com/json-iterator/go"
-
 	"github.com/wirepair/gcd/v2/gcdapi"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 var GCDVERSION = "v2.3.1"
 
