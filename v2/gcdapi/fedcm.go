@@ -23,7 +23,6 @@ type FedCmAccount struct {
 	PrivacyPolicyUrl  string `json:"privacyPolicyUrl,omitempty"`  //
 }
 
-//
 type FedCmDialogShownEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -61,7 +60,6 @@ func (c *FedCm) Enable(ctx context.Context, disableRejectionDelay bool) (*gcdmes
 	return c.EnableWithParams(ctx, &v)
 }
 
-//
 func (c *FedCm) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FedCm.disable"})
 }

@@ -216,6 +216,7 @@ func (c *Overlay) GetHighlightObjectForTestWithParams(ctx context.Context, v *Ov
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Highlight map[string]interface{}
 		}
@@ -225,15 +226,12 @@ func (c *Overlay) GetHighlightObjectForTestWithParams(ctx context.Context, v *Ov
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Highlight, nil
@@ -270,6 +268,7 @@ func (c *Overlay) GetGridHighlightObjectsForTestWithParams(ctx context.Context, 
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Highlights map[string]interface{}
 		}
@@ -279,15 +278,12 @@ func (c *Overlay) GetGridHighlightObjectsForTestWithParams(ctx context.Context, 
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Highlights, nil
@@ -316,6 +312,7 @@ func (c *Overlay) GetSourceOrderHighlightObjectForTestWithParams(ctx context.Con
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Highlight map[string]interface{}
 		}
@@ -325,15 +322,12 @@ func (c *Overlay) GetSourceOrderHighlightObjectForTestWithParams(ctx context.Con
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Highlight, nil

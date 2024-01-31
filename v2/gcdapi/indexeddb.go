@@ -214,6 +214,7 @@ func (c *IndexedDB) RequestDataWithParams(ctx context.Context, v *IndexedDBReque
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ObjectStoreDataEntries []*IndexedDBDataEntry
 			HasMore                bool
@@ -224,15 +225,12 @@ func (c *IndexedDB) RequestDataWithParams(ctx context.Context, v *IndexedDBReque
 		return nil, false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, false, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, false, err
+	if chromeData.Error != nil {
+		return nil, false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ObjectStoreDataEntries, chromeData.Result.HasMore, nil
@@ -285,6 +283,7 @@ func (c *IndexedDB) GetMetadataWithParams(ctx context.Context, v *IndexedDBGetMe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			EntriesCount      float64
 			KeyGeneratorValue float64
@@ -295,15 +294,12 @@ func (c *IndexedDB) GetMetadataWithParams(ctx context.Context, v *IndexedDBGetMe
 		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return 0, 0, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, 0, err
+	if chromeData.Error != nil {
+		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.EntriesCount, chromeData.Result.KeyGeneratorValue, nil
@@ -346,6 +342,7 @@ func (c *IndexedDB) RequestDatabaseWithParams(ctx context.Context, v *IndexedDBR
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			DatabaseWithObjectStores *IndexedDBDatabaseWithObjectStores
 		}
@@ -355,15 +352,12 @@ func (c *IndexedDB) RequestDatabaseWithParams(ctx context.Context, v *IndexedDBR
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.DatabaseWithObjectStores, nil
@@ -402,6 +396,7 @@ func (c *IndexedDB) RequestDatabaseNamesWithParams(ctx context.Context, v *Index
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			DatabaseNames []string
 		}
@@ -411,15 +406,12 @@ func (c *IndexedDB) RequestDatabaseNamesWithParams(ctx context.Context, v *Index
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.DatabaseNames, nil

@@ -45,6 +45,7 @@ func (c *HeadlessExperimental) BeginFrameWithParams(ctx context.Context, v *Head
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			HasDamage      bool
 			ScreenshotData string
@@ -55,15 +56,12 @@ func (c *HeadlessExperimental) BeginFrameWithParams(ctx context.Context, v *Head
 		return false, "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return false, "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return false, "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return false, "", err
+	if chromeData.Error != nil {
+		return false, "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.HasDamage, chromeData.Result.ScreenshotData, nil

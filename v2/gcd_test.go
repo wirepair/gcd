@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/goccy/go-json"
 	"io/ioutil"
 	"net"
 	"net/http"

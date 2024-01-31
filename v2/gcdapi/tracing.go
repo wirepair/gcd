@@ -22,7 +22,6 @@ type TracingTraceConfig struct {
 	MemoryDumpConfig     map[string]interface{} `json:"memoryDumpConfig,omitempty"`     // Configuration for memory dump triggers. Used only when "memory-infra" category is enabled.
 }
 
-//
 type TracingBufferUsageEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -66,6 +65,7 @@ func (c *Tracing) GetCategories(ctx context.Context) ([]string, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Categories []string
 		}
@@ -75,15 +75,12 @@ func (c *Tracing) GetCategories(ctx context.Context) ([]string, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Categories, nil
@@ -123,6 +120,7 @@ func (c *Tracing) RequestMemoryDumpWithParams(ctx context.Context, v *TracingReq
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			DumpGuid string
 			Success  bool
@@ -133,15 +131,12 @@ func (c *Tracing) RequestMemoryDumpWithParams(ctx context.Context, v *TracingReq
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", false, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", false, err
+	if chromeData.Error != nil {
+		return "", false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.DumpGuid, chromeData.Result.Success, nil

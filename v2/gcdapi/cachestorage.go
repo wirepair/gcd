@@ -105,6 +105,7 @@ func (c *CacheStorage) RequestCacheNamesWithParams(ctx context.Context, v *Cache
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Caches []*CacheStorageCache
 		}
@@ -114,15 +115,12 @@ func (c *CacheStorage) RequestCacheNamesWithParams(ctx context.Context, v *Cache
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Caches, nil
@@ -157,6 +155,7 @@ func (c *CacheStorage) RequestCachedResponseWithParams(ctx context.Context, v *C
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Response *CacheStorageCachedResponse
 		}
@@ -166,15 +165,12 @@ func (c *CacheStorage) RequestCachedResponseWithParams(ctx context.Context, v *C
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Response, nil
@@ -213,6 +209,7 @@ func (c *CacheStorage) RequestEntriesWithParams(ctx context.Context, v *CacheSto
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			CacheDataEntries []*CacheStorageDataEntry
 			ReturnCount      float64
@@ -223,15 +220,12 @@ func (c *CacheStorage) RequestEntriesWithParams(ctx context.Context, v *CacheSto
 		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, 0, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, 0, err
+	if chromeData.Error != nil {
+		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.CacheDataEntries, chromeData.Result.ReturnCount, nil

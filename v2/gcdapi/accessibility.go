@@ -115,6 +115,7 @@ func (c *Accessibility) GetPartialAXTreeWithParams(ctx context.Context, v *Acces
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Nodes []*AccessibilityAXNode
 		}
@@ -124,15 +125,12 @@ func (c *Accessibility) GetPartialAXTreeWithParams(ctx context.Context, v *Acces
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Nodes, nil
@@ -169,6 +167,7 @@ func (c *Accessibility) GetFullAXTreeWithParams(ctx context.Context, v *Accessib
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Nodes []*AccessibilityAXNode
 		}
@@ -178,15 +177,12 @@ func (c *Accessibility) GetFullAXTreeWithParams(ctx context.Context, v *Accessib
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Nodes, nil
@@ -217,6 +213,7 @@ func (c *Accessibility) GetRootAXNodeWithParams(ctx context.Context, v *Accessib
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Node *AccessibilityAXNode
 		}
@@ -226,15 +223,12 @@ func (c *Accessibility) GetRootAXNodeWithParams(ctx context.Context, v *Accessib
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Node, nil
@@ -267,6 +261,7 @@ func (c *Accessibility) GetAXNodeAndAncestorsWithParams(ctx context.Context, v *
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Nodes []*AccessibilityAXNode
 		}
@@ -276,15 +271,12 @@ func (c *Accessibility) GetAXNodeAndAncestorsWithParams(ctx context.Context, v *
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Nodes, nil
@@ -319,6 +311,7 @@ func (c *Accessibility) GetChildAXNodesWithParams(ctx context.Context, v *Access
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Nodes []*AccessibilityAXNode
 		}
@@ -328,15 +321,12 @@ func (c *Accessibility) GetChildAXNodesWithParams(ctx context.Context, v *Access
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Nodes, nil
@@ -375,6 +365,7 @@ func (c *Accessibility) QueryAXTreeWithParams(ctx context.Context, v *Accessibil
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Nodes []*AccessibilityAXNode
 		}
@@ -384,15 +375,12 @@ func (c *Accessibility) QueryAXTreeWithParams(ctx context.Context, v *Accessibil
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Nodes, nil

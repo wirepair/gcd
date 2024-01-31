@@ -55,7 +55,6 @@ type ProfilerScriptCoverage struct {
 	Functions []*ProfilerFunctionCoverage `json:"functions"` // Functions contained in the script that has coverage data.
 }
 
-//
 type ProfilerConsoleProfileFinishedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -95,12 +94,10 @@ func NewProfiler(target gcdmessage.ChromeTargeter) *Profiler {
 	return c
 }
 
-//
 func (c *Profiler) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disable"})
 }
 
-//
 func (c *Profiler) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enable"})
 }
@@ -114,6 +111,7 @@ func (c *Profiler) GetBestEffortCoverage(ctx context.Context) ([]*ProfilerScript
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result []*ProfilerScriptCoverage
 		}
@@ -123,15 +121,12 @@ func (c *Profiler) GetBestEffortCoverage(ctx context.Context) ([]*ProfilerScript
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -155,7 +150,6 @@ func (c *Profiler) SetSamplingInterval(ctx context.Context, interval int) (*gcdm
 	return c.SetSamplingIntervalWithParams(ctx, &v)
 }
 
-//
 func (c *Profiler) Start(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.start"})
 }
@@ -178,6 +172,7 @@ func (c *Profiler) StartPreciseCoverageWithParams(ctx context.Context, v *Profil
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Timestamp float64
 		}
@@ -187,15 +182,12 @@ func (c *Profiler) StartPreciseCoverageWithParams(ctx context.Context, v *Profil
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, err
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Timestamp, nil
@@ -223,6 +215,7 @@ func (c *Profiler) Stop(ctx context.Context) (*ProfilerProfile, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Profile *ProfilerProfile
 		}
@@ -232,15 +225,12 @@ func (c *Profiler) Stop(ctx context.Context) (*ProfilerProfile, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Profile, nil
@@ -260,6 +250,7 @@ func (c *Profiler) TakePreciseCoverage(ctx context.Context) ([]*ProfilerScriptCo
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result    []*ProfilerScriptCoverage
 			Timestamp float64
@@ -270,15 +261,12 @@ func (c *Profiler) TakePreciseCoverage(ctx context.Context) ([]*ProfilerScriptCo
 		return nil, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, 0, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, 0, err
+	if chromeData.Error != nil {
+		return nil, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, chromeData.Result.Timestamp, nil

@@ -203,7 +203,6 @@ type AuditsInspectorIssue struct {
 	IssueId string                       `json:"issueId,omitempty"` // A unique id for this issue. May be omitted if no other entity (e.g. exception, CDP message, etc.) is referencing this issue.
 }
 
-//
 type AuditsIssueAddedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -240,6 +239,7 @@ func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetE
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Body         string
 			OriginalSize int
@@ -251,15 +251,12 @@ func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetE
 		return "", 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", 0, 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", 0, 0, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", 0, 0, err
+	if chromeData.Error != nil {
+		return "", 0, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Body, chromeData.Result.OriginalSize, chromeData.Result.EncodedSize, nil

@@ -30,11 +30,7 @@ import (
 	"context"
 	"strconv"
 	"time"
-
-	jsoniter "github.com/json-iterator/go"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type ChromeTargeter interface {
 	GetId() int64
@@ -124,4 +120,3 @@ type ParamRequest struct {
 	Method string      `json:"method"`
 	Params interface{} `json:"params,omitempty"`
 }
-

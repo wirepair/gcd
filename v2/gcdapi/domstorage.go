@@ -16,7 +16,6 @@ type DOMStorageStorageId struct {
 	IsLocalStorage bool   `json:"isLocalStorage"`           // Whether the storage is local storage (not session storage).
 }
 
-//
 type DOMStorageDomStorageItemAddedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -26,7 +25,6 @@ type DOMStorageDomStorageItemAddedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type DOMStorageDomStorageItemRemovedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -35,7 +33,6 @@ type DOMStorageDomStorageItemRemovedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type DOMStorageDomStorageItemUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -46,7 +43,6 @@ type DOMStorageDomStorageItemUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type DOMStorageDomStorageItemsClearedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -105,6 +101,7 @@ func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMSto
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Entries []string
 		}
@@ -114,15 +111,12 @@ func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMSto
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Entries, nil

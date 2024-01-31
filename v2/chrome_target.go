@@ -26,6 +26,7 @@ package gcd
 
 import (
 	"context"
+	"github.com/goccy/go-json"
 	"sync"
 	"sync/atomic"
 	"time"

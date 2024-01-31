@@ -270,6 +270,7 @@ func (c *Fetch) GetResponseBodyWithParams(ctx context.Context, v *FetchGetRespon
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Body          string
 			Base64Encoded bool
@@ -280,15 +281,12 @@ func (c *Fetch) GetResponseBodyWithParams(ctx context.Context, v *FetchGetRespon
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", false, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", false, err
+	if chromeData.Error != nil {
+		return "", false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Body, chromeData.Result.Base64Encoded, nil
@@ -317,6 +315,7 @@ func (c *Fetch) TakeResponseBodyAsStreamWithParams(ctx context.Context, v *Fetch
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Stream string
 		}
@@ -326,15 +325,12 @@ func (c *Fetch) TakeResponseBodyAsStreamWithParams(ctx context.Context, v *Fetch
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Stream, nil

@@ -28,6 +28,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goccy/go-json"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -38,12 +39,8 @@ import (
 
 	"github.com/wirepair/gcd/v2/observer"
 
-	jsoniter "github.com/json-iterator/go"
-
 	"github.com/wirepair/gcd/v2/gcdapi"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 var GCDVERSION = "v2.3.1"
 

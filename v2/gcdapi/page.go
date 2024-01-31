@@ -217,7 +217,6 @@ type PageBackForwardCacheNotRestoredExplanationTree struct {
 	Children     []*PageBackForwardCacheNotRestoredExplanationTree `json:"children"`     // Array of children frame
 }
 
-//
 type PageDomContentEventFiredEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -382,7 +381,6 @@ type PageBackForwardCacheNotUsedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
-//
 type PageLoadEventFiredEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -460,6 +458,7 @@ func (c *Page) AddScriptToEvaluateOnLoadWithParams(ctx context.Context, v *PageA
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Identifier string
 		}
@@ -469,15 +468,12 @@ func (c *Page) AddScriptToEvaluateOnLoadWithParams(ctx context.Context, v *PageA
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Identifier, nil
@@ -510,6 +506,7 @@ func (c *Page) AddScriptToEvaluateOnNewDocumentWithParams(ctx context.Context, v
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Identifier string
 		}
@@ -519,15 +516,12 @@ func (c *Page) AddScriptToEvaluateOnNewDocumentWithParams(ctx context.Context, v
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Identifier, nil
@@ -575,6 +569,7 @@ func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureSc
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Data string
 		}
@@ -584,15 +579,12 @@ func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureSc
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Data, nil
@@ -631,6 +623,7 @@ func (c *Page) CaptureSnapshotWithParams(ctx context.Context, v *PageCaptureSnap
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Data string
 		}
@@ -640,15 +633,12 @@ func (c *Page) CaptureSnapshotWithParams(ctx context.Context, v *PageCaptureSnap
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Data, nil
@@ -696,6 +686,7 @@ func (c *Page) CreateIsolatedWorldWithParams(ctx context.Context, v *PageCreateI
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ExecutionContextId int
 		}
@@ -705,15 +696,12 @@ func (c *Page) CreateIsolatedWorldWithParams(ctx context.Context, v *PageCreateI
 		return 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, err
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.ExecutionContextId, nil
@@ -773,6 +761,7 @@ func (c *Page) GetAppManifest(ctx context.Context) (string, []*PageAppManifestEr
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Url    string
 			Errors []*PageAppManifestError
@@ -785,15 +774,12 @@ func (c *Page) GetAppManifest(ctx context.Context) (string, []*PageAppManifestEr
 		return "", nil, "", nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", nil, "", nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", nil, "", nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", nil, "", nil, err
+	if chromeData.Error != nil {
+		return "", nil, "", nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, chromeData.Result.Parsed, nil
@@ -808,6 +794,7 @@ func (c *Page) GetInstallabilityErrors(ctx context.Context) ([]*PageInstallabili
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			InstallabilityErrors []*PageInstallabilityError
 		}
@@ -817,15 +804,12 @@ func (c *Page) GetInstallabilityErrors(ctx context.Context) ([]*PageInstallabili
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.InstallabilityErrors, nil
@@ -840,6 +824,7 @@ func (c *Page) GetManifestIcons(ctx context.Context) (string, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			PrimaryIcon string
 		}
@@ -849,15 +834,12 @@ func (c *Page) GetManifestIcons(ctx context.Context) (string, error) {
 		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+	if chromeData.Error != nil {
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.PrimaryIcon, nil
@@ -872,6 +854,7 @@ func (c *Page) GetAppId(ctx context.Context) (string, string, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			AppId         string
 			RecommendedId string
@@ -882,15 +865,12 @@ func (c *Page) GetAppId(ctx context.Context) (string, string, error) {
 		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", "", err
+	if chromeData.Error != nil {
+		return "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.AppId, chromeData.Result.RecommendedId, nil
@@ -910,6 +890,7 @@ func (c *Page) GetAdScriptIdWithParams(ctx context.Context, v *PageGetAdScriptId
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			AdScriptId *PageAdScriptId
 		}
@@ -919,15 +900,12 @@ func (c *Page) GetAdScriptIdWithParams(ctx context.Context, v *PageGetAdScriptId
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.AdScriptId, nil
@@ -951,6 +929,7 @@ func (c *Page) GetCookies(ctx context.Context) ([]*NetworkCookie, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Cookies []*NetworkCookie
 		}
@@ -960,15 +939,12 @@ func (c *Page) GetCookies(ctx context.Context) ([]*NetworkCookie, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Cookies, nil
@@ -983,6 +959,7 @@ func (c *Page) GetFrameTree(ctx context.Context) (*PageFrameTree, error) {
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			FrameTree *PageFrameTree
 		}
@@ -992,15 +969,12 @@ func (c *Page) GetFrameTree(ctx context.Context) (*PageFrameTree, error) {
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.FrameTree, nil
@@ -1015,6 +989,7 @@ func (c *Page) GetLayoutMetrics(ctx context.Context) (*PageLayoutViewport, *Page
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			LayoutViewport    *PageLayoutViewport
 			VisualViewport    *PageVisualViewport
@@ -1029,15 +1004,12 @@ func (c *Page) GetLayoutMetrics(ctx context.Context) (*PageLayoutViewport, *Page
 		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+	if chromeData.Error != nil {
+		return nil, nil, nil, nil, nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.LayoutViewport, chromeData.Result.VisualViewport, chromeData.Result.ContentSize, chromeData.Result.CssLayoutViewport, chromeData.Result.CssVisualViewport, chromeData.Result.CssContentSize, nil
@@ -1052,6 +1024,7 @@ func (c *Page) GetNavigationHistory(ctx context.Context) (int, []*PageNavigation
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			CurrentIndex int
 			Entries      []*PageNavigationEntry
@@ -1062,15 +1035,12 @@ func (c *Page) GetNavigationHistory(ctx context.Context) (int, []*PageNavigation
 		return 0, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return 0, nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return 0, nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return 0, nil, err
+	if chromeData.Error != nil {
+		return 0, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.CurrentIndex, chromeData.Result.Entries, nil
@@ -1097,6 +1067,7 @@ func (c *Page) GetResourceContentWithParams(ctx context.Context, v *PageGetResou
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Content       string
 			Base64Encoded bool
@@ -1107,15 +1078,12 @@ func (c *Page) GetResourceContentWithParams(ctx context.Context, v *PageGetResou
 		return "", false, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", false, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", false, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", false, err
+	if chromeData.Error != nil {
+		return "", false, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Content, chromeData.Result.Base64Encoded, nil
@@ -1141,6 +1109,7 @@ func (c *Page) GetResourceTree(ctx context.Context) (*PageFrameResourceTree, err
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			FrameTree *PageFrameResourceTree
 		}
@@ -1150,15 +1119,12 @@ func (c *Page) GetResourceTree(ctx context.Context) (*PageFrameResourceTree, err
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.FrameTree, nil
@@ -1208,6 +1174,7 @@ func (c *Page) NavigateWithParams(ctx context.Context, v *PageNavigateParams) (s
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			FrameId   string
 			LoaderId  string
@@ -1219,15 +1186,12 @@ func (c *Page) NavigateWithParams(ctx context.Context, v *PageNavigateParams) (s
 		return "", "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", "", "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", "", "", err
+	if chromeData.Error != nil {
+		return "", "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.FrameId, chromeData.Result.LoaderId, chromeData.Result.ErrorText, nil
@@ -1310,6 +1274,7 @@ func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Data   string
 			Stream string
@@ -1320,15 +1285,12 @@ func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams
 		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return "", "", &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return "", "", err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return "", "", err
+	if chromeData.Error != nil {
+		return "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Data, chromeData.Result.Stream, nil
@@ -1469,6 +1431,7 @@ func (c *Page) SearchInResourceWithParams(ctx context.Context, v *PageSearchInRe
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			Result []*DebuggerSearchMatch
 		}
@@ -1478,15 +1441,12 @@ func (c *Page) SearchInResourceWithParams(ctx context.Context, v *PageSearchInRe
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.Result, nil
@@ -1559,6 +1519,7 @@ func (c *Page) GetPermissionsPolicyStateWithParams(ctx context.Context, v *PageG
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			States []*PagePermissionsPolicyFeatureState
 		}
@@ -1568,15 +1529,12 @@ func (c *Page) GetPermissionsPolicyStateWithParams(ctx context.Context, v *PageG
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.States, nil
@@ -1605,6 +1563,7 @@ func (c *Page) GetOriginTrialsWithParams(ctx context.Context, v *PageGetOriginTr
 	}
 
 	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
 		Result struct {
 			OriginTrials []*PageOriginTrial
 		}
@@ -1614,15 +1573,12 @@ func (c *Page) GetOriginTrialsWithParams(ctx context.Context, v *PageGetOriginTr
 		return nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
-	// test if error first
-	cerr := &gcdmessage.ChromeErrorResponse{}
-	json.Unmarshal(resp.Data, cerr)
-	if cerr != nil && cerr.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: cerr}
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
 	return chromeData.Result.OriginTrials, nil
