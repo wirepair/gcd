@@ -114,7 +114,7 @@ type DOMSnapshotNodeTreeSnapshot struct {
 	NodeName             []int                       `json:"nodeName,omitempty"`             // `Node`'s nodeName.
 	NodeValue            []int                       `json:"nodeValue,omitempty"`            // `Node`'s nodeValue.
 	BackendNodeId        []int                       `json:"backendNodeId,omitempty"`        // `Node`'s id, corresponds to DOM.Node.backendNodeId.
-	Attributes           []int                       `json:"attributes,omitempty"`           // Attributes of an `Element` node. Flatten name, value pairs.
+	Attributes           [][]int                     `json:"attributes,omitempty"`           // Attributes of an `Element` node. Flatten name, value pairs.
 	TextValue            *DOMSnapshotRareStringData  `json:"textValue,omitempty"`            // Only set for textarea elements, contains the text value.
 	InputValue           *DOMSnapshotRareStringData  `json:"inputValue,omitempty"`           // Only set for input elements, contains the input's associated text value.
 	InputChecked         *DOMSnapshotRareBooleanData `json:"inputChecked,omitempty"`         // Only set for radio and checkbox input elements, indicates if the element has been checked
@@ -130,24 +130,24 @@ type DOMSnapshotNodeTreeSnapshot struct {
 // Table of details of an element in the DOM tree with a LayoutObject.
 type DOMSnapshotLayoutTreeSnapshot struct {
 	NodeIndex               []int                       `json:"nodeIndex"`                         // Index of the corresponding node in the `NodeTreeSnapshot` array returned by `captureSnapshot`.
-	Styles                  []int                       `json:"styles"`                            // Array of indexes specifying computed style strings, filtered according to the `computedStyles` parameter passed to `captureSnapshot`.
-	Bounds                  []float64                   `json:"bounds"`                            // The absolute position bounding box.
+	Styles                  [][]int                     `json:"styles"`                            // Array of indexes specifying computed style strings, filtered according to the `computedStyles` parameter passed to `captureSnapshot`.
+	Bounds                  [][]float64                 `json:"bounds"`                            // The absolute position bounding box.
 	Text                    []int                       `json:"text"`                              // Contents of the LayoutText, if any.
 	StackingContexts        *DOMSnapshotRareBooleanData `json:"stackingContexts"`                  // Stacking context information.
 	PaintOrders             []int                       `json:"paintOrders,omitempty"`             // Global paint order index, which is determined by the stacking order of the nodes. Nodes that are painted together will have the same index. Only provided if includePaintOrder in captureSnapshot was true.
-	OffsetRects             []float64                   `json:"offsetRects,omitempty"`             // The offset rect of nodes. Only available when includeDOMRects is set to true
-	ScrollRects             []float64                   `json:"scrollRects,omitempty"`             // The scroll rect of nodes. Only available when includeDOMRects is set to true
-	ClientRects             []float64                   `json:"clientRects,omitempty"`             // The client rect of nodes. Only available when includeDOMRects is set to true
+	OffsetRects             [][]float64                 `json:"offsetRects,omitempty"`             // The offset rect of nodes. Only available when includeDOMRects is set to true
+	ScrollRects             [][]float64                 `json:"scrollRects,omitempty"`             // The scroll rect of nodes. Only available when includeDOMRects is set to true
+	ClientRects             [][]float64                 `json:"clientRects,omitempty"`             // The client rect of nodes. Only available when includeDOMRects is set to true
 	BlendedBackgroundColors []int                       `json:"blendedBackgroundColors,omitempty"` // The list of background colors that are blended with colors of overlapping elements.
 	TextColorOpacities      []float64                   `json:"textColorOpacities,omitempty"`      // The list of computed text opacities.
 }
 
 // Table of details of the post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.
 type DOMSnapshotTextBoxSnapshot struct {
-	LayoutIndex []int     `json:"layoutIndex"` // Index of the layout tree node that owns this box collection.
-	Bounds      []float64 `json:"bounds"`      // The absolute position bounding box.
-	Start       []int     `json:"start"`       // The starting index in characters, for this post layout textbox substring. Characters that would be represented as a surrogate pair in UTF-16 have length 2.
-	Length      []int     `json:"length"`      // The number of characters in this post layout textbox substring. Characters that would be represented as a surrogate pair in UTF-16 have length 2.
+	LayoutIndex []int       `json:"layoutIndex"` // Index of the layout tree node that owns this box collection.
+	Bounds      [][]float64 `json:"bounds"`      // The absolute position bounding box.
+	Start       []int       `json:"start"`       // The starting index in characters, for this post layout textbox substring. Characters that would be represented as a surrogate pair in UTF-16 have length 2.
+	Length      []int       `json:"length"`      // The number of characters in this post layout textbox substring. Characters that would be represented as a surrogate pair in UTF-16 have length 2.
 }
 
 type DOMSnapshot struct {

@@ -78,6 +78,10 @@ func (r *Return) SetIsTypeArray(isTypeArray bool) {
 	r.IsTypeArray = true
 }
 
+func (r *Return) GetIsTypeArray() bool {
+	return r.IsTypeArray
+}
+
 func (r *Return) GetEnumVals() string {
 	return r.EnumVals
 }

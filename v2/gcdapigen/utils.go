@@ -36,6 +36,7 @@ type PropSetter interface {
 	GetEnumVals() string
 	SetGoType(goType string)
 	SetIsTypeArray(isTypeArray bool)
+	GetIsTypeArray() bool
 	GetDescription() string
 	SetDescription(description string)
 	SetIsRef(isRef bool)
@@ -163,7 +164,7 @@ func isSubType(protoProp *ProtoProperty) bool {
 func isPointerType(props PropSetter) bool {
 	goType := props.GetGoType()
 	switch goType {
-	case "int", "string", "bool", "float64", "map[string]interface{}", "interface{}":
+	case "int", "string", "bool", "float64", "map[string]interface{}", "interface{}", "[]int", "[]string", "[]bool", "[]float64", "[]map[string]interface{}", "[]interface{}":
 		return false
 	}
 	return true
