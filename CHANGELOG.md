@@ -1,4 +1,12 @@
+# Changelog (2024)
+- 2.3.4 (Mar 18)
+  - Fix return types for calls that return two-dimensional arrays 
+- 2.3.3 (Jan 31)
+  - Improve JSON performance
+
 # Changelog (2023)
+- 2.3.2 (Dec 6)
+  - Reorder and initialize missing DevTools domains 
 - 2.3.1 (May 30) 
   - Applied patch from @camswords to expose dev tools version
   - Updates to chrome 112.0.5615.138

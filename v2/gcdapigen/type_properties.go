@@ -78,6 +78,10 @@ func (p *TypeProperties) SetIsTypeArray(isTypeArray bool) {
 	p.IsTypeArray = true
 }
 
+func (p *TypeProperties) GetIsTypeArray() bool {
+	return p.IsTypeArray
+}
+
 func (p *TypeProperties) GetRef() string {
 	return p.Ref
 }

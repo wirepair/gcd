@@ -94,7 +94,7 @@ type DOMStorageGetDOMStorageItemsParams struct {
 
 // GetDOMStorageItemsWithParams -
 // Returns -  entries -
-func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMStorageGetDOMStorageItemsParams) ([]string, error) {
+func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMStorageGetDOMStorageItemsParams) ([][]string, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOMStorage.getDOMStorageItems", Params: v})
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMSto
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			Entries []string
+			Entries [][]string
 		}
 	}
 
@@ -125,7 +125,7 @@ func (c *DOMStorage) GetDOMStorageItemsWithParams(ctx context.Context, v *DOMSto
 // GetDOMStorageItems -
 // storageId -
 // Returns -  entries -
-func (c *DOMStorage) GetDOMStorageItems(ctx context.Context, storageId *DOMStorageStorageId) ([]string, error) {
+func (c *DOMStorage) GetDOMStorageItems(ctx context.Context, storageId *DOMStorageStorageId) ([][]string, error) {
 	var v DOMStorageGetDOMStorageItemsParams
 	v.StorageId = storageId
 	return c.GetDOMStorageItemsWithParams(ctx, &v)

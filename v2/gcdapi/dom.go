@@ -578,7 +578,7 @@ type DOMGetContentQuadsParams struct {
 
 // GetContentQuadsWithParams - Returns quads that describe node position on the page. This method might return multiple quads for inline nodes.
 // Returns -  quads - Quads that describe node layout relative to viewport.
-func (c *DOM) GetContentQuadsWithParams(ctx context.Context, v *DOMGetContentQuadsParams) ([]float64, error) {
+func (c *DOM) GetContentQuadsWithParams(ctx context.Context, v *DOMGetContentQuadsParams) ([][]float64, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getContentQuads", Params: v})
 	if err != nil {
 		return nil, err
@@ -587,7 +587,7 @@ func (c *DOM) GetContentQuadsWithParams(ctx context.Context, v *DOMGetContentQua
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			Quads []float64
+			Quads [][]float64
 		}
 	}
 
@@ -611,7 +611,7 @@ func (c *DOM) GetContentQuadsWithParams(ctx context.Context, v *DOMGetContentQua
 // backendNodeId - Identifier of the backend node.
 // objectId - JavaScript object id of the node wrapper.
 // Returns -  quads - Quads that describe node layout relative to viewport.
-func (c *DOM) GetContentQuads(ctx context.Context, nodeId int, backendNodeId int, objectId string) ([]float64, error) {
+func (c *DOM) GetContentQuads(ctx context.Context, nodeId int, backendNodeId int, objectId string) ([][]float64, error) {
 	var v DOMGetContentQuadsParams
 	v.NodeId = nodeId
 	v.BackendNodeId = backendNodeId

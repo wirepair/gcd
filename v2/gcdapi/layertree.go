@@ -230,7 +230,7 @@ type LayerTreeProfileSnapshotParams struct {
 
 // ProfileSnapshotWithParams -
 // Returns -  timings - The array of paint profiles, one per run.
-func (c *LayerTree) ProfileSnapshotWithParams(ctx context.Context, v *LayerTreeProfileSnapshotParams) ([]float64, error) {
+func (c *LayerTree) ProfileSnapshotWithParams(ctx context.Context, v *LayerTreeProfileSnapshotParams) ([][]float64, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "LayerTree.profileSnapshot", Params: v})
 	if err != nil {
 		return nil, err
@@ -239,7 +239,7 @@ func (c *LayerTree) ProfileSnapshotWithParams(ctx context.Context, v *LayerTreeP
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			Timings []float64
+			Timings [][]float64
 		}
 	}
 
@@ -264,7 +264,7 @@ func (c *LayerTree) ProfileSnapshotWithParams(ctx context.Context, v *LayerTreeP
 // minDuration - The minimum duration (in seconds) to replay the snapshot.
 // clipRect - The clip rectangle to apply when replaying the snapshot.
 // Returns -  timings - The array of paint profiles, one per run.
-func (c *LayerTree) ProfileSnapshot(ctx context.Context, snapshotId string, minRepeatCount int, minDuration float64, clipRect *DOMRect) ([]float64, error) {
+func (c *LayerTree) ProfileSnapshot(ctx context.Context, snapshotId string, minRepeatCount int, minDuration float64, clipRect *DOMRect) ([][]float64, error) {
 	var v LayerTreeProfileSnapshotParams
 	v.SnapshotId = snapshotId
 	v.MinRepeatCount = minRepeatCount

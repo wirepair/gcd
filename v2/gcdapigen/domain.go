@@ -261,10 +261,17 @@ func (d *Domain) resolveReference(prop PropSetter) bool {
 		}
 		prop.SetIsRef(true)
 	}
-	// set the type as being an array of whatever type it references
+
 	if ref.IsArrayRef {
+		if prop.GetIsTypeArray() {
+			// if the outer object is already an array, we have a double array, so make type a slice
+			prop.SetGoType("[]" + prop.GetGoType())
+		}
+
+		// set the type as being an array of whatever type it references
 		prop.SetIsTypeArray(true)
 	}
+
 	// add enum possible values to description
 	if ref.EnumDescription != "" {
 		prop.SetDescription(prop.GetDescription() + ref.EnumDescription)
