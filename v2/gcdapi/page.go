@@ -29,7 +29,7 @@ type PagePermissionsPolicyBlockLocator struct {
 
 // No Description.
 type PagePermissionsPolicyFeatureState struct {
-	Feature string                             `json:"feature"`           //  enum values: accelerometer, ambient-light-sensor, attribution-reporting, autoplay, bluetooth, browsing-topics, camera, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-prefers-reduced-motion, ch-rtt, ch-save-data, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-full, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-reduced, ch-ua-wow64, ch-viewport-height, ch-viewport-width, ch-width, clipboard-read, clipboard-write, compute-pressure, cross-origin-isolated, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, identity-credentials-get, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, local-fonts, magnetometer, microphone, midi, otp-credentials, payment, picture-in-picture, private-aggregation, private-state-token-issuance, private-state-token-redemption, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, shared-storage, shared-storage-select-url, smart-card, storage-access, sync-xhr, unload, usb, vertical-scroll, web-share, window-management, window-placement, xr-spatial-tracking
+	Feature string                             `json:"feature"`           //  enum values: accelerometer, all-screens-capture, ambient-light-sensor, attribution-reporting, autoplay, bluetooth, browsing-topics, camera, captured-surface-control, ch-dpr, ch-device-memory, ch-downlink, ch-ect, ch-prefers-color-scheme, ch-prefers-reduced-motion, ch-prefers-reduced-transparency, ch-rtt, ch-save-data, ch-ua, ch-ua-arch, ch-ua-bitness, ch-ua-platform, ch-ua-model, ch-ua-mobile, ch-ua-form-factors, ch-ua-full-version, ch-ua-full-version-list, ch-ua-platform-version, ch-ua-wow64, ch-viewport-height, ch-viewport-width, ch-width, clipboard-read, clipboard-write, compute-pressure, cross-origin-isolated, deferred-fetch, digital-credentials-get, direct-sockets, display-capture, document-domain, encrypted-media, execution-while-out-of-viewport, execution-while-not-rendered, focus-without-user-activation, fullscreen, frobulate, gamepad, geolocation, gyroscope, hid, identity-credentials-get, idle-detection, interest-cohort, join-ad-interest-group, keyboard-map, local-fonts, magnetometer, media-playback-while-not-visible, microphone, midi, otp-credentials, payment, picture-in-picture, private-aggregation, private-state-token-issuance, private-state-token-redemption, publickey-credentials-create, publickey-credentials-get, run-ad-auction, screen-wake-lock, serial, shared-autofill, shared-storage, shared-storage-select-url, smart-card, speaker-selection, storage-access, sub-apps, sync-xhr, unload, usb, usb-unrestricted, vertical-scroll, web-printing, web-share, window-management, xr-spatial-tracking
 	Allowed bool                               `json:"allowed"`           //
 	Locator *PagePermissionsPolicyBlockLocator `json:"locator,omitempty"` //
 }
@@ -123,7 +123,7 @@ type PageScreencastFrameMetadata struct {
 // Error while paring app manifest.
 type PageAppManifestError struct {
 	Message  string `json:"message"`  // Error message.
-	Critical int    `json:"critical"` // If criticial, this is a non-recoverable parse error.
+	Critical int    `json:"critical"` // If critical, this is a non-recoverable parse error.
 	Line     int    `json:"line"`     // Error line.
 	Column   int    `json:"column"`   // Error column.
 }
@@ -204,10 +204,115 @@ type PageCompilationCacheParams struct {
 }
 
 // No Description.
+type PageFileFilter struct {
+	Name    string   `json:"name,omitempty"`    //
+	Accepts []string `json:"accepts,omitempty"` //
+}
+
+// No Description.
+type PageFileHandler struct {
+	Action     string               `json:"action"`            //
+	Name       string               `json:"name"`              //
+	Icons      []*PageImageResource `json:"icons,omitempty"`   //
+	Accepts    []*PageFileFilter    `json:"accepts,omitempty"` // Mimic a map, name is the key, accepts is the value.
+	LaunchType string               `json:"launchType"`        // Won't repeat the enums, using string for easy comparison. Same as the other enums below.
+}
+
+// The image definition used in both icon and screenshot.
+type PageImageResource struct {
+	Url   string `json:"url"`             // The src field in the definition, but changing to url in favor of consistency.
+	Sizes string `json:"sizes,omitempty"` //
+	Type  string `json:"type,omitempty"`  //
+}
+
+// No Description.
+type PageLaunchHandler struct {
+	ClientMode string `json:"clientMode"` //
+}
+
+// No Description.
+type PageProtocolHandler struct {
+	Protocol string `json:"protocol"` //
+	Url      string `json:"url"`      //
+}
+
+// No Description.
+type PageRelatedApplication struct {
+	Id  string `json:"id,omitempty"` //
+	Url string `json:"url"`          //
+}
+
+// No Description.
+type PageScopeExtension struct {
+	Origin            string `json:"origin"`            // Instead of using tuple, this field always returns the serialized string for easy understanding and comparison.
+	HasOriginWildcard bool   `json:"hasOriginWildcard"` //
+}
+
+// No Description.
+type PageScreenshot struct {
+	Image      *PageImageResource `json:"image"`           //
+	FormFactor string             `json:"formFactor"`      //
+	Label      string             `json:"label,omitempty"` //
+}
+
+// No Description.
+type PageShareTarget struct {
+	Action  string            `json:"action"`          //
+	Method  string            `json:"method"`          //
+	Enctype string            `json:"enctype"`         //
+	Title   string            `json:"title,omitempty"` // Embed the ShareTargetParams
+	Text    string            `json:"text,omitempty"`  //
+	Url     string            `json:"url,omitempty"`   //
+	Files   []*PageFileFilter `json:"files,omitempty"` //
+}
+
+// No Description.
+type PageShortcut struct {
+	Name string `json:"name"` //
+	Url  string `json:"url"`  //
+}
+
+// No Description.
+type PageWebAppManifest struct {
+	BackgroundColor           string                    `json:"backgroundColor,omitempty"`           //
+	Description               string                    `json:"description,omitempty"`               // The extra description provided by the manifest.
+	Dir                       string                    `json:"dir,omitempty"`                       //
+	Display                   string                    `json:"display,omitempty"`                   //
+	DisplayOverrides          []string                  `json:"displayOverrides,omitempty"`          // The overrided display mode controlled by the user.
+	FileHandlers              []*PageFileHandler        `json:"fileHandlers,omitempty"`              // The handlers to open files.
+	Icons                     []*PageImageResource      `json:"icons,omitempty"`                     //
+	Id                        string                    `json:"id,omitempty"`                        //
+	Lang                      string                    `json:"lang,omitempty"`                      //
+	LaunchHandler             *PageLaunchHandler        `json:"launchHandler,omitempty"`             // TODO(crbug.com/1231886): This field is non-standard and part of a Chrome experiment. See: https://github.com/WICG/web-app-launch/blob/main/launch_handler.md
+	Name                      string                    `json:"name,omitempty"`                      //
+	Orientation               string                    `json:"orientation,omitempty"`               //
+	PreferRelatedApplications bool                      `json:"preferRelatedApplications,omitempty"` //
+	ProtocolHandlers          []*PageProtocolHandler    `json:"protocolHandlers,omitempty"`          // The handlers to open protocols.
+	RelatedApplications       []*PageRelatedApplication `json:"relatedApplications,omitempty"`       //
+	Scope                     string                    `json:"scope,omitempty"`                     //
+	ScopeExtensions           []*PageScopeExtension     `json:"scopeExtensions,omitempty"`           // Non-standard, see https://github.com/WICG/manifest-incubations/blob/gh-pages/scope_extensions-explainer.md
+	Screenshots               []*PageScreenshot         `json:"screenshots,omitempty"`               // The screenshots used by chromium.
+	ShareTarget               *PageShareTarget          `json:"shareTarget,omitempty"`               //
+	ShortName                 string                    `json:"shortName,omitempty"`                 //
+	Shortcuts                 []*PageShortcut           `json:"shortcuts,omitempty"`                 //
+	StartUrl                  string                    `json:"startUrl,omitempty"`                  //
+	ThemeColor                string                    `json:"themeColor,omitempty"`                //
+}
+
+// No Description.
+type PageBackForwardCacheBlockingDetails struct {
+	Url          string `json:"url,omitempty"`      // Url of the file where blockage happened. Optional because of tests.
+	Function     string `json:"function,omitempty"` // Function name where blockage happened. Optional because of anonymous functions and tests.
+	LineNumber   int    `json:"lineNumber"`         // Line number in the script (0-based).
+	ColumnNumber int    `json:"columnNumber"`       // Column number in the script (0-based).
+}
+
+// No Description.
 type PageBackForwardCacheNotRestoredExplanation struct {
-	Type    string `json:"type"`              // Type of the reason enum values: SupportPending, PageSupportNeeded, Circumstantial
-	Reason  string `json:"reason"`            // Not restored reason enum values: NotPrimaryMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, ErrorDocument, FencedFramesEmbedder, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, DedicatedWorkerOrWorklet, OutstandingNetworkRequestOthers, OutstandingIndexedDBTransaction, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, IndexedDBConnection, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, Portal, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, KeepaliveRequest, IndexedDBEvent, Dummy, AuthorizationHeader, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSessionService, ContentScreenReader, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame
-	Context string `json:"context,omitempty"` // Context associated with the reason. The meaning of this context is dependent on the reason: - EmbedderExtensionSentMessageToCachedFrame: the extension ID.
+	Type    string                                 `json:"type"`              // Type of the reason enum values: SupportPending, PageSupportNeeded, Circumstantial
+	Reason  string                                 `json:"reason"`            // Not restored reason enum values: NotPrimaryMainFrame, BackForwardCacheDisabled, RelatedActiveContentsExist, HTTPStatusNotOK, SchemeNotHTTPOrHTTPS, Loading, WasGrantedMediaAccess, DisableForRenderFrameHostCalled, DomainNotAllowed, HTTPMethodNotGET, SubframeIsNavigating, Timeout, CacheLimit, JavaScriptExecution, RendererProcessKilled, RendererProcessCrashed, SchedulerTrackedFeatureUsed, ConflictingBrowsingInstance, CacheFlushed, ServiceWorkerVersionActivation, SessionRestored, ServiceWorkerPostMessage, EnteredBackForwardCacheBeforeServiceWorkerHostAdded, RenderFrameHostReused_SameSite, RenderFrameHostReused_CrossSite, ServiceWorkerClaim, IgnoreEventAndEvict, HaveInnerContents, TimeoutPuttingInCache, BackForwardCacheDisabledByLowMemory, BackForwardCacheDisabledByCommandLine, NetworkRequestDatapipeDrainedAsBytesConsumer, NetworkRequestRedirected, NetworkRequestTimeout, NetworkExceedsBufferLimit, NavigationCancelledWhileRestoring, NotMostRecentNavigationEntry, BackForwardCacheDisabledForPrerender, UserAgentOverrideDiffers, ForegroundCacheLimit, BrowsingInstanceNotSwapped, BackForwardCacheDisabledForDelegate, UnloadHandlerExistsInMainFrame, UnloadHandlerExistsInSubFrame, ServiceWorkerUnregistration, CacheControlNoStore, CacheControlNoStoreCookieModified, CacheControlNoStoreHTTPOnlyCookieModified, NoResponseHead, Unknown, ActivationNavigationsDisallowedForBug1234857, ErrorDocument, FencedFramesEmbedder, CookieDisabled, HTTPAuthRequired, CookieFlushed, BroadcastChannelOnMessage, WebViewSettingsChanged, WebViewJavaScriptObjectChanged, WebViewMessageListenerInjected, WebViewSafeBrowsingAllowlistChanged, WebViewDocumentStartJavascriptChanged, WebSocket, WebTransport, WebRTC, MainResourceHasCacheControlNoStore, MainResourceHasCacheControlNoCache, SubresourceHasCacheControlNoStore, SubresourceHasCacheControlNoCache, ContainsPlugins, DocumentLoaded, OutstandingNetworkRequestOthers, RequestedMIDIPermission, RequestedAudioCapturePermission, RequestedVideoCapturePermission, RequestedBackForwardCacheBlockedSensors, RequestedBackgroundWorkPermission, BroadcastChannel, WebXR, SharedWorker, WebLocks, WebHID, WebShare, RequestedStorageAccessGrant, WebNfc, OutstandingNetworkRequestFetch, OutstandingNetworkRequestXHR, AppBanner, Printing, WebDatabase, PictureInPicture, SpeechRecognizer, IdleManager, PaymentManager, SpeechSynthesis, KeyboardLock, WebOTPService, OutstandingNetworkRequestDirectSocket, InjectedJavascript, InjectedStyleSheet, KeepaliveRequest, IndexedDBEvent, Dummy, JsNetworkRequestReceivedCacheControlNoStoreResource, WebRTCSticky, WebTransportSticky, WebSocketSticky, SmartCard, LiveMediaStreamTrack, UnloadHandler, ParserAborted, ContentSecurityHandler, ContentWebAuthenticationAPI, ContentFileChooser, ContentSerial, ContentFileSystemAccess, ContentMediaDevicesDispatcherHost, ContentWebBluetooth, ContentWebUSB, ContentMediaSessionService, ContentScreenReader, EmbedderPopupBlockerTabHelper, EmbedderSafeBrowsingTriggeredPopupBlocker, EmbedderSafeBrowsingThreatDetails, EmbedderAppBannerManager, EmbedderDomDistillerViewerSource, EmbedderDomDistillerSelfDeletingRequestDelegate, EmbedderOomInterventionTabHelper, EmbedderOfflinePage, EmbedderChromePasswordManagerClientBindCredentialManager, EmbedderPermissionRequestManager, EmbedderModalDialog, EmbedderExtensions, EmbedderExtensionMessaging, EmbedderExtensionMessagingForOpenPort, EmbedderExtensionSentMessageToCachedFrame, RequestedByWebViewClient
+	Context string                                 `json:"context,omitempty"` // Context associated with the reason. The meaning of this context is dependent on the reason: - EmbedderExtensionSentMessageToCachedFrame: the extension ID.
+	Details []*PageBackForwardCacheBlockingDetails `json:"details,omitempty"` //
 }
 
 // No Description.
@@ -230,7 +335,7 @@ type PageFileChooserOpenedEvent struct {
 	Params struct {
 		FrameId       string `json:"frameId"`                 // Id of the frame containing input node.
 		Mode          string `json:"mode"`                    // Input mode.
-		BackendNodeId int    `json:"backendNodeId,omitempty"` // Input node id. Only present for file choosers opened via an <input type="file"> element.
+		BackendNodeId int    `json:"backendNodeId,omitempty"` // Input node id. Only present for file choosers opened via an `<input type="file">` element.
 	} `json:"Params,omitempty"`
 }
 
@@ -283,7 +388,7 @@ type PageFrameRequestedNavigationEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		FrameId     string `json:"frameId"`     // Id of the frame that is being navigated.
-		Reason      string `json:"reason"`      // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
+		Reason      string `json:"reason"`      // The reason for the navigation. enum values: anchorClick, formSubmissionGet, formSubmissionPost, httpHeaderRefresh, initialFrameNavigation, metaTagRefresh, other, pageBlockInterstitial, reload, scriptInitiated
 		Url         string `json:"url"`         // The destination URL for the requested navigation.
 		Disposition string `json:"disposition"` // The disposition for the navigation. enum values: currentTab, newTab, newWindow, download
 	} `json:"Params,omitempty"`
@@ -295,7 +400,7 @@ type PageFrameScheduledNavigationEvent struct {
 	Params struct {
 		FrameId string  `json:"frameId"` // Id of the frame that has scheduled a navigation.
 		Delay   float64 `json:"delay"`   // Delay (in seconds) until the navigation is scheduled to begin. The navigation is not guaranteed to start.
-		Reason  string  `json:"reason"`  // The reason for the navigation. enum values: formSubmissionGet, formSubmissionPost, httpHeaderRefresh, scriptInitiated, metaTagRefresh, pageBlockInterstitial, reload, anchorClick
+		Reason  string  `json:"reason"`  // The reason for the navigation. enum values: anchorClick, formSubmissionGet, formSubmissionPost, httpHeaderRefresh, initialFrameNavigation, metaTagRefresh, other, pageBlockInterstitial, reload, scriptInitiated
 		Url     string  `json:"url"`     // The destination URL for the scheduled navigation.
 	} `json:"Params,omitempty"`
 }
@@ -374,7 +479,7 @@ type PageLifecycleEventEvent struct {
 type PageBackForwardCacheNotUsedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		LoaderId                    string                                          `json:"loaderId"`                              // The loader id for the associated navgation.
+		LoaderId                    string                                          `json:"loaderId"`                              // The loader id for the associated navigation.
 		FrameId                     string                                          `json:"frameId"`                               // The frame id of the associated frame.
 		NotRestoredExplanations     []*PageBackForwardCacheNotRestoredExplanation   `json:"notRestoredExplanations"`               // Array of reasons why the page could not be cached. This must not be empty.
 		NotRestoredExplanationsTree *PageBackForwardCacheNotRestoredExplanationTree `json:"notRestoredExplanationsTree,omitempty"` // Tree structure of reasons why the page could not be cached for each frame.
@@ -392,8 +497,9 @@ type PageLoadEventFiredEvent struct {
 type PageNavigatedWithinDocumentEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		FrameId string `json:"frameId"` // Id of the frame.
-		Url     string `json:"url"`     // Frame's new url.
+		FrameId        string `json:"frameId"`        // Id of the frame.
+		Url            string `json:"url"`            // Frame's new url.
+		NavigationType string `json:"navigationType"` // Navigation type
 	} `json:"Params,omitempty"`
 }
 
@@ -401,7 +507,6 @@ type PageNavigatedWithinDocumentEvent struct {
 type PageScreencastFrameEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Data      string                       `json:"data"`      // Base64-encoded compressed image. (Encoded as a base64 string when passed over JSON)
 		Metadata  *PageScreencastFrameMetadata `json:"metadata"`  // Screencast frame metadata.
 		SessionId int                          `json:"sessionId"` // Frame number.
 	} `json:"Params,omitempty"`
@@ -430,8 +535,7 @@ type PageWindowOpenEvent struct {
 type PageCompilationCacheProducedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Url  string `json:"url"`  //
-		Data string `json:"data"` // Base64-encoded data (Encoded as a base64 string when passed over JSON)
+		Url string `json:"url"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -495,6 +599,8 @@ type PageAddScriptToEvaluateOnNewDocumentParams struct {
 	WorldName string `json:"worldName,omitempty"`
 	// Specifies whether command line API should be available to the script, defaults to false.
 	IncludeCommandLineAPI bool `json:"includeCommandLineAPI,omitempty"`
+	// If true, runs the script immediately on existing execution contexts or worlds. Default: false.
+	RunImmediately bool `json:"runImmediately,omitempty"`
 }
 
 // AddScriptToEvaluateOnNewDocumentWithParams - Evaluates given script in every frame upon creation (before loading frame's scripts).
@@ -531,12 +637,14 @@ func (c *Page) AddScriptToEvaluateOnNewDocumentWithParams(ctx context.Context, v
 // source -
 // worldName - If specified, creates an isolated world with the given name and evaluates given script in it. This world name will be used as the ExecutionContextDescription::name when the corresponding event is emitted.
 // includeCommandLineAPI - Specifies whether command line API should be available to the script, defaults to false.
+// runImmediately - If true, runs the script immediately on existing execution contexts or worlds. Default: false.
 // Returns -  identifier - Identifier of the added script.
-func (c *Page) AddScriptToEvaluateOnNewDocument(ctx context.Context, source string, worldName string, includeCommandLineAPI bool) (string, error) {
+func (c *Page) AddScriptToEvaluateOnNewDocument(ctx context.Context, source string, worldName string, includeCommandLineAPI bool, runImmediately bool) (string, error) {
 	var v PageAddScriptToEvaluateOnNewDocumentParams
 	v.Source = source
 	v.WorldName = worldName
 	v.IncludeCommandLineAPI = includeCommandLineAPI
+	v.RunImmediately = runImmediately
 	return c.AddScriptToEvaluateOnNewDocumentWithParams(ctx, &v)
 }
 
@@ -561,33 +669,32 @@ type PageCaptureScreenshotParams struct {
 }
 
 // CaptureScreenshotWithParams - Capture page screenshot.
-// Returns -  data - Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
-func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureScreenshotParams) (string, error) {
+// Returns -
+func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureScreenshotParams) error {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.captureScreenshot", Params: v})
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			Data string
 		}
 	}
 
 	if resp == nil {
-		return "", &gcdmessage.ChromeEmptyResponseErr{}
+		return &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+		return err
 	}
 
 	if chromeData.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+		return &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
-	return chromeData.Result.Data, nil
+	return nil
 }
 
 // CaptureScreenshot - Capture page screenshot.
@@ -597,8 +704,8 @@ func (c *Page) CaptureScreenshotWithParams(ctx context.Context, v *PageCaptureSc
 // fromSurface - Capture the screenshot from the surface, rather than the view. Defaults to true.
 // captureBeyondViewport - Capture the screenshot beyond the viewport. Defaults to false.
 // optimizeForSpeed - Optimize image encoding for speed, not for resulting size (defaults to false)
-// Returns -  data - Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
-func (c *Page) CaptureScreenshot(ctx context.Context, format string, quality int, clip *PageViewport, fromSurface bool, captureBeyondViewport bool, optimizeForSpeed bool) (string, error) {
+// Returns -
+func (c *Page) CaptureScreenshot(ctx context.Context, format string, quality int, clip *PageViewport, fromSurface bool, captureBeyondViewport bool, optimizeForSpeed bool) error {
 	var v PageCaptureScreenshotParams
 	v.Format = format
 	v.Quality = quality
@@ -752,37 +859,52 @@ func (c *Page) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.enable"})
 }
 
-// GetAppManifest -
-// Returns -  url - Manifest location. errors -  data - Manifest content. parsed - Parsed manifest properties
-func (c *Page) GetAppManifest(ctx context.Context) (string, []*PageAppManifestError, string, *PageAppManifestParsedProperties, error) {
-	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getAppManifest"})
+type PageGetAppManifestParams struct {
+	//
+	ManifestId string `json:"manifestId,omitempty"`
+}
+
+// GetAppManifestWithParams - Gets the processed manifest for this current document.   This API always waits for the manifest to be loaded.   If manifestId is provided, and it does not match the manifest of the     current document, this API errors out.   If there is not a loaded page, this API errors out immediately.
+// Returns -  url - Manifest location. errors -  data - Manifest content. parsed - Parsed manifest properties. Deprecated, use manifest instead. manifest -
+func (c *Page) GetAppManifestWithParams(ctx context.Context, v *PageGetAppManifestParams) (string, []*PageAppManifestError, string, *PageAppManifestParsedProperties, *PageWebAppManifest, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getAppManifest", Params: v})
 	if err != nil {
-		return "", nil, "", nil, err
+		return "", nil, "", nil, nil, err
 	}
 
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			Url    string
-			Errors []*PageAppManifestError
-			Data   string
-			Parsed *PageAppManifestParsedProperties
+			Url      string
+			Errors   []*PageAppManifestError
+			Data     string
+			Parsed   *PageAppManifestParsedProperties
+			Manifest *PageWebAppManifest
 		}
 	}
 
 	if resp == nil {
-		return "", nil, "", nil, &gcdmessage.ChromeEmptyResponseErr{}
+		return "", nil, "", nil, nil, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
-		return "", nil, "", nil, err
+		return "", nil, "", nil, nil, err
 	}
 
 	if chromeData.Error != nil {
-		return "", nil, "", nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+		return "", nil, "", nil, nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
-	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, chromeData.Result.Parsed, nil
+	return chromeData.Result.Url, chromeData.Result.Errors, chromeData.Result.Data, chromeData.Result.Parsed, chromeData.Result.Manifest, nil
+}
+
+// GetAppManifest - Gets the processed manifest for this current document.   This API always waits for the manifest to be loaded.   If manifestId is provided, and it does not match the manifest of the     current document, this API errors out.   If there is not a loaded page, this API errors out immediately.
+// manifestId -
+// Returns -  url - Manifest location. errors -  data - Manifest content. parsed - Parsed manifest properties. Deprecated, use manifest instead. manifest -
+func (c *Page) GetAppManifest(ctx context.Context, manifestId string) (string, []*PageAppManifestError, string, *PageAppManifestParsedProperties, *PageWebAppManifest, error) {
+	var v PageGetAppManifestParams
+	v.ManifestId = manifestId
+	return c.GetAppManifestWithParams(ctx, &v)
 }
 
 // GetInstallabilityErrors -
@@ -816,33 +938,32 @@ func (c *Page) GetInstallabilityErrors(ctx context.Context) ([]*PageInstallabili
 }
 
 // GetManifestIcons - Deprecated because it's not guaranteed that the returned icon is in fact the one used for PWA installation.
-// Returns -  primaryIcon -
-func (c *Page) GetManifestIcons(ctx context.Context) (string, error) {
+// Returns -
+func (c *Page) GetManifestIcons(ctx context.Context) error {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getManifestIcons"})
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			PrimaryIcon string
 		}
 	}
 
 	if resp == nil {
-		return "", &gcdmessage.ChromeEmptyResponseErr{}
+		return &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+		return err
 	}
 
 	if chromeData.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+		return &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
-	return chromeData.Result.PrimaryIcon, nil
+	return nil
 }
 
 // GetAppId - Returns the unique (PWA) app id. Only returns values if the feature flag 'WebAppEnableManifestId' is enabled
@@ -918,36 +1039,6 @@ func (c *Page) GetAdScriptId(ctx context.Context, frameId string) (*PageAdScript
 	var v PageGetAdScriptIdParams
 	v.FrameId = frameId
 	return c.GetAdScriptIdWithParams(ctx, &v)
-}
-
-// GetCookies - Returns all browser cookies for the page and all of its subframes. Depending on the backend support, will return detailed cookie information in the `cookies` field.
-// Returns -  cookies - Array of cookie objects.
-func (c *Page) GetCookies(ctx context.Context) ([]*NetworkCookie, error) {
-	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.getCookies"})
-	if err != nil {
-		return nil, err
-	}
-
-	var chromeData struct {
-		gcdmessage.ChromeErrorResponse
-		Result struct {
-			Cookies []*NetworkCookie
-		}
-	}
-
-	if resp == nil {
-		return nil, &gcdmessage.ChromeEmptyResponseErr{}
-	}
-
-	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
-		return nil, err
-	}
-
-	if chromeData.Error != nil {
-		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
-	}
-
-	return chromeData.Result.Cookies, nil
 }
 
 // GetFrameTree - Returns present frame tree structure.
@@ -1263,37 +1354,40 @@ type PagePrintToPDFParams struct {
 	PreferCSSPageSize bool `json:"preferCSSPageSize,omitempty"`
 	// return as stream
 	TransferMode string `json:"transferMode,omitempty"`
+	// Whether or not to generate tagged (accessible) PDF. Defaults to embedder choice.
+	GenerateTaggedPDF bool `json:"generateTaggedPDF,omitempty"`
+	// Whether or not to embed the document outline into the PDF.
+	GenerateDocumentOutline bool `json:"generateDocumentOutline,omitempty"`
 }
 
 // PrintToPDFWithParams - Print page as PDF.
-// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON) stream - A handle of the stream that holds resulting PDF data.
-func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams) (string, string, error) {
+// Returns -  stream - A handle of the stream that holds resulting PDF data.
+func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams) (string, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.printToPDF", Params: v})
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			Data   string
 			Stream string
 		}
 	}
 
 	if resp == nil {
-		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	if chromeData.Error != nil {
-		return "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
-	return chromeData.Result.Data, chromeData.Result.Stream, nil
+	return chromeData.Result.Stream, nil
 }
 
 // PrintToPDF - Print page as PDF.
@@ -1312,8 +1406,10 @@ func (c *Page) PrintToPDFWithParams(ctx context.Context, v *PagePrintToPDFParams
 // footerTemplate - HTML template for the print footer. Should use the same format as the `headerTemplate`.
 // preferCSSPageSize - Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
 // transferMode - return as stream
-// Returns -  data - Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON) stream - A handle of the stream that holds resulting PDF data.
-func (c *Page) PrintToPDF(ctx context.Context, landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, headerTemplate string, footerTemplate string, preferCSSPageSize bool, transferMode string) (string, string, error) {
+// generateTaggedPDF - Whether or not to generate tagged (accessible) PDF. Defaults to embedder choice.
+// generateDocumentOutline - Whether or not to embed the document outline into the PDF.
+// Returns -  stream - A handle of the stream that holds resulting PDF data.
+func (c *Page) PrintToPDF(ctx context.Context, landscape bool, displayHeaderFooter bool, printBackground bool, scale float64, paperWidth float64, paperHeight float64, marginTop float64, marginBottom float64, marginLeft float64, marginRight float64, pageRanges string, headerTemplate string, footerTemplate string, preferCSSPageSize bool, transferMode string, generateTaggedPDF bool, generateDocumentOutline bool) (string, error) {
 	var v PagePrintToPDFParams
 	v.Landscape = landscape
 	v.DisplayHeaderFooter = displayHeaderFooter
@@ -1330,6 +1426,8 @@ func (c *Page) PrintToPDF(ctx context.Context, landscape bool, displayHeaderFoot
 	v.FooterTemplate = footerTemplate
 	v.PreferCSSPageSize = preferCSSPageSize
 	v.TransferMode = transferMode
+	v.GenerateTaggedPDF = generateTaggedPDF
+	v.GenerateDocumentOutline = generateDocumentOutline
 	return c.PrintToPDFWithParams(ctx, &v)
 }
 
@@ -1338,6 +1436,8 @@ type PageReloadParams struct {
 	IgnoreCache bool `json:"ignoreCache,omitempty"`
 	// If set, the script will be injected into all frames of the inspected page after reload. Argument will be ignored if reloading dataURL origin.
 	ScriptToEvaluateOnLoad string `json:"scriptToEvaluateOnLoad,omitempty"`
+	// If set, an error will be thrown if the target page's main frame's loader id does not match the provided id. This prevents accidentally reloading an unintended target in case there's a racing navigation.
+	LoaderId string `json:"loaderId,omitempty"`
 }
 
 // ReloadWithParams - Reloads given page optionally ignoring the cache.
@@ -1348,10 +1448,12 @@ func (c *Page) ReloadWithParams(ctx context.Context, v *PageReloadParams) (*gcdm
 // Reload - Reloads given page optionally ignoring the cache.
 // ignoreCache - If true, browser cache is ignored (as if the user pressed Shift+refresh).
 // scriptToEvaluateOnLoad - If set, the script will be injected into all frames of the inspected page after reload. Argument will be ignored if reloading dataURL origin.
-func (c *Page) Reload(ctx context.Context, ignoreCache bool, scriptToEvaluateOnLoad string) (*gcdmessage.ChromeResponse, error) {
+// loaderId - If set, an error will be thrown if the target page's main frame's loader id does not match the provided id. This prevents accidentally reloading an unintended target in case there's a racing navigation.
+func (c *Page) Reload(ctx context.Context, ignoreCache bool, scriptToEvaluateOnLoad string, loaderId string) (*gcdmessage.ChromeResponse, error) {
 	var v PageReloadParams
 	v.IgnoreCache = ignoreCache
 	v.ScriptToEvaluateOnLoad = scriptToEvaluateOnLoad
+	v.LoaderId = loaderId
 	return c.ReloadWithParams(ctx, &v)
 }
 
@@ -1908,12 +2010,12 @@ type PageProduceCompilationCacheParams struct {
 	Scripts []*PageCompilationCacheParams `json:"scripts"`
 }
 
-// ProduceCompilationCacheWithParams - Requests backend to produce compilation cache for the specified scripts. `scripts` are appeneded to the list of scripts for which the cache would be produced. The list may be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
+// ProduceCompilationCacheWithParams - Requests backend to produce compilation cache for the specified scripts. `scripts` are appended to the list of scripts for which the cache would be produced. The list may be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
 func (c *Page) ProduceCompilationCacheWithParams(ctx context.Context, v *PageProduceCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.produceCompilationCache", Params: v})
 }
 
-// ProduceCompilationCache - Requests backend to produce compilation cache for the specified scripts. `scripts` are appeneded to the list of scripts for which the cache would be produced. The list may be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
+// ProduceCompilationCache - Requests backend to produce compilation cache for the specified scripts. `scripts` are appended to the list of scripts for which the cache would be produced. The list may be reset during page navigation. When script with a matching URL is encountered, the cache is optionally produced upon backend discretion, based on internal heuristics. See also: `Page.compilationCacheProduced`.
 // scripts -
 func (c *Page) ProduceCompilationCache(ctx context.Context, scripts []*PageCompilationCacheParams) (*gcdmessage.ChromeResponse, error) {
 	var v PageProduceCompilationCacheParams
@@ -1924,8 +2026,6 @@ func (c *Page) ProduceCompilationCache(ctx context.Context, scripts []*PageCompi
 type PageAddCompilationCacheParams struct {
 	//
 	Url string `json:"url"`
-	// Base64-encoded data (Encoded as a base64 string when passed over JSON)
-	Data string `json:"data"`
 }
 
 // AddCompilationCacheWithParams - Seeds compilation cache for given url. Compilation cache does not survive cross-process navigation.
@@ -1935,11 +2035,9 @@ func (c *Page) AddCompilationCacheWithParams(ctx context.Context, v *PageAddComp
 
 // AddCompilationCache - Seeds compilation cache for given url. Compilation cache does not survive cross-process navigation.
 // url -
-// data - Base64-encoded data (Encoded as a base64 string when passed over JSON)
-func (c *Page) AddCompilationCache(ctx context.Context, url string, data string) (*gcdmessage.ChromeResponse, error) {
+func (c *Page) AddCompilationCache(ctx context.Context, url string) (*gcdmessage.ChromeResponse, error) {
 	var v PageAddCompilationCacheParams
 	v.Url = url
-	v.Data = data
 	return c.AddCompilationCacheWithParams(ctx, &v)
 }
 
@@ -2027,4 +2125,22 @@ func (c *Page) SetInterceptFileChooserDialog(ctx context.Context, enabled bool) 
 	var v PageSetInterceptFileChooserDialogParams
 	v.Enabled = enabled
 	return c.SetInterceptFileChooserDialogWithParams(ctx, &v)
+}
+
+type PageSetPrerenderingAllowedParams struct {
+	//
+	IsAllowed bool `json:"isAllowed"`
+}
+
+// SetPrerenderingAllowedWithParams - Enable/disable prerendering manually.  This command is a short-term solution for https://crbug.com/1440085. See https://docs.google.com/document/d/12HVmFxYj5Jc-eJr5OmWsa2bqTJsbgGLKI6ZIyx0_wpA for more details.  TODO(https://crbug.com/1440085): Remove this once Puppeteer supports tab targets.
+func (c *Page) SetPrerenderingAllowedWithParams(ctx context.Context, v *PageSetPrerenderingAllowedParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Page.setPrerenderingAllowed", Params: v})
+}
+
+// SetPrerenderingAllowed - Enable/disable prerendering manually.  This command is a short-term solution for https://crbug.com/1440085. See https://docs.google.com/document/d/12HVmFxYj5Jc-eJr5OmWsa2bqTJsbgGLKI6ZIyx0_wpA for more details.  TODO(https://crbug.com/1440085): Remove this once Puppeteer supports tab targets.
+// isAllowed -
+func (c *Page) SetPrerenderingAllowed(ctx context.Context, isAllowed bool) (*gcdmessage.ChromeResponse, error) {
+	var v PageSetPrerenderingAllowedParams
+	v.IsAllowed = isAllowed
+	return c.SetPrerenderingAllowedWithParams(ctx, &v)
 }

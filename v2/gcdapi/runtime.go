@@ -9,25 +9,33 @@ import (
 	"github.com/wirepair/gcd/v2/gcdmessage"
 )
 
-// Represents the value serialiazed by the WebDriver BiDi specification https://w3c.github.io/webdriver-bidi.
-type RuntimeWebDriverValue struct {
-	Type     string      `json:"type"`               //
-	Value    interface{} `json:"value,omitempty"`    //
-	ObjectId string      `json:"objectId,omitempty"` //
+// Represents options for serialization. Overrides `generatePreview` and `returnByValue`.
+type RuntimeSerializationOptions struct {
+	Serialization        string                 `json:"serialization"`                  //
+	MaxDepth             int                    `json:"maxDepth,omitempty"`             // Deep serialization depth. Default is full depth. Respected only in `deep` serialization mode.
+	AdditionalParameters map[string]interface{} `json:"additionalParameters,omitempty"` // Embedder-specific parameters. For example if connected to V8 in Chrome these control DOM serialization via `maxNodeDepth: integer` and `includeShadowTree: "none" | "open" | "all"`. Values can be only of type string or integer.
+}
+
+// Represents deep serialized value.
+type RuntimeDeepSerializedValue struct {
+	Type                     string      `json:"type"`                               //
+	Value                    interface{} `json:"value,omitempty"`                    //
+	ObjectId                 string      `json:"objectId,omitempty"`                 //
+	WeakLocalObjectReference int         `json:"weakLocalObjectReference,omitempty"` // Set if value reference met more then once during serialization. In such case, value is provided only to one of the serialized values. Unique per value in the scope of one CDP call.
 }
 
 // Mirror object referencing original JavaScript object.
 type RuntimeRemoteObject struct {
-	Type                string                 `json:"type"`                          // Object type.
-	Subtype             string                 `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only. NOTE: If you change anything here, make sure to also update `subtype` in `ObjectPreview` and `PropertyPreview` below.
-	ClassName           string                 `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
-	Value               interface{}            `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
-	UnserializableValue string                 `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property.
-	Description         string                 `json:"description,omitempty"`         // String representation of the object.
-	WebDriverValue      *RuntimeWebDriverValue `json:"webDriverValue,omitempty"`      // WebDriver BiDi representation of the value.
-	ObjectId            string                 `json:"objectId,omitempty"`            // Unique object identifier (for non-primitive values).
-	Preview             *RuntimeObjectPreview  `json:"preview,omitempty"`             // Preview containing abbreviated property values. Specified for `object` type values only.
-	CustomPreview       *RuntimeCustomPreview  `json:"customPreview,omitempty"`       //
+	Type                string                      `json:"type"`                          // Object type.
+	Subtype             string                      `json:"subtype,omitempty"`             // Object subtype hint. Specified for `object` type values only. NOTE: If you change anything here, make sure to also update `subtype` in `ObjectPreview` and `PropertyPreview` below.
+	ClassName           string                      `json:"className,omitempty"`           // Object class (constructor) name. Specified for `object` type values only.
+	Value               interface{}                 `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
+	UnserializableValue string                      `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have `value`, but gets this property.
+	Description         string                      `json:"description,omitempty"`         // String representation of the object.
+	DeepSerializedValue *RuntimeDeepSerializedValue `json:"deepSerializedValue,omitempty"` // Deep serialized value.
+	ObjectId            string                      `json:"objectId,omitempty"`            // Unique object identifier (for non-primitive values).
+	Preview             *RuntimeObjectPreview       `json:"preview,omitempty"`             // Preview containing abbreviated property values. Specified for `object` type values only.
+	CustomPreview       *RuntimeCustomPreview       `json:"customPreview,omitempty"`       //
 }
 
 // No Description.
@@ -281,7 +289,7 @@ type RuntimeCallFunctionOnParams struct {
 	Arguments []*RuntimeCallArgument `json:"arguments,omitempty"`
 	// In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
 	Silent bool `json:"silent,omitempty"`
-	// Whether the result is expected to be a JSON object which should be sent by value.
+	// Whether the result is expected to be a JSON object which should be sent by value. Can be overriden by `serializationOptions`.
 	ReturnByValue bool `json:"returnByValue,omitempty"`
 	// Whether preview should be generated for the result.
 	GeneratePreview bool `json:"generatePreview,omitempty"`
@@ -297,8 +305,8 @@ type RuntimeCallFunctionOnParams struct {
 	ThrowOnSideEffect bool `json:"throwOnSideEffect,omitempty"`
 	// An alternative way to specify the execution context to call function on. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental function call in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `executionContextId`.
 	UniqueContextId string `json:"uniqueContextId,omitempty"`
-	// Whether the result should contain `webDriverValue`, serialized according to https://w3c.github.io/webdriver-bidi. This is mutually exclusive with `returnByValue`, but resulting `objectId` is still provided.
-	GenerateWebDriverValue bool `json:"generateWebDriverValue,omitempty"`
+	// Specifies the result serialization. If provided, overrides `generatePreview` and `returnByValue`.
+	SerializationOptions *RuntimeSerializationOptions `json:"serializationOptions,omitempty"`
 }
 
 // CallFunctionOnWithParams - Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
@@ -337,7 +345,7 @@ func (c *Runtime) CallFunctionOnWithParams(ctx context.Context, v *RuntimeCallFu
 // objectId - Identifier of the object to call function on. Either objectId or executionContextId should be specified.
 // arguments - Call arguments. All call arguments must belong to the same JavaScript world as the target object.
 // silent - In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides `setPauseOnException` state.
-// returnByValue - Whether the result is expected to be a JSON object which should be sent by value.
+// returnByValue - Whether the result is expected to be a JSON object which should be sent by value. Can be overriden by `serializationOptions`.
 // generatePreview - Whether preview should be generated for the result.
 // userGesture - Whether execution should be treated as initiated by user in the UI.
 // awaitPromise - Whether execution should `await` for resulting value and return once awaited promise is resolved.
@@ -345,9 +353,9 @@ func (c *Runtime) CallFunctionOnWithParams(ctx context.Context, v *RuntimeCallFu
 // objectGroup - Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
 // throwOnSideEffect - Whether to throw an exception if side effect cannot be ruled out during evaluation.
 // uniqueContextId - An alternative way to specify the execution context to call function on. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental function call in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `executionContextId`.
-// generateWebDriverValue - Whether the result should contain `webDriverValue`, serialized according to https://w3c.github.io/webdriver-bidi. This is mutually exclusive with `returnByValue`, but resulting `objectId` is still provided.
+// serializationOptions - Specifies the result serialization. If provided, overrides `generatePreview` and `returnByValue`.
 // Returns -  result - Call result. exceptionDetails - Exception details.
-func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string, throwOnSideEffect bool, uniqueContextId string, generateWebDriverValue bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string, objectId string, arguments []*RuntimeCallArgument, silent bool, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, executionContextId int, objectGroup string, throwOnSideEffect bool, uniqueContextId string, serializationOptions *RuntimeSerializationOptions) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeCallFunctionOnParams
 	v.FunctionDeclaration = functionDeclaration
 	v.ObjectId = objectId
@@ -361,7 +369,7 @@ func (c *Runtime) CallFunctionOn(ctx context.Context, functionDeclaration string
 	v.ObjectGroup = objectGroup
 	v.ThrowOnSideEffect = throwOnSideEffect
 	v.UniqueContextId = uniqueContextId
-	v.GenerateWebDriverValue = generateWebDriverValue
+	v.SerializationOptions = serializationOptions
 	return c.CallFunctionOnWithParams(ctx, &v)
 }
 
@@ -468,8 +476,8 @@ type RuntimeEvaluateParams struct {
 	AllowUnsafeEvalBlockedByCSP bool `json:"allowUnsafeEvalBlockedByCSP,omitempty"`
 	// An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `contextId`.
 	UniqueContextId string `json:"uniqueContextId,omitempty"`
-	// Whether the result should be serialized according to https://w3c.github.io/webdriver-bidi.
-	GenerateWebDriverValue bool `json:"generateWebDriverValue,omitempty"`
+	// Specifies the result serialization. If provided, overrides `generatePreview` and `returnByValue`.
+	SerializationOptions *RuntimeSerializationOptions `json:"serializationOptions,omitempty"`
 }
 
 // EvaluateWithParams - Evaluates expression on global object.
@@ -519,9 +527,9 @@ func (c *Runtime) EvaluateWithParams(ctx context.Context, v *RuntimeEvaluatePara
 // replMode - Setting this flag to true enables `let` re-declaration and top-level `await`. Note that `let` variables can only be re-declared if they originate from `replMode` themselves.
 // allowUnsafeEvalBlockedByCSP - The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
 // uniqueContextId - An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with `contextId`.
-// generateWebDriverValue - Whether the result should be serialized according to https://w3c.github.io/webdriver-bidi.
+// serializationOptions - Specifies the result serialization. If provided, overrides `generatePreview` and `returnByValue`.
 // Returns -  result - Evaluation result. exceptionDetails - Exception details.
-func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool, uniqueContextId string, generateWebDriverValue bool) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
+func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup string, includeCommandLineAPI bool, silent bool, contextId int, returnByValue bool, generatePreview bool, userGesture bool, awaitPromise bool, throwOnSideEffect bool, timeout float64, disableBreaks bool, replMode bool, allowUnsafeEvalBlockedByCSP bool, uniqueContextId string, serializationOptions *RuntimeSerializationOptions) (*RuntimeRemoteObject, *RuntimeExceptionDetails, error) {
 	var v RuntimeEvaluateParams
 	v.Expression = expression
 	v.ObjectGroup = objectGroup
@@ -538,7 +546,7 @@ func (c *Runtime) Evaluate(ctx context.Context, expression string, objectGroup s
 	v.ReplMode = replMode
 	v.AllowUnsafeEvalBlockedByCSP = allowUnsafeEvalBlockedByCSP
 	v.UniqueContextId = uniqueContextId
-	v.GenerateWebDriverValue = generateWebDriverValue
+	v.SerializationOptions = serializationOptions
 	return c.EvaluateWithParams(ctx, &v)
 }
 

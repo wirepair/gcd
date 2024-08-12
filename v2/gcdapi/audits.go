@@ -31,8 +31,8 @@ type AuditsAffectedFrame struct {
 type AuditsCookieIssueDetails struct {
 	Cookie                 *AuditsAffectedCookie  `json:"cookie,omitempty"`         // If AffectedCookie is not set then rawCookieLine contains the raw Set-Cookie header string. This hints at a problem where the cookie line is syntactically or semantically malformed in a way that no valid cookie could be created.
 	RawCookieLine          string                 `json:"rawCookieLine,omitempty"`  //
-	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteStrictLaxDowngradeStrict, WarnSameSiteStrictCrossDowngradeStrict, WarnSameSiteStrictCrossDowngradeLax, WarnSameSiteLaxCrossDowngradeStrict, WarnSameSiteLaxCrossDowngradeLax, WarnAttributeValueExceedsMaxSize, WarnDomainNonASCII
-	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict, ExcludeInvalidSameParty, ExcludeSamePartyCrossPartyContext, ExcludeDomainNonASCII, ExcludeThirdPartyCookieBlockedInFirstPartySet
+	CookieWarningReasons   []string               `json:"cookieWarningReasons"`     //  enum values: WarnSameSiteUnspecifiedCrossSiteContext, WarnSameSiteNoneInsecure, WarnSameSiteUnspecifiedLaxAllowUnsafe, WarnSameSiteStrictLaxDowngradeStrict, WarnSameSiteStrictCrossDowngradeStrict, WarnSameSiteStrictCrossDowngradeLax, WarnSameSiteLaxCrossDowngradeStrict, WarnSameSiteLaxCrossDowngradeLax, WarnAttributeValueExceedsMaxSize, WarnDomainNonASCII, WarnThirdPartyPhaseout, WarnCrossSiteRedirectDowngradeChangesInclusion
+	CookieExclusionReasons []string               `json:"cookieExclusionReasons"`   //  enum values: ExcludeSameSiteUnspecifiedTreatedAsLax, ExcludeSameSiteNoneInsecure, ExcludeSameSiteLax, ExcludeSameSiteStrict, ExcludeInvalidSameParty, ExcludeSamePartyCrossPartyContext, ExcludeDomainNonASCII, ExcludeThirdPartyCookieBlockedInFirstPartySet, ExcludeThirdPartyPhaseout
 	Operation              string                 `json:"operation"`                // Optionally identifies the site-for-cookies and the cookie url, which may be used by the front-end as additional context. enum values: SetCookie, ReadCookie
 	SiteForCookies         string                 `json:"siteForCookies,omitempty"` //
 	CookieUrl              string                 `json:"cookieUrl,omitempty"`      //
@@ -41,7 +41,7 @@ type AuditsCookieIssueDetails struct {
 
 // No Description.
 type AuditsMixedContentIssueDetails struct {
-	ResourceType     string                 `json:"resourceType,omitempty"` // The type of resource causing the mixed content issue (css, js, iframe, form,...). Marked as optional because it is mapped to from blink::mojom::RequestContextType, which will be replaced by network::mojom::RequestDestination enum values: AttributionSrc, Audio, Beacon, CSPReport, Download, EventSource, Favicon, Font, Form, Frame, Image, Import, Manifest, Ping, PluginData, PluginResource, Prefetch, Resource, Script, ServiceWorker, SharedWorker, Stylesheet, Track, Video, Worker, XMLHttpRequest, XSLT
+	ResourceType     string                 `json:"resourceType,omitempty"` // The type of resource causing the mixed content issue (css, js, iframe, form,...). Marked as optional because it is mapped to from blink::mojom::RequestContextType, which will be replaced by network::mojom::RequestDestination enum values: AttributionSrc, Audio, Beacon, CSPReport, Download, EventSource, Favicon, Font, Form, Frame, Image, Import, JSON, Manifest, Ping, PluginData, PluginResource, Prefetch, Resource, Script, ServiceWorker, SharedWorker, SpeculationRules, Stylesheet, Track, Video, Worker, XMLHttpRequest, XSLT
 	ResolutionStatus string                 `json:"resolutionStatus"`       // The way the mixed content issue is being resolved. enum values: MixedContentBlocked, MixedContentAutomaticallyUpgraded, MixedContentWarning
 	InsecureURL      string                 `json:"insecureURL"`            // The unsafe http url causing the mixed content issue.
 	MainResourceURL  string                 `json:"mainResourceURL"`        // The url responsible for the call to an unsafe url.
@@ -54,7 +54,7 @@ type AuditsBlockedByResponseIssueDetails struct {
 	Request      *AuditsAffectedRequest `json:"request"`                //
 	ParentFrame  *AuditsAffectedFrame   `json:"parentFrame,omitempty"`  //
 	BlockedFrame *AuditsAffectedFrame   `json:"blockedFrame,omitempty"` //
-	Reason       string                 `json:"reason"`                 //  enum values: CoepFrameResourceNeedsCoepHeader, CoopSandboxedIFrameCannotNavigateToCoopPage, CorpNotSameOrigin, CorpNotSameOriginAfterDefaultedToSameOriginByCoep, CorpNotSameSite
+	Reason       string                 `json:"reason"`                 //  enum values: CoepFrameResourceNeedsCoepHeader, CoopSandboxedIFrameCannotNavigateToCoopPage, CorpNotSameOrigin, CorpNotSameOriginAfterDefaultedToSameOriginByCoep, CorpNotSameOriginAfterDefaultedToSameOriginByDip, CorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip, CorpNotSameSite
 }
 
 // No Description.
@@ -91,15 +91,6 @@ type AuditsSharedArrayBufferIssueDetails struct {
 }
 
 // No Description.
-type AuditsTrustedWebActivityIssueDetails struct {
-	Url            string `json:"url"`                      // The url that triggers the violation.
-	ViolationType  string `json:"violationType"`            //  enum values: kHttpError, kUnavailableOffline, kDigitalAssetLinks
-	HttpStatusCode int    `json:"httpStatusCode,omitempty"` //
-	PackageName    string `json:"packageName,omitempty"`    // The package name of the Trusted Web Activity client app. This field is only used when violation type is kDigitalAssetLinks.
-	Signature      string `json:"signature,omitempty"`      // The signature of the Trusted Web Activity client app. This field is only used when violation type is kDigitalAssetLinks.
-}
-
-// No Description.
 type AuditsLowTextContrastIssueDetails struct {
 	ViolatingNodeId       int     `json:"violatingNodeId"`       //
 	ViolatingNodeSelector string  `json:"violatingNodeSelector"` //
@@ -123,7 +114,7 @@ type AuditsCorsIssueDetails struct {
 
 // Details for issues around "Attribution Reporting API" usage. Explainer: https://github.com/WICG/attribution-reporting-api
 type AuditsAttributionReportingIssueDetails struct {
-	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, UntrustworthyReportingOrigin, InsecureContext, InvalidHeader, InvalidRegisterTriggerHeader, InvalidEligibleHeader, SourceAndTriggerHeaders, SourceIgnored, TriggerIgnored, OsSourceIgnored, OsTriggerIgnored, InvalidRegisterOsSourceHeader, InvalidRegisterOsTriggerHeader, WebAndOsHeaders, NoWebOrOsSupport
+	ViolationType    string                 `json:"violationType"`              //  enum values: PermissionPolicyDisabled, UntrustworthyReportingOrigin, InsecureContext, InvalidHeader, InvalidRegisterTriggerHeader, SourceAndTriggerHeaders, SourceIgnored, TriggerIgnored, OsSourceIgnored, OsTriggerIgnored, InvalidRegisterOsSourceHeader, InvalidRegisterOsTriggerHeader, WebAndOsHeaders, NoWebOrOsSupport, NavigationRegistrationWithoutTransientUserActivation, InvalidInfoHeader, NoRegisterSourceHeader, NoRegisterTriggerHeader, NoRegisterOsSourceHeader, NoRegisterOsTriggerHeader
 	Request          *AuditsAffectedRequest `json:"request,omitempty"`          //
 	ViolatingNodeId  int                    `json:"violatingNodeId,omitempty"`  //
 	InvalidParameter string                 `json:"invalidParameter,omitempty"` //
@@ -144,12 +135,19 @@ type AuditsNavigatorUserAgentIssueDetails struct {
 	Location *AuditsSourceCodeLocation `json:"location,omitempty"` //
 }
 
+// No Description.
+type AuditsSharedDictionaryIssueDetails struct {
+	SharedDictionaryError string                 `json:"sharedDictionaryError"` //  enum values: UseErrorCrossOriginNoCorsRequest, UseErrorDictionaryLoadFailure, UseErrorMatchingDictionaryNotUsed, UseErrorUnexpectedContentDictionaryHeader, WriteErrorCossOriginNoCorsRequest, WriteErrorDisallowedBySettings, WriteErrorExpiredResponse, WriteErrorFeatureDisabled, WriteErrorInsufficientResources, WriteErrorInvalidMatchField, WriteErrorInvalidStructuredHeader, WriteErrorNavigationRequest, WriteErrorNoMatchField, WriteErrorNonListMatchDestField, WriteErrorNonSecureContext, WriteErrorNonStringIdField, WriteErrorNonStringInMatchDestList, WriteErrorNonStringMatchField, WriteErrorNonTokenTypeField, WriteErrorRequestAborted, WriteErrorShuttingDown, WriteErrorTooLongIdField, WriteErrorUnsupportedType
+	Request               *AuditsAffectedRequest `json:"request"`               //
+}
+
 // Depending on the concrete errorType, different properties are set.
 type AuditsGenericIssueDetails struct {
-	ErrorType              string `json:"errorType"`                        // Issues with the same errorType are aggregated in the frontend. enum values: CrossOriginPortalPostMessageError, FormLabelForNameError, FormDuplicateIdForInputError, FormInputWithNoLabelError, FormAutocompleteAttributeEmptyError, FormEmptyIdAndNameAttributesForInputError, FormAriaLabelledByToNonExistingId, FormInputAssignedAutocompleteValueToIdOrNameAttributeError, FormLabelHasNeitherForNorNestedInput, FormLabelForMatchesNonExistingIdError, FormInputHasWrongButWellIntendedAutocompleteValueError
-	FrameId                string `json:"frameId,omitempty"`                //
-	ViolatingNodeId        int    `json:"violatingNodeId,omitempty"`        //
-	ViolatingNodeAttribute string `json:"violatingNodeAttribute,omitempty"` //
+	ErrorType              string                 `json:"errorType"`                        // Issues with the same errorType are aggregated in the frontend. enum values: FormLabelForNameError, FormDuplicateIdForInputError, FormInputWithNoLabelError, FormAutocompleteAttributeEmptyError, FormEmptyIdAndNameAttributesForInputError, FormAriaLabelledByToNonExistingId, FormInputAssignedAutocompleteValueToIdOrNameAttributeError, FormLabelHasNeitherForNorNestedInput, FormLabelForMatchesNonExistingIdError, FormInputHasWrongButWellIntendedAutocompleteValueError, ResponseWasBlockedByORB
+	FrameId                string                 `json:"frameId,omitempty"`                //
+	ViolatingNodeId        int                    `json:"violatingNodeId,omitempty"`        //
+	ViolatingNodeAttribute string                 `json:"violatingNodeAttribute,omitempty"` //
+	Request                *AuditsAffectedRequest `json:"request,omitempty"`                //
 }
 
 // This issue tracks information needed to print a deprecation message. https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/third_party/blink/renderer/core/frame/deprecation/README.md
@@ -164,9 +162,22 @@ type AuditsBounceTrackingIssueDetails struct {
 	TrackingSites []string `json:"trackingSites"` //
 }
 
+// This issue warns about third-party sites that are accessing cookies on the current page, and have been permitted due to having a global metadata grant. Note that in this context 'site' means eTLD+1. For example, if the URL `https://example.test:80/web_page` was accessing cookies, the site reported would be `example.test`.
+type AuditsCookieDeprecationMetadataIssueDetails struct {
+	AllowedSites     []string `json:"allowedSites"`     //
+	OptOutPercentage float64  `json:"optOutPercentage"` //
+	IsOptOutTopLevel bool     `json:"isOptOutTopLevel"` //
+	Operation        string   `json:"operation"`        //  enum values: SetCookie, ReadCookie
+}
+
 // No Description.
 type AuditsFederatedAuthRequestIssueDetails struct {
-	FederatedAuthRequestIssueReason string `json:"federatedAuthRequestIssueReason"` //  enum values: ShouldEmbargo, TooManyRequests, WellKnownHttpNotFound, WellKnownNoResponse, WellKnownInvalidResponse, WellKnownListEmpty, WellKnownInvalidContentType, ConfigNotInWellKnown, WellKnownTooBig, ConfigHttpNotFound, ConfigNoResponse, ConfigInvalidResponse, ConfigInvalidContentType, ClientMetadataHttpNotFound, ClientMetadataNoResponse, ClientMetadataInvalidResponse, ClientMetadataInvalidContentType, DisabledInSettings, ErrorFetchingSignin, InvalidSigninResponse, AccountsHttpNotFound, AccountsNoResponse, AccountsInvalidResponse, AccountsListEmpty, AccountsInvalidContentType, IdTokenHttpNotFound, IdTokenNoResponse, IdTokenInvalidResponse, IdTokenInvalidRequest, IdTokenInvalidContentType, ErrorIdToken, Canceled, RpPageNotVisible
+	FederatedAuthRequestIssueReason string `json:"federatedAuthRequestIssueReason"` //  enum values: ShouldEmbargo, TooManyRequests, WellKnownHttpNotFound, WellKnownNoResponse, WellKnownInvalidResponse, WellKnownListEmpty, WellKnownInvalidContentType, ConfigNotInWellKnown, WellKnownTooBig, ConfigHttpNotFound, ConfigNoResponse, ConfigInvalidResponse, ConfigInvalidContentType, ClientMetadataHttpNotFound, ClientMetadataNoResponse, ClientMetadataInvalidResponse, ClientMetadataInvalidContentType, IdpNotPotentiallyTrustworthy, DisabledInSettings, DisabledInFlags, ErrorFetchingSignin, InvalidSigninResponse, AccountsHttpNotFound, AccountsNoResponse, AccountsInvalidResponse, AccountsListEmpty, AccountsInvalidContentType, IdTokenHttpNotFound, IdTokenNoResponse, IdTokenInvalidResponse, IdTokenIdpErrorResponse, IdTokenCrossSiteIdpErrorResponse, IdTokenInvalidRequest, IdTokenInvalidContentType, ErrorIdToken, Canceled, RpPageNotVisible, SilentMediationFailure, ThirdPartyCookiesBlocked, NotSignedInWithIdp, MissingTransientUserActivation, ReplacedByButtonMode, InvalidFieldsSpecified, RelyingPartyOriginIsOpaque, TypeNotMatching
+}
+
+// No Description.
+type AuditsFederatedAuthUserInfoRequestIssueDetails struct {
+	FederatedAuthUserInfoRequestIssueReason string `json:"federatedAuthUserInfoRequestIssueReason"` //  enum values: NotSameOrigin, NotIframe, NotPotentiallyTrustworthy, NoApiPermission, NotSignedInWithIdp, NoAccountSharingPermission, InvalidConfigOrWellKnown, InvalidAccountsResponse, NoReturningUserFromFetchedAccounts
 }
 
 // This issue tracks client hints related issues. It's used to deprecate old features, encourage the use of new ones, and provide general guidance.
@@ -175,30 +186,55 @@ type AuditsClientHintIssueDetails struct {
 	ClientHintIssueReason string                    `json:"clientHintIssueReason"` //  enum values: MetaTagAllowListInvalidOrigin, MetaTagModifiedHTML
 }
 
+// No Description.
+type AuditsFailedRequestInfo struct {
+	Url            string `json:"url"`                 // The URL that failed to load.
+	FailureMessage string `json:"failureMessage"`      // The failure message for the failed request.
+	RequestId      string `json:"requestId,omitempty"` //
+}
+
+// This issue warns when a referenced stylesheet couldn't be loaded.
+type AuditsStylesheetLoadingIssueDetails struct {
+	SourceCodeLocation           *AuditsSourceCodeLocation `json:"sourceCodeLocation"`           // Source code position that referenced the failing stylesheet.
+	StyleSheetLoadingIssueReason string                    `json:"styleSheetLoadingIssueReason"` // Reason why the stylesheet couldn't be loaded. enum values: LateImportRule, RequestFailed
+	FailedRequestInfo            *AuditsFailedRequestInfo  `json:"failedRequestInfo,omitempty"`  // Contains additional info when the failure was due to a request.
+}
+
+// This issue warns about errors in property rules that lead to property registrations being ignored.
+type AuditsPropertyRuleIssueDetails struct {
+	SourceCodeLocation      *AuditsSourceCodeLocation `json:"sourceCodeLocation"`      // Source code position of the property rule.
+	PropertyRuleIssueReason string                    `json:"propertyRuleIssueReason"` // Reason why the property rule was discarded. enum values: InvalidSyntax, InvalidInitialValue, InvalidInherits, InvalidName
+	PropertyValue           string                    `json:"propertyValue,omitempty"` // The value of the property rule property that failed to parse
+}
+
 // This struct holds a list of optional fields with additional information specific to the kind of issue. When adding a new issue code, please also add a new optional field to this type.
 type AuditsInspectorIssueDetails struct {
-	CookieIssueDetails                *AuditsCookieIssueDetails                `json:"cookieIssueDetails,omitempty"`                //
-	MixedContentIssueDetails          *AuditsMixedContentIssueDetails          `json:"mixedContentIssueDetails,omitempty"`          //
-	BlockedByResponseIssueDetails     *AuditsBlockedByResponseIssueDetails     `json:"blockedByResponseIssueDetails,omitempty"`     //
-	HeavyAdIssueDetails               *AuditsHeavyAdIssueDetails               `json:"heavyAdIssueDetails,omitempty"`               //
-	ContentSecurityPolicyIssueDetails *AuditsContentSecurityPolicyIssueDetails `json:"contentSecurityPolicyIssueDetails,omitempty"` //
-	SharedArrayBufferIssueDetails     *AuditsSharedArrayBufferIssueDetails     `json:"sharedArrayBufferIssueDetails,omitempty"`     //
-	TwaQualityEnforcementDetails      *AuditsTrustedWebActivityIssueDetails    `json:"twaQualityEnforcementDetails,omitempty"`      //
-	LowTextContrastIssueDetails       *AuditsLowTextContrastIssueDetails       `json:"lowTextContrastIssueDetails,omitempty"`       //
-	CorsIssueDetails                  *AuditsCorsIssueDetails                  `json:"corsIssueDetails,omitempty"`                  //
-	AttributionReportingIssueDetails  *AuditsAttributionReportingIssueDetails  `json:"attributionReportingIssueDetails,omitempty"`  //
-	QuirksModeIssueDetails            *AuditsQuirksModeIssueDetails            `json:"quirksModeIssueDetails,omitempty"`            //
-	NavigatorUserAgentIssueDetails    *AuditsNavigatorUserAgentIssueDetails    `json:"navigatorUserAgentIssueDetails,omitempty"`    //
-	GenericIssueDetails               *AuditsGenericIssueDetails               `json:"genericIssueDetails,omitempty"`               //
-	DeprecationIssueDetails           *AuditsDeprecationIssueDetails           `json:"deprecationIssueDetails,omitempty"`           //
-	ClientHintIssueDetails            *AuditsClientHintIssueDetails            `json:"clientHintIssueDetails,omitempty"`            //
-	FederatedAuthRequestIssueDetails  *AuditsFederatedAuthRequestIssueDetails  `json:"federatedAuthRequestIssueDetails,omitempty"`  //
-	BounceTrackingIssueDetails        *AuditsBounceTrackingIssueDetails        `json:"bounceTrackingIssueDetails,omitempty"`        //
+	CookieIssueDetails                       *AuditsCookieIssueDetails                       `json:"cookieIssueDetails,omitempty"`                       //
+	MixedContentIssueDetails                 *AuditsMixedContentIssueDetails                 `json:"mixedContentIssueDetails,omitempty"`                 //
+	BlockedByResponseIssueDetails            *AuditsBlockedByResponseIssueDetails            `json:"blockedByResponseIssueDetails,omitempty"`            //
+	HeavyAdIssueDetails                      *AuditsHeavyAdIssueDetails                      `json:"heavyAdIssueDetails,omitempty"`                      //
+	ContentSecurityPolicyIssueDetails        *AuditsContentSecurityPolicyIssueDetails        `json:"contentSecurityPolicyIssueDetails,omitempty"`        //
+	SharedArrayBufferIssueDetails            *AuditsSharedArrayBufferIssueDetails            `json:"sharedArrayBufferIssueDetails,omitempty"`            //
+	LowTextContrastIssueDetails              *AuditsLowTextContrastIssueDetails              `json:"lowTextContrastIssueDetails,omitempty"`              //
+	CorsIssueDetails                         *AuditsCorsIssueDetails                         `json:"corsIssueDetails,omitempty"`                         //
+	AttributionReportingIssueDetails         *AuditsAttributionReportingIssueDetails         `json:"attributionReportingIssueDetails,omitempty"`         //
+	QuirksModeIssueDetails                   *AuditsQuirksModeIssueDetails                   `json:"quirksModeIssueDetails,omitempty"`                   //
+	NavigatorUserAgentIssueDetails           *AuditsNavigatorUserAgentIssueDetails           `json:"navigatorUserAgentIssueDetails,omitempty"`           //
+	GenericIssueDetails                      *AuditsGenericIssueDetails                      `json:"genericIssueDetails,omitempty"`                      //
+	DeprecationIssueDetails                  *AuditsDeprecationIssueDetails                  `json:"deprecationIssueDetails,omitempty"`                  //
+	ClientHintIssueDetails                   *AuditsClientHintIssueDetails                   `json:"clientHintIssueDetails,omitempty"`                   //
+	FederatedAuthRequestIssueDetails         *AuditsFederatedAuthRequestIssueDetails         `json:"federatedAuthRequestIssueDetails,omitempty"`         //
+	BounceTrackingIssueDetails               *AuditsBounceTrackingIssueDetails               `json:"bounceTrackingIssueDetails,omitempty"`               //
+	CookieDeprecationMetadataIssueDetails    *AuditsCookieDeprecationMetadataIssueDetails    `json:"cookieDeprecationMetadataIssueDetails,omitempty"`    //
+	StylesheetLoadingIssueDetails            *AuditsStylesheetLoadingIssueDetails            `json:"stylesheetLoadingIssueDetails,omitempty"`            //
+	PropertyRuleIssueDetails                 *AuditsPropertyRuleIssueDetails                 `json:"propertyRuleIssueDetails,omitempty"`                 //
+	FederatedAuthUserInfoRequestIssueDetails *AuditsFederatedAuthUserInfoRequestIssueDetails `json:"federatedAuthUserInfoRequestIssueDetails,omitempty"` //
+	SharedDictionaryIssueDetails             *AuditsSharedDictionaryIssueDetails             `json:"sharedDictionaryIssueDetails,omitempty"`             //
 }
 
 // An inspector issue reported from the back-end.
 type AuditsInspectorIssue struct {
-	Code    string                       `json:"code"`              //  enum values: CookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, TrustedWebActivityIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue, QuirksModeIssue, NavigatorUserAgentIssue, GenericIssue, DeprecationIssue, ClientHintIssue, FederatedAuthRequestIssue, BounceTrackingIssue
+	Code    string                       `json:"code"`              //  enum values: CookieIssue, MixedContentIssue, BlockedByResponseIssue, HeavyAdIssue, ContentSecurityPolicyIssue, SharedArrayBufferIssue, LowTextContrastIssue, CorsIssue, AttributionReportingIssue, QuirksModeIssue, NavigatorUserAgentIssue, GenericIssue, DeprecationIssue, ClientHintIssue, FederatedAuthRequestIssue, BounceTrackingIssue, CookieDeprecationMetadataIssue, StylesheetLoadingIssue, FederatedAuthUserInfoRequestIssue, PropertyRuleIssue, SharedDictionaryIssue
 	Details *AuditsInspectorIssueDetails `json:"details"`           //
 	IssueId string                       `json:"issueId,omitempty"` // A unique id for this issue. May be omitted if no other entity (e.g. exception, CDP message, etc.) is referencing this issue.
 }
@@ -231,35 +267,34 @@ type AuditsGetEncodedResponseParams struct {
 }
 
 // GetEncodedResponseWithParams - Returns the response body and size if it were re-encoded with the specified settings. Only applies to images.
-// Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. (Encoded as a base64 string when passed over JSON) originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
-func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetEncodedResponseParams) (string, int, int, error) {
+// Returns -  originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
+func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetEncodedResponseParams) (int, int, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.getEncodedResponse", Params: v})
 	if err != nil {
-		return "", 0, 0, err
+		return 0, 0, err
 	}
 
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			Body         string
 			OriginalSize int
 			EncodedSize  int
 		}
 	}
 
 	if resp == nil {
-		return "", 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
+		return 0, 0, &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
-		return "", 0, 0, err
+		return 0, 0, err
 	}
 
 	if chromeData.Error != nil {
-		return "", 0, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+		return 0, 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
-	return chromeData.Result.Body, chromeData.Result.OriginalSize, chromeData.Result.EncodedSize, nil
+	return chromeData.Result.OriginalSize, chromeData.Result.EncodedSize, nil
 }
 
 // GetEncodedResponse - Returns the response body and size if it were re-encoded with the specified settings. Only applies to images.
@@ -267,8 +302,8 @@ func (c *Audits) GetEncodedResponseWithParams(ctx context.Context, v *AuditsGetE
 // encoding - The encoding to use.
 // quality - The quality of the encoding (0-1). (defaults to 1)
 // sizeOnly - Whether to only return the size information (defaults to false).
-// Returns -  body - The encoded body as a base64 string. Omitted if sizeOnly is true. (Encoded as a base64 string when passed over JSON) originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
-func (c *Audits) GetEncodedResponse(ctx context.Context, requestId string, encoding string, quality float64, sizeOnly bool) (string, int, int, error) {
+// Returns -  originalSize - Size before re-encoding. encodedSize - Size after re-encoding.
+func (c *Audits) GetEncodedResponse(ctx context.Context, requestId string, encoding string, quality float64, sizeOnly bool) (int, int, error) {
 	var v AuditsGetEncodedResponseParams
 	v.RequestId = requestId
 	v.Encoding = encoding
@@ -303,4 +338,34 @@ func (c *Audits) CheckContrast(ctx context.Context, reportAAA bool) (*gcdmessage
 	var v AuditsCheckContrastParams
 	v.ReportAAA = reportAAA
 	return c.CheckContrastWithParams(ctx, &v)
+}
+
+// CheckFormsIssues - Runs the form issues check for the target page. Found issues are reported using Audits.issueAdded event.
+// Returns -  formIssues -
+func (c *Audits) CheckFormsIssues(ctx context.Context) ([]*AuditsGenericIssueDetails, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Audits.checkFormsIssues"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
+		Result struct {
+			FormIssues []*AuditsGenericIssueDetails
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+	}
+
+	return chromeData.Result.FormIssues, nil
 }

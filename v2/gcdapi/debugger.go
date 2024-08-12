@@ -365,40 +365,39 @@ type DebuggerGetScriptSourceParams struct {
 }
 
 // GetScriptSourceWithParams - Returns source for the script with given id.
-// Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode. (Encoded as a base64 string when passed over JSON)
-func (c *Debugger) GetScriptSourceWithParams(ctx context.Context, v *DebuggerGetScriptSourceParams) (string, string, error) {
+// Returns -  scriptSource - Script source (empty in case of Wasm bytecode).
+func (c *Debugger) GetScriptSourceWithParams(ctx context.Context, v *DebuggerGetScriptSourceParams) (string, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getScriptSource", Params: v})
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
 			ScriptSource string
-			Bytecode     string
 		}
 	}
 
 	if resp == nil {
-		return "", "", &gcdmessage.ChromeEmptyResponseErr{}
+		return "", &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	if chromeData.Error != nil {
-		return "", "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
-	return chromeData.Result.ScriptSource, chromeData.Result.Bytecode, nil
+	return chromeData.Result.ScriptSource, nil
 }
 
 // GetScriptSource - Returns source for the script with given id.
 // scriptId - Id of the script to get source for.
-// Returns -  scriptSource - Script source (empty in case of Wasm bytecode). bytecode - Wasm bytecode. (Encoded as a base64 string when passed over JSON)
-func (c *Debugger) GetScriptSource(ctx context.Context, scriptId string) (string, string, error) {
+// Returns -  scriptSource - Script source (empty in case of Wasm bytecode).
+func (c *Debugger) GetScriptSource(ctx context.Context, scriptId string) (string, error) {
 	var v DebuggerGetScriptSourceParams
 	v.ScriptId = scriptId
 	return c.GetScriptSourceWithParams(ctx, &v)
@@ -501,39 +500,38 @@ type DebuggerGetWasmBytecodeParams struct {
 }
 
 // GetWasmBytecodeWithParams - This command is deprecated. Use getScriptSource instead.
-// Returns -  bytecode - Script source. (Encoded as a base64 string when passed over JSON)
-func (c *Debugger) GetWasmBytecodeWithParams(ctx context.Context, v *DebuggerGetWasmBytecodeParams) (string, error) {
+// Returns -
+func (c *Debugger) GetWasmBytecodeWithParams(ctx context.Context, v *DebuggerGetWasmBytecodeParams) error {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.getWasmBytecode", Params: v})
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	var chromeData struct {
 		gcdmessage.ChromeErrorResponse
 		Result struct {
-			Bytecode string
 		}
 	}
 
 	if resp == nil {
-		return "", &gcdmessage.ChromeEmptyResponseErr{}
+		return &gcdmessage.ChromeEmptyResponseErr{}
 	}
 
 	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
-		return "", err
+		return err
 	}
 
 	if chromeData.Error != nil {
-		return "", &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+		return &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
 	}
 
-	return chromeData.Result.Bytecode, nil
+	return nil
 }
 
 // GetWasmBytecode - This command is deprecated. Use getScriptSource instead.
 // scriptId - Id of the Wasm script to get source for.
-// Returns -  bytecode - Script source. (Encoded as a base64 string when passed over JSON)
-func (c *Debugger) GetWasmBytecode(ctx context.Context, scriptId string) (string, error) {
+// Returns -
+func (c *Debugger) GetWasmBytecode(ctx context.Context, scriptId string) error {
 	var v DebuggerGetWasmBytecodeParams
 	v.ScriptId = scriptId
 	return c.GetWasmBytecodeWithParams(ctx, &v)

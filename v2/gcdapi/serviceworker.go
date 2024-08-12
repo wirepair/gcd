@@ -27,6 +27,7 @@ type ServiceWorkerServiceWorkerVersion struct {
 	ScriptResponseTime float64  `json:"scriptResponseTime,omitempty"` // The time at which the response headers of the main script were received from the server. For cached script it is the last time the cache entry was validated.
 	ControlledClients  []string `json:"controlledClients,omitempty"`  //
 	TargetId           string   `json:"targetId,omitempty"`           //
+	RouterRules        string   `json:"routerRules,omitempty"`        //
 }
 
 // ServiceWorker error message.
