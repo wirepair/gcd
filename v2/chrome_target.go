@@ -325,7 +325,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	if r, ok := c.replyDispatcher[f.Id]; ok {
 		delete(c.replyDispatcher, f.Id)
 		c.replyLock.Unlock()
-		c.logDebug("dispatching response id:", f.Id)
+		c.logDebug(f.Id, " dispatching reply")
 		go c.dispatchWithTimeout(r, f.Id, msg)
 		return
 	}
