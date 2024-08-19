@@ -338,7 +338,17 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	c.eventLock.RUnlock()
 
 	if ok {
-		c.eventCh <- &devtoolsEventResponse{Method: f.Method, Msg: msg}
+		c.logDebug(f.Method, " enqueuing event", string(msg))
+
+		select {
+		case c.eventCh <- &devtoolsEventResponse{Method: f.Method, Msg: msg}:
+		default:
+			c.logger.Println("WARNING: event channel is full!", f.Method)
+			c.eventCh <- &devtoolsEventResponse{Method: f.Method, Msg: msg}
+		}
+
+		c.logDebug(f.Method, " enqueued event")
+
 		return
 	}
 
