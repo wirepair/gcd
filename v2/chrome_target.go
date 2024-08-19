@@ -365,7 +365,7 @@ func (c *ChromeTarget) dispatchEvents() {
 		case <-c.ctx.Done():
 			return
 		case m := <-c.eventCh:
-			c.logDebug("dispatching", m.Method, "event: ", string(m.Msg))
+			c.logDebug("dispatching ", m.Method, "event: ", string(m.Msg))
 			c.eventLock.Lock()
 			cb, ok := c.eventDispatcher[m.Method]
 			c.eventLock.Unlock()
