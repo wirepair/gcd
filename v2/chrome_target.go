@@ -385,7 +385,7 @@ func (c *ChromeTarget) dispatchWithTimeout(r chan<- *gcdmessage.Message, id int6
 	case r <- &gcdmessage.Message{Id: id, Data: msg}:
 		timeout.Stop()
 	case <-timeout.C:
-		c.logDebug("timed out dispatching request id: ", id, " of msg: ", msg)
+		c.logger.Println("timed out dispatching request id: ", id, " of msg: ", msg)
 		close(r)
 		return
 	}
