@@ -36,7 +36,7 @@ type DOMNode struct {
 	XmlVersion        string            `json:"xmlVersion,omitempty"`        // `Document`'s XML version in case of XML documents.
 	Name              string            `json:"name,omitempty"`              // `Attr`'s name.
 	Value             string            `json:"value,omitempty"`             // `Attr`'s value.
-	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, view-transition, view-transition-group, view-transition-image-pair, view-transition-old, view-transition-new
+	PseudoType        string            `json:"pseudoType,omitempty"`        // Pseudo element type for this node. enum values: first-line, first-letter, before, after, marker, backdrop, selection, search-text, target-text, spelling-error, grammar-error, highlight, first-line-inherited, scroll-marker, scroll-marker-group, scroll-next-button, scroll-prev-button, scrollbar, scrollbar-thumb, scrollbar-button, scrollbar-track, scrollbar-track-piece, scrollbar-corner, resizer, input-list-button, view-transition, view-transition-group, view-transition-image-pair, view-transition-old, view-transition-new
 	PseudoIdentifier  string            `json:"pseudoIdentifier,omitempty"`  // Pseudo element identifier for this node. Only present if there is a valid pseudoType.
 	ShadowRootType    string            `json:"shadowRootType,omitempty"`    // Shadow root type. enum values: user-agent, open, closed
 	FrameId           string            `json:"frameId,omitempty"`           // Frame ID for frame owner elements.
@@ -49,6 +49,12 @@ type DOMNode struct {
 	IsSVG             bool              `json:"isSVG,omitempty"`             // Whether the node is SVG.
 	CompatibilityMode string            `json:"compatibilityMode,omitempty"` //  enum values: QuirksMode, LimitedQuirksMode, NoQuirksMode
 	AssignedSlot      *DOMBackendNode   `json:"assignedSlot,omitempty"`      //
+}
+
+// A structure to hold the top-level node of a detached tree and an array of its retained descendants.
+type DOMDetachedElementInfo struct {
+	TreeNode        *DOMNode `json:"treeNode"`        //
+	RetainedNodeIds []int    `json:"retainedNodeIds"` //
 }
 
 // A structure holding an RGBA color.
@@ -472,7 +478,7 @@ func (c *DOM) Focus(ctx context.Context, nodeId int, backendNodeId int, objectId
 }
 
 type DOMGetAttributesParams struct {
-	// Id of the node to retrieve attibutes for.
+	// Id of the node to retrieve attributes for.
 	NodeId int `json:"nodeId"`
 }
 
@@ -507,7 +513,7 @@ func (c *DOM) GetAttributesWithParams(ctx context.Context, v *DOMGetAttributesPa
 }
 
 // GetAttributes - Returns attributes for the specified node.
-// nodeId - Id of the node to retrieve attibutes for.
+// nodeId - Id of the node to retrieve attributes for.
 // Returns -  attributes - An interleaved array of node attribute names and values.
 func (c *DOM) GetAttributes(ctx context.Context, nodeId int) ([]string, error) {
 	var v DOMGetAttributesParams
@@ -1308,6 +1314,54 @@ func (c *DOM) GetTopLayerElements(ctx context.Context) ([]int, error) {
 	return chromeData.Result.NodeIds, nil
 }
 
+type DOMGetElementByRelationParams struct {
+	// Id of the node from which to query the relation.
+	NodeId int `json:"nodeId"`
+	// Type of relation to get.
+	Relation string `json:"relation"`
+}
+
+// GetElementByRelationWithParams - Returns the NodeId of the matched element according to certain relations.
+// Returns -  nodeId - NodeId of the element matching the queried relation.
+func (c *DOM) GetElementByRelationWithParams(ctx context.Context, v *DOMGetElementByRelationParams) (int, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getElementByRelation", Params: v})
+	if err != nil {
+		return 0, err
+	}
+
+	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
+		Result struct {
+			NodeId int
+		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+	}
+
+	return chromeData.Result.NodeId, nil
+}
+
+// GetElementByRelation - Returns the NodeId of the matched element according to certain relations.
+// nodeId - Id of the node from which to query the relation.
+// relation - Type of relation to get.
+// Returns -  nodeId - NodeId of the element matching the queried relation.
+func (c *DOM) GetElementByRelation(ctx context.Context, nodeId int, relation string) (int, error) {
+	var v DOMGetElementByRelationParams
+	v.NodeId = nodeId
+	v.Relation = relation
+	return c.GetElementByRelationWithParams(ctx, &v)
+}
+
 // Re-does the last undone action.
 func (c *DOM) Redo(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.redo"})
@@ -1667,6 +1721,36 @@ func (c *DOM) GetFileInfo(ctx context.Context, objectId string) (string, error) 
 	return c.GetFileInfoWithParams(ctx, &v)
 }
 
+// GetDetachedDomNodes - Returns list of detached nodes
+// Returns -  detachedNodes - The list of detached nodes
+func (c *DOM) GetDetachedDomNodes(ctx context.Context) ([]*DOMDetachedElementInfo, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getDetachedDomNodes"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
+		Result struct {
+			DetachedNodes []*DOMDetachedElementInfo
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+	}
+
+	return chromeData.Result.DetachedNodes, nil
+}
+
 type DOMSetInspectedNodeParams struct {
 	// DOM node id to be accessible by means of $x command line API.
 	NodeId int `json:"nodeId"`
@@ -1925,4 +2009,52 @@ func (c *DOM) GetQueryingDescendantsForContainer(ctx context.Context, nodeId int
 	var v DOMGetQueryingDescendantsForContainerParams
 	v.NodeId = nodeId
 	return c.GetQueryingDescendantsForContainerWithParams(ctx, &v)
+}
+
+type DOMGetAnchorElementParams struct {
+	// Id of the positioned element from which to find the anchor.
+	NodeId int `json:"nodeId"`
+	// An optional anchor specifier, as defined in https://www.w3.org/TR/css-anchor-position-1/#anchor-specifier. If not provided, it will return the implicit anchor element for the given positioned element.
+	AnchorSpecifier string `json:"anchorSpecifier,omitempty"`
+}
+
+// GetAnchorElementWithParams - Returns the target anchor element of the given anchor query according to https://www.w3.org/TR/css-anchor-position-1/#target.
+// Returns -  nodeId - The anchor element of the given anchor query.
+func (c *DOM) GetAnchorElementWithParams(ctx context.Context, v *DOMGetAnchorElementParams) (int, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "DOM.getAnchorElement", Params: v})
+	if err != nil {
+		return 0, err
+	}
+
+	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
+		Result struct {
+			NodeId int
+		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+	}
+
+	return chromeData.Result.NodeId, nil
+}
+
+// GetAnchorElement - Returns the target anchor element of the given anchor query according to https://www.w3.org/TR/css-anchor-position-1/#target.
+// nodeId - Id of the positioned element from which to find the anchor.
+// anchorSpecifier - An optional anchor specifier, as defined in https://www.w3.org/TR/css-anchor-position-1/#anchor-specifier. If not provided, it will return the implicit anchor element for the given positioned element.
+// Returns -  nodeId - The anchor element of the given anchor query.
+func (c *DOM) GetAnchorElement(ctx context.Context, nodeId int, anchorSpecifier string) (int, error) {
+	var v DOMGetAnchorElementParams
+	v.NodeId = nodeId
+	v.AnchorSpecifier = anchorSpecifier
+	return c.GetAnchorElementWithParams(ctx, &v)
 }

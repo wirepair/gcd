@@ -22,7 +22,7 @@ type SecurityCertificateSecurityState struct {
 	ValidFrom                   float64  `json:"validFrom"`                         // Certificate valid from date.
 	ValidTo                     float64  `json:"validTo"`                           // Certificate valid to (expiration) date
 	CertificateNetworkError     string   `json:"certificateNetworkError,omitempty"` // The highest priority network error code, if the certificate has an error.
-	CertificateHasWeakSignature bool     `json:"certificateHasWeakSignature"`       // True if the certificate uses a weak signature aglorithm.
+	CertificateHasWeakSignature bool     `json:"certificateHasWeakSignature"`       // True if the certificate uses a weak signature algorithm.
 	CertificateHasSha1Signature bool     `json:"certificateHasSha1Signature"`       // True if the certificate has a SHA1 signature in the chain.
 	ModernSSL                   bool     `json:"modernSSL"`                         // True if modern SSL
 	ObsoleteSslProtocol         bool     `json:"obsoleteSslProtocol"`               // True if the connection is using an obsolete SSL protocol.

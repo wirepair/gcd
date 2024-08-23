@@ -25,9 +25,8 @@ type LayerTreeStickyPositionConstraint struct {
 
 // Serialized fragment of layer picture along with its offset within the layer.
 type LayerTreePictureTile struct {
-	X       float64 `json:"x"`       // Offset from owning layer left boundary
-	Y       float64 `json:"y"`       // Offset from owning layer top boundary
-	Picture string  `json:"picture"` // Base64-encoded snapshot data. (Encoded as a base64 string when passed over JSON)
+	X float64 `json:"x"` // Offset from owning layer left boundary
+	Y float64 `json:"y"` // Offset from owning layer top boundary
 }
 
 // Information about a compositing layer.
@@ -61,7 +60,7 @@ type LayerTreeLayerPaintedEvent struct {
 type LayerTreeLayerTreeDidChangeEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the comspositing mode.
+		Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the compositing mode.
 	} `json:"Params,omitempty"`
 }
 

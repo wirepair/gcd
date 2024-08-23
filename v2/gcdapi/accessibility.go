@@ -16,7 +16,7 @@ type AccessibilityAXValueSource struct {
 	Attribute         string                `json:"attribute,omitempty"`         // The name of the relevant attribute, if any.
 	AttributeValue    *AccessibilityAXValue `json:"attributeValue,omitempty"`    // The value of the relevant attribute, if any.
 	Superseded        bool                  `json:"superseded,omitempty"`        // Whether this source is superseded by a higher priority source.
-	NativeSource      string                `json:"nativeSource,omitempty"`      // The native markup source for this value, e.g. a <label> element. enum values: description, figcaption, label, labelfor, labelwrapped, legend, rubyannotation, tablecaption, title, other
+	NativeSource      string                `json:"nativeSource,omitempty"`      // The native markup source for this value, e.g. a `<label>` element. enum values: description, figcaption, label, labelfor, labelwrapped, legend, rubyannotation, tablecaption, title, other
 	NativeSourceValue *AccessibilityAXValue `json:"nativeSourceValue,omitempty"` // The value, such as a node or node list, of the native source.
 	Invalid           bool                  `json:"invalid,omitempty"`           // Whether the value for this property is invalid.
 	InvalidReason     string                `json:"invalidReason,omitempty"`     // Reason for the value being invalid, if it is.
@@ -31,7 +31,7 @@ type AccessibilityAXRelatedNode struct {
 
 // No Description.
 type AccessibilityAXProperty struct {
-	Name  string                `json:"name"`  // The name of this property. enum values: busy, disabled, editable, focusable, focused, hidden, hiddenRoot, invalid, keyshortcuts, settable, roledescription, live, atomic, relevant, root, autocomplete, hasPopup, level, multiselectable, orientation, multiline, readonly, required, valuemin, valuemax, valuetext, checked, expanded, modal, pressed, selected, activedescendant, controls, describedby, details, errormessage, flowto, labelledby, owns
+	Name  string                `json:"name"`  // The name of this property. enum values: busy, disabled, editable, focusable, focused, hidden, hiddenRoot, invalid, keyshortcuts, settable, roledescription, live, atomic, relevant, root, autocomplete, hasPopup, level, multiselectable, orientation, multiline, readonly, required, valuemin, valuemax, valuetext, checked, expanded, modal, pressed, selected, activedescendant, controls, describedby, details, errormessage, flowto, labelledby, owns, url
 	Value *AccessibilityAXValue `json:"value"` // The value of this property.
 }
 
@@ -154,7 +154,7 @@ func (c *Accessibility) GetPartialAXTree(ctx context.Context, nodeId int, backen
 type AccessibilityGetFullAXTreeParams struct {
 	// The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
 	Depth int `json:"depth,omitempty"`
-	// The frame for whose document the AX tree should be retrieved. If omited, the root frame is used.
+	// The frame for whose document the AX tree should be retrieved. If omitted, the root frame is used.
 	FrameId string `json:"frameId,omitempty"`
 }
 
@@ -190,7 +190,7 @@ func (c *Accessibility) GetFullAXTreeWithParams(ctx context.Context, v *Accessib
 
 // GetFullAXTree - Fetches the entire accessibility tree for the root Document
 // depth - The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
-// frameId - The frame for whose document the AX tree should be retrieved. If omited, the root frame is used.
+// frameId - The frame for whose document the AX tree should be retrieved. If omitted, the root frame is used.
 // Returns -  nodes -
 func (c *Accessibility) GetFullAXTree(ctx context.Context, depth int, frameId string) ([]*AccessibilityAXNode, error) {
 	var v AccessibilityGetFullAXTreeParams
@@ -356,7 +356,7 @@ type AccessibilityQueryAXTreeParams struct {
 	Role string `json:"role,omitempty"`
 }
 
-// QueryAXTreeWithParams - Query a DOM node's accessibility subtree for accessible name and role. This command computes the name and role for all nodes in the subtree, including those that are ignored for accessibility, and returns those that mactch the specified name and role. If no DOM node is specified, or the DOM node does not exist, the command returns an error. If neither `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
+// QueryAXTreeWithParams - Query a DOM node's accessibility subtree for accessible name and role. This command computes the name and role for all nodes in the subtree, including those that are ignored for accessibility, and returns those that match the specified name and role. If no DOM node is specified, or the DOM node does not exist, the command returns an error. If neither `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
 // Returns -  nodes - A list of `Accessibility.AXNode` matching the specified attributes, including nodes that are ignored for accessibility.
 func (c *Accessibility) QueryAXTreeWithParams(ctx context.Context, v *AccessibilityQueryAXTreeParams) ([]*AccessibilityAXNode, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Accessibility.queryAXTree", Params: v})
@@ -386,7 +386,7 @@ func (c *Accessibility) QueryAXTreeWithParams(ctx context.Context, v *Accessibil
 	return chromeData.Result.Nodes, nil
 }
 
-// QueryAXTree - Query a DOM node's accessibility subtree for accessible name and role. This command computes the name and role for all nodes in the subtree, including those that are ignored for accessibility, and returns those that mactch the specified name and role. If no DOM node is specified, or the DOM node does not exist, the command returns an error. If neither `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
+// QueryAXTree - Query a DOM node's accessibility subtree for accessible name and role. This command computes the name and role for all nodes in the subtree, including those that are ignored for accessibility, and returns those that match the specified name and role. If no DOM node is specified, or the DOM node does not exist, the command returns an error. If neither `accessibleName` or `role` is specified, it returns all the accessibility nodes in the subtree.
 // nodeId - Identifier of the node for the root to query.
 // backendNodeId - Identifier of the backend node for the root to query.
 // objectId - JavaScript object id of the node wrapper for the root to query.

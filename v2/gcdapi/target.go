@@ -12,7 +12,7 @@ import (
 // No Description.
 type TargetTargetInfo struct {
 	TargetId         string `json:"targetId"`                   //
-	Type             string `json:"type"`                       //
+	Type             string `json:"type"`                       // List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22
 	Title            string `json:"title"`                      //
 	Url              string `json:"url"`                        //
 	Attached         bool   `json:"attached"`                   // Whether the target has an attached client.
@@ -20,12 +20,12 @@ type TargetTargetInfo struct {
 	CanAccessOpener  bool   `json:"canAccessOpener"`            // Whether the target has access to the originating window.
 	OpenerFrameId    string `json:"openerFrameId,omitempty"`    // Frame id of originating window (is only set if target has an opener).
 	BrowserContextId string `json:"browserContextId,omitempty"` //
-	Subtype          string `json:"subtype,omitempty"`          // Provides additional details for specific target types. For example, for the type of "page", this may be set to "portal" or "prerender".
+	Subtype          string `json:"subtype,omitempty"`          // Provides additional details for specific target types. For example, for the type of "page", this may be set to "prerender".
 }
 
 // A filter used by target query/discovery/auto-attach operations.
 type TargetFilterEntry struct {
-	Exclude bool   `json:"exclude,omitempty"` // If set, causes exclusion of mathcing targets from the list.
+	Exclude bool   `json:"exclude,omitempty"` // If set, causes exclusion of matching targets from the list.
 	Type    string `json:"type,omitempty"`    // If not present, matches any type.
 }
 
@@ -254,12 +254,12 @@ type TargetExposeDevToolsProtocolParams struct {
 	BindingName string `json:"bindingName,omitempty"`
 }
 
-// ExposeDevToolsProtocolWithParams - Inject object to the target's main frame that provides a communication channel with browser target.  Injected object will be available as `window[bindingName]`.  The object has the follwing API: - `binding.send(json)` - a method to send messages over the remote debugging protocol - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
+// ExposeDevToolsProtocolWithParams - Inject object to the target's main frame that provides a communication channel with browser target.  Injected object will be available as `window[bindingName]`.  The object has the following API: - `binding.send(json)` - a method to send messages over the remote debugging protocol - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
 func (c *Target) ExposeDevToolsProtocolWithParams(ctx context.Context, v *TargetExposeDevToolsProtocolParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Target.exposeDevToolsProtocol", Params: v})
 }
 
-// ExposeDevToolsProtocol - Inject object to the target's main frame that provides a communication channel with browser target.  Injected object will be available as `window[bindingName]`.  The object has the follwing API: - `binding.send(json)` - a method to send messages over the remote debugging protocol - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
+// ExposeDevToolsProtocol - Inject object to the target's main frame that provides a communication channel with browser target.  Injected object will be available as `window[bindingName]`.  The object has the following API: - `binding.send(json)` - a method to send messages over the remote debugging protocol - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
 // targetId -
 // bindingName - Binding name, 'cdp' if not specified.
 func (c *Target) ExposeDevToolsProtocol(ctx context.Context, targetId string, bindingName string) (*gcdmessage.ChromeResponse, error) {

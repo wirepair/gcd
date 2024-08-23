@@ -37,7 +37,7 @@ type FetchAuthChallengeResponse struct {
 	Password string `json:"password,omitempty"` // The password to provide, possibly empty. Should only be set if response is ProvideCredentials.
 }
 
-// Issued when the domain is enabled and the request URL matches the specified filter. The request is paused until the client responds with one of continueRequest, failRequest or fulfillRequest. The stage of the request can be determined by presence of responseErrorReason and responseStatusCode -- the request is at the response stage if either of these fields is present and in the request stage otherwise.
+// Issued when the domain is enabled and the request URL matches the specified filter. The request is paused until the client responds with one of continueRequest, failRequest or fulfillRequest. The stage of the request can be determined by presence of responseErrorReason and responseStatusCode -- the request is at the response stage if either of these fields is present and in the request stage otherwise. Redirect responses and subsequent requests are reported similarly to regular responses and requests. Redirect responses may be distinguished by the value of `responseStatusCode` (which is one of 301, 302, 303, 307, 308) along with presence of the `location` header. Requests resulting from a redirect will have `redirectedRequestId` field set.
 type FetchRequestPausedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -131,10 +131,6 @@ type FetchFulfillRequestParams struct {
 	ResponseCode int `json:"responseCode"`
 	// Response headers.
 	ResponseHeaders []*FetchHeaderEntry `json:"responseHeaders,omitempty"`
-	// Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text. (Encoded as a base64 string when passed over JSON)
-	BinaryResponseHeaders string `json:"binaryResponseHeaders,omitempty"`
-	// A response body. If absent, original response body will be used if the request is intercepted at the response stage and empty body will be used if the request is intercepted at the request stage. (Encoded as a base64 string when passed over JSON)
-	Body string `json:"body,omitempty"`
 	// A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
 	ResponsePhrase string `json:"responsePhrase,omitempty"`
 }
@@ -148,16 +144,12 @@ func (c *Fetch) FulfillRequestWithParams(ctx context.Context, v *FetchFulfillReq
 // requestId - An id the client received in requestPaused event.
 // responseCode - An HTTP response code.
 // responseHeaders - Response headers.
-// binaryResponseHeaders - Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text. (Encoded as a base64 string when passed over JSON)
-// body - A response body. If absent, original response body will be used if the request is intercepted at the response stage and empty body will be used if the request is intercepted at the request stage. (Encoded as a base64 string when passed over JSON)
 // responsePhrase - A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
-func (c *Fetch) FulfillRequest(ctx context.Context, requestId string, responseCode int, responseHeaders []*FetchHeaderEntry, binaryResponseHeaders string, body string, responsePhrase string) (*gcdmessage.ChromeResponse, error) {
+func (c *Fetch) FulfillRequest(ctx context.Context, requestId string, responseCode int, responseHeaders []*FetchHeaderEntry, responsePhrase string) (*gcdmessage.ChromeResponse, error) {
 	var v FetchFulfillRequestParams
 	v.RequestId = requestId
 	v.ResponseCode = responseCode
 	v.ResponseHeaders = responseHeaders
-	v.BinaryResponseHeaders = binaryResponseHeaders
-	v.Body = body
 	v.ResponsePhrase = responsePhrase
 	return c.FulfillRequestWithParams(ctx, &v)
 }
@@ -169,8 +161,6 @@ type FetchContinueRequestParams struct {
 	Url string `json:"url,omitempty"`
 	// If set, the request method is overridden.
 	Method string `json:"method,omitempty"`
-	// If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
-	PostData string `json:"postData,omitempty"`
 	// If set, overrides the request headers. Note that the overrides do not extend to subsequent redirect hops, if a redirect happens. Another override may be applied to a different request produced by a redirect.
 	Headers []*FetchHeaderEntry `json:"headers,omitempty"`
 	// If set, overrides response interception behavior for this request.
@@ -186,15 +176,13 @@ func (c *Fetch) ContinueRequestWithParams(ctx context.Context, v *FetchContinueR
 // requestId - An id the client received in requestPaused event.
 // url - If set, the request url will be modified in a way that's not observable by page.
 // method - If set, the request method is overridden.
-// postData - If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
 // headers - If set, overrides the request headers. Note that the overrides do not extend to subsequent redirect hops, if a redirect happens. Another override may be applied to a different request produced by a redirect.
 // interceptResponse - If set, overrides response interception behavior for this request.
-func (c *Fetch) ContinueRequest(ctx context.Context, requestId string, url string, method string, postData string, headers []*FetchHeaderEntry, interceptResponse bool) (*gcdmessage.ChromeResponse, error) {
+func (c *Fetch) ContinueRequest(ctx context.Context, requestId string, url string, method string, headers []*FetchHeaderEntry, interceptResponse bool) (*gcdmessage.ChromeResponse, error) {
 	var v FetchContinueRequestParams
 	v.RequestId = requestId
 	v.Url = url
 	v.Method = method
-	v.PostData = postData
 	v.Headers = headers
 	v.InterceptResponse = interceptResponse
 	return c.ContinueRequestWithParams(ctx, &v)
@@ -231,8 +219,6 @@ type FetchContinueResponseParams struct {
 	ResponsePhrase string `json:"responsePhrase,omitempty"`
 	// Response headers. If absent, original response headers will be used.
 	ResponseHeaders []*FetchHeaderEntry `json:"responseHeaders,omitempty"`
-	// Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text. (Encoded as a base64 string when passed over JSON)
-	BinaryResponseHeaders string `json:"binaryResponseHeaders,omitempty"`
 }
 
 // ContinueResponseWithParams - Continues loading of the paused response, optionally modifying the response headers. If either responseCode or headers are modified, all of them must be present.
@@ -245,14 +231,12 @@ func (c *Fetch) ContinueResponseWithParams(ctx context.Context, v *FetchContinue
 // responseCode - An HTTP response code. If absent, original response code will be used.
 // responsePhrase - A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
 // responseHeaders - Response headers. If absent, original response headers will be used.
-// binaryResponseHeaders - Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text. (Encoded as a base64 string when passed over JSON)
-func (c *Fetch) ContinueResponse(ctx context.Context, requestId string, responseCode int, responsePhrase string, responseHeaders []*FetchHeaderEntry, binaryResponseHeaders string) (*gcdmessage.ChromeResponse, error) {
+func (c *Fetch) ContinueResponse(ctx context.Context, requestId string, responseCode int, responsePhrase string, responseHeaders []*FetchHeaderEntry) (*gcdmessage.ChromeResponse, error) {
 	var v FetchContinueResponseParams
 	v.RequestId = requestId
 	v.ResponseCode = responseCode
 	v.ResponsePhrase = responsePhrase
 	v.ResponseHeaders = responseHeaders
-	v.BinaryResponseHeaders = binaryResponseHeaders
 	return c.ContinueResponseWithParams(ctx, &v)
 }
 
@@ -261,7 +245,7 @@ type FetchGetResponseBodyParams struct {
 	RequestId string `json:"requestId"`
 }
 
-// GetResponseBodyWithParams - Causes the body of the response to be received from the server and returned as a single string. May only be issued for a request that is paused in the Response stage and is mutually exclusive with takeResponseBodyForInterceptionAsStream. Calling other methods that affect the request or disabling fetch domain before body is received results in an undefined behavior.
+// GetResponseBodyWithParams - Causes the body of the response to be received from the server and returned as a single string. May only be issued for a request that is paused in the Response stage and is mutually exclusive with takeResponseBodyForInterceptionAsStream. Calling other methods that affect the request or disabling fetch domain before body is received results in an undefined behavior. Note that the response body is not available for redirects. Requests paused in the _redirect received_ state may be differentiated by `responseCode` and presence of `location` response header, see comments to `requestPaused` for details.
 // Returns -  body - Response body. base64Encoded - True, if content was sent as base64.
 func (c *Fetch) GetResponseBodyWithParams(ctx context.Context, v *FetchGetResponseBodyParams) (string, bool, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Fetch.getResponseBody", Params: v})
@@ -292,7 +276,7 @@ func (c *Fetch) GetResponseBodyWithParams(ctx context.Context, v *FetchGetRespon
 	return chromeData.Result.Body, chromeData.Result.Base64Encoded, nil
 }
 
-// GetResponseBody - Causes the body of the response to be received from the server and returned as a single string. May only be issued for a request that is paused in the Response stage and is mutually exclusive with takeResponseBodyForInterceptionAsStream. Calling other methods that affect the request or disabling fetch domain before body is received results in an undefined behavior.
+// GetResponseBody - Causes the body of the response to be received from the server and returned as a single string. May only be issued for a request that is paused in the Response stage and is mutually exclusive with takeResponseBodyForInterceptionAsStream. Calling other methods that affect the request or disabling fetch domain before body is received results in an undefined behavior. Note that the response body is not available for redirects. Requests paused in the _redirect received_ state may be differentiated by `responseCode` and presence of `location` response header, see comments to `requestPaused` for details.
 // requestId - Identifier for the intercepted request to get body for.
 // Returns -  body - Response body. base64Encoded - True, if content was sent as base64.
 func (c *Fetch) GetResponseBody(ctx context.Context, requestId string) (string, bool, error) {

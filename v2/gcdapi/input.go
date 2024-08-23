@@ -18,8 +18,8 @@ type InputTouchPoint struct {
 	RotationAngle      float64 `json:"rotationAngle,omitempty"`      // Rotation angle (default: 0.0).
 	Force              float64 `json:"force,omitempty"`              // Force (default: 1.0).
 	TangentialPressure float64 `json:"tangentialPressure,omitempty"` // The normalized tangential pressure, which has a range of [-1,1] (default: 0).
-	TiltX              int     `json:"tiltX,omitempty"`              // The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)
-	TiltY              int     `json:"tiltY,omitempty"`              // The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+	TiltX              float64 `json:"tiltX,omitempty"`              // The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)
+	TiltY              float64 `json:"tiltY,omitempty"`              // The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
 	Twist              int     `json:"twist,omitempty"`              // The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
 	Id                 float64 `json:"id,omitempty"`                 // Identifier used to track touch sources between events, must be unique within an event.
 }
@@ -195,12 +195,12 @@ type InputImeSetCompositionParams struct {
 	ReplacementEnd int `json:"replacementEnd,omitempty"`
 }
 
-// ImeSetCompositionWithParams - This method sets the current candidate text for ime. Use imeCommitComposition to commit the final text. Use imeSetComposition with empty string as text to cancel composition.
+// ImeSetCompositionWithParams - This method sets the current candidate text for IME. Use imeCommitComposition to commit the final text. Use imeSetComposition with empty string as text to cancel composition.
 func (c *Input) ImeSetCompositionWithParams(ctx context.Context, v *InputImeSetCompositionParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.imeSetComposition", Params: v})
 }
 
-// ImeSetComposition - This method sets the current candidate text for ime. Use imeCommitComposition to commit the final text. Use imeSetComposition with empty string as text to cancel composition.
+// ImeSetComposition - This method sets the current candidate text for IME. Use imeCommitComposition to commit the final text. Use imeSetComposition with empty string as text to cancel composition.
 // text - The text to insert
 // selectionStart - selection start
 // selectionEnd - selection end
@@ -238,9 +238,9 @@ type InputDispatchMouseEventParams struct {
 	// The normalized tangential pressure, which has a range of [-1,1] (default: 0).
 	TangentialPressure float64 `json:"tangentialPressure,omitempty"`
 	// The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0).
-	TiltX int `json:"tiltX,omitempty"`
+	TiltX float64 `json:"tiltX,omitempty"`
 	// The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
-	TiltY int `json:"tiltY,omitempty"`
+	TiltY float64 `json:"tiltY,omitempty"`
 	// The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
 	Twist int `json:"twist,omitempty"`
 	// X delta in CSS pixels for mouse wheel event (default: 0).
@@ -273,7 +273,7 @@ func (c *Input) DispatchMouseEventWithParams(ctx context.Context, v *InputDispat
 // deltaX - X delta in CSS pixels for mouse wheel event (default: 0).
 // deltaY - Y delta in CSS pixels for mouse wheel event (default: 0).
 // pointerType - Pointer type (default: "mouse").
-func (c *Input) DispatchMouseEvent(ctx context.Context, theType string, x float64, y float64, modifiers int, timestamp float64, button string, buttons int, clickCount int, force float64, tangentialPressure float64, tiltX int, tiltY int, twist int, deltaX float64, deltaY float64, pointerType string) (*gcdmessage.ChromeResponse, error) {
+func (c *Input) DispatchMouseEvent(ctx context.Context, theType string, x float64, y float64, modifiers int, timestamp float64, button string, buttons int, clickCount int, force float64, tangentialPressure float64, tiltX float64, tiltY float64, twist int, deltaX float64, deltaY float64, pointerType string) (*gcdmessage.ChromeResponse, error) {
 	var v InputDispatchMouseEventParams
 	v.TheType = theType
 	v.X = x
@@ -322,6 +322,11 @@ func (c *Input) DispatchTouchEvent(ctx context.Context, theType string, touchPoi
 	v.Modifiers = modifiers
 	v.Timestamp = timestamp
 	return c.DispatchTouchEventWithParams(ctx, &v)
+}
+
+// Cancels any active dragging in the page.
+func (c *Input) CancelDragging(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Input.cancelDragging"})
 }
 
 type InputEmulateTouchFromMouseEventParams struct {

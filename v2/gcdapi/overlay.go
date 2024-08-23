@@ -11,7 +11,7 @@ import (
 
 // Configuration data for drawing the source order of an elements children.
 type OverlaySourceOrderConfig struct {
-	ParentOutlineColor *DOMRGBA `json:"parentOutlineColor"` // the color to outline the givent element in.
+	ParentOutlineColor *DOMRGBA `json:"parentOutlineColor"` // the color to outline the given element in.
 	ChildOutlineColor  *DOMRGBA `json:"childOutlineColor"`  // the color to outline the child elements in.
 }
 
@@ -124,6 +124,13 @@ type OverlayHingeConfig struct {
 	Rect         *DOMRect `json:"rect"`                   // A rectangle represent hinge
 	ContentColor *DOMRGBA `json:"contentColor,omitempty"` // The content box highlight fill color (default: a dark color).
 	OutlineColor *DOMRGBA `json:"outlineColor,omitempty"` // The content box highlight outline color (default: transparent).
+}
+
+// Configuration for Window Controls Overlay
+type OverlayWindowControlsOverlayConfig struct {
+	ShowCSS          bool   `json:"showCSS"`          // Whether the title bar CSS should be shown when emulating the Window Controls Overlay.
+	SelectedPlatform string `json:"selectedPlatform"` // Selected platforms to show the overlay.
+	ThemeColor       string `json:"themeColor"`       // The theme color defined in app manifest.
 }
 
 // No Description.
@@ -356,12 +363,12 @@ type OverlayHighlightFrameParams struct {
 	ContentOutlineColor *DOMRGBA `json:"contentOutlineColor,omitempty"`
 }
 
-// HighlightFrameWithParams - Highlights owner element of the frame with given id. Deprecated: Doesn't work reliablity and cannot be fixed due to process separatation (the owner node might be in a different process). Determine the owner node in the client and use highlightNode.
+// HighlightFrameWithParams - Highlights owner element of the frame with given id. Deprecated: Doesn't work reliably and cannot be fixed due to process separation (the owner node might be in a different process). Determine the owner node in the client and use highlightNode.
 func (c *Overlay) HighlightFrameWithParams(ctx context.Context, v *OverlayHighlightFrameParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.highlightFrame", Params: v})
 }
 
-// HighlightFrame - Highlights owner element of the frame with given id. Deprecated: Doesn't work reliablity and cannot be fixed due to process separatation (the owner node might be in a different process). Determine the owner node in the client and use highlightNode.
+// HighlightFrame - Highlights owner element of the frame with given id. Deprecated: Doesn't work reliably and cannot be fixed due to process separation (the owner node might be in a different process). Determine the owner node in the client and use highlightNode.
 // frameId - Identifier of the frame to highlight.
 // contentColor - The content box highlight fill color (default: transparent).
 // contentOutlineColor - The content box highlight outline color (default: transparent).
@@ -809,4 +816,22 @@ func (c *Overlay) SetShowIsolatedElements(ctx context.Context, isolatedElementHi
 	var v OverlaySetShowIsolatedElementsParams
 	v.IsolatedElementHighlightConfigs = isolatedElementHighlightConfigs
 	return c.SetShowIsolatedElementsWithParams(ctx, &v)
+}
+
+type OverlaySetShowWindowControlsOverlayParams struct {
+	// Window Controls Overlay data, null means hide Window Controls Overlay
+	WindowControlsOverlayConfig *OverlayWindowControlsOverlayConfig `json:"windowControlsOverlayConfig,omitempty"`
+}
+
+// SetShowWindowControlsOverlayWithParams - Show Window Controls Overlay for PWA
+func (c *Overlay) SetShowWindowControlsOverlayWithParams(ctx context.Context, v *OverlaySetShowWindowControlsOverlayParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Overlay.setShowWindowControlsOverlay", Params: v})
+}
+
+// SetShowWindowControlsOverlay - Show Window Controls Overlay for PWA
+// windowControlsOverlayConfig - Window Controls Overlay data, null means hide Window Controls Overlay
+func (c *Overlay) SetShowWindowControlsOverlay(ctx context.Context, windowControlsOverlayConfig *OverlayWindowControlsOverlayConfig) (*gcdmessage.ChromeResponse, error) {
+	var v OverlaySetShowWindowControlsOverlayParams
+	v.WindowControlsOverlayConfig = windowControlsOverlayConfig
+	return c.SetShowWindowControlsOverlayWithParams(ctx, &v)
 }
