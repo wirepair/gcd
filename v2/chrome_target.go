@@ -325,7 +325,7 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	if r, ok := c.replyDispatcher[f.Id]; ok {
 		delete(c.replyDispatcher, f.Id)
 		c.replyLock.Unlock()
-		c.logDebug("dispatching response id:", f.Id)
+		c.logDebug(f.Id, " dispatching reply")
 		go c.dispatchWithTimeout(r, f.Id, msg)
 		return
 	}
@@ -338,7 +338,17 @@ func (c *ChromeTarget) dispatchResponse(msg []byte) {
 	c.eventLock.RUnlock()
 
 	if ok {
-		c.eventCh <- &devtoolsEventResponse{Method: f.Method, Msg: msg}
+		c.logDebug(f.Method, " enqueuing event", string(msg))
+
+		select {
+		case c.eventCh <- &devtoolsEventResponse{Method: f.Method, Msg: msg}:
+		default:
+			c.logger.Println("WARNING: event channel is full!", f.Method)
+			c.eventCh <- &devtoolsEventResponse{Method: f.Method, Msg: msg}
+		}
+
+		c.logDebug(f.Method, " enqueued event")
+
 		return
 	}
 
@@ -355,7 +365,7 @@ func (c *ChromeTarget) dispatchEvents() {
 		case <-c.ctx.Done():
 			return
 		case m := <-c.eventCh:
-			c.logDebug("dispatching", m.Method, "event: ", string(m.Msg))
+			c.logDebug("dispatching ", m.Method, "event: ", string(m.Msg))
 			c.eventLock.Lock()
 			cb, ok := c.eventDispatcher[m.Method]
 			c.eventLock.Unlock()
@@ -375,7 +385,7 @@ func (c *ChromeTarget) dispatchWithTimeout(r chan<- *gcdmessage.Message, id int6
 	case r <- &gcdmessage.Message{Id: id, Data: msg}:
 		timeout.Stop()
 	case <-timeout.C:
-		c.logDebug("timed out dispatching request id: ", id, " of msg: ", msg)
+		c.logger.Println("timed out dispatching request id: ", id, " of msg: ", msg)
 		close(r)
 		return
 	}
