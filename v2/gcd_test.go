@@ -62,10 +62,6 @@ func testCleanUp() {
 }
 
 func TestDeleteProfileOnExit(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		//t.Skip("windows will hold on to the process handle too long")
-	}
-
 	debugger := NewChromeDebugger(WithDeleteProfileOnExit(),
 		WithFlags([]string{"--headless"}),
 	)
@@ -75,6 +71,9 @@ func TestDeleteProfileOnExit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error starting chrome: %s\n", err)
 	}
+
+	debugger.NewTab()
+
 	debugger.ExitProcess()
 	time.Sleep(3 * time.Second)
 	if stat, err := os.Stat(profileDir); err == nil {
