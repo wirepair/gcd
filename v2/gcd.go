@@ -28,14 +28,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/goccy/go-json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"sync"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/wirepair/gcd/v2/observer"
 
@@ -382,7 +382,7 @@ func (c *Gcd) getConnectableTargets() ([]*TargetInfo, error) {
 		}
 		defer resp.Body.Close()
 
-		body, errRead := ioutil.ReadAll(resp.Body)
+		body, errRead := io.ReadAll(resp.Body)
 		if errRead != nil {
 			return nil, &GcdBodyReadErr{Message: errRead.Error()}
 		}
@@ -421,7 +421,7 @@ func (c *Gcd) NewTab() (*ChromeTarget, error) {
 	}
 	defer resp.Body.Close()
 
-	body, errRead := ioutil.ReadAll(resp.Body)
+	body, errRead := io.ReadAll(resp.Body)
 	if errRead != nil {
 		return nil, &GcdBodyReadErr{Message: errRead.Error()}
 	}
@@ -451,7 +451,7 @@ func (c *Gcd) CloseTab(target *ChromeTarget) error {
 		return err
 	}
 	defer resp.Body.Close()
-	_, errRead := ioutil.ReadAll(resp.Body)
+	_, errRead := io.ReadAll(resp.Body)
 	return errRead
 }
 
@@ -467,7 +467,7 @@ func (c *Gcd) ActivateTab(target *ChromeTarget) error {
 		return err
 	}
 	defer resp.Body.Close()
-	_, errRead := ioutil.ReadAll(resp.Body)
+	_, errRead := io.ReadAll(resp.Body)
 	return errRead
 }
 
@@ -492,7 +492,7 @@ func (c *Gcd) probeDebugPort(endpoint string) {
 			c.readyChErr <- nil
 			return
 		case <-timeoutTicker.C:
-			c.readyChErr <- fmt.Errorf("Unable to contact debugger at %s after %v, gave up", c.apiEndpoint, c.timeout)
+			c.readyChErr <- fmt.Errorf("unable to contact debugger at %s after %v, gave up", c.apiEndpoint, c.timeout)
 			return
 		}
 	}

@@ -23,10 +23,11 @@ type CacheStorageDataEntry struct {
 
 // Cache identifier.
 type CacheStorageCache struct {
-	CacheId        string `json:"cacheId"`        // An opaque unique id of the cache.
-	SecurityOrigin string `json:"securityOrigin"` // Security origin of the cache.
-	StorageKey     string `json:"storageKey"`     // Storage key of the cache.
-	CacheName      string `json:"cacheName"`      // The name of the cache.
+	CacheId        string                `json:"cacheId"`                 // An opaque unique id of the cache.
+	SecurityOrigin string                `json:"securityOrigin"`          // Security origin of the cache.
+	StorageKey     string                `json:"storageKey"`              // Storage key of the cache.
+	StorageBucket  *StorageStorageBucket `json:"storageBucket,omitempty"` // Storage bucket of the cache.
+	CacheName      string                `json:"cacheName"`               // The name of the cache.
 }
 
 // No Description.
@@ -90,10 +91,12 @@ func (c *CacheStorage) DeleteEntry(ctx context.Context, cacheId string, request 
 }
 
 type CacheStorageRequestCacheNamesParams struct {
-	// At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	// At least and at most one of securityOrigin, storageKey, storageBucket must be specified. Security origin.
 	SecurityOrigin string `json:"securityOrigin,omitempty"`
 	// Storage key.
 	StorageKey string `json:"storageKey,omitempty"`
+	// Storage bucket. If not specified, it uses the default bucket.
+	StorageBucket *StorageStorageBucket `json:"storageBucket,omitempty"`
 }
 
 // RequestCacheNamesWithParams - Requests cache names.
@@ -127,13 +130,15 @@ func (c *CacheStorage) RequestCacheNamesWithParams(ctx context.Context, v *Cache
 }
 
 // RequestCacheNames - Requests cache names.
-// securityOrigin - At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+// securityOrigin - At least and at most one of securityOrigin, storageKey, storageBucket must be specified. Security origin.
 // storageKey - Storage key.
+// storageBucket - Storage bucket. If not specified, it uses the default bucket.
 // Returns -  caches - Caches for the security origin.
-func (c *CacheStorage) RequestCacheNames(ctx context.Context, securityOrigin string, storageKey string) ([]*CacheStorageCache, error) {
+func (c *CacheStorage) RequestCacheNames(ctx context.Context, securityOrigin string, storageKey string, storageBucket *StorageStorageBucket) ([]*CacheStorageCache, error) {
 	var v CacheStorageRequestCacheNamesParams
 	v.SecurityOrigin = securityOrigin
 	v.StorageKey = storageKey
+	v.StorageBucket = storageBucket
 	return c.RequestCacheNamesWithParams(ctx, &v)
 }
 

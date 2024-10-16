@@ -1,4 +1,6 @@
 # Changelog (2024)
+- 2.3.5 (Oct 16)
+  - Fix apigen to use ToT from github for downloading json files. Update to latest protocol 
 - 2.3.4 (Mar 18)
   - Fix return types for calls that return two-dimensional arrays 
 - 2.3.3 (Jan 31)

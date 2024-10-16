@@ -53,3 +53,8 @@ func (c *EventBreakpoints) RemoveInstrumentationBreakpoint(ctx context.Context, 
 	v.EventName = eventName
 	return c.RemoveInstrumentationBreakpointWithParams(ctx, &v)
 }
+
+// Removes all breakpoints
+func (c *EventBreakpoints) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "EventBreakpoints.disable"})
+}

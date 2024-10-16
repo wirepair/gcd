@@ -26,10 +26,11 @@ package gcd
 
 import (
 	"context"
-	"github.com/goccy/go-json"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/wirepair/gcd/v2/observer"
 
@@ -73,26 +74,31 @@ type ChromeTarget struct {
 	conn            *WebSocket                             // the connection to the chrome debugger service for this tab/process
 
 	// Chrome Debugger Domains
+	Autofill             *gcdapi.Autofill
 	Accessibility        *gcdapi.Accessibility
 	Animation            *gcdapi.Animation
 	Audits               *gcdapi.Audits
 	BackgroundService    *gcdapi.BackgroundService
+	BluetoothEmulation   *gcdapi.BluetoothEmulation
 	Browser              *gcdapi.Browser
 	CacheStorage         *gcdapi.CacheStorage
 	Cast                 *gcdapi.Cast
-	Console              *gcdapi.Console           // console API
-	CSS                  *gcdapi.CSS               // CSS API
-	Database             *gcdapi.Database          // Database API
-	Debugger             *gcdapi.Debugger          // JS Debugger API
+	Console              *gcdapi.Console  // console API
+	CSS                  *gcdapi.CSS      // CSS API
+	Database             *gcdapi.Database // Database API
+	Debugger             *gcdapi.Debugger // JS Debugger API
+	DeviceAccess         *gcdapi.DeviceAccess
 	DeviceOrientation    *gcdapi.DeviceOrientation // Device Orientation API
 	DOM                  *gcdapi.DOM               // DOM API
 	DOMDebugger          *gcdapi.DOMDebugger       // DOM Debugger API
 	DOMSnapshot          *gcdapi.DOMSnapshot
 	DOMStorage           *gcdapi.DOMStorage // DOM Storage API
+	Extensions           *gcdapi.Extensions
 	Emulation            *gcdapi.Emulation
 	EventBreakpoints     *gcdapi.EventBreakpoints
 	FedCm                *gcdapi.FedCm
 	Fetch                *gcdapi.Fetch
+	FileSystem           *gcdapi.FileSystem
 	HeadlessExperimental *gcdapi.HeadlessExperimental
 	HeapProfiler         *gcdapi.HeapProfiler // HeapProfiler API
 	IndexedDB            *gcdapi.IndexedDB    // IndexedDB API
@@ -110,6 +116,7 @@ type ChromeTarget struct {
 	PerformanceTimeline  *gcdapi.PerformanceTimeline
 	Preload              *gcdapi.Preload
 	Profiler             *gcdapi.Profiler
+	PWA                  *gcdapi.PWA
 	Runtime              *gcdapi.Runtime
 	Schema               *gcdapi.Schema
 	Security             *gcdapi.Security
@@ -163,26 +170,31 @@ func openChromeTarget(debugger *Gcd, target *TargetInfo, observer observer.Messa
 
 // Init all api objects
 func (c *ChromeTarget) Init() {
+	c.Autofill = gcdapi.NewAutofill(c)
 	c.Accessibility = gcdapi.NewAccessibility(c)
 	c.Animation = gcdapi.NewAnimation(c)
 	c.Audits = gcdapi.NewAudits(c)
 	c.BackgroundService = gcdapi.NewBackgroundService(c)
 	c.Browser = gcdapi.NewBrowser(c)
+	c.BluetoothEmulation = gcdapi.NewBluetoothEmulation(c)
 	c.CacheStorage = gcdapi.NewCacheStorage(c)
 	c.Cast = gcdapi.NewCast(c)
 	c.Console = gcdapi.NewConsole(c)
 	c.CSS = gcdapi.NewCSS(c)
 	c.Database = gcdapi.NewDatabase(c)
 	c.Debugger = gcdapi.NewDebugger(c)
+	c.DeviceAccess = gcdapi.NewDeviceAccess(c)
 	c.DeviceOrientation = gcdapi.NewDeviceOrientation(c)
 	c.DOM = gcdapi.NewDOM(c)
 	c.DOMDebugger = gcdapi.NewDOMDebugger(c)
 	c.DOMSnapshot = gcdapi.NewDOMSnapshot(c)
 	c.DOMStorage = gcdapi.NewDOMStorage(c)
 	c.Emulation = gcdapi.NewEmulation(c)
+	c.Extensions = gcdapi.NewExtensions(c)
 	c.EventBreakpoints = gcdapi.NewEventBreakpoints(c)
 	c.FedCm = gcdapi.NewFedCm(c)
 	c.Fetch = gcdapi.NewFetch(c)
+	c.FileSystem = gcdapi.NewFileSystem(c)
 	c.HeadlessExperimental = gcdapi.NewHeadlessExperimental(c)
 	c.HeapProfiler = gcdapi.NewHeapProfiler(c)
 	c.IndexedDB = gcdapi.NewIndexedDB(c)
@@ -200,6 +212,7 @@ func (c *ChromeTarget) Init() {
 	c.PerformanceTimeline = gcdapi.NewPerformanceTimeline(c)
 	c.Preload = gcdapi.NewPreload(c)
 	c.Profiler = gcdapi.NewProfiler(c)
+	c.PWA = gcdapi.NewPWA(c)
 	c.Runtime = gcdapi.NewRuntime(c)
 	c.Schema = gcdapi.NewSchema(c)
 	c.Security = gcdapi.NewSecurity(c)
@@ -215,7 +228,7 @@ func (c *ChromeTarget) Init() {
 
 // clean up this target
 func (c *ChromeTarget) shutdown() {
-	if c.stopped == true {
+	if c.stopped {
 		return
 	}
 	c.stopped = true
@@ -389,7 +402,6 @@ func (c *ChromeTarget) dispatchWithTimeout(r chan<- *gcdmessage.Message, id int6
 		close(r)
 		return
 	}
-	return
 }
 
 // check target detached/crashed

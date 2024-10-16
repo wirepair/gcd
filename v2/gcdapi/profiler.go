@@ -55,6 +55,7 @@ type ProfilerScriptCoverage struct {
 	Functions []*ProfilerFunctionCoverage `json:"functions"` // Functions contained in the script that has coverage data.
 }
 
+//
 type ProfilerConsoleProfileFinishedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -94,10 +95,12 @@ func NewProfiler(target gcdmessage.ChromeTargeter) *Profiler {
 	return c
 }
 
+//
 func (c *Profiler) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.disable"})
 }
 
+//
 func (c *Profiler) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.enable"})
 }
@@ -150,6 +153,7 @@ func (c *Profiler) SetSamplingInterval(ctx context.Context, interval int) (*gcdm
 	return c.SetSamplingIntervalWithParams(ctx, &v)
 }
 
+//
 func (c *Profiler) Start(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Profiler.start"})
 }

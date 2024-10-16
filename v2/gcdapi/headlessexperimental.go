@@ -12,7 +12,7 @@ import (
 // Encoding options for a screenshot.
 type HeadlessExperimentalScreenshotParams struct {
 	Format           string `json:"format,omitempty"`           // Image compression format (defaults to png).
-	Quality          int    `json:"quality,omitempty"`          // Compression quality from range [0..100] (jpeg only).
+	Quality          int    `json:"quality,omitempty"`          // Compression quality from range [0..100] (jpeg and webp only).
 	OptimizeForSpeed bool   `json:"optimizeForSpeed,omitempty"` // Optimize image encoding for speed, not for resulting size (defaults to false)
 }
 

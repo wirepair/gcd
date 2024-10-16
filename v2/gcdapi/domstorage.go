@@ -16,6 +16,7 @@ type DOMStorageStorageId struct {
 	IsLocalStorage bool   `json:"isLocalStorage"`           // Whether the storage is local storage (not session storage).
 }
 
+//
 type DOMStorageDomStorageItemAddedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -25,6 +26,7 @@ type DOMStorageDomStorageItemAddedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type DOMStorageDomStorageItemRemovedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -33,6 +35,7 @@ type DOMStorageDomStorageItemRemovedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type DOMStorageDomStorageItemUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -43,6 +46,7 @@ type DOMStorageDomStorageItemUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type DOMStorageDomStorageItemsClearedEvent struct {
 	Method string `json:"method"`
 	Params struct {

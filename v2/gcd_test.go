@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/goccy/go-json"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -12,8 +11,11 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/wirepair/gcd/v2/gcdapi"
 )
@@ -60,10 +62,6 @@ func testCleanUp() {
 }
 
 func TestDeleteProfileOnExit(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		//t.Skip("windows will hold on to the process handle too long")
-	}
-
 	debugger := NewChromeDebugger(WithDeleteProfileOnExit(),
 		WithFlags([]string{"--headless"}),
 	)
@@ -73,6 +71,9 @@ func TestDeleteProfileOnExit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error starting chrome: %s\n", err)
 	}
+
+	debugger.NewTab()
+
 	debugger.ExitProcess()
 	time.Sleep(3 * time.Second)
 	if stat, err := os.Stat(profileDir); err == nil {
@@ -480,35 +481,13 @@ func TestConnectToInstance(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan error)
+	remoteDebugger := NewChromeDebugger()
+	t.Logf("connecting to %s:%s", debugger.host, debugger.port)
+	remoteDebugger.ConnectToInstance(debugger.host, debugger.port)
 
-	go testTimeoutListener(doneCh, 15, "timed out waiting for remote connection")
-
-	go func() {
-		remoteDebugger := NewChromeDebugger()
-		remoteDebugger.ConnectToInstance(debugger.host, debugger.port)
-
-		_, err := remoteDebugger.NewTab()
-		if err != nil {
-			t.Fatalf("error creating new tab")
-		}
-
-		targets, error := remoteDebugger.GetTargets()
-		if error != nil {
-			t.Fatalf("cannot get targets: %s \n", error)
-		}
-		if len(targets) <= 0 {
-			t.Fatalf("invalid number of targets, got: %d\n", len(targets))
-		}
-		for _, target := range targets {
-			t.Logf("page: %s\n", target.Target.Url)
-		}
-		close(doneCh)
-	}()
-
-	err := <-doneCh
+	_, err := remoteDebugger.NewTab()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("error creating new tab")
 	}
 }
 
@@ -579,14 +558,11 @@ func TestNetworkIntercept(t *testing.T) {
 	testDefaultStartup(t, WithEventDebugging(), WithInternalDebugMessages(), WithLogger(&DebugLogger{}))
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan error)
-
 	target, err := debugger.NewTab()
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
 
-	go testTimeoutListener(doneCh, 5, "timed out waiting for requestIntercepted")
 	ctx := context.Background()
 	if _, err := target.Fetch.Enable(ctx, []*gcdapi.FetchRequestPattern{
 		{
@@ -597,8 +573,9 @@ func TestNetworkIntercept(t *testing.T) {
 		t.Fatalf("error enabling fetch: %s", err)
 	}
 
+	var continued atomic.Bool
+
 	target.Subscribe("Fetch.requestPaused", func(target *ChromeTarget, payload []byte) {
-		close(doneCh)
 
 		pausedEvent := &gcdapi.FetchRequestPausedEvent{}
 		if err := json.Unmarshal(payload, pausedEvent); err != nil {
@@ -625,6 +602,7 @@ func TestNetworkIntercept(t *testing.T) {
 			Headers:   fetchHeaders,
 		}
 		target.Fetch.ContinueRequestWithParams(ctx, p)
+		continued.Store(true)
 	})
 
 	params := &gcdapi.PageNavigateParams{Url: "http://www.example.com"}
@@ -633,9 +611,8 @@ func TestNetworkIntercept(t *testing.T) {
 		t.Fatalf("error navigating: %s\n", err)
 	}
 
-	err = <-doneCh
-	if err != nil {
-		t.Fatal(err)
+	if continued.Load() == false {
+		t.Fatal("failed to intercept and continue request")
 	}
 }
 
