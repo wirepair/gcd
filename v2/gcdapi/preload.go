@@ -44,6 +44,7 @@ type PreloadRuleSetUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type PreloadRuleSetRemovedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -111,10 +112,12 @@ func NewPreload(target gcdmessage.ChromeTargeter) *Preload {
 	return c
 }
 
+//
 func (c *Preload) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Preload.enable"})
 }
 
+//
 func (c *Preload) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Preload.disable"})
 }

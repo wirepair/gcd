@@ -30,6 +30,7 @@ type HeapProfilerSamplingHeapProfile struct {
 	Samples []*HeapProfilerSamplingHeapProfileSample `json:"samples"` //
 }
 
+//
 type HeapProfilerAddHeapSnapshotChunkEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -54,6 +55,7 @@ type HeapProfilerLastSeenObjectIdEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type HeapProfilerReportHeapSnapshotProgressEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -90,14 +92,17 @@ func (c *HeapProfiler) AddInspectedHeapObject(ctx context.Context, heapObjectId 
 	return c.AddInspectedHeapObjectWithParams(ctx, &v)
 }
 
+//
 func (c *HeapProfiler) CollectGarbage(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.collectGarbage"})
 }
 
+//
 func (c *HeapProfiler) Disable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.disable"})
 }
 
+//
 func (c *HeapProfiler) Enable(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "HeapProfiler.enable"})
 }

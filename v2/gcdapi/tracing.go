@@ -22,6 +22,7 @@ type TracingTraceConfig struct {
 	MemoryDumpConfig     map[string]interface{} `json:"memoryDumpConfig,omitempty"`     // Configuration for memory dump triggers. Used only when "memory-infra" category is enabled.
 }
 
+//
 type TracingBufferUsageEvent struct {
 	Method string `json:"method"`
 	Params struct {

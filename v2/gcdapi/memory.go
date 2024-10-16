@@ -71,6 +71,7 @@ func (c *Memory) GetDOMCounters(ctx context.Context) (int, int, int, error) {
 	return chromeData.Result.Documents, chromeData.Result.Nodes, chromeData.Result.JsEventListeners, nil
 }
 
+//
 func (c *Memory) PrepareForLeakDetection(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.prepareForLeakDetection"})
 }

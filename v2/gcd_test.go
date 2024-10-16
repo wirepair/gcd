@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/goccy/go-json"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/wirepair/gcd/v2/gcdapi"
 )
@@ -579,14 +580,11 @@ func TestNetworkIntercept(t *testing.T) {
 	testDefaultStartup(t, WithEventDebugging(), WithInternalDebugMessages(), WithLogger(&DebugLogger{}))
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan error)
-
 	target, err := debugger.NewTab()
 	if err != nil {
 		t.Fatalf("error getting new tab: %s\n", err)
 	}
 
-	go testTimeoutListener(doneCh, 5, "timed out waiting for requestIntercepted")
 	ctx := context.Background()
 	if _, err := target.Fetch.Enable(ctx, []*gcdapi.FetchRequestPattern{
 		{
@@ -596,9 +594,8 @@ func TestNetworkIntercept(t *testing.T) {
 	}, false); err != nil {
 		t.Fatalf("error enabling fetch: %s", err)
 	}
-
+	continued := false
 	target.Subscribe("Fetch.requestPaused", func(target *ChromeTarget, payload []byte) {
-		close(doneCh)
 
 		pausedEvent := &gcdapi.FetchRequestPausedEvent{}
 		if err := json.Unmarshal(payload, pausedEvent); err != nil {
@@ -625,6 +622,7 @@ func TestNetworkIntercept(t *testing.T) {
 			Headers:   fetchHeaders,
 		}
 		target.Fetch.ContinueRequestWithParams(ctx, p)
+		continued = true
 	})
 
 	params := &gcdapi.PageNavigateParams{Url: "http://www.example.com"}
@@ -632,10 +630,8 @@ func TestNetworkIntercept(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error navigating: %s\n", err)
 	}
-
-	err = <-doneCh
-	if err != nil {
-		t.Fatal(err)
+	if continued == false {
+		t.Fatal("failed to intercept and continue request")
 	}
 }
 

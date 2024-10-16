@@ -217,6 +217,7 @@ type PageBackForwardCacheNotRestoredExplanationTree struct {
 	Children     []*PageBackForwardCacheNotRestoredExplanationTree `json:"children"`     // Array of children frame
 }
 
+//
 type PageDomContentEventFiredEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -381,6 +382,7 @@ type PageBackForwardCacheNotUsedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type PageLoadEventFiredEvent struct {
 	Method string `json:"method"`
 	Params struct {

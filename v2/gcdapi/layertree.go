@@ -50,6 +50,7 @@ type LayerTreeLayer struct {
 	StickyPositionConstraint *LayerTreeStickyPositionConstraint `json:"stickyPositionConstraint,omitempty"` // Sticky position constraint information
 }
 
+//
 type LayerTreeLayerPaintedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -58,6 +59,7 @@ type LayerTreeLayerPaintedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type LayerTreeLayerTreeDidChangeEvent struct {
 	Method string `json:"method"`
 	Params struct {

@@ -159,6 +159,7 @@ type StorageSharedStorageAccessedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type StorageStorageBucketCreatedOrUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -166,6 +167,7 @@ type StorageStorageBucketCreatedOrUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type StorageStorageBucketDeletedEvent struct {
 	Method string `json:"method"`
 	Params struct {

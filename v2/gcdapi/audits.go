@@ -203,6 +203,7 @@ type AuditsInspectorIssue struct {
 	IssueId string                       `json:"issueId,omitempty"` // A unique id for this issue. May be omitted if no other entity (e.g. exception, CDP message, etc.) is referencing this issue.
 }
 
+//
 type AuditsIssueAddedEvent struct {
 	Method string `json:"method"`
 	Params struct {

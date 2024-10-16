@@ -658,6 +658,7 @@ type NetworkReportingApiReportAddedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type NetworkReportingApiReportUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
@@ -665,6 +666,7 @@ type NetworkReportingApiReportUpdatedEvent struct {
 	} `json:"Params,omitempty"`
 }
 
+//
 type NetworkReportingApiEndpointsChangedForOriginEvent struct {
 	Method string `json:"method"`
 	Params struct {

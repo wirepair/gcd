@@ -59,7 +59,7 @@ func main() {
 		wg.Add(1)
 		targets[i], err = debugger.NewTab()
 		if err != nil {
-			log.Fatalf("error getting targets")
+			log.Fatalf("error getting targets: %s", err)
 		}
 		page := targets[i].Page
 		page.Enable(ctx)

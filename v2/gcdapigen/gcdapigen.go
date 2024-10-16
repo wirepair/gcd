@@ -76,7 +76,6 @@ var update bool
 var rev string
 var templates *template.Template // for code generation
 var funcMap template.FuncMap     // helper funcs
-var revisionInfo *RevisionInfo
 
 func init() {
 	flag.BoolVar(&update, "update", false, "download and merge js_protocol.json and browser_protocol.json into protocol.json")
@@ -92,14 +91,10 @@ func init() {
 }
 
 func main() {
-	var domains []*Domain
+
 	globalRefs = make(map[string]*GlobalReference)
 
 	flag.Parse()
-
-	if update {
-		revisionInfo = getApiRevision(rev)
-	}
 
 	protocolData := openFile()
 	if debug == false {
@@ -133,28 +128,22 @@ func main() {
 		if protoDomain.Commands != nil && len(protoDomain.Commands) > 0 {
 			domain.PopulateCommands(protoDomain.Commands)
 		}
-		domains = append(domains, domain)
 		domain.ResolveImports()
 		domain.WriteDomain()
 	}
 
-	writeVersionFile(revisionInfo, protocolApi.Version)
+	writeVersionFile(protocolApi.Version)
 }
 
-func writeVersionFile(revision *RevisionInfo, apiVersion *ProtoApiVersion) {
+func writeVersionFile(apiVersion *ProtoApiVersion) {
 	versionFile := outputDir + string(os.PathSeparator) + "version.go"
 	wr, err := os.Create(versionFile)
 	if err != nil {
 		log.Fatalf("error creating version output file: %s\n", err)
 	}
-	
+
 	chromeChannel := "unknown"
 	chromeVersion := "unknown"
-
-	if revision != nil {
-		chromeChannel = revision.Channel
-		chromeVersion = revision.Version
-	}
 
 	wr.WriteString(fmt.Sprintf(versionData, chromeChannel, chromeVersion, apiVersion.Major, apiVersion.Minor))
 	wr.Close()

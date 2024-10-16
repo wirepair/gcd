@@ -23,6 +23,7 @@ type DatabaseError struct {
 	Code    int    `json:"code"`    // Error code.
 }
 
+//
 type DatabaseAddDatabaseEvent struct {
 	Method string `json:"method"`
 	Params struct {

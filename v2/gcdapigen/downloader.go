@@ -26,9 +26,7 @@ package main
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -36,72 +34,9 @@ import (
 )
 
 const (
-	channel             = "stable"                                  // appears only stable is in github/devtools-protocol.
-	revisionOS          = "win64"                                   // doesn't really matter
-	revisionEndpoint    = "https://omahaproxy.appspot.com/all.json" // get release level info
-	browserProtocolFile = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/%s/json/browser_protocol.json"
-	jsProtocolFile      = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/%s/json/js_protocol.json"
+	browserProtocolFile = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/refs/heads/master/json/browser_protocol.json"
+	jsProtocolFile      = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/refs/heads/master/json/js_protocol.json"
 )
-
-type ChromiumRevision []struct {
-	Os       string `json:"os"`
-	Versions []struct {
-		BranchCommit       string `json:"branch_commit"`
-		BranchBasePosition string `json:"branch_base_position"`
-		SkiaCommit         string `json:"skia_commit"`
-		V8Version          string `json:"v8_version"`
-		PreviousVersion    string `json:"previous_version"`
-		V8Commit           string `json:"v8_commit"`
-		TrueBranch         string `json:"true_branch"`
-		PreviousReldate    string `json:"previous_reldate"`
-		BranchBaseCommit   string `json:"branch_base_commit"`
-		Version            string `json:"version"`
-		CurrentReldate     string `json:"current_reldate"`
-		CurrentVersion     string `json:"current_version"`
-		Os                 string `json:"os"`
-		Channel            string `json:"channel"`
-		ChromiumCommit     string `json:"chromium_commit"`
-	} `json:"versions"`
-}
-
-type RevisionInfo struct {
-	Channel  string
-	Version  string
-	Branch   string
-	JsBranch string
-}
-
-func getApiRevision(rev string) *RevisionInfo {
-	versionInfo := getRevisionData(channel)
-	if versionInfo == nil {
-		log.Fatalf("Error finding version information from %s", revisionEndpoint)
-	}
-	download(fmt.Sprintf(browserProtocolFile, rev), fmt.Sprintf(jsProtocolFile, rev))
-	return versionInfo
-}
-
-func getRevisionData(channel string) *RevisionInfo {
-	var revision ChromiumRevision
-	revisionData := getRemoteFile(revisionEndpoint)
-
-	if err := json.Unmarshal(revisionData, &revision); err != nil {
-		log.Fatalf("Error getting revision information: %s\n", err)
-	}
-
-	for _, revisions := range revision {
-		if revisions.Os != revisionOS {
-			continue
-		}
-
-		for _, versions := range revisions.Versions {
-			if versions.Channel != channel {
-				continue
-			}
-			return &RevisionInfo{Channel: versions.Channel, Branch: versions.BranchCommit, JsBranch: versions.V8Commit, Version: versions.Version}
-		}
-	}
-	return nil
-}
 
 func download(browserFile, jsFile string) {
 	browserData := fixBrokenBool(getRemoteFile(browserFile))
@@ -145,16 +80,6 @@ func getRemoteFile(fileName string) []byte {
 	}
 
 	return data
-}
-
-// because google's git viewer is broken, downloading ?format=json, we have to
-// base64 decode the text response.
-func decodeProtocol(data []byte) []byte {
-	decoded, err := base64.StdEncoding.DecodeString(string(data))
-	if err != nil {
-		log.Fatalf("error base64 decoding data: %s %s\n", err, string(data))
-	}
-	return decoded
 }
 
 func fixBrokenBool(data []byte) []byte {
