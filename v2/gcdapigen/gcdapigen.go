@@ -96,6 +96,9 @@ func main() {
 
 	flag.Parse()
 
+	if update {
+		download(browserProtocolFile, jsProtocolFile)
+	}
 	protocolData := openFile()
 	if debug == false {
 		createOutputDirectory()

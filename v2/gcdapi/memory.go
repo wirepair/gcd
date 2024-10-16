@@ -30,6 +30,12 @@ type MemoryModule struct {
 	Size        float64 `json:"size"`        // Size of the module in bytes.
 }
 
+// DOM object counter data.
+type MemoryDOMCounter struct {
+	Name  string `json:"name"`  // Object name. Note: object names should be presumed volatile and clients should not expect the returned names to be consistent across runs.
+	Count int    `json:"count"` // Object count.
+}
+
 type Memory struct {
 	target gcdmessage.ChromeTargeter
 }
@@ -39,7 +45,7 @@ func NewMemory(target gcdmessage.ChromeTargeter) *Memory {
 	return c
 }
 
-// GetDOMCounters -
+// GetDOMCounters - Retruns current DOM object counters.
 // Returns -  documents -  nodes -  jsEventListeners -
 func (c *Memory) GetDOMCounters(ctx context.Context) (int, int, int, error) {
 	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getDOMCounters"})
@@ -71,7 +77,37 @@ func (c *Memory) GetDOMCounters(ctx context.Context) (int, int, int, error) {
 	return chromeData.Result.Documents, chromeData.Result.Nodes, chromeData.Result.JsEventListeners, nil
 }
 
-//
+// GetDOMCountersForLeakDetection - Retruns DOM object counters after preparing renderer for leak detection.
+// Returns -  counters - DOM object counters.
+func (c *Memory) GetDOMCountersForLeakDetection(ctx context.Context) ([]*MemoryDOMCounter, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.getDOMCountersForLeakDetection"})
+	if err != nil {
+		return nil, err
+	}
+
+	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
+		Result struct {
+			Counters []*MemoryDOMCounter
+		}
+	}
+
+	if resp == nil {
+		return nil, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return nil, err
+	}
+
+	if chromeData.Error != nil {
+		return nil, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+	}
+
+	return chromeData.Result.Counters, nil
+}
+
+// Prepares for leak detection by terminating workers, stopping spellcheckers, dropping non-essential internal caches, running garbage collections, etc.
 func (c *Memory) PrepareForLeakDetection(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Memory.prepareForLeakDetection"})
 }

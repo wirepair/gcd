@@ -17,7 +17,7 @@ type FedCmAccount struct {
 	GivenName         string `json:"givenName"`                   //
 	PictureUrl        string `json:"pictureUrl"`                  //
 	IdpConfigUrl      string `json:"idpConfigUrl"`                //
-	IdpSigninUrl      string `json:"idpSigninUrl"`                //
+	IdpLoginUrl       string `json:"idpLoginUrl"`                 //
 	LoginState        string `json:"loginState"`                  //  enum values: SignIn, SignUp
 	TermsOfServiceUrl string `json:"termsOfServiceUrl,omitempty"` // These two are only set if the loginState is signUp
 	PrivacyPolicyUrl  string `json:"privacyPolicyUrl,omitempty"`  //
@@ -27,10 +27,19 @@ type FedCmAccount struct {
 type FedCmDialogShownEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		DialogId string          `json:"dialogId"`           //
-		Accounts []*FedCmAccount `json:"accounts"`           //
-		Title    string          `json:"title"`              // These exist primarily so that the caller can verify the RP context was used appropriately.
-		Subtitle string          `json:"subtitle,omitempty"` //
+		DialogId   string          `json:"dialogId"`           //
+		DialogType string          `json:"dialogType"`         //  enum values: AccountChooser, AutoReauthn, ConfirmIdpLogin, Error
+		Accounts   []*FedCmAccount `json:"accounts"`           //
+		Title      string          `json:"title"`              // These exist primarily so that the caller can verify the RP context was used appropriately.
+		Subtitle   string          `json:"subtitle,omitempty"` //
+	} `json:"Params,omitempty"`
+}
+
+// Triggered when a dialog is closed, either by user action, JS abort, or a command below.
+type FedCmDialogClosedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		DialogId string `json:"dialogId"` //
 	} `json:"Params,omitempty"`
 }
 
@@ -86,6 +95,54 @@ func (c *FedCm) SelectAccount(ctx context.Context, dialogId string, accountIndex
 	v.DialogId = dialogId
 	v.AccountIndex = accountIndex
 	return c.SelectAccountWithParams(ctx, &v)
+}
+
+type FedCmClickDialogButtonParams struct {
+	//
+	DialogId string `json:"dialogId"`
+	//  enum values: ConfirmIdpLoginContinue, ErrorGotIt, ErrorMoreDetails
+	DialogButton string `json:"dialogButton"`
+}
+
+// ClickDialogButtonWithParams -
+func (c *FedCm) ClickDialogButtonWithParams(ctx context.Context, v *FedCmClickDialogButtonParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FedCm.clickDialogButton", Params: v})
+}
+
+// ClickDialogButton -
+// dialogId -
+// dialogButton -  enum values: ConfirmIdpLoginContinue, ErrorGotIt, ErrorMoreDetails
+func (c *FedCm) ClickDialogButton(ctx context.Context, dialogId string, dialogButton string) (*gcdmessage.ChromeResponse, error) {
+	var v FedCmClickDialogButtonParams
+	v.DialogId = dialogId
+	v.DialogButton = dialogButton
+	return c.ClickDialogButtonWithParams(ctx, &v)
+}
+
+type FedCmOpenUrlParams struct {
+	//
+	DialogId string `json:"dialogId"`
+	//
+	AccountIndex int `json:"accountIndex"`
+	//  enum values: TermsOfService, PrivacyPolicy
+	AccountUrlType string `json:"accountUrlType"`
+}
+
+// OpenUrlWithParams -
+func (c *FedCm) OpenUrlWithParams(ctx context.Context, v *FedCmOpenUrlParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "FedCm.openUrl", Params: v})
+}
+
+// OpenUrl -
+// dialogId -
+// accountIndex -
+// accountUrlType -  enum values: TermsOfService, PrivacyPolicy
+func (c *FedCm) OpenUrl(ctx context.Context, dialogId string, accountIndex int, accountUrlType string) (*gcdmessage.ChromeResponse, error) {
+	var v FedCmOpenUrlParams
+	v.DialogId = dialogId
+	v.AccountIndex = accountIndex
+	v.AccountUrlType = accountUrlType
+	return c.OpenUrlWithParams(ctx, &v)
 }
 
 type FedCmDismissDialogParams struct {

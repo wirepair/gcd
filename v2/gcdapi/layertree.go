@@ -63,7 +63,7 @@ type LayerTreeLayerPaintedEvent struct {
 type LayerTreeLayerTreeDidChangeEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the comspositing mode.
+		Layers []*LayerTreeLayer `json:"layers,omitempty"` // Layer tree, absent if not in the compositing mode.
 	} `json:"Params,omitempty"`
 }
 

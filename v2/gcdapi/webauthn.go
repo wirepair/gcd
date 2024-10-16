@@ -22,21 +22,45 @@ type WebAuthnVirtualAuthenticatorOptions struct {
 	HasPrf                      bool   `json:"hasPrf,omitempty"`                      // If set to true, the authenticator will support the prf extension. https://w3c.github.io/webauthn/#prf-extension Defaults to false.
 	AutomaticPresenceSimulation bool   `json:"automaticPresenceSimulation,omitempty"` // If set to true, tests of user presence will succeed immediately. Otherwise, they will not be resolved. Defaults to true.
 	IsUserVerified              bool   `json:"isUserVerified,omitempty"`              // Sets whether User Verification succeeds or fails for an authenticator. Defaults to false.
+	DefaultBackupEligibility    bool   `json:"defaultBackupEligibility,omitempty"`    // Credentials created by this authenticator will have the backup eligibility (BE) flag set to this value. Defaults to false. https://w3c.github.io/webauthn/#sctn-credential-backup
+	DefaultBackupState          bool   `json:"defaultBackupState,omitempty"`          // Credentials created by this authenticator will have the backup state (BS) flag set to this value. Defaults to false. https://w3c.github.io/webauthn/#sctn-credential-backup
 }
 
 // No Description.
 type WebAuthnCredential struct {
-	CredentialId         string `json:"credentialId"`         //
-	IsResidentCredential bool   `json:"isResidentCredential"` //
-	RpId                 string `json:"rpId,omitempty"`       // Relying Party ID the credential is scoped to. Must be set when adding a credential.
-	PrivateKey           string `json:"privateKey"`           // The ECDSA P-256 private key in PKCS#8 format. (Encoded as a base64 string when passed over JSON)
-	UserHandle           string `json:"userHandle,omitempty"` // An opaque byte sequence with a maximum size of 64 bytes mapping the credential to a specific user. (Encoded as a base64 string when passed over JSON)
-	SignCount            int    `json:"signCount"`            // Signature counter. This is incremented by one for each successful assertion. See https://w3c.github.io/webauthn/#signature-counter
-	LargeBlob            string `json:"largeBlob,omitempty"`  // The large blob associated with the credential. See https://w3c.github.io/webauthn/#sctn-large-blob-extension (Encoded as a base64 string when passed over JSON)
+	CredentialId         string `json:"credentialId"`                //
+	IsResidentCredential bool   `json:"isResidentCredential"`        //
+	RpId                 string `json:"rpId,omitempty"`              // Relying Party ID the credential is scoped to. Must be set when adding a credential.
+	PrivateKey           string `json:"privateKey"`                  // The ECDSA P-256 private key in PKCS#8 format. (Encoded as a base64 string when passed over JSON)
+	UserHandle           string `json:"userHandle,omitempty"`        // An opaque byte sequence with a maximum size of 64 bytes mapping the credential to a specific user. (Encoded as a base64 string when passed over JSON)
+	SignCount            int    `json:"signCount"`                   // Signature counter. This is incremented by one for each successful assertion. See https://w3c.github.io/webauthn/#signature-counter
+	LargeBlob            string `json:"largeBlob,omitempty"`         // The large blob associated with the credential. See https://w3c.github.io/webauthn/#sctn-large-blob-extension (Encoded as a base64 string when passed over JSON)
+	BackupEligibility    bool   `json:"backupEligibility,omitempty"` // Assertions returned by this credential will have the backup eligibility (BE) flag set to this value. Defaults to the authenticator's defaultBackupEligibility value.
+	BackupState          bool   `json:"backupState,omitempty"`       // Assertions returned by this credential will have the backup state (BS) flag set to this value. Defaults to the authenticator's defaultBackupState value.
+	UserName             string `json:"userName,omitempty"`          // The credential's user.name property. Equivalent to empty if not set. https://w3c.github.io/webauthn/#dom-publickeycredentialentity-name
+	UserDisplayName      string `json:"userDisplayName,omitempty"`   // The credential's user.displayName property. Equivalent to empty if not set. https://w3c.github.io/webauthn/#dom-publickeycredentialuserentity-displayname
 }
 
 // Triggered when a credential is added to an authenticator.
 type WebAuthnCredentialAddedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		AuthenticatorId string              `json:"authenticatorId"` //
+		Credential      *WebAuthnCredential `json:"credential"`      //
+	} `json:"Params,omitempty"`
+}
+
+// Triggered when a credential is deleted, e.g. through PublicKeyCredential.signalUnknownCredential().
+type WebAuthnCredentialDeletedEvent struct {
+	Method string `json:"method"`
+	Params struct {
+		AuthenticatorId string `json:"authenticatorId"` //
+		CredentialId    string `json:"credentialId"`    //
+	} `json:"Params,omitempty"`
+}
+
+// Triggered when a credential is updated, e.g. through PublicKeyCredential.signalCurrentUserDetails().
+type WebAuthnCredentialUpdatedEvent struct {
 	Method string `json:"method"`
 	Params struct {
 		AuthenticatorId string              `json:"authenticatorId"` //
@@ -373,4 +397,34 @@ func (c *WebAuthn) SetAutomaticPresenceSimulation(ctx context.Context, authentic
 	v.AuthenticatorId = authenticatorId
 	v.Enabled = enabled
 	return c.SetAutomaticPresenceSimulationWithParams(ctx, &v)
+}
+
+type WebAuthnSetCredentialPropertiesParams struct {
+	//
+	AuthenticatorId string `json:"authenticatorId"`
+	//
+	CredentialId string `json:"credentialId"`
+	//
+	BackupEligibility bool `json:"backupEligibility,omitempty"`
+	//
+	BackupState bool `json:"backupState,omitempty"`
+}
+
+// SetCredentialPropertiesWithParams - Allows setting credential properties. https://w3c.github.io/webauthn/#sctn-automation-set-credential-properties
+func (c *WebAuthn) SetCredentialPropertiesWithParams(ctx context.Context, v *WebAuthnSetCredentialPropertiesParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "WebAuthn.setCredentialProperties", Params: v})
+}
+
+// SetCredentialProperties - Allows setting credential properties. https://w3c.github.io/webauthn/#sctn-automation-set-credential-properties
+// authenticatorId -
+// credentialId -
+// backupEligibility -
+// backupState -
+func (c *WebAuthn) SetCredentialProperties(ctx context.Context, authenticatorId string, credentialId string, backupEligibility bool, backupState bool) (*gcdmessage.ChromeResponse, error) {
+	var v WebAuthnSetCredentialPropertiesParams
+	v.AuthenticatorId = authenticatorId
+	v.CredentialId = credentialId
+	v.BackupEligibility = backupEligibility
+	v.BackupState = backupState
+	return c.SetCredentialPropertiesWithParams(ctx, &v)
 }

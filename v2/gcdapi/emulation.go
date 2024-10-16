@@ -23,18 +23,23 @@ type EmulationDisplayFeature struct {
 }
 
 // No Description.
+type EmulationDevicePosture struct {
+	Type string `json:"type"` // Current posture of the device
+}
+
+// No Description.
 type EmulationMediaFeature struct {
 	Name  string `json:"name"`  //
 	Value string `json:"value"` //
 }
 
-// Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+// Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
 type EmulationUserAgentBrandVersion struct {
 	Brand   string `json:"brand"`   //
 	Version string `json:"version"` //
 }
 
-// Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints Missing optional values will be filled in by the target with what it would normally use.
+// Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints Missing optional values will be filled in by the target with what it would normally use.
 type EmulationUserAgentMetadata struct {
 	Brands          []*EmulationUserAgentBrandVersion `json:"brands,omitempty"`          // Brands appearing in Sec-CH-UA.
 	FullVersionList []*EmulationUserAgentBrandVersion `json:"fullVersionList,omitempty"` // Brands appearing in Sec-CH-UA-Full-Version-List.
@@ -46,6 +51,45 @@ type EmulationUserAgentMetadata struct {
 	Mobile          bool                              `json:"mobile"`                    //
 	Bitness         string                            `json:"bitness,omitempty"`         //
 	Wow64           bool                              `json:"wow64,omitempty"`           //
+}
+
+// No Description.
+type EmulationSensorMetadata struct {
+	Available        bool    `json:"available,omitempty"`        //
+	MinimumFrequency float64 `json:"minimumFrequency,omitempty"` //
+	MaximumFrequency float64 `json:"maximumFrequency,omitempty"` //
+}
+
+// No Description.
+type EmulationSensorReadingSingle struct {
+	Value float64 `json:"value"` //
+}
+
+// No Description.
+type EmulationSensorReadingXYZ struct {
+	X float64 `json:"x"` //
+	Y float64 `json:"y"` //
+	Z float64 `json:"z"` //
+}
+
+// No Description.
+type EmulationSensorReadingQuaternion struct {
+	X float64 `json:"x"` //
+	Y float64 `json:"y"` //
+	Z float64 `json:"z"` //
+	W float64 `json:"w"` //
+}
+
+// No Description.
+type EmulationSensorReading struct {
+	Single     *EmulationSensorReadingSingle     `json:"single,omitempty"`     //
+	Xyz        *EmulationSensorReadingXYZ        `json:"xyz,omitempty"`        //
+	Quaternion *EmulationSensorReadingQuaternion `json:"quaternion,omitempty"` //
+}
+
+// No Description.
+type EmulationPressureMetadata struct {
+	Available bool `json:"available,omitempty"` //
 }
 
 type Emulation struct {
@@ -201,6 +245,8 @@ type EmulationSetDeviceMetricsOverrideParams struct {
 	Viewport *PageViewport `json:"viewport,omitempty"`
 	// If set, the display feature of a multi-segment screen. If not set, multi-segment support is turned-off.
 	DisplayFeature *EmulationDisplayFeature `json:"displayFeature,omitempty"`
+	// If set, the posture of a foldable device. If not set the posture is set to continuous. Deprecated, use Emulation.setDevicePostureOverride.
+	DevicePosture *EmulationDevicePosture `json:"devicePosture,omitempty"`
 }
 
 // SetDeviceMetricsOverrideWithParams - Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media query results).
@@ -222,7 +268,8 @@ func (c *Emulation) SetDeviceMetricsOverrideWithParams(ctx context.Context, v *E
 // screenOrientation - Screen orientation override.
 // viewport - If set, the visible area of the page will be overridden to this viewport. This viewport change is not observed by the page, e.g. viewport-relative elements do not change positions.
 // displayFeature - If set, the display feature of a multi-segment screen. If not set, multi-segment support is turned-off.
-func (c *Emulation) SetDeviceMetricsOverride(ctx context.Context, width int, height int, deviceScaleFactor float64, mobile bool, scale float64, screenWidth int, screenHeight int, positionX int, positionY int, dontSetVisibleSize bool, screenOrientation *EmulationScreenOrientation, viewport *PageViewport, displayFeature *EmulationDisplayFeature) (*gcdmessage.ChromeResponse, error) {
+// devicePosture - If set, the posture of a foldable device. If not set the posture is set to continuous. Deprecated, use Emulation.setDevicePostureOverride.
+func (c *Emulation) SetDeviceMetricsOverride(ctx context.Context, width int, height int, deviceScaleFactor float64, mobile bool, scale float64, screenWidth int, screenHeight int, positionX int, positionY int, dontSetVisibleSize bool, screenOrientation *EmulationScreenOrientation, viewport *PageViewport, displayFeature *EmulationDisplayFeature, devicePosture *EmulationDevicePosture) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetDeviceMetricsOverrideParams
 	v.Width = width
 	v.Height = height
@@ -237,7 +284,31 @@ func (c *Emulation) SetDeviceMetricsOverride(ctx context.Context, width int, hei
 	v.ScreenOrientation = screenOrientation
 	v.Viewport = viewport
 	v.DisplayFeature = displayFeature
+	v.DevicePosture = devicePosture
 	return c.SetDeviceMetricsOverrideWithParams(ctx, &v)
+}
+
+type EmulationSetDevicePostureOverrideParams struct {
+	//
+	Posture *EmulationDevicePosture `json:"posture"`
+}
+
+// SetDevicePostureOverrideWithParams - Start reporting the given posture value to the Device Posture API. This override can also be set in setDeviceMetricsOverride().
+func (c *Emulation) SetDevicePostureOverrideWithParams(ctx context.Context, v *EmulationSetDevicePostureOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setDevicePostureOverride", Params: v})
+}
+
+// SetDevicePostureOverride - Start reporting the given posture value to the Device Posture API. This override can also be set in setDeviceMetricsOverride().
+// posture -
+func (c *Emulation) SetDevicePostureOverride(ctx context.Context, posture *EmulationDevicePosture) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetDevicePostureOverrideParams
+	v.Posture = posture
+	return c.SetDevicePostureOverrideWithParams(ctx, &v)
+}
+
+// Clears a device posture override set with either setDeviceMetricsOverride() or setDevicePostureOverride() and starts using posture information from the platform again. Does nothing if no override is set.
+func (c *Emulation) ClearDevicePostureOverride(ctx context.Context) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.clearDevicePostureOverride"})
 }
 
 type EmulationSetScrollbarsHiddenParams struct {
@@ -362,6 +433,146 @@ func (c *Emulation) SetGeolocationOverride(ctx context.Context, latitude float64
 	v.Longitude = longitude
 	v.Accuracy = accuracy
 	return c.SetGeolocationOverrideWithParams(ctx, &v)
+}
+
+type EmulationGetOverriddenSensorInformationParams struct {
+	//  enum values: absolute-orientation, accelerometer, ambient-light, gravity, gyroscope, linear-acceleration, magnetometer, relative-orientation
+	TheType string `json:"type"`
+}
+
+// GetOverriddenSensorInformationWithParams -
+// Returns -  requestedSamplingFrequency -
+func (c *Emulation) GetOverriddenSensorInformationWithParams(ctx context.Context, v *EmulationGetOverriddenSensorInformationParams) (float64, error) {
+	resp, err := c.target.SendCustomReturn(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.getOverriddenSensorInformation", Params: v})
+	if err != nil {
+		return 0, err
+	}
+
+	var chromeData struct {
+		gcdmessage.ChromeErrorResponse
+		Result struct {
+			RequestedSamplingFrequency float64
+		}
+	}
+
+	if resp == nil {
+		return 0, &gcdmessage.ChromeEmptyResponseErr{}
+	}
+
+	if err := jsonUnmarshal(resp.Data, &chromeData); err != nil {
+		return 0, err
+	}
+
+	if chromeData.Error != nil {
+		return 0, &gcdmessage.ChromeRequestErr{Resp: &chromeData.ChromeErrorResponse}
+	}
+
+	return chromeData.Result.RequestedSamplingFrequency, nil
+}
+
+// GetOverriddenSensorInformation -
+// type -  enum values: absolute-orientation, accelerometer, ambient-light, gravity, gyroscope, linear-acceleration, magnetometer, relative-orientation
+// Returns -  requestedSamplingFrequency -
+func (c *Emulation) GetOverriddenSensorInformation(ctx context.Context, theType string) (float64, error) {
+	var v EmulationGetOverriddenSensorInformationParams
+	v.TheType = theType
+	return c.GetOverriddenSensorInformationWithParams(ctx, &v)
+}
+
+type EmulationSetSensorOverrideEnabledParams struct {
+	//
+	Enabled bool `json:"enabled"`
+	//  enum values: absolute-orientation, accelerometer, ambient-light, gravity, gyroscope, linear-acceleration, magnetometer, relative-orientation
+	TheType string `json:"type"`
+	//
+	Metadata *EmulationSensorMetadata `json:"metadata,omitempty"`
+}
+
+// SetSensorOverrideEnabledWithParams - Overrides a platform sensor of a given type. If |enabled| is true, calls to Sensor.start() will use a virtual sensor as backend rather than fetching data from a real hardware sensor. Otherwise, existing virtual sensor-backend Sensor objects will fire an error event and new calls to Sensor.start() will attempt to use a real sensor instead.
+func (c *Emulation) SetSensorOverrideEnabledWithParams(ctx context.Context, v *EmulationSetSensorOverrideEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setSensorOverrideEnabled", Params: v})
+}
+
+// SetSensorOverrideEnabled - Overrides a platform sensor of a given type. If |enabled| is true, calls to Sensor.start() will use a virtual sensor as backend rather than fetching data from a real hardware sensor. Otherwise, existing virtual sensor-backend Sensor objects will fire an error event and new calls to Sensor.start() will attempt to use a real sensor instead.
+// enabled -
+// type -  enum values: absolute-orientation, accelerometer, ambient-light, gravity, gyroscope, linear-acceleration, magnetometer, relative-orientation
+// metadata -
+func (c *Emulation) SetSensorOverrideEnabled(ctx context.Context, enabled bool, theType string, metadata *EmulationSensorMetadata) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetSensorOverrideEnabledParams
+	v.Enabled = enabled
+	v.TheType = theType
+	v.Metadata = metadata
+	return c.SetSensorOverrideEnabledWithParams(ctx, &v)
+}
+
+type EmulationSetSensorOverrideReadingsParams struct {
+	//  enum values: absolute-orientation, accelerometer, ambient-light, gravity, gyroscope, linear-acceleration, magnetometer, relative-orientation
+	TheType string `json:"type"`
+	//
+	Reading *EmulationSensorReading `json:"reading"`
+}
+
+// SetSensorOverrideReadingsWithParams - Updates the sensor readings reported by a sensor type previously overridden by setSensorOverrideEnabled.
+func (c *Emulation) SetSensorOverrideReadingsWithParams(ctx context.Context, v *EmulationSetSensorOverrideReadingsParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setSensorOverrideReadings", Params: v})
+}
+
+// SetSensorOverrideReadings - Updates the sensor readings reported by a sensor type previously overridden by setSensorOverrideEnabled.
+// type -  enum values: absolute-orientation, accelerometer, ambient-light, gravity, gyroscope, linear-acceleration, magnetometer, relative-orientation
+// reading -
+func (c *Emulation) SetSensorOverrideReadings(ctx context.Context, theType string, reading *EmulationSensorReading) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetSensorOverrideReadingsParams
+	v.TheType = theType
+	v.Reading = reading
+	return c.SetSensorOverrideReadingsWithParams(ctx, &v)
+}
+
+type EmulationSetPressureSourceOverrideEnabledParams struct {
+	//
+	Enabled bool `json:"enabled"`
+	//  enum values: cpu
+	Source string `json:"source"`
+	//
+	Metadata *EmulationPressureMetadata `json:"metadata,omitempty"`
+}
+
+// SetPressureSourceOverrideEnabledWithParams - Overrides a pressure source of a given type, as used by the Compute Pressure API, so that updates to PressureObserver.observe() are provided via setPressureStateOverride instead of being retrieved from platform-provided telemetry data.
+func (c *Emulation) SetPressureSourceOverrideEnabledWithParams(ctx context.Context, v *EmulationSetPressureSourceOverrideEnabledParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setPressureSourceOverrideEnabled", Params: v})
+}
+
+// SetPressureSourceOverrideEnabled - Overrides a pressure source of a given type, as used by the Compute Pressure API, so that updates to PressureObserver.observe() are provided via setPressureStateOverride instead of being retrieved from platform-provided telemetry data.
+// enabled -
+// source -  enum values: cpu
+// metadata -
+func (c *Emulation) SetPressureSourceOverrideEnabled(ctx context.Context, enabled bool, source string, metadata *EmulationPressureMetadata) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetPressureSourceOverrideEnabledParams
+	v.Enabled = enabled
+	v.Source = source
+	v.Metadata = metadata
+	return c.SetPressureSourceOverrideEnabledWithParams(ctx, &v)
+}
+
+type EmulationSetPressureStateOverrideParams struct {
+	//  enum values: cpu
+	Source string `json:"source"`
+	//  enum values: nominal, fair, serious, critical
+	State string `json:"state"`
+}
+
+// SetPressureStateOverrideWithParams - Provides a given pressure state that will be processed and eventually be delivered to PressureObserver users. |source| must have been previously overridden by setPressureSourceOverrideEnabled.
+func (c *Emulation) SetPressureStateOverrideWithParams(ctx context.Context, v *EmulationSetPressureStateOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setPressureStateOverride", Params: v})
+}
+
+// SetPressureStateOverride - Provides a given pressure state that will be processed and eventually be delivered to PressureObserver users. |source| must have been previously overridden by setPressureSourceOverrideEnabled.
+// source -  enum values: cpu
+// state -  enum values: nominal, fair, serious, critical
+func (c *Emulation) SetPressureStateOverride(ctx context.Context, source string, state string) (*gcdmessage.ChromeResponse, error) {
+	var v EmulationSetPressureStateOverrideParams
+	v.Source = source
+	v.State = state
+	return c.SetPressureStateOverrideWithParams(ctx, &v)
 }
 
 type EmulationSetIdleOverrideParams struct {
@@ -542,7 +753,7 @@ func (c *Emulation) SetLocaleOverride(ctx context.Context, locale string) (*gcdm
 }
 
 type EmulationSetTimezoneOverrideParams struct {
-	// The timezone identifier. If empty, disables the override and restores default host system timezone.
+	// The timezone identifier. List of supported timezones: https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt If empty, disables the override and restores default host system timezone.
 	TimezoneId string `json:"timezoneId"`
 }
 
@@ -552,7 +763,7 @@ func (c *Emulation) SetTimezoneOverrideWithParams(ctx context.Context, v *Emulat
 }
 
 // SetTimezoneOverride - Overrides default host system timezone with the specified one.
-// timezoneId - The timezone identifier. If empty, disables the override and restores default host system timezone.
+// timezoneId - The timezone identifier. List of supported timezones: https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt If empty, disables the override and restores default host system timezone.
 func (c *Emulation) SetTimezoneOverride(ctx context.Context, timezoneId string) (*gcdmessage.ChromeResponse, error) {
 	var v EmulationSetTimezoneOverrideParams
 	v.TimezoneId = timezoneId
@@ -620,7 +831,7 @@ func (c *Emulation) SetHardwareConcurrencyOverride(ctx context.Context, hardware
 type EmulationSetUserAgentOverrideParams struct {
 	// User agent to use.
 	UserAgent string `json:"userAgent"`
-	// Browser langugage to emulate.
+	// Browser language to emulate.
 	AcceptLanguage string `json:"acceptLanguage,omitempty"`
 	// The platform navigator.platform should return.
 	Platform string `json:"platform,omitempty"`
@@ -628,14 +839,14 @@ type EmulationSetUserAgentOverrideParams struct {
 	UserAgentMetadata *EmulationUserAgentMetadata `json:"userAgentMetadata,omitempty"`
 }
 
-// SetUserAgentOverrideWithParams - Allows overriding user agent with the given string.
+// SetUserAgentOverrideWithParams - Allows overriding user agent with the given string. `userAgentMetadata` must be set for Client Hint headers to be sent.
 func (c *Emulation) SetUserAgentOverrideWithParams(ctx context.Context, v *EmulationSetUserAgentOverrideParams) (*gcdmessage.ChromeResponse, error) {
 	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Emulation.setUserAgentOverride", Params: v})
 }
 
-// SetUserAgentOverride - Allows overriding user agent with the given string.
+// SetUserAgentOverride - Allows overriding user agent with the given string. `userAgentMetadata` must be set for Client Hint headers to be sent.
 // userAgent - User agent to use.
-// acceptLanguage - Browser langugage to emulate.
+// acceptLanguage - Browser language to emulate.
 // platform - The platform navigator.platform should return.
 // userAgentMetadata - To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
 func (c *Emulation) SetUserAgentOverride(ctx context.Context, userAgent string, acceptLanguage string, platform string, userAgentMetadata *EmulationUserAgentMetadata) (*gcdmessage.ChromeResponse, error) {

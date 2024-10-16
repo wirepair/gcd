@@ -128,25 +128,25 @@ type DebuggerScriptFailedToParseEvent struct {
 type DebuggerScriptParsedEvent struct {
 	Method string `json:"method"`
 	Params struct {
-		ScriptId                string                 `json:"scriptId"`                          // Identifier of the script parsed.
-		Url                     string                 `json:"url"`                               // URL or name of the script parsed (if any).
-		StartLine               int                    `json:"startLine"`                         // Line offset of the script within the resource with given URL (for script tags).
-		StartColumn             int                    `json:"startColumn"`                       // Column offset of the script within the resource with given URL.
-		EndLine                 int                    `json:"endLine"`                           // Last line of the script.
-		EndColumn               int                    `json:"endColumn"`                         // Length of the last line of the script.
-		ExecutionContextId      int                    `json:"executionContextId"`                // Specifies script creation context.
-		Hash                    string                 `json:"hash"`                              // Content hash of the script, SHA-256.
-		ExecutionContextAuxData map[string]interface{} `json:"executionContextAuxData,omitempty"` // Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
-		IsLiveEdit              bool                   `json:"isLiveEdit,omitempty"`              // True, if this script is generated as a result of the live edit operation.
-		SourceMapURL            string                 `json:"sourceMapURL,omitempty"`            // URL of source map associated with script (if any).
-		HasSourceURL            bool                   `json:"hasSourceURL,omitempty"`            // True, if this script has sourceURL.
-		IsModule                bool                   `json:"isModule,omitempty"`                // True, if this script is ES6 module.
-		Length                  int                    `json:"length,omitempty"`                  // This script length.
-		StackTrace              *RuntimeStackTrace     `json:"stackTrace,omitempty"`              // JavaScript top stack frame of where the script parsed event was triggered if available.
-		CodeOffset              int                    `json:"codeOffset,omitempty"`              // If the scriptLanguage is WebAssembly, the code section offset in the module.
-		ScriptLanguage          string                 `json:"scriptLanguage,omitempty"`          // The language of the script. enum values: JavaScript, WebAssembly
-		DebugSymbols            *DebuggerDebugSymbols  `json:"debugSymbols,omitempty"`            // If the scriptLanguage is WebASsembly, the source of debug symbols for the module.
-		EmbedderName            string                 `json:"embedderName,omitempty"`            // The name the embedder supplied for this script.
+		ScriptId                string                  `json:"scriptId"`                          // Identifier of the script parsed.
+		Url                     string                  `json:"url"`                               // URL or name of the script parsed (if any).
+		StartLine               int                     `json:"startLine"`                         // Line offset of the script within the resource with given URL (for script tags).
+		StartColumn             int                     `json:"startColumn"`                       // Column offset of the script within the resource with given URL.
+		EndLine                 int                     `json:"endLine"`                           // Last line of the script.
+		EndColumn               int                     `json:"endColumn"`                         // Length of the last line of the script.
+		ExecutionContextId      int                     `json:"executionContextId"`                // Specifies script creation context.
+		Hash                    string                  `json:"hash"`                              // Content hash of the script, SHA-256.
+		ExecutionContextAuxData map[string]interface{}  `json:"executionContextAuxData,omitempty"` // Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
+		IsLiveEdit              bool                    `json:"isLiveEdit,omitempty"`              // True, if this script is generated as a result of the live edit operation.
+		SourceMapURL            string                  `json:"sourceMapURL,omitempty"`            // URL of source map associated with script (if any).
+		HasSourceURL            bool                    `json:"hasSourceURL,omitempty"`            // True, if this script has sourceURL.
+		IsModule                bool                    `json:"isModule,omitempty"`                // True, if this script is ES6 module.
+		Length                  int                     `json:"length,omitempty"`                  // This script length.
+		StackTrace              *RuntimeStackTrace      `json:"stackTrace,omitempty"`              // JavaScript top stack frame of where the script parsed event was triggered if available.
+		CodeOffset              int                     `json:"codeOffset,omitempty"`              // If the scriptLanguage is WebAssembly, the code section offset in the module.
+		ScriptLanguage          string                  `json:"scriptLanguage,omitempty"`          // The language of the script. enum values: JavaScript, WebAssembly
+		DebugSymbols            []*DebuggerDebugSymbols `json:"debugSymbols,omitempty"`            // If the scriptLanguage is WebAssembly, the source of debug symbols for the module.
+		EmbedderName            string                  `json:"embedderName,omitempty"`            // The name the embedder supplied for this script.
 	} `json:"Params,omitempty"`
 }
 
@@ -766,9 +766,29 @@ func (c *Debugger) SetAsyncCallStackDepth(ctx context.Context, maxDepth int) (*g
 	return c.SetAsyncCallStackDepthWithParams(ctx, &v)
 }
 
+type DebuggerSetBlackboxExecutionContextsParams struct {
+	// Array of execution context unique ids for the debugger to ignore.
+	UniqueIds []string `json:"uniqueIds"`
+}
+
+// SetBlackboxExecutionContextsWithParams - Replace previous blackbox execution contexts with passed ones. Forces backend to skip stepping/pausing in scripts in these execution contexts. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
+func (c *Debugger) SetBlackboxExecutionContextsWithParams(ctx context.Context, v *DebuggerSetBlackboxExecutionContextsParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Debugger.setBlackboxExecutionContexts", Params: v})
+}
+
+// SetBlackboxExecutionContexts - Replace previous blackbox execution contexts with passed ones. Forces backend to skip stepping/pausing in scripts in these execution contexts. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
+// uniqueIds - Array of execution context unique ids for the debugger to ignore.
+func (c *Debugger) SetBlackboxExecutionContexts(ctx context.Context, uniqueIds []string) (*gcdmessage.ChromeResponse, error) {
+	var v DebuggerSetBlackboxExecutionContextsParams
+	v.UniqueIds = uniqueIds
+	return c.SetBlackboxExecutionContextsWithParams(ctx, &v)
+}
+
 type DebuggerSetBlackboxPatternsParams struct {
 	// Array of regexps that will be used to check script url for blackbox state.
 	Patterns []string `json:"patterns"`
+	// If true, also ignore scripts with no source url.
+	SkipAnonymous bool `json:"skipAnonymous,omitempty"`
 }
 
 // SetBlackboxPatternsWithParams - Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
@@ -778,9 +798,11 @@ func (c *Debugger) SetBlackboxPatternsWithParams(ctx context.Context, v *Debugge
 
 // SetBlackboxPatterns - Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in scripts with url matching one of the patterns. VM will try to leave blackboxed script by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
 // patterns - Array of regexps that will be used to check script url for blackbox state.
-func (c *Debugger) SetBlackboxPatterns(ctx context.Context, patterns []string) (*gcdmessage.ChromeResponse, error) {
+// skipAnonymous - If true, also ignore scripts with no source url.
+func (c *Debugger) SetBlackboxPatterns(ctx context.Context, patterns []string, skipAnonymous bool) (*gcdmessage.ChromeResponse, error) {
 	var v DebuggerSetBlackboxPatternsParams
 	v.Patterns = patterns
+	v.SkipAnonymous = skipAnonymous
 	return c.SetBlackboxPatternsWithParams(ctx, &v)
 }
 

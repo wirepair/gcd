@@ -18,12 +18,13 @@ type BrowserBounds struct {
 	WindowState string `json:"windowState,omitempty"` // The window state. Default to normal. enum values: normal, minimized, maximized, fullscreen
 }
 
-// Definition of PermissionDescriptor defined in the Permissions API: https://w3c.github.io/permissions/#dictdef-permissiondescriptor.
+// Definition of PermissionDescriptor defined in the Permissions API: https://w3c.github.io/permissions/#dom-permissiondescriptor.
 type BrowserPermissionDescriptor struct {
 	Name                     string `json:"name"`                               // Name of permission. See https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/permissions/permission_descriptor.idl for valid permission names.
 	Sysex                    bool   `json:"sysex,omitempty"`                    // For "midi" permission, may also specify sysex control.
 	UserVisibleOnly          bool   `json:"userVisibleOnly,omitempty"`          // For "push" permission, may specify userVisibleOnly. Note that userVisibleOnly = true is the only currently supported type.
 	AllowWithoutSanitization bool   `json:"allowWithoutSanitization,omitempty"` // For "clipboard" permission, may specify allowWithoutSanitization.
+	AllowWithoutGesture      bool   `json:"allowWithoutGesture,omitempty"`      // For "fullscreen" permission, must specify allowWithoutGesture:true.
 	PanTiltZoom              bool   `json:"panTiltZoom,omitempty"`              // For "camera" permission, may specify panTiltZoom.
 }
 
@@ -104,7 +105,7 @@ func (c *Browser) SetPermission(ctx context.Context, permission *BrowserPermissi
 }
 
 type BrowserGrantPermissionsParams struct {
-	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, idleDetection, localFonts, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, storageAccess, topLevelStorageAccess, videoCapture, videoCapturePanTiltZoom, wakeLockScreen, wakeLockSystem, windowManagement
+	//  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, capturedSurfaceControl, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, idleDetection, localFonts, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, storageAccess, speakerSelection, topLevelStorageAccess, videoCapture, videoCapturePanTiltZoom, wakeLockScreen, wakeLockSystem, webAppInstallation, windowManagement
 	Permissions []string `json:"permissions"`
 	// Origin the permission applies to, all origins if not specified.
 	Origin string `json:"origin,omitempty"`
@@ -118,7 +119,7 @@ func (c *Browser) GrantPermissionsWithParams(ctx context.Context, v *BrowserGran
 }
 
 // GrantPermissions - Grant specific permissions to the given origin and reject all others.
-// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, idleDetection, localFonts, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, storageAccess, topLevelStorageAccess, videoCapture, videoCapturePanTiltZoom, wakeLockScreen, wakeLockSystem, windowManagement
+// permissions -  enum values: accessibilityEvents, audioCapture, backgroundSync, backgroundFetch, capturedSurfaceControl, clipboardReadWrite, clipboardSanitizedWrite, displayCapture, durableStorage, flash, geolocation, idleDetection, localFonts, midi, midiSysex, nfc, notifications, paymentHandler, periodicBackgroundSync, protectedMediaIdentifier, sensors, storageAccess, speakerSelection, topLevelStorageAccess, videoCapture, videoCapturePanTiltZoom, wakeLockScreen, wakeLockSystem, webAppInstallation, windowManagement
 // origin - Origin the permission applies to, all origins if not specified.
 // browserContextId - BrowserContext to override permissions. When omitted, default browser context is used.
 func (c *Browser) GrantPermissions(ctx context.Context, permissions []string, origin string, browserContextId string) (*gcdmessage.ChromeResponse, error) {
@@ -148,7 +149,7 @@ func (c *Browser) ResetPermissions(ctx context.Context, browserContextId string)
 }
 
 type BrowserSetDownloadBehaviorParams struct {
-	// Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
+	// Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their download guids.
 	Behavior string `json:"behavior"`
 	// BrowserContext to set download behavior. When omitted, default browser context is used.
 	BrowserContextId string `json:"browserContextId,omitempty"`
@@ -164,7 +165,7 @@ func (c *Browser) SetDownloadBehaviorWithParams(ctx context.Context, v *BrowserS
 }
 
 // SetDownloadBehavior - Set the behavior when downloading a file.
-// behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
+// behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their download guids.
 // browserContextId - BrowserContext to set download behavior. When omitted, default browser context is used.
 // downloadPath - The default path to save downloaded files to. This is required if behavior is set to 'allow' or 'allowAndName'.
 // eventsEnabled - Whether to emit download events (defaults to false).
@@ -523,4 +524,22 @@ func (c *Browser) ExecuteBrowserCommand(ctx context.Context, commandId string) (
 	var v BrowserExecuteBrowserCommandParams
 	v.CommandId = commandId
 	return c.ExecuteBrowserCommandWithParams(ctx, &v)
+}
+
+type BrowserAddPrivacySandboxEnrollmentOverrideParams struct {
+	//
+	Url string `json:"url"`
+}
+
+// AddPrivacySandboxEnrollmentOverrideWithParams - Allows a site to use privacy sandbox features that require enrollment without the site actually being enrolled. Only supported on page targets.
+func (c *Browser) AddPrivacySandboxEnrollmentOverrideWithParams(ctx context.Context, v *BrowserAddPrivacySandboxEnrollmentOverrideParams) (*gcdmessage.ChromeResponse, error) {
+	return c.target.SendDefaultRequest(ctx, &gcdmessage.ParamRequest{Id: c.target.GetId(), Method: "Browser.addPrivacySandboxEnrollmentOverride", Params: v})
+}
+
+// AddPrivacySandboxEnrollmentOverride - Allows a site to use privacy sandbox features that require enrollment without the site actually being enrolled. Only supported on page targets.
+// url -
+func (c *Browser) AddPrivacySandboxEnrollmentOverride(ctx context.Context, url string) (*gcdmessage.ChromeResponse, error) {
+	var v BrowserAddPrivacySandboxEnrollmentOverrideParams
+	v.Url = url
+	return c.AddPrivacySandboxEnrollmentOverrideWithParams(ctx, &v)
 }

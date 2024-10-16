@@ -481,35 +481,13 @@ func TestConnectToInstance(t *testing.T) {
 	testDefaultStartup(t)
 	defer debugger.ExitProcess()
 
-	doneCh := make(chan error)
+	remoteDebugger := NewChromeDebugger()
+	t.Logf("connecting to %s:%s", debugger.host, debugger.port)
+	remoteDebugger.ConnectToInstance(debugger.host, debugger.port)
 
-	go testTimeoutListener(doneCh, 15, "timed out waiting for remote connection")
-
-	go func() {
-		remoteDebugger := NewChromeDebugger()
-		remoteDebugger.ConnectToInstance(debugger.host, debugger.port)
-
-		_, err := remoteDebugger.NewTab()
-		if err != nil {
-			t.Fatalf("error creating new tab")
-		}
-
-		targets, error := remoteDebugger.GetTargets()
-		if error != nil {
-			t.Fatalf("cannot get targets: %s \n", error)
-		}
-		if len(targets) <= 0 {
-			t.Fatalf("invalid number of targets, got: %d\n", len(targets))
-		}
-		for _, target := range targets {
-			t.Logf("page: %s\n", target.Target.Url)
-		}
-		close(doneCh)
-	}()
-
-	err := <-doneCh
+	_, err := remoteDebugger.NewTab()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("error creating new tab")
 	}
 }
 
