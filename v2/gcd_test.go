@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -572,7 +573,9 @@ func TestNetworkIntercept(t *testing.T) {
 	}, false); err != nil {
 		t.Fatalf("error enabling fetch: %s", err)
 	}
-	continued := false
+
+	var continued atomic.Bool
+
 	target.Subscribe("Fetch.requestPaused", func(target *ChromeTarget, payload []byte) {
 
 		pausedEvent := &gcdapi.FetchRequestPausedEvent{}
@@ -600,7 +603,7 @@ func TestNetworkIntercept(t *testing.T) {
 			Headers:   fetchHeaders,
 		}
 		target.Fetch.ContinueRequestWithParams(ctx, p)
-		continued = true
+		continued.Store(true)
 	})
 
 	params := &gcdapi.PageNavigateParams{Url: "http://www.example.com"}
@@ -608,7 +611,8 @@ func TestNetworkIntercept(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error navigating: %s\n", err)
 	}
-	if continued == false {
+
+	if continued.Load() == false {
 		t.Fatal("failed to intercept and continue request")
 	}
 }
