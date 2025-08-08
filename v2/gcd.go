@@ -33,6 +33,7 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/goccy/go-json"
@@ -77,6 +78,7 @@ type Gcd struct {
 	chromeProcess       *os.Process
 	chromeCmd           *exec.Cmd
 	chromeCmdOutput     io.Writer
+	chromeProcessDone   chan error
 	terminatedHandler   TerminatedHandler
 	onChromeExitHandler OnChromeExitHandler
 	port                string
@@ -111,6 +113,7 @@ func NewChromeDebugger(opts ...func(*Gcd)) *Gcd {
 	c.ctx = context.Background()
 	c.logger = LogDiscarder{}
 	c.messageObserver = observer.NewIgnoreMessagesObserver()
+	c.chromeProcessDone = make(chan error, 1)
 
 	for _, o := range opts {
 		o(c)
@@ -271,7 +274,7 @@ func (c *Gcd) startProcess() error {
 		c.processLock.Lock()
 		c.chromeProcess = c.chromeCmd.Process
 		c.processLock.Unlock()
-		err = c.chromeCmd.Wait()
+		exitErr := c.chromeCmd.Wait()
 
 		if c.onChromeExitHandler != nil {
 			c.onChromeExitHandler(c.profileDir, err)
@@ -286,6 +289,8 @@ func (c *Gcd) startProcess() error {
 		if c.terminatedHandler != nil {
 			c.terminatedHandler(closeMessage)
 		}
+
+		c.chromeProcessDone <- exitErr
 	}()
 
 	go func(endpoint string) {
@@ -296,12 +301,25 @@ func (c *Gcd) startProcess() error {
 	return err
 }
 
-// ExitProcess kills the process
+// ExitProcess terminate the process and waits for exit
 func (c *Gcd) ExitProcess() error {
 	c.processLock.Lock()
-	err := c.chromeProcess.Kill()
-	c.processLock.Unlock()
-	return err
+	defer c.processLock.Unlock()
+
+	// Try terminating nicely
+	c.chromeProcess.Signal(syscall.SIGTERM)
+
+	select {
+	case <-time.After(3 * time.Second):
+		// If nice doesn't work kill the process
+		_ = c.chromeProcess.Kill()
+
+		// Wait for process to exit
+		err := <-c.chromeProcessDone
+		return err
+	case err := <-c.chromeProcessDone:
+		return err
+	}
 }
 
 // PID of the started process
